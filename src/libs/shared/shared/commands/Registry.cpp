@@ -52,7 +52,7 @@ auto Registry::search(const std::string_view query) const -> SearchResult {
 auto Registry::search(std::span<const std::string> tokens) const -> SearchResult {
 	// we need go as deep as possible into the subcommand chain
 	SearchResult search;
-	auto registry = root_->subcommands();
+	auto registry = root_->commands();
 
 	for(auto& token : tokens) {
 		const auto& command_name = token;
@@ -61,7 +61,7 @@ auto Registry::search(std::span<const std::string> tokens) const -> SearchResult
 		if(result != registry.end()) {
 			++search.depth;
 			search.command = result->second;
-			registry = search.command->subcommands();
+			registry = search.command->commands();
 		} else {
 			break;
 		}
@@ -123,14 +123,14 @@ Suggestions Registry::autocomplete_recurse(const CommandMap& commands, std::span
 	if(auto it = commands.find(result.substring); it != commands.end()) {
 		const auto& [_, command] = *it;
 
-		if(!command->subcommands().empty()) {
+		if(!command->commands().empty()) {
 			// We'll only update the suggestions if we already had an exact match in the query.
 			// This means that this autocomplete will display info on the current command,
 			// not subcommands that match the new query string that we're about to return.
 			const bool exact_match = commands.contains(tokens.front());
 
 			if(exact_match) {
-				auto recurse_res = autocomplete_recurse(command->subcommands(), tokens.subspan<1>());
+				auto recurse_res = autocomplete_recurse(command->commands(), tokens.subspan<1>());
 				result.substring.push_back(' ');
 				result.substring += recurse_res.substring;
 				result.records = std::move(recurse_res.records);
@@ -145,7 +145,7 @@ Suggestions Registry::autocomplete_recurse(const CommandMap& commands, std::span
 
 Suggestions Registry::autocomplete(const std::string_view query) const {
 	auto tokens = parse_input(query);
-	auto results = autocomplete_recurse(root_->subcommands(), tokens);
+	auto results = autocomplete_recurse(root_->commands(), tokens);
 
 	std::ranges::sort(results.records, [&](const auto& a, const auto& b) {
 		return a.name < b.name;

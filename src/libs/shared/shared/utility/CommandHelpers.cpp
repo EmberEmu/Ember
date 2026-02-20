@@ -39,7 +39,7 @@ void handle_command_result(commands::Result result,
 			LOG_CONSOLE_ERROR_ASYNC(logger, "Usage: {}{}", path, command.usage_string());
             break;
         case commands::Result::subcommands:
-			log_subcommands(logger, path, command.subcommands());
+			log_subcommands(logger, path, command.commands());
             break;
         case commands::Result::unavailable:
 			LOG_CONSOLE_ERROR_ASYNC(logger, R"(Command "{}" is currently unavailable.)", path);

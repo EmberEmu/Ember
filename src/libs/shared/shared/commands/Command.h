@@ -36,7 +36,7 @@ class Command : public std::enable_shared_from_this<Command> {
 	std::string name_;
 	std::vector<Argument> args_;
 	std::shared_ptr<CommandHandler> handler_;
-	CommandMap subcommands_;
+	CommandMap commands_;
 
 	Result validate_arg_count(std::size_t count) const;
 	bool validate_types(const ArgumentStore& args) const;
@@ -58,23 +58,24 @@ public:
 	Command& operator=(Command&) = delete;
 	Command& operator=(Command&&) = delete;
 
-	void insert(std::shared_ptr<Command> command);
 	std::shared_ptr<Command> insert(std::string name);
 	std::shared_ptr<Command> description(std::string description);
 	std::shared_ptr<Command> argument(std::string argument, ArgumentType type);
 	std::shared_ptr<Command> optional_argument(std::string argument, ArgumentType type);
 	std::shared_ptr<Command> handler(CommandHandler handler);
 	std::shared_ptr<Command> name(std::string description);
+
+	void insert(std::shared_ptr<Command> command);
 	bool erase_argument(const std::string& argument);
 	void clear_arguments();
 	std::optional<std::shared_ptr<Command>> erase(const std::string& name);
-	void clear_subcommands();
+	void clear_commands();
 
 	const std::string& name() const;
 	const std::string& description() const;
 	std::vector<Argument> arguments() const;
 	std::string usage_string() const;
-	CommandMap subcommands() const;
+	CommandMap commands() const;
 	std::size_t argument_count() const;
 
 	Result execute(std::span<const ArgumentValue> arguments);

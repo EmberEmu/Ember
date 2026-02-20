@@ -77,7 +77,7 @@ Result Command::execute(std::span<const ArgumentValue> arguments) {
 		if(handler_) {
 			handler = handler_;
 		} else {
-			return subcommands_.empty()? Result::unavailable : Result::subcommands;
+			return commands_.empty()? Result::unavailable : Result::subcommands;
 		}
 	}
 
@@ -146,9 +146,9 @@ std::size_t Command::optional_arg_count() const {
 		[](const auto& arg){ return !arg.required; });
 }
 
-CommandMap Command::subcommands() const {
+CommandMap Command::commands() const {
 	std::lock_guard guard(mutex_);
-	return subcommands_;
+	return commands_;
 }
 
 std::string Command::usage_string() const {
@@ -170,7 +170,7 @@ std::string Command::usage_string() const {
 std::shared_ptr<Command> Command::insert(std::string name) {
 	std::lock_guard guard(mutex_);
 
-	auto [entry, _] = subcommands_.insert_or_assign(
+	auto [entry, _] = commands_.insert_or_assign(
 		name, create(name)
 	);
 
@@ -180,7 +180,7 @@ std::shared_ptr<Command> Command::insert(std::string name) {
 void Command::insert(std::shared_ptr<Command> command) {
 	std::lock_guard guard(mutex_);
 	const auto& name = command->name(); // avoid issues if right-to-left evaluation
-	subcommands_.insert_or_assign(name, std::move(command));
+	commands_.insert_or_assign(name, std::move(command));
 }
 
 bool Command::erase_argument(const std::string& argument) {
@@ -202,7 +202,7 @@ void Command::clear_arguments() {
 auto Command::erase(const std::string& name) -> std::optional<std::shared_ptr<Command>> {
 	std::lock_guard guard(mutex_);
 
-	auto result = subcommands_.extract(name);
+	auto result = commands_.extract(name);
 	
 	if(result.empty()) {
 		return std::nullopt;
@@ -211,9 +211,9 @@ auto Command::erase(const std::string& name) -> std::optional<std::shared_ptr<Co
 	return result.mapped();
 }
 
-void Command::clear_subcommands() {
+void Command::clear_commands() {
 	std::lock_guard guard(mutex_);
-	subcommands_.clear();
+	commands_.clear();
 }
 
 bool Command::validate_type(ArgumentType type, const ArgumentValue& value) const {
