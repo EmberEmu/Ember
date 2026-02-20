@@ -9,6 +9,7 @@
 #pragma once
 
 #include <logger/LoggerFwd.h>
+#include <shared/metrics/Metrics.h>
 #include <shared/commands/PrefixedRegistry.h>
 #include <shared/utility/cstring_view.hpp>
 #include <boost/program_options/variables_map.hpp>
@@ -16,6 +17,7 @@
 #include <boost/asio/io_context.hpp>
 #include <chrono>
 #include <exception>
+#include <memory>
 #include <semaphore>
 
 namespace ember::login {
@@ -30,6 +32,7 @@ class Service {
 	commands::PrefixedRegistry& cmd_register;
 	std::chrono::steady_clock::time_point start_time;
 
+	std::unique_ptr<Metrics> start_metrics(boost::asio::io_context& service, const po::variables_map& args);
 	void launch(const boost::program_options::variables_map& args, boost::asio::io_context& service);
 
 public:

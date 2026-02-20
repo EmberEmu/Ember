@@ -25,8 +25,8 @@
 #include <conpool/drivers/AutoSelect.h>
 #include <ports/Forward.h>
 #include <shared/metrics/MetricsImpl.h>
-#include <shared/metrics/Monitor.h>
 #include <shared/metrics/MetricsPoll.h>
+#include <shared/metrics/Monitor.h>
 #include <shared/threading/ThreadPool.h>
 #include <shared/threading/Utility.h>
 #include <shared/database/daos/IPBanDAO.h>
@@ -230,15 +230,7 @@ void Service::launch(const po::variables_map& args, boost::asio::io_context& ser
 	RealmClient realm_svcv2(spark, realm_list, logger);
 
 	// Start metrics service
-	auto metrics = std::make_unique<Metrics>();
-
-	if(args["metrics.enabled"].as<bool>()) {
-		LOG_INFO_SYNC(logger, "Starting metrics service...");
-		metrics = std::make_unique<MetricsImpl>(
-			service, args["metrics.statsd_host"].as<std::string>(),
-			args["metrics.statsd_port"].as<std::uint16_t>()
-		);
-	}
+	auto metrics = start_metrics(service, args);
 
 	LOG_INFO_SYNC(logger, "Starting thread pool with {} threads...", concurrency);
 	ThreadPool thread_pool(concurrency);
@@ -359,6 +351,20 @@ void Service::launch(const po::variables_map& args, boost::asio::io_context& ser
 	LOG_INFO_SYNC(logger, "{} shutting down...", APP_NAME);
 } catch(...) {
 	eptr = std::current_exception();
+}
+
+std::unique_ptr<Metrics> Service::start_metrics(boost::asio::io_context& service, const po::variables_map& args) {
+	auto metrics = std::make_unique<Metrics>();
+
+	if(args["metrics.enabled"].as<bool>()) {
+		LOG_INFO_SYNC(logger, "Starting metrics service...");
+		metrics = std::make_unique<MetricsImpl>(
+			service, args["metrics.statsd_host"].as<std::string>(),
+			args["metrics.statsd_port"].as<std::uint16_t>()
+		);
+	}
+
+	return metrics;
 }
 
 void pool_log_callback(ep::Severity severity, std::string_view message, log::Logger& logger) {
