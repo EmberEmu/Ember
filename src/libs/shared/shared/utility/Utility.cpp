@@ -12,6 +12,8 @@
 #include <format>
 #include <cassert>
 
+using namespace std::chrono_literals;
+
 #if defined __APPLE__
 	#include <TargetConditionals.h>
 #endif
@@ -207,7 +209,7 @@ std::uint32_t to_u32bit(const Botan::BigInt& value) {
 }
 
 std::string time_duration_format(std::chrono::nanoseconds uptime) {
-	assert(uptime >= 0);
+	assert(uptime >= 0ns);
 
 	auto uptime_s = std::chrono::duration_cast<std::chrono::seconds>(uptime).count();
 
