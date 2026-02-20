@@ -12,6 +12,7 @@
 #include <boost/endian/conversion.hpp>
 #include <algorithm>
 #include <filesystem>
+#include <ranges>
 #include <fstream>
 #include <cassert>
 
@@ -35,7 +36,7 @@ Patcher::Patcher(std::vector<GameVersion> versions, std::vector<PatchMeta> patch
 }
 
 const PatchMeta* Patcher::locate_rollup(std::span<const PatchMeta> patches,
-                                        std::uint16_t from, std::uint16_t to) const {
+                                        std::uint16_t from, std::uint16_t to) {
 	const PatchMeta* meta = nullptr;
 
 	for(auto& patch : patches) {
@@ -73,24 +74,23 @@ std::optional<PatchMeta> Patcher::find_patch(const GameVersion& client_version,
 		return std::nullopt;
 	}
 
+	auto& [_, graph] = *g_it;
+	auto& [__, patch_meta] = *p_it;
+
 	auto build = client_version.build;
-	bool path = false;
 
 	// ensure there's a patch path from the client version to a supported version
-	for(const auto& version : versions_) {
-		if(g_it->second.is_path(build, version.build)) {
-			path = true;
-			break;
-		}
-	}
+	bool path = std::ranges::any_of(versions_, [&](auto& version) {
+		return graph.is_path(build, version.build);
+	});
 
 	// couldn't find a patch path, find the best rollup patch that'll cover the client
 	if(!path) {
 		for(auto& version : versions_) {
-			const auto meta = locate_rollup(p_it->second, client_version.build, version.build);
+			const auto meta = locate_rollup(patch_meta, client_version.build, version.build);
 
 			// check to see whether there's a patch path from this rollup
-			if(meta && g_it->second.is_path(meta->build_from, version.build)) {
+			if(meta && graph.is_path(meta->build_from, version.build)) {
 				build = meta->build_from;
 				path = true;
 				break;
@@ -105,7 +105,7 @@ std::optional<PatchMeta> Patcher::find_patch(const GameVersion& client_version,
 
 	// using the optimal patching path, locate the next patch file
 	for(auto& version : versions_) {
-		auto paths = g_it->second.path(build, version.build);
+		auto paths = graph.path(build, version.build);
 		
 		if(paths.empty()) {
 			continue;
@@ -119,7 +119,7 @@ std::optional<PatchMeta> Patcher::find_patch(const GameVersion& client_version,
 			build_to = paths.front().from;
 		}
 
-		for(const auto& patch : p_it->second) {
+		for(const auto& patch : patch_meta) {
 			if(patch.build_from == build_from && patch.build_to == build_to) {
 				return patch;
 			}

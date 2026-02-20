@@ -50,8 +50,8 @@ class Patcher final {
 	std::unordered_map<Key, PatchGraph, KeyHash> graphs_;
 	std::unordered_map<Key, std::vector<PatchMeta>, KeyHash> patch_bins;
 
-	const PatchMeta* locate_rollup(std::span<const PatchMeta> patches,
-	                               std::uint16_t from, std::uint16_t to) const;
+	static const PatchMeta* locate_rollup(std::span<const PatchMeta> patches,
+	                                      std::uint16_t from, std::uint16_t to);
 
 	static void load_patch(PatchMeta& patch, const dal::PatchDAO& dao, const std::string& path);
 
