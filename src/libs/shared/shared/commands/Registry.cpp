@@ -154,8 +154,8 @@ Suggestions Registry::autocomplete(const std::string_view query) const {
 	return results;
 }
 
-bool Registry::unregister(const std::string& name) {
-	return !!root_->remove_subcommand(name);
+std::optional<std::shared_ptr<Command>> Registry::unregister(const std::string& name) {
+	return root_->remove_subcommand(name);
 }
 
 std::shared_ptr<Command> Registry::root() const {

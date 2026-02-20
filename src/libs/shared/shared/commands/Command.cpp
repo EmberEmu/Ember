@@ -199,9 +199,16 @@ void Command::clear_arguments() {
 	args_.clear();
 }
 
-bool Command::remove_subcommand(const std::string& name) {
+auto Command::remove_subcommand(const std::string& name) -> std::optional<std::shared_ptr<Command>> {
 	std::lock_guard guard(mutex_);
-	return !!subcommands_.erase(name);
+
+	auto result = subcommands_.extract(name);
+	
+	if(result.empty()) {
+		return std::nullopt;
+	}
+
+	return result.mapped();
 }
 
 void Command::clear_subcommands() {

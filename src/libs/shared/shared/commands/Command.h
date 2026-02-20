@@ -15,6 +15,7 @@
 #include <functional>
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <span>
 #include <string>
 #include <unordered_map>
@@ -63,7 +64,7 @@ public:
 	void update_name(std::string name);
 	bool remove_argument(const std::string& argument);
 	void clear_arguments();
-	bool remove_subcommand(const std::string& name);
+	std::optional<std::shared_ptr<Command>> remove_subcommand(const std::string& name);
 	void clear_subcommands();
 
 	const std::string& name() const;
