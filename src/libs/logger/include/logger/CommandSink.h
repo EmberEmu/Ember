@@ -48,8 +48,6 @@ class CommandSink final : public Sink {
 	static constexpr auto table_name_cols = 25u;
 	static constexpr auto table_desc_cols = 52u;
 
-	static inline std::mutex colour_lock;
-
 	CommandHandler handler_;
 	Autocomplete autocomplete_;
 

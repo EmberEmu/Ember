@@ -136,7 +136,6 @@ void CommandSink::write(Severity severity, Filter type, std::span<const char> re
 	append(record);
 
 	if(colour_) [[likely]] {
-		std::lock_guard guard(colour_lock);
 		utility::ConsoleColour concol(severity_colour(severity));
 		write_buffer(out_buf_, false);
 	} else {
