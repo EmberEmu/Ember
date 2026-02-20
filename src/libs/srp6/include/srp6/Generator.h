@@ -16,7 +16,7 @@ namespace ember::srp6 {
 
 struct Generator {
 	enum class Group {
-		g_256_bit, g_1024_bit,
+		g_256_bit,  g_1024_bit,
 		g_1536_bit, g_2048_bit,
 		g_3072_bit, g_4096_bit,
 		g_6144_bit, g_8192_bit

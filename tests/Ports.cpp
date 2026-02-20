@@ -351,7 +351,7 @@ TEST(PortsUPnP, HTTPHeader_Parse) {
 	parsed = {};
 	ASSERT_TRUE(upnp::parse_http_header(header, parsed));
 	ASSERT_EQ(parsed.text, "Not Found");
-	ASSERT_EQ(parsed.code, upnp::HTTPStatus::NOT_FOUND);
+	ASSERT_EQ(parsed.code, upnp::HTTPStatus::not_found);
 
 	// make sure the lookup is case-insensitive
 	ASSERT_EQ(parsed.fields["Access-Control-Allow-Origin"], "*");
