@@ -36,7 +36,7 @@ private:
 	std::shared_ptr<Command> root_;
 
 	Suggestions autocomplete_recurse(const CommandMap& commands, std::span<const std::string> tokens) const;
-	std::string longest_prefix(std::span<const Suggestions::Record> matches) const;
+	static std::string longest_prefix(std::span<const Suggestions::Record> matches);
 
 public:
 	Registry();
@@ -45,7 +45,7 @@ public:
 	virtual std::shared_ptr<Command> register_command(std::string name);
 	virtual void register_command(std::shared_ptr<Command> command);
 
-	std::vector<std::string> parse_input(std::string_view input) const;
+	static std::vector<std::string> parse_input(std::string_view input);
 	Suggestions autocomplete(std::string_view query) const;
 
 	SearchResult search(std::span<const std::string> tokens) const;

@@ -24,7 +24,7 @@ void Registry::register_command(std::shared_ptr<Command> command) {
 	root_->subcommand(std::move(command));
 }
 
-std::vector<std::string> Registry::parse_input(std::string_view input) const {
+std::vector<std::string> Registry::parse_input(std::string_view input) {
 	std::vector<std::string> tokens;
 	std::string str(input);
 
@@ -68,7 +68,7 @@ auto Registry::search(std::span<const std::string> tokens) const -> SearchResult
 /*
  * 'hack' to find the longest common substring without bothering to write an entire trie (this is not perf. sensitive)
  */
-std::string Registry::longest_prefix(std::span<const Suggestions::Record> matches) const {
+std::string Registry::longest_prefix(std::span<const Suggestions::Record> matches) {
 	if(matches.empty()) {
 		return {};
 	}
