@@ -32,7 +32,7 @@ class Service {
 	commands::PrefixedRegistry& cmd_register;
 	std::chrono::steady_clock::time_point start_time;
 
-	std::unique_ptr<Metrics> start_metrics(boost::asio::io_context& service, const po::variables_map& args);
+	std::unique_ptr<Metrics> start_metrics(boost::asio::io_context& service, const boost::program_options::variables_map& args);
 	void launch(const boost::program_options::variables_map& args, boost::asio::io_context& service);
 
 public:
