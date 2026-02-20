@@ -149,24 +149,23 @@ void register_shared_commands(commands::Registry& registry, log::Logger& logger)
 	registry.register_command("cls")
 		->description("Clears the console")
 		->handler([&](const auto& arguments) {
-		auto sinks = logger.fetch_sink(log::CommandSink::name);
+		auto sinks = logger.fetch_sink(log::CommandSink::sink_name);
 
 		if(sinks.empty()) {
 			LOG_ERROR_SYNC(logger, "Could not locate a command sink, cannot execute command");
-		} else if(sinks.size() != 1) {
-			LOG_ERROR_SYNC(logger, "Didn't expect multiple command sinks, cannot execute command");
-			return;
 		}
 
+		assert(sinks.size() == 1 && "multiple command sinks?");
+		assert(command_sink->name() == log::CommandSink::sink_name && "unexpected sink name");
+
 		auto command_sink = static_cast<log::CommandSink*>(sinks.front().get());
-		assert(command_sink->name() == log::CommandSink::name);
 		command_sink->clear_console();
 	});
 }
 
 void register_command_handlers(commands::Registry& registry, log::Logger& logger) {
 #ifdef _WIN32
-	auto sinks = logger.fetch_sink(log::CommandSink::name);
+	auto sinks = logger.fetch_sink(log::CommandSink::sink_name);
 
 	if(sinks.empty()) {
 		LOG_INFO_SYNC(logger, "Console commands disabled, no suitable logging sink found");

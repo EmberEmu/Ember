@@ -84,7 +84,7 @@ class CommandSink final : public Sink {
 	bool invoke_handler(const std::string_view command);
 
 public:
-	static constexpr std::string_view name = "CommandSink";
+	static constexpr std::string_view sink_name = "CommandSink";
 
 	CommandSink(Severity severity, Filter filter, std::string prompt);
 	~CommandSink();

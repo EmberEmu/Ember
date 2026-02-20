@@ -31,7 +31,7 @@ using namespace detail;
 static constexpr auto prompt_colour = FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE; // white
 
 CommandSink::CommandSink(Severity severity, Filter filter, std::string prompt)
-	: Sink(severity, filter, name),
+	: Sink(severity, filter, sink_name),
 	  prompt_(std::move(prompt)),
 	  colour_(false),
 	  stopped_(false),
