@@ -167,7 +167,7 @@ std::string Command::usage_string() const {
 	return result;
 }
 
-std::shared_ptr<Command> Command::subcommand(std::string name) {
+std::shared_ptr<Command> Command::insert(std::string name) {
 	std::lock_guard guard(mutex_);
 
 	auto [entry, _] = subcommands_.insert_or_assign(
@@ -177,13 +177,13 @@ std::shared_ptr<Command> Command::subcommand(std::string name) {
 	return entry->second;
 }
 
-void Command::subcommand(std::shared_ptr<Command> command) {
+void Command::insert(std::shared_ptr<Command> command) {
 	std::lock_guard guard(mutex_);
 	const auto& name = command->name(); // avoid issues if right-to-left evaluation
 	subcommands_.insert_or_assign(name, std::move(command));
 }
 
-bool Command::remove_argument(const std::string& argument) {
+bool Command::erase_argument(const std::string& argument) {
 	std::lock_guard guard(mutex_);
 
 	const auto& remove = std::ranges::remove_if(args_, [&](auto& arg){
@@ -194,12 +194,12 @@ bool Command::remove_argument(const std::string& argument) {
 	return !!remove.size();
 }
 
-void Command::clear_arguments() {
+void Command::erase_arguments() {
 	std::lock_guard guard(mutex_);
 	args_.clear();
 }
 
-auto Command::remove_subcommand(const std::string& name) -> std::optional<std::shared_ptr<Command>> {
+auto Command::erase(const std::string& name) -> std::optional<std::shared_ptr<Command>> {
 	std::lock_guard guard(mutex_);
 
 	auto result = subcommands_.extract(name);

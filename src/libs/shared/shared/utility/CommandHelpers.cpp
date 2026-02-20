@@ -138,14 +138,14 @@ void execute_command(const std::string_view input, const commands::Registry& reg
 }
 
 void register_shared_commands(commands::Registry& registry, log::Logger& logger) {
-	registry.register_command("help")
+	registry.insert("help")
 		->description("Display console command usage information")
 		->handler([&](const auto&) {
 			LOG_CONSOLE_ASYNC(logger, "To display a list of available commands, press tab for autocompletion");
 	});
 
 #ifdef _WIN32
-	registry.register_command("cls")
+	registry.insert("cls")
 		->description("Clears the console")
 		->handler([&](const auto& arguments) {
 			auto sinks = logger.fetch_sink(log::CommandSink::sink_name);

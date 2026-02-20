@@ -44,14 +44,14 @@ public:
 
 	static std::vector<std::string> parse_input(const std::string_view input);
 
-	std::shared_ptr<Command> register_command(std::string name);
-	void register_command(std::shared_ptr<Command> command);
+	std::shared_ptr<Command> insert(std::string name);
+	void insert(std::shared_ptr<Command> command);
+	std::optional<std::shared_ptr<Command>> erase(const std::string& name);
 
 	Suggestions autocomplete(const std::string_view query) const;
 
 	SearchResult search(const std::string_view query) const;
 	SearchResult search(std::span<const std::string> tokens) const;
-	std::optional<std::shared_ptr<Command>> unregister(const std::string& name);
 	std::shared_ptr<Command> root() const;
 };
 

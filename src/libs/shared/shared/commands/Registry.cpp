@@ -16,12 +16,12 @@ namespace ember::commands {
 Registry::Registry()
 	: root_(std::move(Command::create("_root"))) {}
 
-std::shared_ptr<Command> Registry::register_command(std::string name) {
-	return root_->subcommand(name);
+std::shared_ptr<Command> Registry::insert(std::string name) {
+	return root_->insert(name);
 }
 
-void Registry::register_command(std::shared_ptr<Command> command) {
-	root_->subcommand(std::move(command));
+void Registry::insert(std::shared_ptr<Command> command) {
+	root_->insert(std::move(command));
 }
 
 std::vector<std::string> Registry::parse_input(const std::string_view input) {
@@ -154,8 +154,8 @@ Suggestions Registry::autocomplete(const std::string_view query) const {
 	return results;
 }
 
-std::optional<std::shared_ptr<Command>> Registry::unregister(const std::string& name) {
-	return root_->remove_subcommand(name);
+std::optional<std::shared_ptr<Command>> Registry::erase(const std::string& name) {
+	return root_->erase(name);
 }
 
 std::shared_ptr<Command> Registry::root() const {

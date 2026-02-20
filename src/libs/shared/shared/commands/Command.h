@@ -55,16 +55,16 @@ public:
 	Command& operator=(Command&) = delete;
 	Command& operator=(Command&&) = delete;
 
-	void subcommand(std::shared_ptr<Command> command);
-	std::shared_ptr<Command> subcommand(std::string name);
+	void insert(std::shared_ptr<Command> command);
+	std::shared_ptr<Command> insert(std::string name);
 	std::shared_ptr<Command> description(std::string description);
 	std::shared_ptr<Command> argument(std::string argument, ArgumentType type);
 	std::shared_ptr<Command> optional_argument(std::string argument, ArgumentType type);
 	std::shared_ptr<Command> handler(CommandHandler handler);
 	std::shared_ptr<Command> name(std::string description);
-	bool remove_argument(const std::string& argument);
-	void clear_arguments();
-	std::optional<std::shared_ptr<Command>> remove_subcommand(const std::string& name);
+	bool erase_argument(const std::string& argument);
+	void erase_arguments();
+	std::optional<std::shared_ptr<Command>> erase(const std::string& name);
 	void clear_subcommands();
 
 	const std::string& name() const;

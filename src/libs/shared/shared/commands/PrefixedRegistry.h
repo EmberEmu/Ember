@@ -24,7 +24,7 @@ public:
 		  prefix_(std::move(prefix)) {}
 
 	std::shared_ptr<Command> operator()(const std::string_view name) {
-		return registry_.register_command(prefix_ + std::string(name));
+		return registry_.insert(prefix_ + std::string(name));
 	}
 };
 
