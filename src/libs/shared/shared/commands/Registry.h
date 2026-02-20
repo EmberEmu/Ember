@@ -40,10 +40,9 @@ private:
 
 public:
 	Registry();
-	virtual ~Registry() = default;
 
-	virtual std::shared_ptr<Command> register_command(std::string name);
-	virtual void register_command(std::shared_ptr<Command> command);
+	std::shared_ptr<Command> register_command(std::string name);
+	void register_command(std::shared_ptr<Command> command);
 
 	static std::vector<std::string> parse_input(std::string_view input);
 	Suggestions autocomplete(std::string_view query) const;
