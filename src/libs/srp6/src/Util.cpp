@@ -73,16 +73,16 @@ Botan::BigInt scrambler(const Botan::BigInt& A, const Botan::BigInt& B, std::siz
 
 	if(mode == Compliance::rfc5054) {
 		A.serialize_to(vec);
-		hasher->update(vec.data(), vec.size());
+		hasher->update(vec);
 		B.serialize_to(vec);
-		hasher->update(vec.data(), vec.size());
+		hasher->update(vec);
 		hasher->final(hash_out.data());
 		return Botan::BigInt::from_bytes(hash_out);
 	} else {
 		const auto& a_enc = encode_flip_1363(A, padding);
 		const auto& b_enc = encode_flip_1363(B, padding);
-		hasher->update(a_enc.data(), a_enc.size());
-		hasher->update(b_enc.data(), b_enc.size());
+		hasher->update(a_enc);
+		hasher->update(b_enc);
 		hasher->final(hash_out.data());
 		return decode_flip(hash_out);
 	}
@@ -105,13 +105,13 @@ Botan::BigInt compute_x(const std::string_view identifier, std::string_view pass
 	auto hasher = Botan::HashFunction::create_or_throw("SHA-1");
 	std::array<std::uint8_t, SHA1_LEN> hash;
 	BOOST_ASSERT_MSG(hash.size() == hasher->output_length(), "Bad hash length");
-	hasher->update(reinterpret_cast<const uint8_t*>(identifier.data()), identifier.size());
+	hasher->update(identifier);
 	hasher->update(':');
-	hasher->update(reinterpret_cast<const uint8_t*>(password.data()), password.size());
+	hasher->update(password);
 	hasher->final(hash.data());
 
 	if(mode == Compliance::rfc5054) {
-		hasher->update(salt.data(), salt.size_bytes());
+		hasher->update(salt);
 	} else {
 		// change if Botan adds iterator overloads
 		for(auto i = salt.rbegin(); i != salt.rend(); ++i) {
@@ -119,7 +119,7 @@ Botan::BigInt compute_x(const std::string_view identifier, std::string_view pass
 		}
 	}
 
-	hasher->update(hash.data(), hash.size());
+	hasher->update(hash);
 	hasher->final(hash.data());
 
 	if(mode == Compliance::rfc5054) {
@@ -140,20 +140,20 @@ Botan::BigInt generate_client_proof(const std::string_view identifier, const Ses
 	std::array<std::uint8_t, SHA1_LEN> n_hash, g_hash, i_hash, out;
 	BOOST_ASSERT_MSG(SHA1_LEN == hasher->output_length(), "Bad hash length");
 	const auto& n_enc = detail::encode_flip(N);
-	hasher->update(n_enc.data(), n_enc.size());
+	hasher->update(n_enc);
 	hasher->final(n_hash.data());
 	const auto& g_enc = detail::encode_flip(g);
-	hasher->update(g_enc.data(), g_enc.size());
+	hasher->update(g_enc);
 	hasher->final(g_hash.data());
-	hasher->update(reinterpret_cast<const uint8_t*>(identifier.data()), identifier.size());
+	hasher->update(identifier.data());
 	hasher->final(i_hash.data());
 	
 	for(std::size_t i = 0, j = n_hash.size(); i < j; ++i) {
 		n_hash[i] ^= g_hash[i];
 	}
 
-	hasher->update(n_hash.data(), n_hash.size());
-	hasher->update(i_hash.data(), i_hash.size());
+	hasher->update(n_hash);
+	hasher->update(i_hash);
 	const auto& a_enc = detail::encode_flip_1363(A, N.bytes());
 	const auto& b_enc = detail::encode_flip_1363(B, N.bytes());
 
@@ -162,9 +162,9 @@ Botan::BigInt generate_client_proof(const std::string_view identifier, const Ses
 		hasher->update(*i);
 	}
 
-	hasher->update(a_enc.data(), a_enc.size());
-	hasher->update(b_enc.data(), b_enc.size());
-	hasher->update(key.t.data(), key.t.size());
+	hasher->update(a_enc);
+	hasher->update(b_enc);
+	hasher->update(key.t);
 	hasher->final(out.data());
 	return detail::decode_flip(out);
 }
@@ -177,9 +177,9 @@ Botan::BigInt generate_server_proof(const Botan::BigInt& A, const Botan::BigInt&
 	std::array<std::uint8_t, SHA1_LEN> hash_out;
 	const auto& a_enc = detail::encode_flip_1363(A, padding);
 	const auto& proof_enc = detail::encode_flip_1363(proof, SHA1_LEN);
-	hasher->update(a_enc.data(), a_enc.size());
-	hasher->update(proof_enc.data(), proof_enc.size());
-	hasher->update(key.t.data(), key.t.size());
+	hasher->update(a_enc);
+	hasher->update(proof_enc);
+	hasher->update(key.t);
 	hasher->final(hash_out.data());
 	return detail::decode_flip(hash_out);
 }

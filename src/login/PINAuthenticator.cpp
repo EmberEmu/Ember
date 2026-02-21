@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2025 Ember
+ * Copyright (c) 2016 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -107,12 +107,12 @@ auto PINAuthenticator::calculate_hash(const SaltBytes& server_salt,
 	HashBytes hash;
 	auto hasher = Botan::HashFunction::create_or_throw("SHA-1");
 	BOOST_ASSERT_MSG(hasher->output_length() == hash.size(), "Bad hash size");
-	hasher->update(server_salt.data(), server_salt.size());
-	hasher->update(pin_bytes_.data(), pin_bytes_.size());
+	hasher->update(server_salt);
+	hasher->update(pin_bytes_);
 	hasher->final(hash.data());
 
-	hasher->update(client_salt.data(), client_salt.size());
-	hasher->update(hash.data(), hash.size());
+	hasher->update(client_salt);
+	hasher->update(hash);
 	hasher->final(hash.data());
 	return hash;
 }

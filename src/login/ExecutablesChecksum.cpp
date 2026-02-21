@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2024 Ember
+ * Copyright (c) 2016 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -29,8 +29,8 @@ std::array<std::uint8_t, 20> finalise(std::span<const std::uint8_t> checksum,
 	std::array<std::uint8_t, 20> res;
 	auto hasher = Botan::HashFunction::create_or_throw("SHA-1");
 	BOOST_ASSERT_MSG(hasher->output_length() == res.size(), "Bad hash size");
-	hasher->update(client_seed.data(), client_seed.size_bytes());
-	hasher->update(checksum.data(), checksum.size_bytes());
+	hasher->update(client_seed);
+	hasher->update(checksum);
 	hasher->final(res.data());
 	return res;
 }

@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2024 Ember
+* Copyright (c) 2024 - 2026 Ember
 *
 * This Source Code Form is subject to the terms of the Mozilla Public
 * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -118,8 +118,8 @@ std::array<std::uint8_t, 20> msg_integrity(std::span<const std::uint8_t> buffer,
 	std::array<std::uint8_t, 16> md5_res;
 	auto hasher = Botan::HashFunction::create_or_throw("MD5");
 	BOOST_ASSERT_MSG(hasher->output_length() == md5_res.size(), "Bad hash size");
-	hasher->update(username.data(), username.size_bytes());
-	hasher->update(reinterpret_cast<const std::uint8_t*>(concat.data()), concat.size());
+	hasher->update(username);
+	hasher->update(concat);
 	hasher->final(md5_res.data());
 
 	std::array<std::uint8_t, 20> sha1_res;

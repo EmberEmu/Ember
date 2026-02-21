@@ -62,9 +62,9 @@ bool ReconnectAuthenticator::proof_check(std::span<const std::uint8_t> salt,
 	auto hasher = Botan::HashFunction::create_or_throw("SHA-1");
 	BOOST_ASSERT_MSG(hasher->output_length() == res.size(), "Bad hash size");
 	hasher->update(username_);
-	hasher->update(salt.data(), salt.size());
-	hasher->update(salt_.data(), salt_.size());
-	hasher->update(sess_key_.t.data(), sess_key_.t.size());
+	hasher->update(salt);
+	hasher->update(salt_);
+	hasher->update(sess_key_.t);
 	hasher->final(res.data());
 	return std::ranges::equal(res, proof);
 }
