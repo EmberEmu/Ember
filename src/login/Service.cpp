@@ -19,6 +19,7 @@
 #include "RealmList.h"
 #include "SessionBuilders.h"
 #include "Survey.h"
+#include "Utility.h"
 #include <logger/Logger.h>
 #include <conpool/ConnectionPool.h>
 #include <conpool/Policies.h>
@@ -77,7 +78,6 @@ namespace ember::login {
 
 void pool_log_callback(ep::Severity, std::string_view message, log::Logger& logger);
 void print_lib_versions(log::Logger& logger);
-std::vector<GameVersion> client_versions();
 
 /*
  * Starts Asio worker threads, blocking until the launch thread exits
@@ -190,7 +190,7 @@ void Service::launch(const po::variables_map& args, boost::asio::io_context& ser
 	LOG_INFO_SYNC(logger, "Loading client integrity validation data...");
 	IntegrityData bin_data;
 
-	const auto allowed_clients = client_versions(); // move
+	const auto allowed_clients = args["login.builds"].as<std::vector<GameVersion>>();
 
 	if(args["integrity.enabled"].as<bool>()) {
 		const auto& bin_path = args["integrity.bin_path"].as<std::string>();
@@ -283,10 +283,11 @@ void Service::launch(const po::variables_map& args, boost::asio::io_context& ser
 
 	// Misc. information
 	LOG_INFO_SYNC(logger, "Max allowed sockets: {}", utility::max_sockets_desc());
+
 	std::string builds;
 
 	for(const auto& client : allowed_clients) {
-		builds += std::to_string(client.build) + " ";
+		builds += to_string(client) + ", ";
 	}
 
 	LOG_INFO_SYNC(logger, "Allowed client builds: {}", builds);
@@ -385,6 +386,7 @@ void pool_log_callback(ep::Severity severity, std::string_view message, log::Log
 po::options_description Service::options() {
 	po::options_description opts;
 	opts.add_options()
+		("login.builds", po::value<std::vector<GameVersion>>()->composing()->required())
 		("misc.locale_enforce", po::value<bool>()->required())
 		("misc.verified_emails", po::value<bool>()->required())
 		("patches.bin_path", po::value<std::string>()->required())
@@ -435,14 +437,6 @@ po::options_description Service::options() {
 		("monitor.port", po::value<std::uint16_t>()->required());
 
 	return opts;
-}
-
-/*
- * This vector defines the client builds that are allowed to connect to the
- * server. All builds in this list should be using the same protocol version.
- */
-std::vector<GameVersion> client_versions() {
-	return {{1, 12, 1, 5875}, {1, 12, 2, 6005}};
 }
 
 void print_lib_versions(log::Logger& logger) {

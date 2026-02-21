@@ -63,6 +63,7 @@ set(LIBRARY_HDR
     LoginHandlerFwd.h
     SocketType.h
     Service.h
+    Utility.h
 )
 
 set(LIBRARY_SRC
