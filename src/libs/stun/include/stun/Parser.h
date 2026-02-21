@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Ember
+ * Copyright (c) 2024 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -13,6 +13,7 @@
 #include <stun/Logging.h>
 #include <stun/Protocol.h>
 #include <stun/Exception.h>
+#include <shared/utility/HashDefines.h>
 #include <spark/buffers/pmr/BinaryStreamReader.h>
 #include <boost/endian.hpp>
 #include <optional>
@@ -55,18 +56,21 @@ class Parser final {
 	                                                       const TxID& id, MessageType type);
 
 public:
-	Parser(std::span<const std::uint8_t> buffer, RFCMode mode) : buffer_(buffer), mode_(mode) {}
+	Parser(std::span<const std::uint8_t> buffer, RFCMode mode)
+		: buffer_(buffer),
+		  mode_(mode) {}
+
 	void set_logger(LogCB logger);
 
 	Error validate_header(const Header& header) const;
 	Header read_header();
 	std::vector<attributes::Attribute> attributes();
 	std::uint32_t fingerprint() const;
-	std::array<std::uint8_t, 20> msg_integrity(const std::string_view password) const;
+	std::array<std::uint8_t, hash_sizes::sha1> msg_integrity(const std::string_view password) const;
 
-	std::array<std::uint8_t, 20> msg_integrity(std::span<const std::uint8_t> username,
-	                                           std::string_view realm,
-	                                           std::string_view password) const;
+	std::array<std::uint8_t, hash_sizes::sha1> msg_integrity(std::span<const std::uint8_t> username,
+	                                                         std::string_view realm,
+	                                                         std::string_view password) const;
 };
 
 #include <stun/Parser.inl>

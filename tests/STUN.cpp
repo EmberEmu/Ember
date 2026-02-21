@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 - 2025 Ember
+ * Copyright (c) 2024 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,6 +11,7 @@
 #include <stun/Parser.h>
 #include <stun/Utility.h>
 #include <stun/MessageBuilder.h>
+#include <shared/utility/HashDefines.h>
 #include <gtest/gtest.h>
 #include <array>
 #include <span>
@@ -60,7 +61,7 @@ TEST(STUNVectors, RFC5769_IPv4Response) {
 	const auto msgi = stun::retrieve_attribute<stun::attributes::MessageIntegrity>(attrs);
 	ASSERT_TRUE(msgi);
 
-	const std::array<std::uint8_t, 20> hmac_sha1 {
+	const std::array<std::uint8_t, hash_sizes::sha1> hmac_sha1 {
 		0x2b, 0x91, 0xf5, 0x99, 0xfd, 0x9e, 0x90, 0xc3, 0x8c, 0x74,
 		0x89, 0xf9, 0x2a, 0xf9, 0xba, 0x53, 0xf0, 0x6b, 0xe7, 0xd7
 	};
@@ -110,7 +111,7 @@ TEST(STUNVectors, RFC5769_IPv6Response) {
 	const auto msgi = stun::retrieve_attribute<stun::attributes::MessageIntegrity>(attrs);
 	ASSERT_TRUE(msgi);
 
-	const std::array<std::uint8_t, 20> hmac_sha1 {
+	const std::array<std::uint8_t, hash_sizes::sha1> hmac_sha1 {
 		0xa3, 0x82, 0x95, 0x4e, 0x4b, 0xe6, 0x7b, 0xf1, 0x17, 0x84,
 		0xc9, 0x7c, 0x82, 0x92, 0xc2, 0x75, 0xbf, 0xe3, 0xed, 0x41
 	};
@@ -157,7 +158,7 @@ TEST(STUNVectors, RFC5769_LTARequest) {
 	const auto msgi = stun::retrieve_attribute<stun::attributes::MessageIntegrity>(attrs);
 	ASSERT_TRUE(msgi);
 	
-	const std::array<std::uint8_t, 20> hmac_sha1 {
+	const std::array<std::uint8_t, hash_sizes::sha1> hmac_sha1 {
 		0xf6, 0x70, 0x24, 0x65, 0x6d, 0xd6, 0x4a, 0x3e, 0x02, 0xb8,
 		0xe0, 0x71, 0x2e, 0x85, 0xc9, 0xa2, 0x8c, 0xa8, 0x96, 0x66
 	};
@@ -210,7 +211,7 @@ TEST(STUNVectors, RFC5769_Request) {
 	const auto msgi = stun::retrieve_attribute<stun::attributes::MessageIntegrity>(attrs);
 	ASSERT_TRUE(msgi);
 
-	const std::array<std::uint8_t, 20> hmac_sha1 {
+	const std::array<std::uint8_t, hash_sizes::sha1> hmac_sha1 {
 		0x9a, 0xea, 0xa7, 0x0c, 0xbf, 0xd8, 0xcb, 0x56, 0x78, 0x1e,
 		0xf2, 0xb5, 0xb2, 0xd3, 0xf2, 0x49, 0xc1, 0xb5, 0x71, 0xa2
 	};

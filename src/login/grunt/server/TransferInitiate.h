@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2025 Ember
+ * Copyright (c) 2016 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -13,6 +13,7 @@
 #include "../Exceptions.h"
 #include <boost/assert.hpp>
 #include <boost/endian/arithmetic.hpp>
+#include <shared/utility/HashDefines.h>
 #include <gsl/narrow>
 #include <cstdint>
 #include <cstddef>
@@ -31,7 +32,7 @@ public:
 	
 	std::string filename;
 	be::little_uint64_t filesize = 0;
-	std::array<std::uint8_t, 16> md5;
+	std::array<std::uint8_t, hash_sizes::md5> md5;
 
 	State read_from_stream(spark::io::pmr::BinaryStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::done, "Packet already complete - check your logic!");

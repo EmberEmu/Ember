@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Ember
+ * Copyright (c) 2024 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -7,6 +7,7 @@
  */
 
 #include <login/ExecutablesChecksum.h>
+#include <shared/utility/HashDefines.h>
 #include <gtest/gtest.h>
 #include <array>
 #include <vector>
@@ -34,7 +35,7 @@ const std::array<std::uint8_t, 256> sample_buffer {
 };
 
 TEST(GameIntegrity, FileIntegrity) {
-	const std::array<std::uint8_t, 16> seed {
+	const std::array<std::uint8_t, hash_sizes::md5> seed {
 		0x1a, 0x61, 0x68, 0xfd, 0xf7, 0xba, 0x9b, 0xdb,
 		0xeb, 0x86, 0x21, 0x67, 0xd, 0x7f, 0xbd, 0x9f
 	};
@@ -46,7 +47,7 @@ TEST(GameIntegrity, FileIntegrity) {
 		0x1d, 0x58, 0xf7, 0x3b, 0x58, 0xd1, 0xd2, 0x73
 	};
 
-	const std::array<std::uint8_t, 20> expected_bin_cs {
+	const std::array<std::uint8_t, hash_sizes::sha1> expected_bin_cs {
 		0xaa, 0x42, 0x93, 0xf1, 0xec, 0x44, 0x5d, 0x5f, 0x3a, 0x7e,
 		0x45, 0x44, 0x63, 0x06, 0x1a, 0xae, 0x86, 0xad, 0x8f, 0xc5
 	};
@@ -55,7 +56,7 @@ TEST(GameIntegrity, FileIntegrity) {
 	const auto bin_checksum = client_integrity::checksum(seed, std::as_bytes(buffer));
 	ASSERT_EQ(bin_checksum, expected_bin_cs);
 
-	const std::array<std::uint8_t, 20> expected_checksum {
+	const std::array<std::uint8_t, hash_sizes::sha1> expected_checksum {
 		0x33, 0x6e, 0x8f, 0xaf, 0xe1, 0xea, 0x92, 0x3c, 0x99, 0x54,
 		0xa8, 0xcd, 0x94, 0x69, 0xe5, 0x04, 0xff, 0xfc, 0xe6, 0x08
 	};
@@ -75,7 +76,7 @@ TEST(GameIntegrity, GameResponse) {
 
 	(void)seed; // just to stop the compiler warning about the above unused var
 
-	const std::array<std::uint8_t, 20> sha1_hmac {
+	const std::array<std::uint8_t, hash_sizes::sha1> sha1_hmac {
 		0xa5, 0x32, 0x7c, 0x48, 0xe4, 0xf7, 0x77, 0xb8, 0x4e, 0xa,
 		0xf0, 0x38, 0x68, 0x3f, 0xfa, 0x33, 0x18, 0xdf, 0x12, 0xa8
 	};
@@ -87,7 +88,7 @@ TEST(GameIntegrity, GameResponse) {
 		0x1d, 0x58, 0xf7, 0x3b, 0x58, 0xd1, 0xd2, 0x73
 	};
 
-	const std::array<std::uint8_t, 20> expected_checksum {
+	const std::array<std::uint8_t, hash_sizes::sha1> expected_checksum {
 		0x16, 0xea, 0x06, 0xf7, 0xd7, 0x75, 0xde, 0x25, 0xa2, 0x0e,
 		0x7c, 0x54, 0x1d, 0xca, 0xa1, 0xe9, 0xf7, 0x18, 0xa0, 0x34
 	};

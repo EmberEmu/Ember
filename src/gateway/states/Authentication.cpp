@@ -24,6 +24,7 @@
 #include <shared/game/GameVersion.h>
 #include <shared/utility/EnumHelper.h>
 #include <shared/utility/UTF8String.h>
+#include <shared/utility/HashDefines.h>
 #include <shared/utility/xoroshiro128plus.h>
 #include <logger/Logger.h>
 #include <botan/bigint.h>
@@ -195,7 +196,7 @@ void prove_session(ClientContext& ctx, const Botan::BigInt& key) {
 	const auto& packet = auth_ctx.packet;
 
 	auto hasher = Botan::HashFunction::create_or_throw("SHA-1");
-	std::array<std::uint8_t, 20> hash;
+	std::array<std::uint8_t, hash_sizes::sha1> hash;
 	BOOST_ASSERT_MSG(hash.size() == hasher->output_length(), "Bad hash length");
 	hasher->update(packet->username);
 	hasher->update_be(protocol_id);

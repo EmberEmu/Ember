@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Ember
+ * Copyright (c) 2024 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -376,13 +376,13 @@ std::uint32_t Parser::fingerprint() const {
 	return detail::fingerprint(buffer_, true);
 }
 
-std::array<std::uint8_t, 20> Parser::msg_integrity(std::span<const std::uint8_t> username,
-                                                   std::string_view realm,
-                                                   std::string_view password) const {
+std::array<std::uint8_t, hash_sizes::sha1> Parser::msg_integrity(std::span<const std::uint8_t> username,
+                                                                 std::string_view realm,
+                                                                 std::string_view password) const {
 	return detail::msg_integrity(buffer_, username, realm, password, true);
 }
 
-std::array<std::uint8_t, 20> Parser::msg_integrity(const std::string_view password) const {
+std::array<std::uint8_t, hash_sizes::sha1> Parser::msg_integrity(const std::string_view password) const {
 	return detail::msg_integrity(buffer_, password, true);
 }
 

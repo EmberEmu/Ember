@@ -93,6 +93,7 @@ set(UTIL_SRC
     shared/utility/Exception.h
     shared/utility/CommandHelpers.h
     shared/utility/CommandHelpers.cpp
+    shared/utility/HashDefines.h
 )
 
 set(METRICS_SRC

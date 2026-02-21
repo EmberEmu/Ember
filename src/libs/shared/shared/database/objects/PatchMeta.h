@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2024 Ember
+ * Copyright (c) 2015 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,13 +11,14 @@
 #include <array>
 #include <string>
 #include <cstdint>
+#include <shared/utility/HashDefines.h>
 
 namespace ember {
 
 struct FileMeta {
 	std::string path;
 	std::string name;
-	std::array<std::uint8_t, 16> md5;
+	std::array<std::uint8_t, hash_sizes::md5> md5;
 	std::uint64_t size;
 };
 

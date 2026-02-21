@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - 2024 Ember
+ * Copyright (c) 2021 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,6 +9,7 @@
 #include <gtest/gtest.h>
 #include <login/PINAuthenticator.h>
 #include <shared/utility/Clock.h>
+#include <shared/utility/HashDefines.h>
 #include <array>
 #include <chrono>
 #include <memory>
@@ -53,7 +54,7 @@ TEST(PINAuthenticator, StaticPIN) {
 		0x3d, 0x6a, 0x91, 0xb2, 0xb6, 0x47, 0xe2, 0xc2
 	};
 
-	std::array<std::uint8_t, 20> client_hash {
+	std::array<std::uint8_t, hash_sizes::sha1> client_hash {
 		0x0b, 0xae, 0x6c, 0x91, 0x70, 0xc3, 0x7d, 0x11, 0x1e, 0x33,
 		0x02, 0x76, 0x6f, 0x97, 0x18, 0x98, 0x39, 0xa8, 0xcb, 0x77
 	};

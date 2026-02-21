@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2021 Ember
+ * Copyright (c) 2015 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -12,6 +12,7 @@
 #include "../Packet.h"
 #include "../Exceptions.h"
 #include "../KeyData.h"
+#include <shared/utility/HashDefines.h>
 #include <boost/assert.hpp>
 #include <botan/bigint.h>
 #include <array>
@@ -29,8 +30,8 @@ public:
 		: Packet(Opcode::cmd_auth_reconnect_proof) {}
 
 	std::array<std::uint8_t, 16> salt;
-	std::array<std::uint8_t, 20> proof;
-	std::array<std::uint8_t, 20> client_checksum;
+	std::array<std::uint8_t, hash_sizes::sha1> proof;
+	std::array<std::uint8_t, hash_sizes::sha1> client_checksum;
 	std::uint8_t key_count = 0;
 	std::vector<KeyData> keys;
 
@@ -42,7 +43,7 @@ public:
 		}
 
 		stream >> opcode;
-		stream.get(salt.data(), salt.size());
+		stream.get(salt);
 		stream.get(proof.data(), proof.size());
 		stream.get(client_checksum.data(), client_checksum.size());
 		stream >> key_count;

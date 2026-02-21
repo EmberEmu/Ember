@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2024 Ember
+* Copyright (c) 2024 - 2026 Ember
 *
 * This Source Code Form is subject to the terms of the Mozilla Public
 * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -10,6 +10,7 @@
 
 #include <stun/Attributes.h>
 #include <stun/Protocol.h>
+#include <shared/utility/HashDefines.h>
 #include <array>
 #include <span>
 #include <string_view>
@@ -25,15 +26,15 @@ Header read_header(std::span<const std::uint8_t> buffer);
 std::size_t attribute_offset(std::span<const std::uint8_t> buffer, Attributes attr);
 std::uint32_t fingerprint(std::span<const std::uint8_t> buffer, bool complete);
 
-std::array<std::uint8_t, 20> msg_integrity(std::span<const std::uint8_t> buffer,
-                                           std::string_view password,
-                                           bool complete);
+std::array<std::uint8_t, hash_sizes::sha1> msg_integrity(std::span<const std::uint8_t> buffer,
+                                                         std::string_view password,
+                                                         bool complete);
 
-std::array<std::uint8_t, 20> msg_integrity(std::span<const std::uint8_t> buffer,
-                                           std::span<const std::uint8_t> username,
-                                           std::string_view realm,
-                                           std::string_view password,
-                                           bool complete);
+std::array<std::uint8_t, hash_sizes::sha1> msg_integrity(std::span<const std::uint8_t> buffer,
+                                                         std::span<const std::uint8_t> username,
+                                                         std::string_view realm,
+                                                         std::string_view password,
+                                                         bool complete);
 
 
 } // detail, stun, ember

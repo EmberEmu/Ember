@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2024 Ember
+ * Copyright (c) 2015 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,6 +8,7 @@
 
 #include <login/Patcher.h>
 #include <shared/database/daos/base/Patch.h>
+#include <shared/utility/HashDefines.h>
 #include <gtest/gtest.h>
 #include <numeric>
 #include <span>
@@ -71,22 +72,22 @@ TEST(PatcherTest, LoadMD5) {
 	ASSERT_EQ(dao.update_count, 4);
 	ASSERT_EQ(meta.size(), 4);
 
-	const std::array<std::uint8_t, 16> md5_1_to_2 {
+	const std::array<std::uint8_t, hash_sizes::md5> md5_1_to_2 {
 		0x55, 0xa5, 0x40, 0x08, 0xad, 0x1b, 0xa5, 0x89,
 		0xaa, 0x21, 0x0d, 0x26, 0x29, 0xc1, 0xdf, 0x41
 	};
 
-	const std::array<std::uint8_t, 16> md5_2_to_3 {
+	const std::array<std::uint8_t, hash_sizes::md5> md5_2_to_3 {
 		0x9e, 0x68, 0x8c, 0x58, 0xa5, 0x48, 0x7b, 0x8e,
 		0xaf, 0x69, 0xc9, 0xe1, 0x00, 0x5a, 0xd0, 0xbf
 	};
 
-	const std::array<std::uint8_t, 16> md5_3_to_4 {
+	const std::array<std::uint8_t, hash_sizes::md5> md5_3_to_4 {
 		0x86, 0x66, 0x68, 0x35, 0x06, 0xaa, 0xcd, 0x90,
 		0x0b, 0xbd, 0x5a, 0x74, 0xac, 0x4e, 0xdf, 0x68
 	};
 
-	const std::array<std::uint8_t, 16> md5_1_to_4 {
+	const std::array<std::uint8_t, hash_sizes::md5> md5_1_to_4 {
 		0xec, 0x7f, 0x7e, 0x7b, 0xb4, 0x37, 0x42, 0xce,
 		0x86, 0x81, 0x45, 0xf7, 0x1d, 0x37, 0xb5, 0x3c
 	};
