@@ -36,11 +36,6 @@ using namespace detail;
 using clientopts = int;
 constexpr clientopts SUPPRESS_BANNER = 0x01;
 
-enum class Protocol {
-	tcp,
-	udp
-};
-
 class Client final {
 	const int TX_RM = 16; // RFC drops magic number, refuses to elaborate
 	const int MAX_REDIRECTS = 5;

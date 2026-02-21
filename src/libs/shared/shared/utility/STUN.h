@@ -21,17 +21,11 @@ namespace po = boost::program_options;
 namespace ember {
 
 inline static stun::Client create_stun_client(const po::variables_map& args) {
-	const auto& proto_arg = args["stun.protocol"].as<std::string>();
-
-	if(proto_arg != "tcp" && proto_arg != "udp") {
-		throw std::invalid_argument("Invalid STUN protocol argument");
-	}
-
 	return stun::Client(
 		args["network.interface"].as<std::string>(),
 		args["stun.server"].as<std::string>(),
 		args["stun.port"].as<std::uint16_t>(),
-		proto_arg == "tcp"? stun::Protocol::tcp : stun::Protocol::udp
+		args["stun.protocol"].as<stun::Protocol>()
 	);
 }
 

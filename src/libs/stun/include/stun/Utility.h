@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Ember
+ * Copyright (c) 2024 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,6 +11,7 @@
 #include <stun/Protocol.h>
 #include <boost/asio/ip/address.hpp>
 #include <algorithm>
+#include <istream>
 #include <optional>
 #include <span>
 #include <stdexcept>
@@ -41,6 +42,22 @@ std::optional<T> retrieve_attribute(std::span<const attributes::Attribute> attrs
 	}
 
 	return std::nullopt;
+}
+
+// for use by Boost Program Options
+inline std::istream& operator>>(std::istream& in, Protocol& protocol) {
+	std::string token;
+	in >> token;
+
+	if(token == "tcp") {
+		protocol = Protocol::tcp;
+	} else if(token == "udp") {
+		protocol = Protocol::udp;
+	} else {
+		in.setstate(std::ios_base::failbit);
+	}
+
+	return in;
 }
 
 } // stun, ember

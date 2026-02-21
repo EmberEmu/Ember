@@ -50,6 +50,11 @@ constexpr std::uint8_t CHANGE_PORT_MASK = 0x01 << 1;
 
 constexpr std::uint32_t MAGIC_COOKIE = 0x2112A442;
 
+enum class Protocol {
+	tcp,
+	udp
+};
+
 enum class AddressFamily : std::uint8_t {
 	ipv4 = 1,
 	ipv6 = 2
