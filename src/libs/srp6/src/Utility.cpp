@@ -12,6 +12,7 @@
 #include <boost/assert.hpp>
 #include <algorithm>
 #include <array>
+#include <ranges>
 
 constexpr auto sha1_len = 20u;
 
@@ -153,8 +154,8 @@ Botan::BigInt generate_client_proof(const std::string_view identifier, const Ses
 	hasher->update(identifier.data());
 	hasher->final(i_hash.data());
 	
-	for(std::size_t i = 0, j = n_hash.size(); i < j; ++i) {
-		n_hash[i] ^= g_hash[i];
+	for(auto [n_byte, g_byte] : std::views::zip(n_hash, g_hash)) {
+		n_byte ^= g_byte;
 	}
 
 	hasher->update(n_hash);
