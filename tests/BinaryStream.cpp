@@ -988,6 +988,7 @@ struct Foo {
 
 TEST(BinaryStream, ExperimentalSerialise) {
 	std::array<char, 32> buffer{};
+
 	spark::io::BufferAdaptor adaptor(buffer, spark::io::init_empty);
 	spark::io::BinaryStream stream(adaptor);
 

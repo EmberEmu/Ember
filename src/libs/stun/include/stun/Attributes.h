@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Ember
+ * Copyright (c) 2024 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,6 +9,7 @@
 #pragma once
 
 #include <stun/Protocol.h>
+#include <shared/utility/HashDefines.h>
 #include <algorithm>
 #include <array>
 #include <string>
@@ -77,11 +78,11 @@ struct ErrorCode {
 };
 
 struct MessageIntegrity {
-	std::array<std::uint8_t, 20> hmac_sha1;
+	std::array<std::uint8_t, hash_sizes::sha160> hmac_sha1;
 };
 
 struct MessageIntegrity256 {
-	std::array<std::uint8_t, 32> hmac_sha256;
+	std::array<std::uint8_t, hash_sizes::sha256> hmac_sha256;
 };
 
 struct Software {

@@ -18,8 +18,9 @@
 namespace ember::hash_sizes {
 
 // todo, use size_t literal when bumping to newer compiler
-static constexpr auto crc32 { 4u };
-static constexpr auto md5   { 16u };
-static constexpr auto sha1  { 20u };
+static constexpr auto crc32  { 4u };
+static constexpr auto md5    { 16u };
+static constexpr auto sha160 { 20u };
+static constexpr auto sha256 { 32u };
 
 } // ember
