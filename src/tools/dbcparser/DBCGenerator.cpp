@@ -105,13 +105,13 @@ public:
 
 	std::vector<char> string_block() {
 		std::vector<char> data(string_block_.size());
-		string_block_.get(data.data(), data.size());
+		string_block_.get(data);
 		return data;
 	}
 
 	std::vector<char> record() {
 		std::vector<char> data(record_.size());
-		record_.get(data.data(), data.size());
+		record_.get(data);
 		return data;
 	}
 };

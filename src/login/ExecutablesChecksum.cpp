@@ -14,18 +14,18 @@
 namespace ember::client_integrity {
 
 std::array<std::uint8_t, hash_sizes::sha160> checksum(std::span<const std::uint8_t> seed,
-                                                    std::span<const std::byte> buffer) {
+                                                      std::span<const std::byte> buffer) {
 	std::array<std::uint8_t, hash_sizes::sha160> res;
 	auto hmac = Botan::MessageAuthenticationCode::create_or_throw("HMAC(SHA-1)");
 	BOOST_ASSERT_MSG(hmac->output_length() == res.size(), "Bad hash size");
-	hmac->set_key(seed.data(), seed.size());
+	hmac->set_key(seed);
 	hmac->update(reinterpret_cast<const std::uint8_t*>(buffer.data()), buffer.size_bytes());
 	hmac->final(res.data());
 	return res;
 }
 
 std::array<std::uint8_t, hash_sizes::sha160> finalise(std::span<const std::uint8_t> checksum,
-                                                    std::span<const std::uint8_t> client_seed) {
+                                                      std::span<const std::uint8_t> client_seed) {
 	std::array<std::uint8_t, hash_sizes::sha160> res;
 	auto hasher = Botan::HashFunction::create_or_throw("SHA-1");
 	BOOST_ASSERT_MSG(hasher->output_length() == res.size(), "Bad hash size");

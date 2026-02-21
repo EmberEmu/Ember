@@ -197,7 +197,7 @@ Botan::BigInt generate_server_proof(const Botan::BigInt& A, const Botan::BigInt&
 }
 
 void generate_salt(std::span<std::uint8_t> buffer) {
-	Botan::AutoSeeded_RNG().randomize(buffer.data(), buffer.size());
+	Botan::AutoSeeded_RNG().randomize(buffer);
 }
 
 Botan::BigInt generate_verifier(const std::string_view identifier, std::string_view password,

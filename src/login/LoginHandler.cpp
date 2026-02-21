@@ -231,7 +231,7 @@ grunt::server::LoginChallenge LoginHandler::build_login_challenge() {
 		packet.pin_salt = pin_salt_ = PINAuthenticator::generate_salt();
 	}
 
-	Botan::AutoSeeded_RNG().randomize(checksum_salt_.data(), checksum_salt_.size());
+	Botan::AutoSeeded_RNG().randomize(checksum_salt_);
 	packet.checksum_salt = checksum_salt_;
 	return packet;
 }
@@ -296,7 +296,7 @@ void LoginHandler::send_reconnect_challenge(const FetchSessionKeyAction& action)
 	grunt::server::ReconnectChallenge response;
 	response.result = grunt::Result::success;
 
-	Botan::AutoSeeded_RNG().randomize(checksum_salt_.data(), checksum_salt_.size());
+	Botan::AutoSeeded_RNG().randomize(checksum_salt_);
 	response.salt = checksum_salt_;
 
 	const auto& [status, key] = action.get_result();

@@ -17,9 +17,9 @@
 namespace ember::client_integrity {
 
 std::array<std::uint8_t, hash_sizes::sha160> checksum(std::span<const std::uint8_t> seed,
-                                                    std::span<const std::byte> buffer);
-
+                                                      std::span<const std::byte> buffer);
+ 
 std::array<std::uint8_t, hash_sizes::sha160> finalise(std::span<const std::uint8_t> checksum,
-                                                    std::span<const std::uint8_t> seed);
+                                                      std::span<const std::uint8_t> seed);
 
 } // client_integrity, ember

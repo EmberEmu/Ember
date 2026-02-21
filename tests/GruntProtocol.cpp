@@ -41,7 +41,7 @@ TEST(GruntProtocol, ClientLoginChallenge) {
 	spark::io::DynamicBuffer<1024> chain;
 	spark::io::pmr::BinaryStream in_stream(chain);
 	spark::io::pmr::BinaryStream out_stream(chain);
-	chain.write(client_login_challenge, packet_size);
+	chain.write(client_login_challenge);
 
 	// deserialise the packet
 	grunt::client::LoginChallenge packet{};
@@ -89,7 +89,7 @@ TEST(GruntProtocol, ClientLoginProof) {
 	spark::io::DynamicBuffer<1024> chain;
 	spark::io::pmr::BinaryStream in_stream(chain);
 	spark::io::pmr::BinaryStream out_stream(chain);
-	chain.write(client_login_proof, packet_size);
+	chain.write(client_login_proof);
 
 	// deserialise the packet
 	grunt::client::LoginProof packet{};
@@ -118,7 +118,7 @@ TEST(GruntProtocol, ClientReconnectProof) {
 	spark::io::DynamicBuffer<1024> chain;
 	spark::io::pmr::BinaryStream in_stream(chain);
 	spark::io::pmr::BinaryStream out_stream(chain);
-	chain.write(client_reconnect_proof, packet_size);
+	chain.write(client_reconnect_proof);
 
 	// deserialise the packet
 	grunt::client::ReconnectProof packet{};
@@ -170,7 +170,7 @@ TEST(GruntProtocol, ClientRequestRealmList) {
 	spark::io::DynamicBuffer<1024> chain;
 	spark::io::pmr::BinaryStream in_stream(chain);
 	spark::io::pmr::BinaryStream out_stream(chain);
-	chain.write(request_realm_list, packet_size);
+	chain.write(request_realm_list);
 
 	// deserialise the packet
 	grunt::client::RequestRealmList packet;
@@ -196,7 +196,7 @@ TEST(GruntProtocol, ServerLoginChallenge) {
 
 	// write the packet bytes into chain
 	spark::io::DynamicBuffer<1024> chain;
-	chain.write(server_login_challenge, packet_size);
+	chain.write(server_login_challenge);
 
 	// deserialise the packet
 	spark::io::pmr::BinaryStream in_stream(chain);
@@ -238,7 +238,7 @@ TEST(GruntProtocol, ServerLoginProof) {
 	spark::io::DynamicBuffer<1024> chain;
 	spark::io::pmr::BinaryStream in_stream(chain);
 	spark::io::pmr::BinaryStream out_stream(chain);
-	chain.write(server_login_proof, packet_size);
+	chain.write(server_login_proof);
 
 	// deserialise the packet
 	grunt::server::LoginProof packet{};
@@ -269,7 +269,7 @@ TEST(GruntProtocol, ServerRealmList) {
 	spark::io::DynamicBuffer<1024> chain;
 	spark::io::pmr::BinaryStream in_stream(chain);
 	spark::io::pmr::BinaryStream out_stream(chain);
-	chain.write(realm_list, packet_size);
+	chain.write(realm_list);
 
 	// deserialise the packet
 	grunt::server::RealmList packet;
@@ -328,7 +328,7 @@ TEST(GruntProtocol, ServerReconnectChallenge) {
 	spark::io::DynamicBuffer<1024> chain;
 	spark::io::pmr::BinaryStream in_stream(chain);
 	spark::io::pmr::BinaryStream out_stream(chain);
-	chain.write(server_reconnect_challenge, packet_size);
+	chain.write(server_reconnect_challenge);
 
 	// deserialise the packet
 	auto packet = grunt::server::ReconnectChallenge();
@@ -365,7 +365,7 @@ TEST(GruntProtocol, ServerReconnectProof) {
 	spark::io::DynamicBuffer<1024> chain;
 	spark::io::pmr::BinaryStream in_stream(chain);
 	spark::io::pmr::BinaryStream out_stream(chain);
-	chain.write(server_reconnect_proof, packet_size);
+	chain.write(server_reconnect_proof);
 
 	// deserialise the packet
 	auto packet = grunt::server::ReconnectProof();

@@ -24,7 +24,7 @@ LoginAuthenticator::LoginAuthenticator(utf8_string username,
 	  salt_(salt.begin(), salt.end()) {}
 
 auto LoginAuthenticator::challenge_reply() const -> ChallengeResponse {
-	Botan::BigInt salt { salt_.data(), salt_.size() };
+	Botan::BigInt salt { salt_ };
 	return { srp_.public_ephemeral(), std::move(salt), gen_ };
 }
 

@@ -202,7 +202,7 @@ void prove_session(ClientContext& ctx, const Botan::BigInt& key) {
 	hasher->update_be(protocol_id);
 	hasher->update(packet->seed);
 	hasher->update_be(boost::endian::native_to_big(auth_ctx.seed));
-	hasher->update(k_bytes.data(), k_bytes.size());
+	hasher->update(k_bytes);
 	hasher->final(hash.data());
 
 	if(hash != packet->digest) {
