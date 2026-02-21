@@ -20,6 +20,7 @@ add_library(${LIBRARY_NAME} STATIC
     src/upnp/SCPDXMLParser.cpp
     include/ports/Protocol.h
     include/ports/Forward.h
+	include/ports/Utility.h
     include/ports/pcp/Client.h
     include/ports/pcp/Results.h
     include/ports/pcp/Daemon.h

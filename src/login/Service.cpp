@@ -24,6 +24,7 @@
 #include <conpool/Policies.h>
 #include <conpool/drivers/AutoSelect.h>
 #include <ports/Forward.h>
+#include <ports/Utility.h>
 #include <shared/metrics/MetricsImpl.h>
 #include <shared/metrics/MetricsPoll.h>
 #include <shared/metrics/Monitor.h>
@@ -303,17 +304,8 @@ void Service::launch(const po::variables_map& args, boost::asio::io_context& ser
 			if(nat && !*nat) {
 				LOG_WARN_SYNC(logger, "Port forwarding skipped as we do not appear to be behind NAT");
 			} else {
-				const auto& mode_str = args["forward.method"].as<std::string>();
+				const auto& mode = args["forward.method"].as<ports::Forward::Method>();
 				const auto& gateway = args["forward.gateway"].as<std::string>();
-				auto mode = ports::Forward::Method::auto_determine;
-
-				if(mode_str == "natpmp") {
-					mode = ports::Forward::Method::pmp_pcp;
-				} else if(mode_str == "upnp") {
-					mode = ports::Forward::Method::upnp;
-				} else if(mode_str != "auto") {
-					throw std::invalid_argument("Unknown port forwarding method");
-				}
 
 				forward = std::make_unique<ports::Forward>(
 					logger, service, mode, interface, gateway, port
@@ -409,7 +401,7 @@ po::options_description Service::options() {
 		("stun.port", po::value<std::uint16_t>()->required())
 		("stun.protocol", po::value<std::string>()->required())
 		("forward.enabled", po::value<bool>()->required())
-		("forward.method", po::value<std::string>()->required())
+		("forward.method", po::value<ports::Forward::Method>()->required())
 		("forward.gateway", po::value<std::string>()->required())
 		("network.interface", po::value<std::string>()->required())
 		("network.port", po::value<std::uint16_t>()->required())
