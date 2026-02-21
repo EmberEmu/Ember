@@ -48,6 +48,7 @@ KeyType interleaved_hash(SmallVector key) {
 
 	auto hasher = Botan::HashFunction::create_or_throw("SHA-1");
 	BOOST_ASSERT_MSG(sha1_len == hasher->output_length(), "Bad hash length");
+
 	std::array<std::uint8_t, sha1_len> g, h;
 	hasher->update(begin.get_ptr(), std::distance(begin, bound));
 	hasher->final(g.data());
@@ -68,6 +69,7 @@ Botan::BigInt scrambler(const Botan::BigInt& A, const Botan::BigInt& B, std::siz
                         Compliance mode) {
 	auto hasher = Botan::HashFunction::create_or_throw("SHA-1");
 	BOOST_ASSERT_MSG(sha1_len == hasher->output_length(), "Bad hash length");
+
 	std::array<std::uint8_t, sha1_len> hash_out;
 	SmallVector vec(padding, boost::container::default_init);
 
@@ -90,9 +92,10 @@ Botan::BigInt scrambler(const Botan::BigInt& A, const Botan::BigInt& B, std::siz
 
 Botan::BigInt compute_k(const Botan::BigInt& g, const Botan::BigInt& N) {
 	//k = H(N, PAD(g)) in SRP6a
-	std::array<std::uint8_t, sha1_len> hash;
 	auto hasher = Botan::HashFunction::create_or_throw("SHA-1");
 	BOOST_ASSERT_MSG(sha1_len == hasher->output_length(), "Bad hash length");
+
+	std::array<std::uint8_t, sha1_len> hash;
 	hasher->update(N.serialize());
 	hasher->update(g.serialize(N.bytes()));
 	hasher->final(hash.data());
@@ -103,8 +106,9 @@ Botan::BigInt compute_x(const std::string_view identifier, std::string_view pass
                         std::span<const std::uint8_t> salt, Compliance mode) {
 	//RFC2945 defines x = H(s | H ( I | ":" | p) )
 	auto hasher = Botan::HashFunction::create_or_throw("SHA-1");
-	std::array<std::uint8_t, sha1_len> hash;
 	BOOST_ASSERT_MSG(hash.size() == hasher->output_length(), "Bad hash length");
+
+	std::array<std::uint8_t, sha1_len> hash;
 	hasher->update(identifier);
 	hasher->update(':');
 	hasher->update(password);
@@ -137,8 +141,9 @@ Botan::BigInt generate_client_proof(const std::string_view identifier, const Ses
                                     std::span<const std::uint8_t> salt) {
 	//M = H(H(N) xor H(g), H(I), s, A, B, K)
 	auto hasher = Botan::HashFunction::create_or_throw("SHA-1");
-	std::array<std::uint8_t, sha1_len> n_hash, g_hash, i_hash, out;
 	BOOST_ASSERT_MSG(sha1_len == hasher->output_length(), "Bad hash length");
+
+	std::array<std::uint8_t, sha1_len> n_hash, g_hash, i_hash, out;
 	const auto& n_enc = detail::encode_flip(N);
 	hasher->update(n_enc);
 	hasher->final(n_hash.data());
@@ -174,6 +179,7 @@ Botan::BigInt generate_server_proof(const Botan::BigInt& A, const Botan::BigInt&
 	//M = H(A, M, K)
 	auto hasher = Botan::HashFunction::create_or_throw("SHA-1");
 	BOOST_ASSERT_MSG(sha1_len == hasher->output_length(), "Bad hash length");
+
 	std::array<std::uint8_t, sha1_len> hash_out;
 	const auto& a_enc = detail::encode_flip_1363(A, padding);
 	const auto& proof_enc = detail::encode_flip_1363(proof, sha1_len);
