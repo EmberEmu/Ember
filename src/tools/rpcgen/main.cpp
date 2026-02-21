@@ -53,8 +53,8 @@ int launch(const po::variables_map& args) try {
 }
 
 void configure_logger(log::Logger& logger, const po::variables_map& args) {
-	const auto& con_verbosity = log::severity_string(args["verbosity"].as<std::string>());
-	const auto& file_verbosity = log::severity_string(args["fverbosity"].as<std::string>());
+	const auto con_verbosity = args["verbosity"].as<log::Severity>();
+	const auto file_verbosity = args["fverbosity"].as<log::Severity>();
 	
 	auto fsink = std::make_unique<log::FileSink>(
 		file_verbosity, log::Filter(0), "rpcgen.log", log::FileSink::Mode::append
@@ -74,9 +74,9 @@ po::variables_map parse_arguments(const int argc, const char* argv[]) {
 		("out,o",     po::value<std::string>()->required(), "Output directory for generated code")
 		("tpl,t",     po::value<std::string>()->default_value("templates/"),
 			"Path to the templates")
-		("verbosity,v", po::value<std::string>()->default_value("info"),
+		("verbosity,v", po::value<log::Severity>()->default_value(log::Severity::info),
 			"Logging verbosity")
-		("fverbosity", po::value<std::string>()->default_value("disabled"),
+		("fverbosity", po::value<log::Severity>()->default_value(log::Severity::disabled),
 			"File logging verbosity");
 
 	po::variables_map options;

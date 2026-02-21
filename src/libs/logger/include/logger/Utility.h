@@ -10,6 +10,7 @@
 
 #include <logger/Severity.h>
 #include <shared/utility/cstring_view.hpp>
+#include <iostream>
 #include <span>
 #include <string>
 #include <string_view>
@@ -19,6 +20,8 @@
 namespace ember::log { 
 
 Severity severity_string(const std::string_view severity);
+std::istream& operator>>(std::istream& in, Severity& severity);
+std::ostream& operator<<(std::ostream& stream, const Severity& severity);
 
 namespace detail {
 

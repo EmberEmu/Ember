@@ -11,6 +11,7 @@
 #include <logger/Severity.h>
 #include <logger/HelperMacros.h>
 #include <logger/GlobalLogger.h>
+#include <logger/Utility.h>
 #include <format>
 #include <memory>
 #include <string>
@@ -33,7 +34,7 @@ public:
 	~Logger();
 
 	void fmt_write(const Severity severity, std::string_view fmt) {
-		*this << severity << fmt;
+		//*this << severity << fmt;
 		finalise();
 	}
 
