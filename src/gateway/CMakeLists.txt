@@ -58,7 +58,6 @@ set(LIBRARY_HDR
 
 set(LIBRARY_SRC
     EventDispatcher.cpp
-    Locator.cpp
     SessionManager.cpp
     ClientConnection.cpp
     RealmService.cpp
