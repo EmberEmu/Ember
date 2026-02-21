@@ -31,7 +31,6 @@
 #include <shared/threading/Utility.h>
 #include <shared/database/daos/IPBanDAO.h>
 #include <shared/database/daos/PatchDAO.h>
-
 #include <shared/database/daos/RealmDAO.h>
 #include <shared/database/daos/UserDAO.h>
 #include <shared/game/GameVersion.h>

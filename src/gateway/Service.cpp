@@ -23,6 +23,7 @@
 #include <logger/Logger.h>
 #include <nsd/NSD.h>
 #include <ports/Forward.h>
+#include <ports/Utility.h>
 #include <spark/Server.h>
 #include <shared/utility/EnumHelper.h>
 #include <shared/database/daos/RealmDAO.h>
@@ -109,7 +110,7 @@ void Service::launch(const po::variables_map& args, ServicePool& service_pool) t
 #endif
 	print_lib_versions(logger);
 
-	const auto allowed_builds = args["gateway.builds"].as<std::vector<GameVersion>>();
+	const auto allowed_builds = args["realm.builds"].as<std::vector<GameVersion>>();
 	std::string builds;
 
 	for(const auto& client : allowed_builds) {
@@ -222,17 +223,8 @@ void Service::launch(const po::variables_map& args, ServicePool& service_pool) t
 			if(nat && !*nat) {
 				LOG_WARN_SYNC(logger, "Port forwarding skipped as we do not appear to be behind NAT");
 			} else {
-				const auto& mode_str = args["forward.method"].as<std::string>();
+				const auto& mode = args["forward.method"].as<ports::Forward::Method>();
 				const auto& gateway = args["forward.gateway"].as<std::string>();
-				auto mode = ports::Forward::Method::auto_determine;
-
-				if(mode_str == "natpmp") {
-					mode = ports::Forward::Method::pmp_pcp;
-				} else if(mode_str == "upnp") {
-					mode = ports::Forward::Method::upnp;
-				} else if(mode_str != "auto") {
-					throw std::invalid_argument("Unknown port forwarding method");
-				}
 
 				forward = std::make_unique<ports::Forward>(
 					logger, service, mode, interface, gateway, port
@@ -370,9 +362,9 @@ void print_lib_versions(log::Logger& logger) {
 po::options_description Service::options() {
 	po::options_description opts;
 	opts.add_options()
-		("gateway.builds", po::value<std::vector<GameVersion>>()->composing()->required())
 		("dbc.path", po::value<std::string>()->required())
 		("misc.concurrency", po::value<unsigned int>())
+		("realm.builds", po::value<std::vector<GameVersion>>()->composing()->required())
 		("realm.id", po::value<unsigned int>()->required())
 		("realm.max_slots", po::value<unsigned int>()->required())
 		("realm.reserved_slots", po::value<unsigned int>()->required())
@@ -387,7 +379,7 @@ po::options_description Service::options() {
 		("nsd.host", po::value<std::string>()->required())
 		("nsd.port", po::value<std::uint16_t>()->required())
 		("forward.enabled", po::value<bool>()->required())
-		("forward.method", po::value<std::string>()->required())
+		("forward.method", po::value<ports::Forward::Method>()->required())
 		("forward.gateway", po::value<std::string>()->required())
 		("network.interface", po::value<std::string>()->required())
 		("network.port", po::value<std::uint16_t>()->required())
