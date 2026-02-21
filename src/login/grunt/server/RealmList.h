@@ -136,9 +136,12 @@ public:
 		stream << opcode;
 		stream << std::uint16_t(0); // write placeholder size
 		const auto write_len = write_body(stream);
-		stream.write_seek(spark::io::StreamSeek::sk_backward, write_len + 2);
-		stream << be::native_to_little(gsl::narrow<std::uint16_t>(write_len)); // overwrite size
-		stream.write_seek(spark::io::StreamSeek::sk_forward, write_len);
+		const auto end_pos = stream.total_write();
+
+		// update size field
+		stream.write_seek(spark::io::StreamSeek::sk_stream_absolute, sizeof(opcode));
+		stream << be::native_to_little(gsl::narrow<std::uint16_t>(write_len));
+		stream.write_seek(spark::io::StreamSeek::sk_stream_absolute, end_pos);
 	}
 };
 
