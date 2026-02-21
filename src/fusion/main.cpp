@@ -181,7 +181,8 @@ void launch_dns(const po::variables_map& args, commands::Registry& registry, boo
 		active_logger = &logger;
 	}
 
-	dns::Service service(*active_logger);
+	commands::PrefixedRegistry cmd_register(registry, "mdns_");
+	dns::Service service(*active_logger, cmd_register);
 
 	stop_handlers.emplace_back([&] {
 		service.stop();
@@ -222,7 +223,7 @@ void launch_login(const po::variables_map& args, commands::Registry& registry, b
 	}
 
 	commands::PrefixedRegistry cmd_register(registry, "login_");
-	login::Service service(cmd_register, *active_logger);
+	login::Service service(*active_logger, cmd_register);
 
 	stop_handlers.emplace_back([&] {
 		service.stop();
@@ -239,7 +240,7 @@ void launch_login(const po::variables_map& args, commands::Registry& registry, b
 	std::exit(EXIT_FAILURE);
 }
 
-void launch_gateway(const po::variables_map& args, commands::Registry&, bool share_logger, log::Logger& logger) try {
+void launch_gateway(const po::variables_map& args, commands::Registry& registry, bool share_logger, log::Logger& logger) try {
 	LOG_INFO_SYNC(logger, "Starting gateway service...");
 
 	const auto& conf_path = args["gateway.config"].as<std::string>();
@@ -262,7 +263,8 @@ void launch_gateway(const po::variables_map& args, commands::Registry&, bool sha
 		active_logger = &logger;
 	}
 
-	gateway::Service service(*active_logger);
+	commands::PrefixedRegistry cmd_register(registry, "realm_");
+	gateway::Service service(*active_logger, cmd_register);
 
 	stop_handlers.emplace_back([&] {
 		service.stop();
@@ -302,7 +304,8 @@ void launch_account(const po::variables_map& args, commands::Registry& registry,
 		active_logger = &logger;
 	}
 
-	account::Service service(*active_logger);
+	commands::PrefixedRegistry cmd_register(registry, "account_");
+	account::Service service(*active_logger, cmd_register);
 
 	stop_handlers.emplace_back([&] {
 		service.stop();
@@ -342,7 +345,8 @@ void launch_character(const po::variables_map& args, commands::Registry& registr
 		active_logger = &logger;
 	}
 
-	character::Service service(*active_logger);
+	commands::PrefixedRegistry cmd_register(registry, "character_");
+	character::Service service(*active_logger, cmd_register);
 
 	stop_handlers.emplace_back([&] {
 		service.stop();
@@ -382,7 +386,8 @@ void launch_world(const po::variables_map& args, commands::Registry& registry, b
 		active_logger = &logger;
 	}
 
-	world::Service service(*active_logger);
+	commands::PrefixedRegistry cmd_register(registry, "world_");
+	world::Service service(*active_logger, cmd_register);
 
 	stop_handlers.emplace_back([&] {
 		service.stop();

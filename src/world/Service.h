@@ -9,6 +9,7 @@
 #pragma once
 
 #include <logger/LoggerFwd.h>
+#include <shared/commands/PrefixedRegistry.h>
 #include <shared/utility/cstring_view.hpp>
 #include <boost/program_options/variables_map.hpp>
 #include <boost/program_options/options_description.hpp>
@@ -20,13 +21,15 @@ constexpr cstring_view APP_NAME { "World Server" };
 
 class Service {
 	log::Logger& logger;
+	commands::PrefixedRegistry& cmd_register;
 	std::chrono::steady_clock::time_point start_time;
 
 public:
 	static boost::program_options::options_description options();
 
-	explicit Service(log::Logger& logger)
+	explicit Service(log::Logger& logger, commands::PrefixedRegistry& cmd_register)
 		: logger(logger),
+		  cmd_register(cmd_register),
 		  start_time(std::chrono::steady_clock::now()) {}
 
 	~Service() {
