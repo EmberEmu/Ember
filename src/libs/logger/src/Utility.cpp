@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2025 Ember
+ * Copyright (c) 2015 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -10,6 +10,7 @@
 #include <logger/Exception.h>
 #include <chrono>
 #include <iomanip>
+#include <stdexcept>
 #include <cstring>
 
 namespace ember::log {
@@ -96,11 +97,61 @@ Severity severity_string(const std::string_view severity) {
 		return Severity::ERROR_;
 	} else if(severity == "fatal") {
 		return Severity::fatal;
+	} else if(severity == "console") {
+		return Severity::console;
+	} else if(severity == "console_error") {
+		return Severity::console_error;
 	} else if(severity == "none" || severity == "disabled") {
 		return Severity::disabled;
 	} else {
 		throw exception("Unknown severity passed to severity_string");
 	}
+}
+
+std::istream& operator>>(std::istream& in, Severity& severity) try {
+	std::string token;
+	in >> token;
+	severity = severity_string(token);
+	return in;
+} catch(...) {
+	in.setstate(std::ios_base::failbit);
+	return in;
+}
+
+std::ostream& operator<<(std::ostream& stream, const Severity& severity) {
+	switch(severity) {
+		case Severity::disabled:
+			stream << "disabled";
+			break;
+		case Severity::debug:
+			stream << "debug";
+			break;
+		case Severity::trace:
+			stream << "trace";
+			break;
+		case Severity::warn:
+			stream << "warning";
+			break;
+		case Severity::info:
+			stream << "info";
+			break;
+		case Severity::ERROR_:
+			stream << "error";
+			break;
+		case Severity::fatal:
+			stream << "fatal";
+			break;
+		case Severity::console_error:
+			stream << "console_error";
+			break;
+		case Severity::console:
+			stream << "console";
+			break;
+		default:
+			throw std::invalid_argument("Unknown severity option");
+	}
+
+	return stream;
 }
 
 } // log, ember

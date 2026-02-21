@@ -42,12 +42,15 @@ void handle_options(const po::variables_map& args, const dbc::types::Definitions
 
 int main(int argc, const char* argv[]) try {
 	const auto args = parse_arguments(argc, argv);
-	const auto& con_verbosity = log::severity_string(args["verbosity"].as<std::string>());
-	const auto& file_verbosity = log::severity_string(args["fverbosity"].as<std::string>());
+	const auto con_verbosity = args["verbosity"].as<log::Severity>();
+	const auto file_verbosity = args["fverbosity"].as<log::Severity>();
 
 	auto logger = std::make_unique<log::Logger>();
-	auto fsink = std::make_unique<log::FileSink>(file_verbosity, log::Filter(0),
-	                                             "dbcparser.log", log::FileSink::Mode::append);
+
+	auto fsink = std::make_unique<log::FileSink>(
+		file_verbosity, log::Filter(0), "dbcparser.log", log::FileSink::Mode::append
+	);
+
 	auto consink = std::make_unique<log::ConsoleSink>(con_verbosity, log::Filter(0));
 	consink->colourise(true);
 	logger->add_sink(std::move(consink));
@@ -211,9 +214,9 @@ po::variables_map parse_arguments(const int argc, const char* argv[]) {
 			"Directory to save output to")
 		("templates,t", po::value<std::string>()->default_value("templates/"),
 			"Path to the code generation templates")
-		("verbosity,v", po::value<std::string>()->default_value("info"),
+		("verbosity,v", po::value<log::Severity>()->default_value(log::Severity::info),
 			"Logging verbosity")
-		("fverbosity", po::value<std::string>()->default_value("disabled"),
+		("fverbosity", po::value<log::Severity>()->default_value(log::Severity::disabled),
 			"File logging verbosity")
 		("disk", po::bool_switch(),
 			"Generate files required for loading DBC data from disk")

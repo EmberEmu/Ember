@@ -11,6 +11,7 @@
 #include <logger/Severity.h>
 #include <logger/HelperMacros.h>
 #include <logger/GlobalLogger.h>
+#include <logger/Utility.h>
 #include <format>
 #include <memory>
 #include <string>

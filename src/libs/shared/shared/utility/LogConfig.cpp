@@ -12,7 +12,6 @@
 #include <logger/ConsoleSink.h>
 #include <logger/FileSink.h>
 #include <logger/SyslogSink.h>
-#include <logger/Utility.h>
 #include <string>
 #include <stdexcept>
 #include <utility>
@@ -85,10 +84,8 @@ std::unique_ptr<log::Sink> init_command_sink(const po::variables_map& args, log:
 } // unnamed
 
 void configure_logger(log::Logger& logger, const po::variables_map& args) {
-	log::Severity severity;
-
 	const bool enable_input = args["console_log.enable_input"].as<bool>();
-	severity = log::severity_string(args["console_log.verbosity"].as<std::string>());
+	log::Severity severity = args["console_log.verbosity"].as<log::Severity>();
 
 	if(enable_input) {
 		if(severity != log::Severity::disabled) {
@@ -105,14 +102,14 @@ void configure_logger(log::Logger& logger, const po::variables_map& args) {
 	}
 
 	// file logger
-	severity = log::severity_string(args["file_log.verbosity"].as<std::string>());
+	severity = args["file_log.verbosity"].as<log::Severity>();
 
 	if(severity != log::Severity::disabled) {
 		logger.add_sink(init_file_sink(args, severity));
 	}
 
 	// remote logger
-	severity = log::severity_string(args["remote_log.verbosity"].as<std::string>());
+	severity = args["remote_log.verbosity"].as<log::Severity>();
 
 	if(severity != log::Severity::disabled) {
 		logger.add_sink(init_remote_sink(args, severity));

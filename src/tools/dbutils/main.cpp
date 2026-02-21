@@ -65,8 +65,8 @@ bool pluralise(auto value);
 int main(int argc, const char* argv[]) try {
 	std::cout << "Build " << ember::version::VERSION << " (" << ember::version::GIT_HASH << ")\n";
 	const auto args = parse_arguments(argc, argv);
-	const auto& con_verbosity = log::severity_string(args["verbosity"].as<std::string>());
-	const auto& file_verbosity = log::severity_string(args["fverbosity"].as<std::string>());
+	const auto con_verbosity = args["verbosity"].as<log::Severity>();
+	const auto file_verbosity = args["fverbosity"].as<log::Severity>();
 
 	log::Logger logger;
 
@@ -538,9 +538,9 @@ po::variables_map parse_arguments(const int argc, const char* argv[]) {
 			"Note that not all migrations can be applied transactionally (e.g. DDL queries).")
 		("shutup", po::bool_switch()->default_value(false),
 			"Silence the timed warnings displayed during a updates or a --clean install.")
-		("verbosity,v", po::value<std::string>()->default_value("trace"),
+		("verbosity,v", po::value<log::Severity>()->default_value(log::Severity::trace),
 			"Logging verbosity")
-		("fverbosity", po::value<std::string>()->default_value("disabled"),
+		("fverbosity", po::value<log::Severity>()->default_value(log::Severity::disabled),
 			"File logging verbosity");
 
 	po::variables_map options;
