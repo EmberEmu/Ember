@@ -9,7 +9,10 @@
 #include "Service.h"
 #include <logger/Logger.h>
 #include <banner/Banner.h>
+#include <shared/commands/PrefixedRegistry.h>
+#include <shared/commands/Registry.h>
 #include <shared/threading/Utility.h>
+#include <shared/utility/CommandHelpers.h>
 #include <shared/utility/LogConfig.h>
 #include <shared/utility/Utility.h>
 #include <boost/asio/io_context.hpp>
@@ -26,7 +29,7 @@ using namespace ember;
 namespace po = boost::program_options;
 
 po::variables_map parse_arguments(int argc, const char* argv[]);
-int run(const po::variables_map& args, log::Logger& logger);
+int run(const po::variables_map& args, log::Logger& logger, commands::PrefixedRegistry& cmd_register);
 
 /*
  * We want to do the minimum amount of work required to get 
@@ -47,6 +50,12 @@ int main(int argc, const char* argv[]) try {
 	log::global_logger(logger);
 	LOG_INFO_SYNC(logger, "Logger configured successfully");
 
+	LOG_INFO_SYNC(logger, "Registering command handlers...");
+	commands::Registry registry;
+	commands::PrefixedRegistry cmd_register(registry);
+	utility::register_command_handlers(registry, logger);
+	utility::register_shared_commands(registry, logger);
+
 	const auto ret = run(args, logger);
 	LOG_INFO_SYNC(logger, "{} terminated (return code: {})", character::APP_NAME, ret);
 	return ret;
@@ -55,11 +64,11 @@ int main(int argc, const char* argv[]) try {
 	return EXIT_FAILURE;
 }
 
-int run(const po::variables_map& args, log::Logger& logger) try {
+int run(const po::variables_map& args, log::Logger& logger, commands::PrefixedRegistry& cmd_register) try {
 	boost::asio::io_context io_ctx;
 	boost::asio::signal_set signals(io_ctx, SIGINT, SIGTERM);
 
-	character::Service service(logger);
+	character::Service service(logger, cmd_register);
 
 	signals.async_wait([&](auto ec, auto signal) {
 		if(ec) {

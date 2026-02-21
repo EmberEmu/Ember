@@ -9,6 +9,7 @@
 #pragma once
 
 #include <logger/LoggerFwd.h>
+#include <shared/commands/PrefixedRegistry.h>
 #include <shared/utility/cstring_view.hpp>
 #include <boost/program_options/variables_map.hpp>
 #include <boost/program_options/options_description.hpp>
@@ -31,6 +32,7 @@ class Service {
 	std::binary_semaphore stop_flag { 0 };
 
 	log::Logger& logger;
+	commands::PrefixedRegistry& cmd_register;
 	std::chrono::steady_clock::time_point start_time;
 
 	void launch(const boost::program_options::variables_map& args, ServicePool& service_pool);
@@ -38,8 +40,9 @@ class Service {
 public:
 	static boost::program_options::options_description options();
 
-	explicit Service(log::Logger& logger)
+	explicit Service(log::Logger& logger, commands::PrefixedRegistry& cmd_register)
 		: logger(logger),
+		  cmd_register(cmd_register),
 		  start_time(std::chrono::steady_clock::now()) {}
 
 	~Service() {

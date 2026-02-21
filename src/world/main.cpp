@@ -9,7 +9,10 @@
 #include "Service.h"
 #include <logger/Logger.h>
 #include <banner/Banner.h>
+#include <shared/commands/PrefixedRegistry.h>
+#include <shared/commands/Registry.h>
 #include <shared/threading/Utility.h>
+#include <shared/utility/CommandHelpers.h>
 #include <shared/utility/LogConfig.h>
 #include <shared/utility/Utility.h>
 #include <shared/utility/cstring_view.hpp>
@@ -22,7 +25,7 @@
 using namespace ember;
 namespace po = boost::program_options;
 
-int launch(const po::variables_map& args, log::Logger& logger);
+int launch(const po::variables_map& args, log::Logger& logger, commands::PrefixedRegistry& cmd_register);
 po::variables_map parse_arguments(int argc, const char* argv[]);
 
 /*
@@ -45,7 +48,14 @@ int main(int argc, const char* argv[]) try {
 	log::global_logger(logger);
 
 	LOG_INFO_SYNC(logger, "Logger configured successfully");
-	const auto ret = launch(args, logger);
+
+	LOG_INFO_SYNC(logger, "Registering command handlers...");
+	commands::Registry registry;
+	commands::PrefixedRegistry cmd_register(registry);
+	utility::register_command_handlers(registry, logger);
+	utility::register_shared_commands(registry, logger);
+
+	const auto ret = launch(args, logger, cmd_register);
 	LOG_INFO_SYNC(logger, "{} terminated (return code: {})", world::APP_NAME, ret);
 	return ret;
 } catch(const std::exception& e) {
@@ -53,8 +63,8 @@ int main(int argc, const char* argv[]) try {
 	return EXIT_FAILURE;
 }
 
-int launch(const po::variables_map& args, log::Logger& logger) try {
-	world::Service service(logger);
+int launch(const po::variables_map& args, log::Logger& logger, commands::PrefixedRegistry& cmd_register) try {
+	world::Service service(logger, cmd_register);
 	return service.run(args);
 } catch(const std::exception& e) {
 	LOG_FATAL_SYNC(logger, "{}", e.what());

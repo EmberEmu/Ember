@@ -56,11 +56,11 @@ int main(int argc, const char* argv[]) try {
 	return EXIT_FAILURE;
 }
 
-int run(const po::variables_map& args, log::Logger& logger) try {
+int run(const po::variables_map& args, log::Logger& logger, commands::PrefixedRegistry& cmd_register) try {
 	boost::asio::io_context io_ctx;
 	boost::asio::signal_set signals(io_ctx, SIGINT, SIGTERM);
 
-	gateway::Service service(logger);
+	gateway::Service service(logger, cmd_register);
 
 	signals.async_wait([&](auto ec, auto signal) {
 		if(ec) {
