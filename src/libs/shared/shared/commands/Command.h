@@ -44,7 +44,7 @@ class Command : public std::enable_shared_from_this<Command> {
 	std::size_t required_arg_count() const;
 	std::size_t optional_arg_count() const;
 
-	Command(std::string name);
+	explicit Command(std::string name);
 
 public:
 	struct required {};

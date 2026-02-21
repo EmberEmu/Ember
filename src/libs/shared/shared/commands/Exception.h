@@ -30,7 +30,7 @@ public:
 	parse_error()
 		: parse_error("An exception occurred during command argument parsing") { }
 
-	parse_error(std::string msg)
+	explicit parse_error(std::string msg)
 		: exception(std::move(msg)) { };
 };
 
@@ -39,7 +39,7 @@ public:
 	invalid_type()
 		: invalid_type("Encountered an unexpected argument type") { }
 
-	invalid_type(std::string msg)
+	explicit invalid_type(std::string msg)
 		: exception(std::move(msg)) { };
 };
 

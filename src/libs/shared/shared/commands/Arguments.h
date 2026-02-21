@@ -21,7 +21,7 @@ class Arguments {
 	ArgumentStore args_;
 
 public:
-	Arguments(ArgumentStore args)
+	explicit Arguments(ArgumentStore args)
 		: args_(std::move(args)) {}
 
 	const ArgumentValue& operator[](const std::string& arg_name) const {

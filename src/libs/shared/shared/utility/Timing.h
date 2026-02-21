@@ -29,7 +29,7 @@ class ScopedTimerPeriod final {
 	void set_timer();
 
 public:
-	ScopedTimerPeriod(std::chrono::milliseconds ms);
+	explicit ScopedTimerPeriod(std::chrono::milliseconds ms);
 	~ScopedTimerPeriod();
 
 	bool success() const;
