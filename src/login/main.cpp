@@ -87,7 +87,7 @@ int run(const po::variables_map& args, commands::PrefixedRegistry& cmd_register,
 		io_ctx.run_one();
 	});
 
-	const auto ret =  service.run(args);
+	const auto ret = service.run(args);
 	signals.cancel();
 	return ret;
 } catch(const std::exception& e) {

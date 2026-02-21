@@ -74,7 +74,7 @@ int run(const po::variables_map& args, log::Logger& logger) try {
 		io_ctx.run_one();
 	});
 
-	const auto ret =  service.run(args);
+	const auto ret = service.run(args);
 	signals.cancel();
 	return ret;
 } catch(const std::exception& e) {
