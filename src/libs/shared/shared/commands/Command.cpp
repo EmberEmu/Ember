@@ -53,19 +53,19 @@ Result Command::execute() {
 	return execute({});
 }
 
-Result Command::execute(std::span<const ArgumentValue> arguments) {
+Result Command::execute(std::span<const ArgumentValue> arg_values) {
 	std::shared_ptr<CommandHandler> handler;
 	ArgumentStore arg_store;
 
 	{
 		std::lock_guard guard(mutex_);
 
-		if(auto validation = validate_arg_count(arguments.size()); validation != Result::success) {
+		if(auto validation = validate_arg_count(arg_values.size()); validation != Result::success) {
 			return validation;
 		}
 
 		try {
-			arg_store = std::move(build_argument_store(arguments));
+			arg_store = std::move(build_argument_store(arg_values));
 		} catch(invalid_type&) {
 			return Result::invalid_types;
 		}
@@ -80,7 +80,8 @@ Result Command::execute(std::span<const ArgumentValue> arguments) {
 	// handler copy is used to prevent potential deadlocks if a handler invokes its own command
 	// recursive mutex would still deadlock if the handler spawned a thread that subsequently called
 	// the command again while the handler waited
-	(*handler)(std::move(arg_store));
+	const Arguments arguments(std::move(arg_store));
+	(*handler)(arguments);
 	return Result::success;
 }
 

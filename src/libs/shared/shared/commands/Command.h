@@ -78,7 +78,7 @@ public:
 	std::size_t argument_count() const;
 
 	Result execute();
-	Result execute(std::span<const ArgumentValue> arguments);
+	Result execute(std::span<const ArgumentValue> arg_values);
 
 	Command& operator()(CommandHandler handler);
 	Command& operator()(std::shared_ptr<Command> command);
