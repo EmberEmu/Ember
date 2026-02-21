@@ -58,11 +58,11 @@ public:
 	Command& operator=(Command&&) = delete;
 
 	std::shared_ptr<Command> insert(std::string name);
+	std::shared_ptr<Command> name(std::string name);
 	std::shared_ptr<Command> description(std::string description);
 	std::shared_ptr<Command> argument(std::string argument, ArgumentType type);
 	std::shared_ptr<Command> optional_argument(std::string argument, ArgumentType type);
 	std::shared_ptr<Command> handler(CommandHandler handler);
-	std::shared_ptr<Command> name(std::string description);
 
 	void insert(std::shared_ptr<Command> command);
 	bool erase_argument(const std::string& argument);
