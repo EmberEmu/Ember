@@ -34,4 +34,13 @@ public:
 		: exception(std::move(msg)) { };
 };
 
+class invalid_type : public exception {
+public:
+	invalid_type()
+		: invalid_type("Encountered an unexpected argument type") { }
+
+	invalid_type(std::string msg)
+		: exception(std::move(msg)) { };
+};
+
 } // commands, ember

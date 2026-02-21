@@ -39,22 +39,14 @@ ArgumentStore Command::build_argument_store(std::span<const ArgumentValue> value
 	ArgumentStore arg_store;
 
 	for(auto [value, arg] : std::views::zip(values, args_)) {
+		if(!validate_type(arg.type, value)) {
+			throw invalid_type(arg.name);
+		}
+
 		arg_store.emplace(arg.name, value);
 	}
 
 	return arg_store;
-}
-
-bool Command::validate_types(const ArgumentStore& args) const {
-	for(auto [expected, map] : std::views::zip(args_, args)) {
-		const auto& [_, v] = map;
-
-		if(!validate_type(expected.type, v)) {
-			return false;
-		}
-	}
-
-	return true;
 }
 
 Result Command::execute() {
@@ -72,9 +64,9 @@ Result Command::execute(std::span<const ArgumentValue> arguments) {
 			return validation;
 		}
 
-		arg_store = std::move(build_argument_store(arguments));
-
-		if(!validate_types(arg_store)) {
+		try {
+			arg_store = std::move(build_argument_store(arguments));
+		} catch(invalid_type&) {
 			return Result::invalid_types;
 		}
 

@@ -39,7 +39,6 @@ class Command : public std::enable_shared_from_this<Command> {
 	CommandMap commands_;
 
 	Result validate_arg_count(std::size_t count) const;
-	bool validate_types(const ArgumentStore& args) const;
 	bool validate_type(ArgumentType type, const ArgumentValue& value) const;
 	ArgumentStore build_argument_store(std::span<const ArgumentValue> values) const;
 	std::size_t required_arg_count() const;
