@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 - 2025 Ember
+ * Copyright (c) 2024 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,6 +9,7 @@
 #include <ports/pcp/Client.h>
 #include <ports/upnp/SSDP.h>
 #include <ports/upnp/IGDevice.h>
+#include <ports/Utility.h>
 #include <shared/utility/polyfill/print>
 #include <boost/asio/ip/address.hpp>
 #include <boost/program_options.hpp>
@@ -64,17 +65,11 @@ void use_natpmp(const po::variables_map& args) {
 	const auto external = args["external"].as<std::uint16_t>();
 	const auto& interface = args["interface"].as<std::string>();
 	const auto& gateway = args["gateway"].as<std::string>();
-	const auto& protocol = args["protocol"].as<std::string>();
+	const auto protocol = args["protocol"].as<ports::Protocol>();
 	const auto deletion = args.contains("delete");
 	
-	auto proto = ports::Protocol::tcp;
-
-	if(protocol == "udp") {
-		proto = ports::Protocol::udp;
-	}
-
 	const ports::MapRequest request {
-		.protocol = proto,
+		.protocol = protocol,
 		.internal_port = internal,
 		.external_port = external,
 		.lifetime = deletion? 0u : 7200u
@@ -92,7 +87,7 @@ void use_natpmp(const po::variables_map& args) {
 	std::future<ports::Result> future;
 
 	if(deletion) {
-		future = client.delete_mapping(internal, proto);
+		future = client.delete_mapping(internal, protocol);
 	} else {
 		future = client.add_mapping(request, true);
 	}
@@ -126,19 +121,13 @@ void use_natpmp(const po::variables_map& args) {
 
 void use_upnp(const po::variables_map& args) {
 	const auto& interface = args["interface"].as<std::string>();
-	const auto& protocol = args["protocol"].as<std::string>();
+	const auto protocol = args["protocol"].as<ports::Protocol>();
 	const auto internal = args["internal"].as<std::uint16_t>();
 	const auto external = args["external"].as<std::uint16_t>();
 	const auto deletion = args.contains("delete");
 
 	boost::asio::io_context ctx;
 	ports::upnp::SSDP ssdp(interface, ctx);
-
-	auto proto = ports::Protocol::tcp;
-
-	if(protocol == "udp") {
-		proto = ports::Protocol::udp;
-	}
 
 	ssdp.locate_gateways([&](ports::upnp::LocateResult result) {
 		if(!result) {
@@ -150,7 +139,7 @@ void use_upnp(const po::variables_map& args) {
 			.external = external,
 			.internal = internal,
 			.ttl = 0,
-			.protocol = proto
+			.protocol = protocol
 		};
 
 		auto callback = [&, map](ports::upnp::ErrorCode ec) {
@@ -176,6 +165,12 @@ void use_upnp(const po::variables_map& args) {
 	ctx.run();
 }
 
+void protocol_validate(const ports::Protocol& protocol) {
+	if(protocol == ports::Protocol::all) {
+		throw std::invalid_argument(R"("all" is not a valid protocol option for this tool)");
+	}
+}
+
 po::variables_map parse_arguments(const int argc, const char* argv[]) {
 	po::options_description cmdline_opts("Options");
 	cmdline_opts.add_options()
@@ -186,7 +181,7 @@ po::variables_map parse_arguments(const int argc, const char* argv[]) {
 		("interface,f", po::value<std::string>()->default_value("0.0.0.0"), "Interface to bind to")
 		("gateway,g", po::value<std::string>()->default_value(""), "Gateway address")
 		("delete,d", "Delete mapping")
-		("protocol,p", po::value<std::string>()->default_value("udp"), "Protocol (udp, tcp)");
+		("protocol,p", po::value<ports::Protocol>()->default_value(ports::Protocol::udp)->notifier(protocol_validate), "Protocol (udp, tcp)");
 
 	po::variables_map options;
 	po::store(po::command_line_parser(argc, argv).options(cmdline_opts).run(), options);

@@ -9,7 +9,9 @@
 #pragma once
 
 #include <ports/Forward.h>
+#include <ports/Protocol.h>
 #include <istream>
+#include <ostream>
 
 namespace ember::ports {
 
@@ -29,6 +31,40 @@ inline std::istream& operator>>(std::istream& in, Forward::Method& method) {
 	}
 
 	return in;
+}
+
+// for use by Boost Program Options
+inline std::istream& operator>>(std::istream& in, Protocol& protocol) {
+	std::string token;
+	in >> token;
+
+	if(token == "udp") {
+		protocol = Protocol::udp;
+	} else if(token == "tcp") {
+		protocol = Protocol::tcp;
+	} else if(token == "all") {
+		protocol = Protocol::all;
+	} else {
+		in.setstate(std::ios_base::failbit);
+	}
+
+	return in;
+}
+
+inline std::ostream& operator<<(std::ostream& stream, const Protocol& protocol) {
+	switch(protocol) {
+		case Protocol::all:
+			stream << "all";
+			break;
+		case Protocol::tcp:
+			stream << "tcp";
+			break;
+		case Protocol::udp:
+			stream << "udp";
+			break;
+	}
+
+	return stream;
 }
 
 } // ports, ember
