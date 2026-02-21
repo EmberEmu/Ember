@@ -97,7 +97,7 @@ std::uint32_t fingerprint(std::span<const std::uint8_t> buffer, bool complete) {
 }
 
 // not entirely compliant with the RFC because it's missing a salsprep impl
-std::array<std::uint8_t, hash_sizes::sha1> msg_integrity(std::span<const std::uint8_t> buffer,
+std::array<std::uint8_t, hash_sizes::sha160> msg_integrity(std::span<const std::uint8_t> buffer,
                                                          std::span<const std::uint8_t> username,
                                                          std::string_view realm,
                                                          std::string_view password,
@@ -123,7 +123,7 @@ std::array<std::uint8_t, hash_sizes::sha1> msg_integrity(std::span<const std::ui
 	hasher->update(concat);
 	hasher->final(md5_res.data());
 
-	std::array<std::uint8_t, hash_sizes::sha1> sha1_res;
+	std::array<std::uint8_t, hash_sizes::sha160> sha1_res;
 	auto hmac = Botan::MessageAuthenticationCode::create_or_throw("HMAC(SHA-1)");
 	BOOST_ASSERT_MSG(hmac->output_length() == sha1_res.size(), "Bad hash size");
 	hmac->set_key(md5_res.data(), md5_res.size());
@@ -139,7 +139,7 @@ std::array<std::uint8_t, hash_sizes::sha1> msg_integrity(std::span<const std::ui
 }
 
 // not entirely compliant with the RFC because it's missing a salsprep impl
-std::array<std::uint8_t, hash_sizes::sha1> msg_integrity(std::span<const std::uint8_t> buffer,
+std::array<std::uint8_t, hash_sizes::sha160> msg_integrity(std::span<const std::uint8_t> buffer,
                                                          std::string_view password,
                                                          bool complete) {
 	auto msgi_offset = buffer.size_bytes();
@@ -155,7 +155,7 @@ std::array<std::uint8_t, hash_sizes::sha1> msg_integrity(std::span<const std::ui
 		}
 	}
 
-	std::array<std::uint8_t, hash_sizes::sha1> res;
+	std::array<std::uint8_t, hash_sizes::sha160> res;
 	auto hmac = Botan::MessageAuthenticationCode::create_or_throw("HMAC(SHA-1)");
 	BOOST_ASSERT_MSG(hmac->output_length() == res.size(), "Bad hash size");
 	hmac->set_key(reinterpret_cast<const std::uint8_t*>(password.data()), password.size());

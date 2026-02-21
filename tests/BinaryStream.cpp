@@ -41,13 +41,13 @@ TEST(BinaryStream, MessageReadLimit) {
 
 	// write the ping packet data twice to the buffer
 	spark::io::DynamicBuffer<32> buffer;
-	buffer.write(ping.data(), ping.size());
-	buffer.write(ping.data(), ping.size());
+	buffer.write(ping);
+	buffer.write(ping);
 
 	// read one packet back out (reuse the ping array)
 	spark::io::BinaryStream stream(buffer, ping.size());
 	ASSERT_EQ(stream.read_limit(), ping.size());
-	ASSERT_NO_THROW(stream.get(ping.data(), ping.size()))
+	ASSERT_NO_THROW(stream.get(ping))
 		<< "Failed to read packet back from stream";
 
 	// attempt to read past the stream message bound
@@ -65,15 +65,15 @@ TEST(BinaryStream, BufferLimit) {
 
 	// write the ping packet data to the buffer
 	spark::io::DynamicBuffer<32> buffer;
-	buffer.write(ping.data(), ping.size());
+	buffer.write(ping);
 
 	// read all data back out
 	spark::io::BinaryStream stream(buffer);
-	ASSERT_NO_THROW(stream.get(ping.data(), ping.size()))
+	ASSERT_NO_THROW(stream.get(ping))
 		<< "Failed to read packet back from stream";
 
 	// attempt to read past the buffer bound
-	ASSERT_THROW(stream.get(ping.data(), ping.size()), spark::io::buffer_underrun)
+	ASSERT_THROW(stream.get(ping), spark::io::buffer_underrun)
 		<< "Message boundary was not respected";
 	ASSERT_EQ(stream.state(), spark::io::StreamState::buffer_limit_error)
 		<< "Unexpected stream state";
@@ -145,7 +145,7 @@ TEST(BinaryStream, ReadWriteVector) {
 	std::ranges::iota(in, std::rand() % 100);
 	std::ranges::shuffle(in, std::default_random_engine(seed));
 
-	stream.put(in.begin(), in.end());
+	stream.put(in);
 
 	ASSERT_EQ(stream.size(), in.size() * sizeof(int));
 
@@ -157,11 +157,11 @@ TEST(BinaryStream, ReadWriteVector) {
 		ASSERT_EQ(output, value);
 	}
 
-	stream.put(in.begin(), in.end());
+	stream.put(in);
 	std::vector<int> out(in.size());
 
 	// read the integers to an output buffer and compare both
-	stream.get(out.begin(), out.end());
+	stream.get(out);
 	ASSERT_EQ(in, out);
 	ASSERT_EQ(stream.state(), spark::io::StreamState::ok)
 		<< "Unexpected stream state";
@@ -211,8 +211,8 @@ TEST(BinaryStream, GetPut) {
 	std::vector<std::uint8_t> in { 1, 2, 3, 4, 5 };
 	std::vector<std::uint8_t> out(in.size());
 
-	stream.put(in.data(), in.size());
-	stream.get(out.data(), out.size());
+	stream.put(in);
+	stream.get(out);
 
 	ASSERT_EQ(stream.total_read(), out.size());
 	ASSERT_EQ(stream.total_write(), in.size());
@@ -852,9 +852,9 @@ TEST(BinaryStream, TotalWriteConsistency) {
 	std::array<std::uint32_t, 4> data {};
 	stream.put(data);
 	ASSERT_EQ(stream.total_write(), 104);
-	stream.put(data.data(), data.size());
+	stream.put(data);
 	ASSERT_EQ(stream.total_write(), 120);
-	stream.put(data.begin(), data.end());
+	stream.put(data);
 	ASSERT_EQ(stream.total_write(), 136);
 }
 

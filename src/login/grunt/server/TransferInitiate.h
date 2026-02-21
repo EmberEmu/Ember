@@ -50,7 +50,7 @@ public:
 		stream << gsl::narrow<std::uint8_t>(filename.size());
 		stream << filename.c_str();
 		stream << filesize;
-		stream.put(md5.data(), md5.size());
+		stream.put(md5);
 	}
 };
 

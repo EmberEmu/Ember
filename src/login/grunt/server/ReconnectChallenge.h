@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2024 Ember
+ * Copyright (c) 2015 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -41,8 +41,8 @@ public:
 		
 		stream >> opcode;
 		stream >> result;
-		stream.get(salt.data(), salt.size());
-		stream.get(checksum_salt.data(), checksum_salt.size());
+		stream.get(salt);
+		stream.get(checksum_salt);
 
 		return (state_ = State::done);
 	}
@@ -50,8 +50,8 @@ public:
 	void write_to_stream(spark::io::pmr::BinaryStream& stream) const override {
 		stream << opcode;
 		stream << result;
-		stream.put(salt.data(), salt.size());
-		stream.put(checksum_salt.data(), checksum_salt.size());
+		stream.put(salt);
+		stream.put(checksum_salt);
 	}
 };
 

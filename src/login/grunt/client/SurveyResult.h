@@ -54,7 +54,8 @@ class SurveyResult final : public Packet {
 		 * to fail with machines that have a healthy number of peripherals attached.
 		 */
 		std::vector<std::uint8_t> compressed(compressed_size_);
-		stream.get(&compressed[0], compressed.size());
+		stream.get(compressed);
+
 		int ret = Z_OK;
 
 		data.resize_and_overwrite(MAX_SURVEY_LEN, [&](char* strbuf, std::size_t size) {

@@ -30,8 +30,8 @@ public:
 		: Packet(Opcode::cmd_auth_reconnect_proof) {}
 
 	std::array<std::uint8_t, 16> salt;
-	std::array<std::uint8_t, hash_sizes::sha1> proof;
-	std::array<std::uint8_t, hash_sizes::sha1> client_checksum;
+	std::array<std::uint8_t, hash_sizes::sha160> proof;
+	std::array<std::uint8_t, hash_sizes::sha160> client_checksum;
 	std::uint8_t key_count = 0;
 	std::vector<KeyData> keys;
 
@@ -44,8 +44,8 @@ public:
 
 		stream >> opcode;
 		stream.get(salt);
-		stream.get(proof.data(), proof.size());
-		stream.get(client_checksum.data(), client_checksum.size());
+		stream.get(proof);
+		stream.get(client_checksum);
 		stream >> key_count;
 		// todo, read key data here
 
@@ -54,16 +54,16 @@ public:
 
 	void write_to_stream(spark::io::pmr::BinaryStream& stream) const override {
 		stream << opcode;
-		stream.put(salt.data(), salt.size());
-		stream.put(proof.data(), proof.size());
-		stream.put(client_checksum.data(), client_checksum.size());
+		stream.put(salt);
+		stream.put(proof);
+		stream.put(client_checksum);
 		stream << key_count;
 
 		for (auto& key : keys) {
 			stream << key.len;
 			stream << key.pub_value;
-			stream.put(key.product.data(), key.product.size());
-			stream.put(key.hash.data(), key.hash.size());
+			stream.put(key.product);
+			stream.put(key.hash);
 		}
 	}
 };

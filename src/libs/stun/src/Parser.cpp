@@ -52,7 +52,7 @@ Parser::xor_mapped_address(spark::io::pmr::BinaryStreamReader& stream, const TxI
 		be::big_to_native_inplace(attr.ipv4);
 		attr.ipv4 ^= MAGIC_COOKIE;
 	} else if(attr.family == AddressFamily::ipv6 && mode_ != rfc3489) {
-		stream.get(attr.ipv6.begin(), attr.ipv6.end());
+		stream.get(attr.ipv6);
 		const std::uint32_t cookie[1]{ be::native_to_big(MAGIC_COOKIE) };
 		const auto cookie_bytes = std::as_bytes(std::span(cookie));
 		const auto tx_bytes = std::as_bytes(std::span(id.id_5389));
@@ -103,7 +103,7 @@ Header Parser::read_header() try {
 attributes::MessageIntegrity
 Parser::message_integrity(spark::io::pmr::BinaryStreamReader& stream) {
 	attributes::MessageIntegrity attr{};
-	stream.get(attr.hmac_sha1.begin(), attr.hmac_sha1.end());
+	stream.get(attr.hmac_sha1);
 	return attr;
 }
 
@@ -124,7 +124,7 @@ attributes::Username
 Parser::username(spark::io::pmr::BinaryStreamReader& stream, const std::size_t size) {
 	attributes::Username attr{};
 	attr.value.resize(size);
-	stream.get(attr.value.begin(), attr.value.end());
+	stream.get(attr.value);
 
 	// must be padded to the nearest four bytes
 	if(auto mod = size % 4) {
@@ -376,13 +376,13 @@ std::uint32_t Parser::fingerprint() const {
 	return detail::fingerprint(buffer_, true);
 }
 
-std::array<std::uint8_t, hash_sizes::sha1> Parser::msg_integrity(std::span<const std::uint8_t> username,
+std::array<std::uint8_t, hash_sizes::sha160> Parser::msg_integrity(std::span<const std::uint8_t> username,
                                                                  std::string_view realm,
                                                                  std::string_view password) const {
 	return detail::msg_integrity(buffer_, username, realm, password, true);
 }
 
-std::array<std::uint8_t, hash_sizes::sha1> Parser::msg_integrity(const std::string_view password) const {
+std::array<std::uint8_t, hash_sizes::sha160> Parser::msg_integrity(const std::string_view password) const {
 	return detail::msg_integrity(buffer_, password, true);
 }
 

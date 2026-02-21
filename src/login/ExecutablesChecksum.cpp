@@ -13,9 +13,9 @@
 
 namespace ember::client_integrity {
 
-std::array<std::uint8_t, hash_sizes::sha1> checksum(std::span<const std::uint8_t> seed,
+std::array<std::uint8_t, hash_sizes::sha160> checksum(std::span<const std::uint8_t> seed,
                                                     std::span<const std::byte> buffer) {
-	std::array<std::uint8_t, hash_sizes::sha1> res;
+	std::array<std::uint8_t, hash_sizes::sha160> res;
 	auto hmac = Botan::MessageAuthenticationCode::create_or_throw("HMAC(SHA-1)");
 	BOOST_ASSERT_MSG(hmac->output_length() == res.size(), "Bad hash size");
 	hmac->set_key(seed.data(), seed.size());
@@ -24,9 +24,9 @@ std::array<std::uint8_t, hash_sizes::sha1> checksum(std::span<const std::uint8_t
 	return res;
 }
 
-std::array<std::uint8_t, hash_sizes::sha1> finalise(std::span<const std::uint8_t> checksum,
+std::array<std::uint8_t, hash_sizes::sha160> finalise(std::span<const std::uint8_t> checksum,
                                                     std::span<const std::uint8_t> client_seed) {
-	std::array<std::uint8_t, hash_sizes::sha1> res;
+	std::array<std::uint8_t, hash_sizes::sha160> res;
 	auto hasher = Botan::HashFunction::create_or_throw("SHA-1");
 	BOOST_ASSERT_MSG(hasher->output_length() == res.size(), "Bad hash size");
 	hasher->update(client_seed);

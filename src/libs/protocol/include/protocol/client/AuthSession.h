@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2025 Ember
+ * Copyright (c) 2016 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -52,7 +52,7 @@ struct AuthSession final {
 		stream >> server_id;
 		stream >> spark::io::null_terminated(username);
 		stream >> seed;
-		stream.get(digest.data(), DIGEST_LENGTH);
+		stream.get(digest);
 		
 		// handle compressed addon data
 		be::little_uint32_t decompressed_size;
@@ -109,7 +109,7 @@ struct AuthSession final {
 		stream << server_id;
 		stream << spark::io::null_terminated(username);
 		stream << seed;
-		stream.put(digest.data(), digest.size());
+		stream.put(digest);
 		return stream? StreamResult::success : StreamResult::stream_error;
 	} catch(const std::exception&) {
 		return StreamResult::caught_exception;

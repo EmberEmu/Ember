@@ -141,7 +141,7 @@ public:
 		stream << timezone_bias;
 		stream << ip;
 		stream << gsl::narrow<std::uint8_t>(username.length());
-		stream.put(username.data(), username.length());
+		stream.put(username);
 		const auto end_pos = stream.total_write();
 		const auto size = (end_pos - start_pos) - HEADER_LENGTH;
 

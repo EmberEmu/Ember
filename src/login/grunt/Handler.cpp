@@ -33,6 +33,7 @@ void Handler::dump_bad_packet(const spark::io::buffer_underrun& e,
 
 	// recombobulate the data by serialising the packet
 	curr_packet_->write_to_stream(stream);
+
 	std::vector<std::uint8_t> contig_buff(stream.size());
 	stream.get(contig_buff.data(), stream.size());
 

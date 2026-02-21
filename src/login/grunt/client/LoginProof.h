@@ -45,16 +45,16 @@ class LoginProof final : public Packet {
 		stream >> opcode;
 
 		std::array<std::uint8_t, A_LENGTH> a_buff;
-		stream.get(a_buff.data(), a_buff.size());
+		stream.get(a_buff);
 		std::ranges::reverse(a_buff);
-		A = Botan::BigInt(a_buff.data(), a_buff.size());
+		A = Botan::BigInt(a_buff);
 
 		std::array<std::uint8_t, M1_LENGTH> m1_buff;
-		stream.get(m1_buff.data(), m1_buff.size());
+		stream.get(m1_buff);
 		std::ranges::reverse(m1_buff);
-		M1 = Botan::BigInt(m1_buff.data(), m1_buff.size());
+		M1 = Botan::BigInt(m1_buff);
 
-		stream.get(client_checksum.data(), client_checksum.size());
+		stream.get(client_checksum);
 		stream >> key_count_;
 	}
 
@@ -79,8 +79,8 @@ class LoginProof final : public Packet {
 			return false;
 		}
 
-		stream.get(pin_salt.data(), pin_salt.size());
-		stream.get(pin_hash.data(), pin_hash.size());
+		stream.get(pin_salt);
+		stream.get(pin_hash);
 
 		read_state_ = ReadState::done;
 		return true;
@@ -100,8 +100,8 @@ class LoginProof final : public Packet {
 			KeyData data;
 			stream >> data.len;
 			stream >> data.pub_value;
-			stream.get(data.product.data(), data.product.size());
-			stream.get(data.hash.data(), data.hash.size());
+			stream.get(data.product);
+			stream.get(data.hash);
 			keys.emplace_back(data);
 		}
 
@@ -176,22 +176,22 @@ public:
 		M1.serialize_to(m1_bytes);
 		stream.put(m1_bytes.rbegin(), m1_bytes.rend());
 
-		stream.put(client_checksum.data(), client_checksum.size());
+		stream.put(client_checksum);
 
 		stream << gsl::narrow<std::uint8_t>(keys.size());
 
 		for(auto& key : keys) {
 			stream << key.len;
 			stream << key.pub_value;
-			stream.put(key.product.data(), key.product.size());
-			stream.put(key.hash.data(), key.hash.size());
+			stream.put(key.product);
+			stream.put(key.hash);
 		}
 
 		stream << two_factor_auth;
 
 		if(two_factor_auth) {
-			stream.put(pin_salt.data(), pin_salt.size());
-			stream.put(pin_hash.data(), pin_hash.size());
+			stream.put(pin_salt);
+			stream.put(pin_hash);
 		}
 	}
 };

@@ -78,7 +78,7 @@ public:
 		stream << static_cast<std::uint8_t>(!uuid.is_nil());
 		
 		if(!uuid.is_nil()) {
-			stream.put(uuid.begin(), uuid.end());
+			stream.put(uuid);
 		}
 
 		stream << static_cast<std::uint8_t>(be::native_to_little(pad));
