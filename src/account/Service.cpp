@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 - 2025 Ember
+ * Copyright (c) 2024 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -106,8 +106,12 @@ void Service::launch(const po::variables_map& args, boost::asio::io_context& ser
 	spark::Server spark(service, "account", s_address, s_port, logger);
 	AccountService acct_service(spark, handler, sessions, logger);
 
+	// All done setting up
 	boost::asio::dispatch(service, [&]() {
-		LOG_INFO_SYNC(logger, "{} started successfully", APP_NAME);
+		LOG_INFO_SYNC(logger, "{} started successfully in {}", APP_NAME,
+			std::chrono::duration_cast<std::chrono::milliseconds>(
+				std::chrono::steady_clock::now() - start_time)
+		);
 	});
 
 	stop_flag.acquire();

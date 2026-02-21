@@ -47,6 +47,12 @@ int Service::run(const boost::program_options::variables_map& args) {
 	LOG_INFO_SYNC(logger, "Serving as world server for maps:");
 	print_maps(maps, dbc_store.map, logger);
 
+	// All done setting up
+	LOG_INFO_SYNC(logger, "{} started successfully in {}", APP_NAME,
+		std::chrono::duration_cast<std::chrono::milliseconds>(
+			std::chrono::steady_clock::now() - start_time)
+	);
+
 	map::run(logger);
 
 	return EXIT_SUCCESS;

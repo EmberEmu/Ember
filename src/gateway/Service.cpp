@@ -278,9 +278,14 @@ void Service::launch(const po::variables_map& args, ServicePool& service_pool) t
 
 	LOG_INFO_SYNC(logger, "Started network service on {}:{}", interface, server.port());
 
+	// All done setting up
 	boost::asio::dispatch(service, [&]() {
 		realm_svc.set_online();
-		LOG_INFO_SYNC(logger, "{} started successfully", APP_NAME);
+
+		LOG_INFO_SYNC(logger, "{} started successfully in {}", APP_NAME,
+			std::chrono::duration_cast<std::chrono::milliseconds>(
+				std::chrono::steady_clock::now() - start_time)
+		);
 	});
 
 	stop_flag.acquire();

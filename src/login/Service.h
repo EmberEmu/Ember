@@ -27,8 +27,8 @@ constexpr cstring_view APP_NAME { "Login Daemon" };
 class Service {
 	std::exception_ptr eptr;
 	std::binary_semaphore stop_flag { 0 };
-	log::Logger& logger;
 
+	log::Logger& logger;
 	commands::PrefixedRegistry& cmd_register;
 	std::chrono::steady_clock::time_point start_time;
 
