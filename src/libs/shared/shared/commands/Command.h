@@ -78,6 +78,7 @@ public:
 	CommandMap commands() const;
 	std::size_t argument_count() const;
 
+	Result execute();
 	Result execute(std::span<const ArgumentValue> arguments);
 
 	Command& operator()(CommandHandler handler);

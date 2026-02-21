@@ -57,6 +57,10 @@ bool Command::validate_types(const ArgumentStore& args) const {
 	return true;
 }
 
+Result Command::execute() {
+	return execute({});
+}
+
 Result Command::execute(std::span<const ArgumentValue> arguments) {
 	std::shared_ptr<CommandHandler> handler;
 	ArgumentStore arg_store;
