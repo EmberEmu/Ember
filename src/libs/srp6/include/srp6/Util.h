@@ -23,7 +23,7 @@ namespace ember::srp6 {
 constexpr auto small_vec_length = 32;
 constexpr auto interleave_length = 40;
 
-using SmallVec = boost::container::small_vector<std::uint8_t, small_vec_length>;
+using SmallVector = boost::container::small_vector<std::uint8_t, small_vec_length>;
 using KeyType = boost::container::small_vector<std::uint8_t, interleave_length>;
 
 BOOST_STRONG_TYPEDEF(KeyType, SessionKey);
@@ -35,9 +35,9 @@ enum class Compliance {
 
 namespace detail {
 
-KeyType interleaved_hash(SmallVec key);
-SmallVec encode_flip(const Botan::BigInt& val);
-SmallVec encode_flip_1363(const Botan::BigInt& val, std::size_t padding);
+KeyType interleaved_hash(SmallVector key);
+SmallVector encode_flip(const Botan::BigInt& val);
+SmallVector encode_flip_1363(const Botan::BigInt& val, std::size_t padding);
 Botan::BigInt decode_flip(std::span<std::uint8_t> val);
 Botan::BigInt scrambler(const Botan::BigInt& A, const Botan::BigInt& B, std::size_t padding,
                         Compliance mode);
