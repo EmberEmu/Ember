@@ -35,6 +35,7 @@ set(EXECUTABLE_SRC
     FileBuffer.cpp
     NullBuffer.cpp
     Utilities.cpp
+    Commands.cpp
 )
 
 add_executable(${EXECUTABLE_NAME} ${EXECUTABLE_SRC})
