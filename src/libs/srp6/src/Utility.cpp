@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include <srp6/Util.h>
+#include <srp6/Utility.h>
 #include <botan/hash.h>
 #include <botan/numthry.h>
 #include <boost/assert.hpp>

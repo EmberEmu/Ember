@@ -7,7 +7,7 @@
  */
 
 #include <srp6/Generator.h>
-#include <srp6/Util.h>
+#include <srp6/Utility.h>
 #include "nlohmann/json.hpp"
 #include <boost/program_options.hpp>
 #include <algorithm>

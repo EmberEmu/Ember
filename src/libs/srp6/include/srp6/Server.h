@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <srp6/Util.h>
+#include <srp6/Utility.h>
 #include <srp6/Generator.h>
 #include <srp6/Exception.h>
 #include <botan/auto_rng.h>

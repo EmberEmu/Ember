@@ -8,10 +8,10 @@ set(LIBRARY_NAME srp6)
 
 add_library(${LIBRARY_NAME} STATIC
     src/Generator.cpp
-    src/Util.cpp
+    src/Utility.cpp
     src/Client.cpp
     src/Server.cpp
-    include/srp6/Util.h
+    include/srp6/Utility.h
     include/srp6/Server.h
     include/srp6/Client.h
     include/srp6/Generator.h
