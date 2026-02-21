@@ -10,7 +10,6 @@
 #include "Exception.h"
 #include <algorithm>
 #include <ranges>
-#include <cassert>
 
 namespace ember::commands {
 
