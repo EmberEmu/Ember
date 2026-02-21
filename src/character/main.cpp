@@ -56,7 +56,7 @@ int main(int argc, const char* argv[]) try {
 	utility::register_command_handlers(registry, logger);
 	utility::register_shared_commands(registry, logger);
 
-	const auto ret = run(args, logger);
+	const auto ret = run(args, logger, cmd_register);
 	LOG_INFO_SYNC(logger, "{} terminated (return code: {})", character::APP_NAME, ret);
 	return ret;
 } catch(const std::exception& e) {

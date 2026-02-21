@@ -60,14 +60,14 @@ int main(int argc, const char* argv[]) try {
 	utility::register_command_handlers(registry, logger);
 	utility::register_shared_commands(registry, logger);
 
-	const auto ret = run(args, cmd_register, logger);
+	const auto ret = run(args, logger, cmd_register);
 	LOG_INFO_SYNC(logger, "{} terminated (return code: {})", login::APP_NAME, ret);
 	return ret;
 } catch(const std::exception& e) {
 	std::cerr << e.what();
 }
 
-int run(const po::variables_map& args, commands::PrefixedRegistry& cmd_register, log::Logger& logger) try {
+int run(const po::variables_map& args, log::Logger& logger, commands::PrefixedRegistry& cmd_register) try {
 	boost::asio::io_context io_ctx;
 	boost::asio::signal_set signals(io_ctx, SIGINT, SIGTERM);
 
