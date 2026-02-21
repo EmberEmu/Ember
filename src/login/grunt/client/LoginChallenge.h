@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2025 Ember
+ * Copyright (c) 2015 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -13,7 +13,7 @@
 #include "../Magic.h"
 #include "../Exceptions.h"
 #include "../ResultCodes.h"
-#include "../../GameVersion.h"
+#include <shared/game/GameVersion.h>
 #include <shared/utility/UTF8String.h>
 #include <boost/assert.hpp>
 #include <boost/endian/arithmetic.hpp>

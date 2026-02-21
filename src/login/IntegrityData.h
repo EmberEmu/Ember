@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2024 Ember
+ * Copyright (c) 2016 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,9 +8,9 @@
 
 #pragma once
 
-#include "GameVersion.h"
 #include "grunt/Magic.h"
-#include "shared/utility/FNVHash.h"
+#include <shared/game/GameVersion.h>
+#include <shared/utility/FNVHash.h>
 #include <boost/unordered/unordered_flat_map.hpp>
 #include <optional>
 #include <span>

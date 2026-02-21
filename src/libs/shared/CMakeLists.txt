@@ -121,7 +121,13 @@ set(COMMANDS_SRC
     shared/commands/PrefixedRegistry.h
 )
 
+set(GAME_SRC
+    shared/game/GameVersion.h
+    shared/game/Utility.h
+)
+
 set(LIBRARY_SRC
+    ${GAME_SRC}
     ${DB_OBJECTS}
     ${SHARED_DAOS_SRC}
     ${MYSQL_DAOS_SRC}

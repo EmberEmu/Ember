@@ -20,6 +20,7 @@ namespace ember::gateway {
 
 struct Config {
 	Realm& realm;
+	unsigned int realm_id;
 	unsigned int max_slots;
 	std::chrono::seconds auth_timeout;
 	std::chrono::seconds char_list_timeout;

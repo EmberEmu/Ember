@@ -27,6 +27,8 @@
 #include <shared/utility/EnumHelper.h>
 #include <shared/database/daos/RealmDAO.h>
 #include <shared/database/daos/UserDAO.h>
+#include <shared/game/GameVersion.h>
+#include <shared/game/Utility.h>
 #include <shared/threading/ServicePool.h>
 #include <shared/threading/Utility.h>
 #include <shared/utility/cstring_view.hpp>
@@ -107,6 +109,15 @@ void Service::launch(const po::variables_map& args, ServicePool& service_pool) t
 #endif
 	print_lib_versions(logger);
 
+	const auto allowed_builds = args["gateway.builds"].as<std::vector<GameVersion>>();
+	std::string builds;
+
+	for(const auto& client : allowed_builds) {
+		builds += to_string(client) + " ";
+	}
+
+	LOG_INFO_SYNC(logger, "Allowed client builds: {}", builds);
+
 	auto stun = create_stun_client(args);
 	const auto stun_enabled = args["stun.enabled"].as<bool>();
 	const auto forward_enabled = args["forward.enabled"].as<bool>();
@@ -141,10 +152,13 @@ void Service::launch(const po::variables_map& args, ServicePool& service_pool) t
 	LOG_INFO_SYNC(logger, "Resolving DBC references...");
 	dbc::link(dbc_store);
 
+	const auto realm_id = args["realm.id"].as<unsigned int>();
 	auto realm = load_realm(args, logger);
 	
 	if(!realm) {
-		throw std::invalid_argument("Configured realm ID does not exist in database.");
+		throw std::invalid_argument(
+			std::format("(Configured realm ID {} does not exist in database.", realm_id)
+		);
 	}
 	
 	const auto& title = std::format("{} - {}", APP_NAME, realm->name);
@@ -231,6 +245,7 @@ void Service::launch(const po::variables_map& args, ServicePool& service_pool) t
 
 	Config config {
 		.realm = *realm,
+		.realm_id = realm_id,
 		.max_slots = args["realm.max_slots"].as<unsigned int>(),
 		.auth_timeout = std::chrono::seconds(args["realm.auth_timeout"].as<unsigned int>()),
 		.char_list_timeout = std::chrono::seconds(args["realm.char_list_timeout"].as<unsigned int>())
@@ -252,6 +267,7 @@ void Service::launch(const po::variables_map& args, ServicePool& service_pool) t
 	NetworkServiceDiscovery nds(spark, nsd_host, nsd_port, logger);
 
 	// set services - not the best design pattern but it'll do for now
+	Locator::set(allowed_builds);
 	Locator::set(&dispatcher);
 	Locator::set(&realm_queue);
 	Locator::set(&realm_svc);
@@ -354,6 +370,7 @@ void print_lib_versions(log::Logger& logger) {
 po::options_description Service::options() {
 	po::options_description opts;
 	opts.add_options()
+		("gateway.builds", po::value<std::vector<GameVersion>>()->composing()->required())
 		("dbc.path", po::value<std::string>()->required())
 		("misc.concurrency", po::value<unsigned int>())
 		("realm.id", po::value<unsigned int>()->required())

@@ -9,7 +9,6 @@
 #include "Service.h"
 #include "AccountClient.h"
 #include "FilterTypes.h"
-#include "GameVersion.h"
 #include "IntegrityData.h"
 #include "LoginHandlerBuilder.h"
 #include "MonitorCallbacks.h"
@@ -19,7 +18,6 @@
 #include "RealmList.h"
 #include "SessionBuilders.h"
 #include "Survey.h"
-#include "Utility.h"
 #include <logger/Logger.h>
 #include <conpool/ConnectionPool.h>
 #include <conpool/Policies.h>
@@ -33,8 +31,11 @@
 #include <shared/threading/Utility.h>
 #include <shared/database/daos/IPBanDAO.h>
 #include <shared/database/daos/PatchDAO.h>
+
 #include <shared/database/daos/RealmDAO.h>
 #include <shared/database/daos/UserDAO.h>
+#include <shared/game/GameVersion.h>
+#include <shared/game/Utility.h>
 #include <shared/IPBanCache.h>
 #include <shared/utility/cstring_view.hpp>
 #include <shared/utility/Utility.h>
@@ -131,10 +132,10 @@ void Service::launch(const po::variables_map& args, boost::asio::io_context& ser
 
 	print_lib_versions(logger);
 
-	const auto allowed_clients = args["login.builds"].as<std::vector<GameVersion>>();
+	const auto allowed_builds = args["login.builds"].as<std::vector<GameVersion>>();
 	std::string builds;
 
-	for(const auto& client : allowed_clients) {
+	for(const auto& client : allowed_builds) {
 		builds += to_string(client) + " ";
 	}
 
@@ -201,7 +202,7 @@ void Service::launch(const po::variables_map& args, boost::asio::io_context& ser
 
 	if(args["integrity.enabled"].as<bool>()) {
 		const auto& bin_path = args["integrity.bin_path"].as<std::string>();
-		bin_data.add_versions(allowed_clients, bin_path);
+		bin_data.add_versions(allowed_builds, bin_path);
 	}
 
 	LOG_INFO_SYNC(logger, "Loading patch data...");
@@ -210,7 +211,7 @@ void Service::launch(const po::variables_map& args, boost::asio::io_context& ser
 		args["patches.bin_path"].as<std::string>(), patch_dao
 	);
 
-	Patcher patcher(allowed_clients, patches);
+	Patcher patcher(allowed_builds, patches);
 	Survey survey(args["survey.id"].as<std::uint32_t>());
 
 	if(survey.id()) {

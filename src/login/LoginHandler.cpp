@@ -17,6 +17,7 @@
 #include "grunt/Packets.h"
 #include <logger/Logger.h>
 #include <shared/database/daos/UserDAO.h>
+#include <shared/game/GameVersion.h>
 #include <shared/metrics/Metrics.h>
 #include <shared/utility/EnumHelper.h>
 #include <shared/utility/Utility.h>

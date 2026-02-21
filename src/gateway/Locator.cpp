@@ -10,11 +10,4 @@
 
 namespace ember::gateway {
 
-EventDispatcher* Locator::dispatcher_;
-CharacterClient* Locator::character_;
-AccountClient* Locator::account_;
-RealmService* Locator::realm_;
-RealmQueue* Locator::queue_;
-Config* Locator::config_;
-
 } // gateway, ember

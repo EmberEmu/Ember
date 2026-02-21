@@ -21,6 +21,7 @@
 #include <protocol/PacketHeaders.h>
 #include <protocol/Packets.h>
 #include <spark/buffers/pmr/Buffer.h>
+#include <shared/game/GameVersion.h>
 #include <shared/utility/EnumHelper.h>
 #include <shared/utility/UTF8String.h>
 #include <shared/utility/xoroshiro128plus.h>
@@ -29,6 +30,7 @@
 #include <botan/hash.h>
 #include <boost/assert.hpp>
 #include <boost/container/small_vector.hpp>
+#include <algorithm>
 #include <gsl/narrow>
 #include <utility>
 #include <cstddef>
@@ -80,8 +82,30 @@ void handle_authentication(ClientContext& ctx) {
 		<< auth_ctx.packet->username
 		<< LOG_ASYNC;
 	
-	if(auth_ctx.packet->build == 0) {
-		// todo - check game build & server ID
+	const bool build_res = std::ranges::any_of(Locator::builds(), [&](auto& version) {
+		return version.build == auth_ctx.packet->build;
+	});
+
+	if(auth_ctx.packet->server_id != Locator::config()->realm_id) {
+		CLIENT_DEBUG(ctx.logger, ctx)
+			<< "Incorrect realm ID for "
+			<< auth_ctx.packet->username
+			<< LOG_ASYNC;
+
+		auth_state(ctx, State::failed);
+		ctx.handler.close();
+		return;
+	}
+
+	if(!build_res) {
+		CLIENT_DEBUG(ctx.logger, ctx)
+			<< "Build validation failed for "
+			<< auth_ctx.packet->username
+			<< LOG_ASYNC;
+
+		auth_state(ctx, State::failed);
+		ctx.handler.close();
+		return;
 	}
 
 	auth_state(ctx, State::in_progress);

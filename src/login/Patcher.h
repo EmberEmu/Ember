@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2025 Ember
+ * Copyright (c) 2015 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,11 +8,11 @@
 
 #pragma once
 
-#include "GameVersion.h"
 #include "PatchGraph.h"
 #include "grunt/Magic.h"
 #include <shared/database/daos/PatchDAO.h>
 #include <shared/database/objects/PatchMeta.h>
+#include <shared/game/GameVersion.h>
 #include <shared/utility/FNVHash.h>
 #include <span>
 #include <string>

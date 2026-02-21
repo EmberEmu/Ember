@@ -43,7 +43,6 @@ set(LIBRARY_HDR
     LoginHandler.h
     LoginHandlerBuilder.h
     SessionManager.h
-    GameVersion.h
     Authenticator.h
     RealmList.h
     Actions.h
@@ -63,7 +62,6 @@ set(LIBRARY_HDR
     LoginHandlerFwd.h
     SocketType.h
     Service.h
-    Utility.h
 )
 
 set(LIBRARY_SRC

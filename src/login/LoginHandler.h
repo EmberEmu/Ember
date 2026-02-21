@@ -10,7 +10,6 @@
 
 #include "Actions.h"
 #include "Authenticator.h"
-#include "GameVersion.h"
 #include "LoginHandlerFwd.h"
 #include "LoginState.h"
 #include "PINAuthenticator.h"
