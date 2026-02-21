@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 - 2025 Ember
+ * Copyright (c) 2024 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -29,6 +29,7 @@ static inline constexpr cstring_view APP_NAME { "Realm Gateway" };
 class Service {
 	std::exception_ptr eptr;
 	std::binary_semaphore stop_flag { 0 };
+
 	log::Logger& logger;
 	std::chrono::steady_clock::time_point start_time;
 
@@ -39,9 +40,11 @@ public:
 
 	explicit Service(log::Logger& logger)
 		: logger(logger),
-		  start_time(std::chrono::steady_clock::now()) { }
+		  start_time(std::chrono::steady_clock::now()) {}
 
-	~Service() { stop(); }
+	~Service() {
+		stop();
+	}
 
 	int run(const boost::program_options::variables_map& args);
 	void stop();
