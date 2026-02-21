@@ -131,6 +131,15 @@ void Service::launch(const po::variables_map& args, boost::asio::io_context& ser
 
 	print_lib_versions(logger);
 
+	const auto allowed_clients = args["login.builds"].as<std::vector<GameVersion>>();
+	std::string builds;
+
+	for(const auto& client : allowed_clients) {
+		builds += to_string(client) + " ";
+	}
+
+	LOG_INFO_SYNC(logger, "Allowed client builds: {}", builds);
+
 	auto stun = create_stun_client(args);
 	const auto stun_enabled = args["stun.enabled"].as<bool>();
 	const auto forward_enabled = args["forward.enabled"].as<bool>();
@@ -189,8 +198,6 @@ void Service::launch(const po::variables_map& args, boost::asio::io_context& ser
 	// Load integrity, patch and survey data
 	LOG_INFO_SYNC(logger, "Loading client integrity validation data...");
 	IntegrityData bin_data;
-
-	const auto allowed_clients = args["login.builds"].as<std::vector<GameVersion>>();
 
 	if(args["integrity.enabled"].as<bool>()) {
 		const auto& bin_path = args["integrity.bin_path"].as<std::string>();
@@ -283,14 +290,6 @@ void Service::launch(const po::variables_map& args, boost::asio::io_context& ser
 
 	// Misc. information
 	LOG_INFO_SYNC(logger, "Max allowed sockets: {}", utility::max_sockets_desc());
-
-	std::string builds;
-
-	for(const auto& client : allowed_clients) {
-		builds += to_string(client) + " ";
-	}
-
-	LOG_INFO_SYNC(logger, "Allowed client builds: {}", builds);
 	
 	// Retrieve STUN result and start port forwarding if enabled and STUN succeeded
 	std::unique_ptr<ports::Forward> forward;
