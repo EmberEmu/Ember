@@ -287,7 +287,7 @@ void Service::launch(const po::variables_map& args, boost::asio::io_context& ser
 	std::string builds;
 
 	for(const auto& client : allowed_clients) {
-		builds += to_string(client) + ", ";
+		builds += to_string(client) + " ";
 	}
 
 	LOG_INFO_SYNC(logger, "Allowed client builds: {}", builds);

@@ -13,6 +13,8 @@
 #include <regex>
 #include <istream>
 
+namespace ember {
+
 inline std::istream& operator>>(std::istream& in, GameVersion& version) try {
 	constexpr auto expected_matches = 5;
 
@@ -30,7 +32,7 @@ inline std::istream& operator>>(std::istream& in, GameVersion& version) try {
 	);
 
 	std::smatch matches;
-	
+
 	if(!std::regex_match(build_string, matches, pattern)) {
 		in.setstate(std::ios_base::failbit);
 		return in;
@@ -39,8 +41,8 @@ inline std::istream& operator>>(std::istream& in, GameVersion& version) try {
 	if(matches.size() != expected_matches) {
 		in.setstate(std::ios_base::failbit);
 	}
-	
-	version = GameVersion {
+
+	version = GameVersion{
 		.major = gsl::narrow<std::uint8_t>(std::stoi(matches[1])),
 		.minor = gsl::narrow<std::uint8_t>(std::stoi(matches[2])),
 		.patch = gsl::narrow<std::uint8_t>(std::stoi(matches[3])),
@@ -52,3 +54,5 @@ inline std::istream& operator>>(std::istream& in, GameVersion& version) try {
 	in.setstate(std::ios_base::failbit);
 	return in;
 }
+
+} // ember
