@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "Registry.h"
+#include <commands/Registry.h>
 #include <string>
 #include <string_view>
 

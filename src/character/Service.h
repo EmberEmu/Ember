@@ -9,7 +9,7 @@
 #pragma once
 
 #include <logger/LoggerFwd.h>
-#include <shared/commands/PrefixedRegistry.h>
+#include <commands/PrefixedRegistry.h>
 #include <shared/utility/cstring_view.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/program_options/variables_map.hpp>

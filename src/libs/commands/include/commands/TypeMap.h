@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "ArgumentType.h"
+#include <commands/ArgumentType.h>
 #include <typeindex>
 #include <boost/unordered/unordered_flat_map.hpp>
 

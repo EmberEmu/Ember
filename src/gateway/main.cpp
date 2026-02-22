@@ -9,7 +9,7 @@
 #include "Service.h"
 #include <logger/Logger.h>
 #include <banner/Banner.h>
-#include <shared/commands/PrefixedRegistry.h>
+#include <commands/PrefixedRegistry.h>
 #include <shared/threading/Utility.h>
 #include <shared/utility/CommandHelpers.h>
 #include <shared/utility/LogConfig.h>

@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include "Registry.h"
+#include <commands/Registry.h>
 #include <boost/tokenizer.hpp>
 #include <algorithm>
 #include <ranges>

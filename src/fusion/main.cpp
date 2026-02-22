@@ -14,7 +14,7 @@
 #include <mdns/Service.h>
 #include <world/Service.h>
 #include <logger/Logger.h>
-#include <shared/commands/PrefixedRegistry.h>
+#include <commands/PrefixedRegistry.h>
 #include <shared/utility/CommandHelpers.h>
 #include <shared/utility/cstring_view.hpp>
 #include <shared/threading/Utility.h>

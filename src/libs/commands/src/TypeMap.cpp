@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include "TypeMap.h"
+#include <commands/TypeMap.h>
 #include <string>
 
 namespace ember::commands::detail {

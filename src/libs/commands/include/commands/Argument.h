@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "ArgumentType.h"
+#include <commands/ArgumentType.h>
 #include <string>
 #include <utility>
 

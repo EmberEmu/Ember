@@ -6,9 +6,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include "Command.h"
-#include "Exception.h"
-#include "TypeMap.h"
+#include <commands/Command.h>
+#include <commands/Exception.h>
+#include <commands/TypeMap.h>
 #include <algorithm>
 #include <ranges>
 

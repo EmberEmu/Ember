@@ -9,7 +9,7 @@
 #pragma once
 
 #include <logger/Sink.h>
-#include <shared/commands/Suggestions.h>
+#include <commands/Suggestions.h>
 #include <shared/utility/ConsoleColour.h>
 #include <boost/container/small_vector.hpp>
 #include <atomic>

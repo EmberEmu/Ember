@@ -8,11 +8,11 @@
 
 #pragma once
 
-#include "Argument.h"
-#include "Command.h"
-#include "Exception.h"
-#include "Result.h"
-#include "Suggestions.h"
+#include <commands/Argument.h>
+#include <commands/Command.h>
+#include <commands/Exception.h>
+#include <commands/Result.h>
+#include <commands/Suggestions.h>
 #include <exception>
 #include <functional>
 #include <memory>

@@ -6,8 +6,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include "ScopedCommand.h"
-#include "Command.h"
+#include <commands/ScopedCommand.h>
+#include <commands/Command.h>
 #include <utility>
 
 namespace ember::commands {
