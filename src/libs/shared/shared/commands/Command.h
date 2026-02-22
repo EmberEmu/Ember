@@ -18,9 +18,11 @@
 #include <optional>
 #include <span>
 #include <string>
+#include <typeinfo>
 #include <unordered_map>
 #include <vector>
 #include <cstddef>
+
 
 namespace ember::commands {
 
@@ -43,6 +45,7 @@ class Command : public std::enable_shared_from_this<Command> {
 	ArgumentStore build_argument_store(std::span<const ArgumentValue> values) const;
 	std::size_t required_arg_count() const;
 	std::size_t optional_arg_count() const;
+	const std::type_info& arg_type(const ArgumentValue& v) const;
 
 	explicit Command(std::string name);
 

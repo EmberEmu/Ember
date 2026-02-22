@@ -94,6 +94,8 @@ set(UTIL_SRC
     shared/utility/CommandHelpers.h
     shared/utility/CommandHelpers.cpp
     shared/utility/HashDefines.h
+    shared/commands/TypeMap.h
+    shared/commands/TypeMap.cpp
 )
 
 set(METRICS_SRC

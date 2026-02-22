@@ -8,6 +8,7 @@
 
 #include "Command.h"
 #include "Exception.h"
+#include "TypeMap.h"
 #include <algorithm>
 #include <ranges>
 
@@ -22,6 +23,12 @@ Command::Command(std::string name)
 
 std::shared_ptr<Command> Command::create(std::string name) {
 	return std::shared_ptr<Command>(new Command(std::move(name))); // make_shared can't access ctor
+}
+
+const std::type_info& Command::arg_type(const ArgumentValue& v) const {
+	return std::visit([](auto&&x)->decltype(auto){
+		return typeid(x); 
+	}, v);
 }
 
 auto Command::validate_arg_count(const std::size_t count) const -> Result {
@@ -213,48 +220,12 @@ void Command::clear_commands() {
 }
 
 bool Command::validate_type(ArgumentType type, const ArgumentValue& value) const {
-	switch(type) {
-		case ArgumentType::at_string:
-			if(!std::holds_alternative<std::string>(value)) { return false; }
-			break;
-		case ArgumentType::at_uint8:
-			if(!std::holds_alternative<std::uint8_t>(value)) { return false; }
-			break;
-		case ArgumentType::at_uint16:
-			if(!std::holds_alternative<std::uint16_t>(value)) { return false; }
-			break;
-		case ArgumentType::at_uint32:
-			if(!std::holds_alternative<std::uint32_t>(value)) { return false; }
-			break;
-		case ArgumentType::at_uint64:
-			if(!std::holds_alternative<std::uint64_t>(value)) { return false; }
-			break;
-		case ArgumentType::at_int8:
-			if(!std::holds_alternative<std::int8_t>(value)) { return false; }
-			break;
-		case ArgumentType::at_int16:
-			if(!std::holds_alternative<std::int16_t>(value)) { return false; }
-			break;
-		case ArgumentType::at_int32:
-			if(!std::holds_alternative<std::int32_t>(value)) { return false; }
-			break;
-		case ArgumentType::at_int64:
-			if(!std::holds_alternative<std::int64_t>(value)) { return false; }
-			break;
-		case ArgumentType::at_float:
-			if(!std::holds_alternative<float>(value)) { return false; }
-			break;
-		case ArgumentType::at_double:
-			if(!std::holds_alternative<double>(value)) { return false; }
-			break;
-		case ArgumentType::at_char:
-			if(!std::holds_alternative<char>(value)) { return false; }
-			break;
-		default:
-			return false;
+	if(auto it = types.find(type); it != types.end()) {
+		auto& [_, typeinfo] = *it;
+		return typeinfo == arg_type(value);
 	}
 
-	return true;
+	return false;
 }
 
 std::size_t Command::argument_count() const {
