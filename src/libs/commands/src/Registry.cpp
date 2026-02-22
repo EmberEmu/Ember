@@ -24,6 +24,10 @@ void Registry::insert(std::shared_ptr<Command> command) {
 	root_->insert(std::move(command));
 }
 
+ScopedCommand Registry::scoped_insert(std::shared_ptr<Command> command) {
+	return root_->scoped_insert(command);
+}
+
 std::vector<std::string> Registry::parse_input(const std::string_view input) {
 	std::vector<std::string> tokens;
 	std::string str(input);

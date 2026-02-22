@@ -46,6 +46,7 @@ public:
 
 	std::shared_ptr<Command> insert(std::string name);
 	void insert(std::shared_ptr<Command> command);
+	ScopedCommand scoped_insert(std::shared_ptr<Command> command);
 	std::optional<std::shared_ptr<Command>> erase(const std::string& name);
 	bool erase(const std::shared_ptr<const Command> command);
 

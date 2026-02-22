@@ -27,6 +27,10 @@ public:
 		return registry_.insert(prefix_ + std::string(name));
 	}
 
+	ScopedCommand scoped_insert(std::shared_ptr<Command> command) {
+		return registry_.scoped_insert(command);
+	}
+
 	bool erase(const std::shared_ptr<const Command> command) {
 		return registry_.erase(command);
 	}
