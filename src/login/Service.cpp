@@ -38,6 +38,7 @@
 #include <shared/game/Utility.h>
 #include <shared/IPBanCache.h>
 #include <shared/utility/cstring_view.hpp>
+#include <shared/utility/polyfill/inplace_vector>
 #include <shared/utility/Utility.h>
 #include <shared/utility/xoroshiro128plus.h>
 #include <shared/utility/STUN.h>
@@ -311,19 +312,27 @@ void Service::launch(const po::variables_map& args, boost::asio::io_context& ser
 	}
 
 	// Install service command handlers
-	cmd_register("connections")
+	std::inplace_vector<commands::ScopedCommand, 2> commands;
+	
+	auto handle = cmd_register.scoped_insert(commands::Command::create("connections")
 		->description("Display open connection count")
 		->handler([&](auto& command) {
 			LOG_CONSOLE_ASYNC(logger, "{} active connection(s), {} peak",
 				server.connection_count(), server.peak_connections());
-		});
+		})
+	);
 
-	cmd_register("uptime")
+	commands.emplace_back(std::move(handle));
+
+	handle = cmd_register.scoped_insert(commands::Command::create("uptime")
 		->description("Display service uptime")
 		->handler([&](auto& command) {
 			const auto uptime = std::chrono::steady_clock::now() - start_time;
 			LOG_CONSOLE_ASYNC(logger, "Server has been up for {}", utility::time_duration_format(uptime));
-		});
+		})
+	);
+
+	commands.emplace_back(std::move(handle));
 
 	// All done setting up
 	boost::asio::dispatch(service, [&]() {
