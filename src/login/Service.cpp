@@ -291,31 +291,27 @@ void Service::launch(const po::variables_map& args, boost::asio::io_context& ser
 	// Misc. information
 	LOG_INFO_SYNC(logger, "Max allowed sockets: {}", utility::max_sockets_desc());
 	
-	// Retrieve STUN result and start port forwarding if enabled and STUN succeeded
-	std::unique_ptr<ports::Forward> forward;
-
+	// Retrieve STUN result
 	if(stun_enabled) {
+		LOG_INFO_SYNC(logger, "Waiting on STUN result...");
+
 		const auto result = stun_res.get();
 		log_stun_result(stun, result, port, logger);
+	}
 
-		if(result && forward_enabled) {
-			const auto nat = stun.nat_present().get();
+	// Start port forwarding
+	
+	std::unique_ptr<ports::Forward> forward;
 
-			if(nat && !*nat) {
-				LOG_WARN_SYNC(logger, "Port forwarding skipped as we do not appear to be behind NAT");
-			} else {
-				const auto& mode = args["forward.method"].as<ports::Forward::Method>();
-				const auto& gateway = args["forward.gateway"].as<std::string>();
+	if(forward_enabled) {
+		const auto mode = args["forward.method"].as<ports::Forward::Method>();
+		const auto gateway = args["forward.gateway"].as<std::string>();
 
-				forward = std::make_unique<ports::Forward>(
-					service, mode, interface, gateway, port, [&](auto severity, auto message) {
-						forward_log_callback(severity, message, logger);
-					}
-				);
+		forward = std::make_unique<ports::Forward>(
+			service, mode, interface, gateway, port, [&](auto severity, auto message) {
+				forward_log_callback(severity, message, logger);
 			}
-		} else if(!result && forward_enabled) {
-			LOG_WARN_SYNC(logger, "Port forwarding skipped due to STUN failure");
-		}
+		);
 	}
 
 	// Install service command handlers
