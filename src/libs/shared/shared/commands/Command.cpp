@@ -253,11 +253,6 @@ std::size_t Command::argument_count() const {
 	return args_.size();
 }
 
-std::shared_ptr<Command> Command::name(std::string name) {
-	name_ = std::move(name);
-	return this->shared_from_this();
-}
-
 Command& Command::operator()(std::shared_ptr<Command> command) {
 	this->insert(command);
 	return *this;

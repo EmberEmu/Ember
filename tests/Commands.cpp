@@ -178,12 +178,6 @@ TEST_F(Commands, ClearCommands) {
 	ASSERT_TRUE(cmd->commands().empty());
 }
 
-TEST_F(Commands, UpdateName) {
-	auto cmd = registry.search("root").command;
-	cmd->name("new_name");
-	ASSERT_EQ(cmd->name(), "new_name");
-}
-
 TEST_F(Commands, UpdateDescription) {
 	auto cmd = registry.search("root").command;
 	ASSERT_EQ(cmd->description(), "root command");
