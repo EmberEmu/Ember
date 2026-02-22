@@ -144,10 +144,6 @@ void Service::launch(const po::variables_map& args, boost::asio::io_context& ser
 	const auto stun_enabled = args["stun.enabled"].as<bool>();
 	const auto forward_enabled = args["forward.enabled"].as<bool>();
 
-	if(forward_enabled && !stun_enabled) {
-		throw std::invalid_argument("Port forwarding requires STUN to be enabled");
-	}
-
 	std::future<stun::MappedResult> stun_res;
 
 	if(stun_enabled) {
