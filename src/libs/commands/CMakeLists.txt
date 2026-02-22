@@ -14,11 +14,11 @@ add_library(${LIBRARY_NAME} STATIC
     include/commands/Registry.h
     include/commands/Command.h
     include/commands/Argument.h
-    include/commands/Arguments.h
     include/commands/Utility.h
     include/commands/Result.h
     include/commands/Suggestions.h
     include/commands/Exception.h
+    include/commands/ArgumentMap.h
     include/commands/ArgumentType.h
     include/commands/ArgumentValue.h
     include/commands/PrefixedRegistry.h

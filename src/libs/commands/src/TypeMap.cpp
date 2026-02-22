@@ -11,19 +11,19 @@
 
 namespace ember::commands::detail {
 
-const boost::unordered_flat_map<ArgumentType, std::type_index> types {
-	{ ArgumentType::at_string, typeid(std::string),   },
-	{ ArgumentType::at_uint8,  typeid(std::uint8_t),  },
-	{ ArgumentType::at_uint16, typeid(std::uint16_t), },
-	{ ArgumentType::at_uint32, typeid(std::uint32_t), },
-	{ ArgumentType::at_uint64, typeid(std::uint64_t), },
-	{ ArgumentType::at_int8,   typeid(std::int8_t),	  },
-	{ ArgumentType::at_int16,  typeid(std::int16_t),  },
-	{ ArgumentType::at_int32,  typeid(std::int32_t),  },
-	{ ArgumentType::at_int64,  typeid(std::int64_t),  },
-	{ ArgumentType::at_float,  typeid(float),         },
-	{ ArgumentType::at_double, typeid(double),        },
-	{ ArgumentType::at_char,   typeid(char),          },
+const boost::unordered_flat_map<args::Type, std::type_index> types {
+	{ args::Type::at_string, typeid(std::string),   },
+	{ args::Type::at_uint8,  typeid(std::uint8_t),  },
+	{ args::Type::at_uint16, typeid(std::uint16_t), },
+	{ args::Type::at_uint32, typeid(std::uint32_t), },
+	{ args::Type::at_uint64, typeid(std::uint64_t), },
+	{ args::Type::at_int8,   typeid(std::int8_t),	  },
+	{ args::Type::at_int16,  typeid(std::int16_t),  },
+	{ args::Type::at_int32,  typeid(std::int32_t),  },
+	{ args::Type::at_int64,  typeid(std::int64_t),  },
+	{ args::Type::at_float,  typeid(float),         },
+	{ args::Type::at_double, typeid(double),        },
+	{ args::Type::at_char,   typeid(char),          },
 };
 
 } // commands, ember 

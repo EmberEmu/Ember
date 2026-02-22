@@ -19,9 +19,9 @@ public:
 	virtual void SetUp() {
 		auto cmd = registry.insert("root")
 			->description("root command")
-			->argument("arg1", commands::ArgumentType::at_string)
-			->argument("arg2", commands::ArgumentType::at_string)
-			->optional_argument("arg3", commands::ArgumentType::at_uint32)
+			->argument("arg1", commands::args::Type::at_string)
+			->argument("arg2", commands::args::Type::at_string)
+			->optional_argument("arg3", commands::args::Type::at_uint32)
 			->handler([&](auto /*args*/) {
 				success = true;
 			});
@@ -192,19 +192,19 @@ TEST_F(Commands, ArgumentCount) {
 
 TEST_F(Commands, AddArgument) {
 	auto cmd = registry.search("root").command;
-	cmd->optional_argument("arg4", commands::ArgumentType::at_char);
+	cmd->optional_argument("arg4", commands::args::Type::at_char);
 	ASSERT_EQ(cmd->argument_count(), 4);
 }
 
 TEST_F(Commands, AddArgumentOutOfOrder) {
 	auto cmd = registry.search("root").command;
-	ASSERT_THROW(cmd->argument("arg4", commands::ArgumentType::at_char), std::invalid_argument);
+	ASSERT_THROW(cmd->argument("arg4", commands::args::Type::at_char), std::invalid_argument);
 }
 
 TEST_F(Commands, EraseInsertArgument) {
 	auto cmd = registry.search("root").command;
 	ASSERT_TRUE(cmd->erase_argument("arg3"));
-	cmd->argument("arg3", commands::ArgumentType::at_char);
+	cmd->argument("arg3", commands::args::Type::at_char);
 	ASSERT_EQ(cmd->argument_count(), 3);
 }
 
@@ -232,7 +232,7 @@ TEST_F(Commands, ExecuteNoHandler) {
 TEST_F(Commands, Execute_InvalidTypes) {
 	auto cmd = registry.search("root").command;
 
-	std::array<commands::ArgumentValue, 3> args {
+	std::array<commands::args::Value, 3> args {
 		"Are you sure that's the point, Doctor?",
 		"Of course. What else could it be?",
 		"That you should never tell the same lie twice."
@@ -254,7 +254,7 @@ TEST_F(Commands, Execute_MissingArgsEmpty) {
 TEST_F(Commands, Execute_TooManyArgs) {
 	auto cmd = registry.search("root").command;
 
-	std::array<commands::ArgumentValue, 4> args {
+	std::array<commands::args::Value, 4> args {
 		"The", "quick", "brown", "fox"
 	};
 
@@ -264,7 +264,7 @@ TEST_F(Commands, Execute_TooManyArgs) {
 TEST_F(Commands, Execute_MissingArgs) {
 	auto cmd = registry.search("root").command;
 
-	std::array<commands::ArgumentValue, 1> args {
+	std::array<commands::args::Value, 1> args {
 		"jumped",
 	};
 
@@ -274,7 +274,7 @@ TEST_F(Commands, Execute_MissingArgs) {
 TEST_F(Commands, Execute_RequiredArgs_Success) {
 	auto cmd = registry.search("root").command;
 
-	std::array<commands::ArgumentValue, 2> args {
+	std::array<commands::args::Value, 2> args {
 		"over", "the",
 	};
 
@@ -285,7 +285,7 @@ TEST_F(Commands, Execute_RequiredArgs_Success) {
 TEST_F(Commands, Execute_OptionalArgs_Success) {
 	auto cmd = registry.search("root").command;
 
-	std::array<commands::ArgumentValue, 3> args {
+	std::array<commands::args::Value, 3> args {
 		"lazy", "dog", std::uint32_t(42)
 	};
 
@@ -297,20 +297,20 @@ TEST_F(Commands, Execute_AllArgTypes_Success) {
 	auto cmd = registry.search("root").command;
 	cmd->clear_arguments();
 
-	cmd->argument("arg1", commands::ArgumentType::at_string)
-		->argument("arg2", commands::ArgumentType::at_char)
-		->argument("arg3", commands::ArgumentType::at_double)
-		->argument("arg4", commands::ArgumentType::at_float)
-		->argument("arg5", commands::ArgumentType::at_int16)
-		->argument("arg6", commands::ArgumentType::at_int32)
-		->argument("arg7", commands::ArgumentType::at_int64)
-		->argument("arg8", commands::ArgumentType::at_int8)
-		->argument("arg9", commands::ArgumentType::at_uint16)
-		->argument("arg10", commands::ArgumentType::at_uint32)
-		->argument("arg11", commands::ArgumentType::at_uint64)
-		->argument("arg12", commands::ArgumentType::at_uint8);
+	cmd->argument("arg1", commands::args::Type::at_string)
+		->argument("arg2", commands::args::Type::at_char)
+		->argument("arg3", commands::args::Type::at_double)
+		->argument("arg4", commands::args::Type::at_float)
+		->argument("arg5", commands::args::Type::at_int16)
+		->argument("arg6", commands::args::Type::at_int32)
+		->argument("arg7", commands::args::Type::at_int64)
+		->argument("arg8", commands::args::Type::at_int8)
+		->argument("arg9", commands::args::Type::at_uint16)
+		->argument("arg10", commands::args::Type::at_uint32)
+		->argument("arg11", commands::args::Type::at_uint64)
+		->argument("arg12", commands::args::Type::at_uint8);
 
-	std::array<commands::ArgumentValue, 12> args {
+	std::array<commands::args::Value, 12> args {
 		"Hello, world", 'c', 1.0, 1.0f,
 		std::int16_t(0), std::int32_t(0), std::int64_t(0), std::int8_t(0),
 		std::uint16_t(0), std::uint32_t(0), std::uint64_t(0), std::uint8_t(0)

@@ -9,7 +9,8 @@
 #pragma once
 
 #include <commands/Argument.h>
-#include <commands/Arguments.h>
+#include <commands/ArgumentMap.h>
+#include <commands/ArgumentValue.h>
 #include <commands/ArgumentType.h>
 #include <commands/Result.h>
 #include <commands/ScopedCommand.h>
@@ -28,7 +29,7 @@ namespace ember::commands {
 
 class Command;
 
-using CommandHandler = std::function<void(const Arguments&)>;
+using CommandHandler = std::function<void(const args::Map&)>;
 using CommandMap = std::unordered_map<std::string, std::shared_ptr<Command>>;
 
 class Command : public std::enable_shared_from_this<Command> {
@@ -41,12 +42,12 @@ class Command : public std::enable_shared_from_this<Command> {
 	CommandMap commands_;
 
 	Result validate_arg_count(std::size_t count) const;
-	bool validate_type(ArgumentType type, const ArgumentValue& value) const;
-	ArgumentStore build_argument_store(std::span<const ArgumentValue> values) const;
+	bool validate_type(args::Type type, const args::Value& value) const;
+	args::Map build_argument_map(std::span<const args::Value> values) const;
 	std::size_t required_arg_count() const;
 	std::size_t optional_arg_count() const;
 	Result can_execute_handler() const;
-	const std::type_info& arg_type(const ArgumentValue& v) const;
+	const std::type_info& arg_type(const args::Value& v) const;
 
 	explicit Command(std::string name);
 
@@ -63,8 +64,8 @@ public:
 
 	std::shared_ptr<Command> insert(std::string name);
 	std::shared_ptr<Command> description(std::string description);
-	std::shared_ptr<Command> argument(std::string argument, ArgumentType type);
-	std::shared_ptr<Command> optional_argument(std::string argument, ArgumentType type);
+	std::shared_ptr<Command> argument(std::string argument, args::Type type);
+	std::shared_ptr<Command> optional_argument(std::string argument, args::Type type);
 	std::shared_ptr<Command> handler(CommandHandler handler);
 
 	void insert(std::shared_ptr<Command> command);
@@ -83,13 +84,13 @@ public:
 	std::size_t argument_count() const;
 
 	Result execute();
-	Result execute(std::span<const ArgumentValue> arg_values);
+	Result execute(std::span<const args::Value> arg_values);
 
 	Command& operator()(CommandHandler handler);
 	Command& operator()(std::shared_ptr<Command> command);
 	Command& operator()(std::string description);
-	Command& operator()(std::string argument, ArgumentType type, required);
-	Command& operator()(std::string argument, ArgumentType type, optional);
+	Command& operator()(std::string argument, args::Type type, required);
+	Command& operator()(std::string argument, args::Type type, optional);
 };
 
 } // commands, ember
