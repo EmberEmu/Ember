@@ -113,6 +113,7 @@ set(COMMANDS_SRC
     shared/commands/Registry.cpp
     shared/commands/Command.h
     shared/commands/Command.cpp
+    shared/commands/ScopedCommand.cpp
     shared/commands/Argument.h
     shared/commands/Arguments.h
     shared/commands/Utility.h
@@ -122,6 +123,7 @@ set(COMMANDS_SRC
     shared/commands/ArgumentType.h
     shared/commands/ArgumentValue.h
     shared/commands/PrefixedRegistry.h
+    shared/commands/ScopedCommand.h
 )
 
 set(GAME_SRC

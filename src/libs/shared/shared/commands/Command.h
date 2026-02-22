@@ -23,10 +23,10 @@
 #include <vector>
 #include <cstddef>
 
-
 namespace ember::commands {
 
 class Command;
+class ScopedCommand;
 
 using CommandHandler = std::function<void(const Arguments&)>;
 using CommandMap = std::unordered_map<std::string, std::shared_ptr<Command>>;
@@ -68,6 +68,7 @@ public:
 	std::shared_ptr<Command> handler(CommandHandler handler);
 
 	void insert(std::shared_ptr<Command> command);
+	ScopedCommand scoped_insert(std::shared_ptr<Command> command);
 	bool erase_argument(const std::string& argument);
 	void clear_arguments();
 	std::optional<std::shared_ptr<Command>> erase(const std::string& name);
