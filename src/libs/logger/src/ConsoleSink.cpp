@@ -123,7 +123,7 @@ utility::Colour ConsoleSink::severity_colour(Severity severity) {
 	switch(severity) {
 		case Severity::fatal:
 			[[fallthrough]];
-		case Severity::ERROR_:
+		case Severity::error:
 			[[fallthrough]];
 		case Severity::warn:
 			return utility::Colour::light_red;

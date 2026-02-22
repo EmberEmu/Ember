@@ -10,6 +10,7 @@
 #include "FilterTypes.h"
 #include "CharacterHandler.h"
 #include "CharacterService.h"
+#include "LoggingCallbacks.h"
 #include <dbcreader/Reader.h>
 #include <conpool/ConnectionPool.h>
 #include <conpool/Policies.h>
@@ -27,12 +28,9 @@
 #include <cstdint>
 
 namespace po = boost::program_options;
-namespace ep = ember::connection_pool;
 using namespace std::chrono_literals;
 
 namespace ember::character {
-
-void pool_log_callback(ep::Severity, std::string_view message, log::Logger& logger);
 
 /*
  * Starts Asio worker threads, blocking until the launch thread exits
@@ -124,7 +122,10 @@ void Service::launch(const po::variables_map& args, boost::asio::io_context& ser
 	}
 
 	LOG_INFO_SYNC(logger, "Initialising database connection pool...");
-	ep::Pool<decltype(driver), ep::CheckinClean, ep::ExponentialGrowth> pool(driver, min_conns, max_conns, 30s);
+
+	connection_pool::Pool<decltype(driver), connection_pool::CheckinClean, connection_pool::ExponentialGrowth> pool(
+		driver, min_conns, max_conns, 30s
+	);
 	
 	pool.logging_callback([&](auto severity, auto message) {
 		pool_log_callback(severity, message, logger);
@@ -162,31 +163,6 @@ void Service::launch(const po::variables_map& args, boost::asio::io_context& ser
 	LOG_INFO_SYNC(logger, "{} shutting down...", APP_NAME);
 } catch(...) {
 	eptr = std::current_exception();
-}
-
-void pool_log_callback(ep::Severity severity, std::string_view message, log::Logger& logger) {
-#undef ERROR // Windows moment
-
-	switch(severity) {
-		case ep::Severity::debug:
-			LOG_DEBUG(logger) << message << LOG_ASYNC;
-			break;
-		case ep::Severity::info:
-			LOG_INFO(logger) << message << LOG_ASYNC;
-			break;
-		case ep::Severity::warn:
-			LOG_WARN(logger) << message << LOG_ASYNC;
-			break;
-		case ep::Severity::error:
-			LOG_ERROR(logger) << message << LOG_ASYNC;
-			break;
-		case ep::Severity::fatal:
-			LOG_FATAL(logger) << message << LOG_ASYNC;
-			break;
-		default:
-			LOG_ERROR_ASYNC(logger, "Unhandled pool log callback severity");
-			LOG_ERROR(logger) << message << LOG_ASYNC;
-	}
 }
 
 po::options_description Service::options() {

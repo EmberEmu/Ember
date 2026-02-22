@@ -65,7 +65,7 @@ template<typename T>
 auto Parser::extract_utf8_text(spark::io::pmr::BinaryStreamReader& stream, const std::size_t size) {
 	// UTF8 encoded sequence of less than 128 characters (which can be as long as 763 bytes)
 	if(size > 763) {
-		logger_(Verbosity::debug, Error::resp_bad_software_attr);
+		logger_(Severity::debug, Error::resp_bad_software_attr);
 	}
 
 	T attr{};

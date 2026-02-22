@@ -69,7 +69,7 @@ std::string_view severity_string(Severity severity) {
 			return "[warning] ";
 		case Severity::info:
 			return "[info] ";
-		case Severity::ERROR_:
+		case Severity::error:
 			return "[error] ";
 		case Severity::fatal:
 			return "[fatal] ";
@@ -94,7 +94,7 @@ Severity severity_string(const std::string_view severity) {
 	} else if(severity == "warning") {
 		return Severity::warn;
 	} else if(severity == "error") {
-		return Severity::ERROR_;
+		return Severity::error;
 	} else if(severity == "fatal") {
 		return Severity::fatal;
 	} else if(severity == "console") {
@@ -135,7 +135,7 @@ std::ostream& operator<<(std::ostream& stream, const Severity& severity) {
 		case Severity::info:
 			stream << "info";
 			break;
-		case Severity::ERROR_:
+		case Severity::error:
 			stream << "error";
 			break;
 		case Severity::fatal:

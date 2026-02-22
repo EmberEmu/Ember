@@ -10,6 +10,7 @@
 #include "AccountClient.h"
 #include "FilterTypes.h"
 #include "IntegrityData.h"
+#include "LoggingCallbacks.h"
 #include "LoginHandlerBuilder.h"
 #include "MonitorCallbacks.h"
 #include "NetworkListener.h"
@@ -76,7 +77,6 @@ constexpr std::size_t WORKER_NUM_HINT = 32;
 
 namespace ember::login {
 
-void pool_log_callback(ep::Severity, std::string_view message, log::Logger& logger);
 void print_lib_versions(log::Logger& logger);
 
 /*
@@ -151,8 +151,8 @@ void Service::launch(const po::variables_map& args, boost::asio::io_context& ser
 	std::future<stun::MappedResult> stun_res;
 
 	if(stun_enabled) {
-		stun.log_callback([&](const stun::Verbosity verbosity, const stun::Error reason) {
-			stun_log_callback(verbosity, reason, logger);
+		stun.log_callback([&](const stun::Severity severity, const stun::Error reason) {
+			stun_log_callback(severity, reason, logger);
 		});
 
 		LOG_INFO_SYNC(logger, "Starting STUN query...");
@@ -308,7 +308,9 @@ void Service::launch(const po::variables_map& args, boost::asio::io_context& ser
 				const auto& gateway = args["forward.gateway"].as<std::string>();
 
 				forward = std::make_unique<ports::Forward>(
-					logger, service, mode, interface, gateway, port
+					service, mode, interface, gateway, port, [&](auto severity, auto message) {
+						forward_log_callback(severity, message, logger);
+					}
 				);
 			}
 		} else if(!result && forward_enabled) {
@@ -357,29 +359,6 @@ std::unique_ptr<Metrics> Service::start_metrics(boost::asio::io_context& service
 	}
 
 	return metrics;
-}
-
-void pool_log_callback(ep::Severity severity, std::string_view message, log::Logger& logger) {
-	switch(severity) {
-		case ep::Severity::debug:
-			LOG_DEBUG(logger) << message << LOG_ASYNC;
-			break;
-		case ep::Severity::info:
-			LOG_INFO(logger) << message << LOG_ASYNC;
-			break;
-		case ep::Severity::warn:
-			LOG_WARN(logger) << message << LOG_ASYNC;
-			break;
-		case ep::Severity::error:
-			LOG_ERROR(logger) << message << LOG_ASYNC;
-			break;
-		case ep::Severity::fatal:
-			LOG_FATAL(logger) << message << LOG_ASYNC;
-			break;
-		default:
-			LOG_ERROR_ASYNC(logger, "Unhandled pool log callback severity");
-			LOG_ERROR(logger) << message << LOG_ASYNC;
-	}
 }
 
 po::options_description Service::options() {

@@ -114,7 +114,7 @@ void Client::handle_message(std::span<const std::uint8_t> buffer) try {
 	std::lock_guard guard(mutex_);
 
 	if(buffer.size() < HEADER_LENGTH) {
-		logger_(Verbosity::debug, Error::resp_buffer_lt_header);
+		logger_(Severity::debug, Error::resp_buffer_lt_header);
 		return; // RFC says invalid messages should be discarded
 	}
 
@@ -127,7 +127,7 @@ void Client::handle_message(std::span<const std::uint8_t> buffer) try {
 	const auto hash = generate_key(header.tx_id, mode_);
 
 	if(tx_ && tx_->key != hash) {
-		logger_(Verbosity::debug, Error::resp_tx_not_found);
+		logger_(Severity::debug, Error::resp_tx_not_found);
 		return;
 	}
 
@@ -140,7 +140,7 @@ void Client::handle_message(std::span<const std::uint8_t> buffer) try {
 
 	process_message(buffer);
 } catch(const spark::exception& e) {
-	logger_(Verbosity::debug, Error::buffer_parse_error);
+	logger_(Severity::debug, Error::buffer_parse_error);
 }
 
 void Client::process_message(std::span<const std::uint8_t> buffer) try {

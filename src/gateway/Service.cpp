@@ -7,15 +7,16 @@
  */
 
 #include "Service.h"
-#include "Config.h"
-#include "Locator.h"
-#include "FilterTypes.h"
-#include "RealmQueue.h"
 #include "AccountClient.h"
-#include "EventDispatcher.h"
 #include "CharacterClient.h"
-#include "RealmService.h"
+#include "Config.h"
+#include "EventDispatcher.h"
+#include "FilterTypes.h"
+#include "Locator.h"
+#include "LoggingCallbacks.h"
 #include "NetworkListener.h"
+#include "RealmQueue.h"
+#include "RealmService.h"
 #include <conpool/ConnectionPool.h>
 #include <conpool/Policies.h>
 #include <conpool/drivers/AutoSelect.h>
@@ -58,12 +59,10 @@
 using namespace std::chrono_literals;
 
 namespace po = boost::program_options;
-namespace ep = ember::connection_pool;
 
 namespace ember::gateway {
 
 std::optional<Realm> load_realm(const po::variables_map& args, log::Logger& logger);
-void pool_log_callback(ep::Severity, std::string_view message, log::Logger& logger);
 std::string_view category_name(const Realm& realm, const dbc::Store<dbc::Cfg_Categories>& dbc);
 void print_lib_versions(log::Logger& logger);
 
@@ -130,8 +129,8 @@ void Service::launch(const po::variables_map& args, ServicePool& service_pool) t
 	std::future<stun::MappedResult> stun_res;
 
 	if(stun_enabled) {
-		stun.log_callback([&](const stun::Verbosity verbosity, const stun::Error reason) {
-			stun_log_callback(verbosity, reason, logger);
+		stun.log_callback([&](const stun::Severity severity, const stun::Error reason) {
+			stun_log_callback(severity, reason, logger);
 		});
 
 		LOG_INFO_SYNC(logger, "Starting STUN query...");
@@ -227,7 +226,9 @@ void Service::launch(const po::variables_map& args, ServicePool& service_pool) t
 				const auto& gateway = args["forward.gateway"].as<std::string>();
 
 				forward = std::make_unique<ports::Forward>(
-					logger, service, mode, interface, gateway, port
+					service, mode, interface, gateway, port, [&](auto severity, auto message) {
+						forward_log_callback(severity, message, logger);
+					}
 				);
 			}
 		} else if(!result && forward_enabled) {
@@ -315,7 +316,10 @@ std::optional<Realm> load_realm(const po::variables_map& args, log::Logger& logg
 	auto driver(drivers::init_db_driver(db_config_path, "login"));
 
 	LOG_INFO_SYNC(logger, "Initialising database connection pool...");
-	ep::Pool<decltype(driver), ep::CheckinClean, ep::ExponentialGrowth> pool(driver, 1, 1, 30s);
+
+	connection_pool::Pool<decltype(driver), connection_pool::CheckinClean, connection_pool::ExponentialGrowth> pool(
+		driver, 1, 1, 30s
+	);
 	
 	pool.logging_callback([&](auto severity, auto message) {
 		pool_log_callback(severity, message, logger);
@@ -326,29 +330,6 @@ std::optional<Realm> load_realm(const po::variables_map& args, log::Logger& logg
 
 	LOG_INFO_SYNC(logger, "Retrieving realm information...");
 	return realm_dao.get_realm(args["realm.id"].as<unsigned int>());
-}
-
-void pool_log_callback(ep::Severity severity, std::string_view message, log::Logger& logger) {
-	switch(severity) {
-		case ep::Severity::debug:
-			LOG_DEBUG(logger) << message << LOG_ASYNC;
-			break;
-		case ep::Severity::info:
-			LOG_INFO(logger) << message << LOG_ASYNC;
-			break;
-		case ep::Severity::warn:
-			LOG_WARN(logger) << message << LOG_ASYNC;
-			break;
-		case ep::Severity::error:
-			LOG_ERROR(logger) << message << LOG_ASYNC;
-			break;
-		case ep::Severity::fatal:
-			LOG_FATAL(logger) << message << LOG_ASYNC;
-			break;
-		default:
-			LOG_ERROR_ASYNC(logger, "Unhandled pool log callback severity");
-			LOG_ERROR(logger) << message << LOG_ASYNC;
-	}
 }
 
 void print_lib_versions(log::Logger& logger) {

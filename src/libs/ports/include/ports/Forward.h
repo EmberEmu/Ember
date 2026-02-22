@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <logger/Logger.h>
+#include <ports/LogSeverity.h>
 #include <ports/pcp/Client.h>
 #include <ports/pcp/Daemon.h>
 #include <ports/upnp/SSDP.h>
@@ -16,6 +16,7 @@
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/deadline_timer.hpp>
 #include <atomic>
+#include <functional>
 #include <semaphore>
 #include <memory>
 #include <string>
@@ -37,6 +38,8 @@ class Forward final {
 	static constexpr auto timeout_interval = 10s;
 
 public:
+	using LogCallback = std::function<void(Severity, const std::string_view)>;
+
 	enum class Method {
 		upnp,
 		pmp_pcp,
@@ -44,7 +47,6 @@ public:
 	};
 
 	boost::asio::io_context& ctx_;
-	log::Logger& logger_;
 	std::uint16_t port_;
 	std::atomic_bool mapping_active_;
 	std::unique_ptr<ports::Client> client_;
@@ -53,8 +55,12 @@ public:
 	std::shared_ptr<ports::upnp::IGDevice> upnp_device_;
 	boost::asio::steady_timer timer_;
 	std::binary_semaphore shutdown_wait_;
+	LogCallback log_cb_;
 
-	std::string_view error_string(const Error& error);
+	template<typename ... Args>
+	void log(Severity severity, const std::format_string<Args...> fmt, Args&& ...args) const;
+
+	std::string_view error_string(const Error& error) const;
 	void begin_forwarding(Method Method, const std::string& iface, const std::string& gateway, std::uint16_t port);
 	void try_pmp(const std::string& iface, const std::string& gateway, std::uint16_t port);
 	void start_upnp(const std::string& iface, std::uint16_t port);
@@ -65,8 +71,8 @@ public:
 	void unmap_pmp();
 
 public:
-	Forward(log::Logger& logger, boost::asio::io_context& ctx, Method method,
-	        const std::string& iface, const std::string& gateway, std::uint16_t port);
+	Forward(boost::asio::io_context& ctx, Method method, const std::string& iface,
+			const std::string& gateway, std::uint16_t port, LogCallback cb = {});
 
 	~Forward();
 	void unmap();

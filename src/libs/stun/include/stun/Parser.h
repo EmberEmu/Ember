@@ -32,7 +32,7 @@ namespace be = boost::endian;
 
 class Parser final {
 	RFCMode mode_;
-	LogCB logger_ = [](Verbosity, Error) {};
+	LogCB logger_ = [](Severity, Error) {};
 	const std::span<const std::uint8_t> buffer_;
 
 	// individual attributes

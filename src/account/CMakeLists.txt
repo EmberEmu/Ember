@@ -13,6 +13,7 @@ set(LIBRARY_HDR
     Sessions.h
     AccountHandler.h
     Service.h
+    LoggingCallbacks.h
 )
 
 set(LIBRARY_SRC

@@ -18,6 +18,7 @@ add_library(${LIBRARY_NAME} STATIC
     src/upnp/XMLParser.cpp
     src/upnp/Utility.cpp
     src/upnp/SCPDXMLParser.cpp
+    include/ports/LogSeverity.h
     include/ports/Protocol.h
     include/ports/Forward.h
 	include/ports/Utility.h

@@ -11,6 +11,7 @@
 #include "AccountHandler.h"
 #include "FilterTypes.h"
 #include "Sessions.h"
+#include "LoggingCallbacks.h"
 #include <logger/Logger.h>
 #include <conpool/ConnectionPool.h>
 #include <conpool/Policies.h>
@@ -30,11 +31,8 @@
 #include <cstdint>
 
 namespace po = boost::program_options;
-namespace ep = ember::connection_pool;
 
 namespace ember::account {
-
-void pool_log_callback(ep::Severity, std::string_view message, log::Logger& logger);
 
 /*
  * Starts Asio worker threads, blocking until the launch thread exits
@@ -83,7 +81,7 @@ void Service::launch(const po::variables_map& args, boost::asio::io_context& ser
 
 	LOG_INFO_SYNC(logger, "Initialising database connection pool...");
 
-	ep::Pool<decltype(driver), ep::CheckinClean, ep::ExponentialGrowth> pool(
+	connection_pool::Pool<decltype(driver), connection_pool::CheckinClean, connection_pool::ExponentialGrowth> pool(
 		driver, min_conns, max_conns, 30s
 	);
 
@@ -160,29 +158,6 @@ po::options_description Service::options() {
 		("monitor.interface", po::value<std::string>()->required())
 		("monitor.port", po::value<std::uint16_t>()->required());
 	return opts;
-}
-
-void pool_log_callback(ep::Severity severity, std::string_view message, log::Logger& logger) {
-	switch(severity) {
-		case ep::Severity::debug:
-			LOG_DEBUG(logger) << message << LOG_ASYNC;
-			break;
-		case ep::Severity::info:
-			LOG_INFO(logger) << message << LOG_ASYNC;
-			break;
-		case ep::Severity::warn:
-			LOG_WARN(logger) << message << LOG_ASYNC;
-			break;
-		case ep::Severity::error:
-			LOG_ERROR(logger) << message << LOG_ASYNC;
-			break;
-		case ep::Severity::fatal:
-			LOG_FATAL(logger) << message << LOG_ASYNC;
-			break;
-		default:
-			LOG_ERROR_ASYNC(logger, "Unhandled pool log callback severity");
-			LOG_ERROR(logger) << message << LOG_ASYNC;
-	}	
 }
 
 } // account, ember

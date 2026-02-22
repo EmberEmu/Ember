@@ -165,7 +165,7 @@ utility::Colour CommandSink::severity_colour(Severity severity) {
 			return utility::Colour::white_on_red_bg;
 		case Severity::fatal:
 			[[fallthrough]];
-		case Severity::ERROR_:
+		case Severity::error:
 			[[fallthrough]];
 		case Severity::warn:
 			return utility::Colour::light_red;

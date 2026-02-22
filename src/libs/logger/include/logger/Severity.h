@@ -18,7 +18,7 @@ enum class Severity {
 	debug,
 	info,
 	warn,
-	ERROR_,
+	error,
 	fatal,
 	console,
 	console_error,
