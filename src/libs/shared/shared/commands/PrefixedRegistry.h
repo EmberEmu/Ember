@@ -26,6 +26,10 @@ public:
 	std::shared_ptr<Command> operator()(const std::string_view name) {
 		return registry_.insert(prefix_ + std::string(name));
 	}
+
+	bool erase(const std::shared_ptr<const Command> command) {
+		return registry_.erase(command);
+	}
 };
 
 } // commands, ember

@@ -158,6 +158,10 @@ std::optional<std::shared_ptr<Command>> Registry::erase(const std::string& name)
 	return root_->erase(name);
 }
 
+bool Registry::erase(const std::shared_ptr<const Command> command) {
+	return root_->erase(command);
+}
+
 std::shared_ptr<Command> Registry::root() const {
 	return root_;
 }

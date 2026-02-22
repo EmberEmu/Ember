@@ -222,6 +222,19 @@ auto Command::erase(const std::string& name) -> std::optional<std::shared_ptr<Co
 	return result.mapped();
 }
 
+bool Command::erase(const std::shared_ptr<const Command>& command) {
+	std::lock_guard guard(mutex_);
+
+	if(auto it = commands_.find(command->name()); it != commands_.end()) {
+		if(it->second == command) {
+			commands_.erase(it);
+			return true;
+		}
+	}
+	
+	return false;
+}
+
 void Command::clear_commands() {
 	std::lock_guard guard(mutex_);
 	commands_.clear();
