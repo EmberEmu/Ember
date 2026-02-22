@@ -11,9 +11,9 @@
 #include <logger/Logger.h>
 #include <banner/Banner.h>
 #include <banner/Banner.h>
-#include <shared/commands/PrefixedRegistry.h>
-#include <shared/commands/Registry.h>
-#include <shared/commands/Utility.h>
+#include <commands/PrefixedRegistry.h>
+#include <commands/Registry.h>
+#include <commands/Utility.h>
 #include <shared/threading/Utility.h>
 #include <shared/utility/CommandHelpers.h>
 #include <shared/utility/LogConfig.h>

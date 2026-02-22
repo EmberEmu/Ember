@@ -27,10 +27,10 @@ include_directories(${SPARK_INCLUDES_DIR})
 add_library(${LIBRARY_NAME} ${LIBRARY_HDR} ${LIBRARY_SRC})
 add_dependencies(${LIBRARY_NAME} FB_SCHEMA_COMPILE)
 add_dependencies(${LIBRARY_NAME} SPARK_RPC_GENERATE)
-target_link_libraries(${LIBRARY_NAME} PUBLIC logger shared ${Boost_LIBRARIES} PRIVATE spark conpool ${MYSQLCCPP_LIBRARY} Threads::Threads)
+target_link_libraries(${LIBRARY_NAME} PUBLIC logger commands shared ${Boost_LIBRARIES} PRIVATE spark conpool ${MYSQLCCPP_LIBRARY} Threads::Threads)
 
 add_executable(${EXECUTABLE_NAME} main.cpp)
-target_link_libraries(${EXECUTABLE_NAME} ${LIBRARY_NAME} banner logger shared ${Boost_LIBRARIES} Threads::Threads)
+target_link_libraries(${EXECUTABLE_NAME} ${LIBRARY_NAME} banner logger commands shared ${Boost_LIBRARIES} Threads::Threads)
 
 INSTALL(TARGETS ${EXECUTABLE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})
 set_target_properties(account PROPERTIES FOLDER "Services/Applications")

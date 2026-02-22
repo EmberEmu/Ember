@@ -8,11 +8,11 @@
 
 #pragma once
 
-#include "Argument.h"
-#include "Arguments.h"
-#include "ArgumentType.h"
-#include "Result.h"
-#include "ScopedCommand.h"
+#include <commands/Argument.h>
+#include <commands/Arguments.h>
+#include <commands/ArgumentType.h>
+#include <commands/Result.h>
+#include <commands/ScopedCommand.h>
 #include <functional>
 #include <memory>
 #include <mutex>

@@ -94,8 +94,6 @@ set(UTIL_SRC
     shared/utility/CommandHelpers.h
     shared/utility/CommandHelpers.cpp
     shared/utility/HashDefines.h
-    shared/commands/TypeMap.h
-    shared/commands/TypeMap.cpp
 )
 
 set(METRICS_SRC
@@ -106,24 +104,6 @@ set(METRICS_SRC
     shared/metrics/Monitor.cpp
     shared/metrics/MetricsPoll.h
     shared/metrics/MetricsPoll.cpp
-)
-
-set(COMMANDS_SRC
-    shared/commands/Registry.h
-    shared/commands/Registry.cpp
-    shared/commands/Command.h
-    shared/commands/Command.cpp
-    shared/commands/ScopedCommand.cpp
-    shared/commands/Argument.h
-    shared/commands/Arguments.h
-    shared/commands/Utility.h
-    shared/commands/Result.h
-    shared/commands/Suggestions.h
-    shared/commands/Exception.h
-    shared/commands/ArgumentType.h
-    shared/commands/ArgumentValue.h
-    shared/commands/PrefixedRegistry.h
-    shared/commands/ScopedCommand.h
 )
 
 set(GAME_SRC
@@ -141,7 +121,6 @@ set(LIBRARY_SRC
     ${THREADING_SRC}
     ${UTIL_SRC}
     ${METRICS_SRC}
-	${COMMANDS_SRC}
     shared/ClientRef.h
     shared/CompilerWarn.h
     shared/IPBanCache.h

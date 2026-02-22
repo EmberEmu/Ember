@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "Command.h"
+#include <commands/Command.h>
 #include <string>
 #include <vector>
 

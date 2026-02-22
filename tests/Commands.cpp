@@ -6,8 +6,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include <shared/commands/Registry.h>
-#include <shared/commands/Utility.h>
+#include <commands/Registry.h>
+#include <commands/Utility.h>
 #include <gtest/gtest.h>
 #include <array>
 #include <ranges>

@@ -10,7 +10,7 @@
 
 #include <logger/LoggerFwd.h>
 #include <shared/metrics/Metrics.h>
-#include <shared/commands/PrefixedRegistry.h>
+#include <commands/PrefixedRegistry.h>
 #include <shared/utility/cstring_view.hpp>
 #include <boost/program_options/variables_map.hpp>
 #include <boost/program_options/options_description.hpp>

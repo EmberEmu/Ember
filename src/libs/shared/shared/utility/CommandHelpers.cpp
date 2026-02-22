@@ -9,8 +9,8 @@
 #include "CommandHelpers.h"
 #include <logger/CommandSink.h>
 #include <logger/Logger.h>
-#include <shared/commands/Registry.h>
-#include <shared/commands/Utility.h>
+#include <commands/Registry.h>
+#include <commands/Utility.h>
 #include <boost/lexical_cast.hpp>
 #include <ranges>
 #include <span>
