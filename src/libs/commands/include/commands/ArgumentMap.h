@@ -8,21 +8,14 @@
 
 #pragma once
 
-#include <commands/ArgumentType.h>
+#include <commands/ArgumentValue.h>
+#include <boost/unordered/unordered_flat_map.hpp>
 #include <string>
+#include <unordered_map>
 #include <utility>
 
-namespace ember::commands {
+namespace ember::commands::args {
 
-struct Argument {
-	std::string name;
-	bool required;
-	args::Type type;
+using Map = boost::unordered_flat_map<std::string, args::Value>;
 
-	Argument(std::string name, bool required, args::Type type)
-		: name(std::move(name)),
-		  required(required),
-		  type(type) {}
-};
-
-} // commands, ember
+} // args, commands, ember

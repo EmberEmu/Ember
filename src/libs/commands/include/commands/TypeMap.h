@@ -14,6 +14,6 @@
 
 namespace ember::commands::detail {
 
-extern const boost::unordered_flat_map<ArgumentType, std::type_index> types;
+extern const boost::unordered_flat_map<args::Type, std::type_index> types;
 
 } // detail, commands, ember

@@ -12,9 +12,9 @@
 #include <string>
 #include <cstdint>
 
-namespace ember::commands {
+namespace ember::commands::args {
 
-using ArgumentValue = std::variant<
+using Value = std::variant<
 	std::string,
 	std::uint8_t,
 	std::uint16_t,

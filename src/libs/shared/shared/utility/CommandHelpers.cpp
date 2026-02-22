@@ -53,42 +53,42 @@ void handle_command_result(commands::Result result,
     }
 }
 
-commands::ArgumentValue convert_type(commands::ArgumentType type, std::string_view token) {
+commands::args::Value convert_type(commands::args::Type type, std::string_view token) {
 	switch(type) {
-		case commands::ArgumentType::at_char:
+		case commands::args::Type::at_char:
 			return boost::lexical_cast<char>(token);
 			break;
-		case commands::ArgumentType::at_string:
+		case commands::args::Type::at_string:
 			return boost::lexical_cast<std::string>(token);
 			break;
-		case commands::ArgumentType::at_uint8:
+		case commands::args::Type::at_uint8:
 			return boost::lexical_cast<std::uint8_t>(token);
 			break;
-		case commands::ArgumentType::at_uint16:
+		case commands::args::Type::at_uint16:
 			return boost::lexical_cast<std::uint16_t>(token);
 			break;
-		case commands::ArgumentType::at_uint32:
+		case commands::args::Type::at_uint32:
 			return boost::lexical_cast<std::uint32_t>(token);
 			break;
-		case commands::ArgumentType::at_uint64:
+		case commands::args::Type::at_uint64:
 			return boost::lexical_cast<std::uint64_t>(token);
 			break;
-		case commands::ArgumentType::at_int8:
+		case commands::args::Type::at_int8:
 			return boost::lexical_cast<std::int8_t>(token);
 			break;
-		case commands::ArgumentType::at_int16:
+		case commands::args::Type::at_int16:
 			return boost::lexical_cast<std::int16_t>(token);
 			break;
-		case commands::ArgumentType::at_int32:
+		case commands::args::Type::at_int32:
 			return boost::lexical_cast<std::int32_t>(token);
 			break;
-		case commands::ArgumentType::at_int64:
+		case commands::args::Type::at_int64:
 			return boost::lexical_cast<std::int64_t>(token);
 			break;
-		case commands::ArgumentType::at_float:
+		case commands::args::Type::at_float:
 			return boost::lexical_cast<float>(token);
 			break;
-		case commands::ArgumentType::at_double:
+		case commands::args::Type::at_double:
 			return boost::lexical_cast<double>(token);
 			break;
 		default:
@@ -119,7 +119,7 @@ void execute_command(const std::string_view input, const commands::Registry& reg
 	}
 
 	// argument type conversion
-	std::vector<commands::ArgumentValue> arg_values;
+	std::vector<commands::args::Value> arg_values;
 	auto command_args = search.command->arguments();
 
 	for(auto [expected, argument] : std::views::zip(command_args, arguments)) {

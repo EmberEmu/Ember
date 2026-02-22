@@ -8,9 +8,9 @@
 
 #pragma once
 
-namespace ember::commands {
+namespace ember::commands::args {
 
-enum class ArgumentType {
+enum class Type {
 	at_string,
 	at_uint8,
 	at_uint16,
