@@ -28,7 +28,7 @@ inline std::istream& operator>>(std::istream& in, GameVersion& version) try {
 	in.clear();
 
 	std::regex pattern(
-		R"(^\s*([+-]?\d+)\s*,\s*([+-]?\d+)\s*,\s*([+-]?\d+)\s*,\s*([+-]?\d+)\s*$)"
+		R"(^\s*([+-]?\d+)\s*[,.]\s*([+-]?\d+)\s*[,.]\s*([+-]?\d+)\s*[,.]\s*([+-]?\d+)\s*$)"
 	);
 
 	std::smatch matches;
