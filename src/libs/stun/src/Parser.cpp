@@ -142,7 +142,7 @@ Parser::error_code(spark::io::pmr::BinaryStreamReader& stream, std::size_t lengt
 	be::big_to_native_inplace(attr.code);
 
 	if(attr.code & 0xFFE00000) {
-		logger_(Verbosity::debug, Error::resp_error_code_out_of_range);
+		logger_(Severity::debug, Error::resp_error_code_out_of_range);
 	}
 
 	// (╯°□°）╯︵ ┻━┻
@@ -151,14 +151,14 @@ Parser::error_code(spark::io::pmr::BinaryStreamReader& stream, std::size_t lengt
 
 	if(code < 300 || code >= 700) {
 		if(mode_ != RFCMode::rfc3489) {
-			logger_(Verbosity::debug, Error::resp_error_code_out_of_range);
+			logger_(Severity::debug, Error::resp_error_code_out_of_range);
 		} else if(code < 100) { // original RFC has a wider range (1xx - 6xx)
-			logger_(Verbosity::debug, Error::resp_error_code_out_of_range);
+			logger_(Severity::debug, Error::resp_error_code_out_of_range);
 		}
 	}
 
 	if(num >= 100) {
-		logger_(Verbosity::debug, Error::resp_error_code_out_of_range);
+		logger_(Severity::debug, Error::resp_error_code_out_of_range);
 	}
 
 	attr.code = code + num;
@@ -194,7 +194,7 @@ Parser::unknown_attributes(spark::io::pmr::BinaryStreamReader& stream, std::size
 	}
 
 	if(attr.attributes.size() % 2) {
-		logger_(Verbosity::debug, Error::resp_unk_attr_bad_pad);
+		logger_(Severity::debug, Error::resp_unk_attr_bad_pad);
 	}
 
 	return attr;
@@ -341,12 +341,12 @@ bool Parser::check_attr_validity(const Attributes attr_type, const MessageType m
 			const auto res = std::ranges::find(rfc->second, mode_);
 
 			if(res == rfc->second.end()) { // definitely not our fault... probably
-				logger_(Verbosity::debug, Error::resp_bad_req_attr_server);
+				logger_(Severity::debug, Error::resp_bad_req_attr_server);
 				return false;
 			}
 		} else {
 			// might be our fault but probably not
-			logger_(Verbosity::debug, Error::resp_unknown_req_attribute);
+			logger_(Severity::debug, Error::resp_unknown_req_attribute);
 			return false;
 		}
 	}
@@ -359,12 +359,12 @@ bool Parser::check_attr_validity(const Attributes attr_type, const MessageType m
 	// Check whether this attribute is valid for the given response type
 	if(const auto entry = attr_valid_lut.find(attr_type); entry != attr_valid_lut.end()) {
 		if(entry->second != msg_type) { // not valid for this type
-			logger_(Verbosity::debug,
+			logger_(Severity::debug,
 				required? Error::resp_bad_req_attr_server : Error::resp_unknown_opt_attribute);
 			return false;
 		}
 	} else { // not valid for *any* response type
-		logger_(Verbosity::debug,
+		logger_(Severity::debug,
 			required? Error::resp_bad_req_attr_server : Error::resp_unknown_opt_attribute);
 		return false;
 	}

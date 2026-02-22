@@ -8,17 +8,18 @@
 
 #include <ports/Forward.h>
 #include <boost/asio/post.hpp>
+#include <format>
 
 namespace ember::ports {
 
-Forward::Forward(log::Logger& logger, boost::asio::io_context& ctx, Method method,
-                 const std::string& iface, const std::string& gateway, std::uint16_t port)
+Forward::Forward(boost::asio::io_context& ctx, Method method, const std::string& iface,
+                 const std::string& gateway, std::uint16_t port, LogCallback cb)
 	: ctx_(ctx),
-	  logger_(logger),
 	  port_(port),
 	  mapping_active_(false),
 	  timer_(ctx),
-	  shutdown_wait_(0) {
+	  shutdown_wait_(0),
+	  log_cb_(cb) {
 	begin_forwarding(method, iface, gateway, port);
 }
 
@@ -26,12 +27,26 @@ Forward::~Forward() {
 	unmap();
 }
 
+template<typename ...Args>
+void Forward::log(Severity severity, const std::format_string<Args...> fmt, Args&& ...args) const {
+	if(!log_cb_) {
+		return;
+	}
+
+	const auto formatted = std::format(fmt, std::forward<Args>(args)...);
+	log_cb_(severity, formatted);
+}
+
 void Forward::start_upnp(const std::string& iface, std::uint16_t port) {
 	ssdp_ = std::make_unique<ports::upnp::SSDP>(iface, ctx_);
 
 	ssdp_->locate_gateways([&, port](ports::upnp::LocateResult result) {
 		if(!result) {
-			LOG_ERROR_ASYNC(logger_, "UPnP gateway search failed with error code {}", result.error().value());
+			log(
+				Severity::error,
+				"UPnP gateway search failed with error code {}", result.error().value()
+			);
+
 			return true;
 		}
 
@@ -44,10 +59,10 @@ void Forward::start_upnp(const std::string& iface, std::uint16_t port) {
 
 		result->device->add_port_mapping(map, [&](ports::upnp::ErrorCode ec) {
 			if(!ec) {
-				LOG_INFO_ASYNC(logger_, "[UPnP] Port {} successfully forwarded", port);
+				log(Severity::info, "[UPnP] Port {} successfully forwarded", port);
 				mapping_active_ = true;
 			} else {
-				LOG_ERROR_ASYNC(logger_, "[UPnP] Port forwarding failed, error {}", ec.value());
+				log(Severity::error, "[UPnP] Port forwarding failed, error {}", ec.value());
 			}
 
 		});
@@ -72,23 +87,35 @@ void Forward::start_pmp(const std::string& iface, const std::string& gateway, st
 	
 		switch(event) {
 			case ports::Daemon::Event::added_mapping:
-				LOG_DEBUG_ASYNC(logger_, "[NATPMP/PCP][Daemon] {}:{} -> {} forwarded for {} seconds",
-								v6.to_string(), result.external_port, result.internal_port, result.lifetime);
+				log(
+					Severity::debug,
+					"[NATPMP/PCP][Daemon] {}:{} -> {} forwarded for {} seconds",
+					v6.to_string(), result.external_port, result.internal_port, result.lifetime
+				);
 				break;
 			case ports::Daemon::Event::failed_mapping:
-				LOG_DEBUG_ASYNC(logger_, "[NATPMP/PCP][Daemon] Port forwarding attempt failed, will retry...",
-								v6.to_string(), result.external_port, result.internal_port, result.lifetime);
+				log(Severity::debug,
+					"[NATPMP / PCP][Daemon] Port forwarding attempt failed, will retry...",
+					v6.to_string(), result.external_port, result.internal_port, result.lifetime
+				);
 				break;
 			case ports::Daemon::Event::renewed_mapping:
-				LOG_DEBUG_ASYNC(logger_, "[NATPMP/PCP] [Daemon] Port {} forwarding renewed for {} seconds",
-					            result.external_port, result.lifetime);
+				log(Severity::debug,
+					"[NATPMP/PCP] [Daemon] Port {} forwarding renewed for {} seconds",
+					result.external_port, result.lifetime
+				);
 				break;
 			case ports::Daemon::Event::failed_to_renew:
-				LOG_WARN_ASYNC(logger_, "[NATPMP/PCP] [Daemon] Port forwarding renewal failure, will retry...");
+				log(
+					Severity::warn,
+					"[NATPMP/PCP] [Daemon] Port forwarding renewal failure, will retry..."
+				);
 				break;
 			case ports::Daemon::Event::mapping_expired:
-				LOG_WARN_ASYNC(logger_, "[NATPMP/PCP] [Daemon] Port forwarding expired, service may be unavailable"
-					                    "to outside hosts, remapping will be attempted");
+				log(Severity::warn,
+					"[NATPMP/PCP] [Daemon] Port forwarding expired, service may be unavailable"
+					"to outside hosts, remapping will be attempted"
+				);
 				break;
 		}
 	});
@@ -97,21 +124,25 @@ void Forward::start_pmp(const std::string& iface, const std::string& gateway, st
 		if(result) {
 			const auto v6 = boost::asio::ip::address_v6(result->external_ip);
 
-			LOG_INFO_ASYNC(logger_, "[NATPMP/PCP] {}:{} -> {} forwarded for {} seconds (requested {} seconds)",
-							v6.to_string(),
-				            result->external_port,
-				            result->internal_port,
-				            result->lifetime,
-							request.lifetime);
+			log(Severity::info,
+				"[NATPMP/PCP] {}:{} -> {} forwarded for {} seconds (requested {} seconds)",
+				v6.to_string(),
+			    result->external_port,
+			    result->internal_port,
+			    result->lifetime,
+				request.lifetime
+			);
 			mapping_active_ = true;
 		} else {
-			LOG_ERROR_ASYNC(logger_, R"([NATPMP/PCP] Port forwarding failed, error "{}")", error_string(result.error()));
+			log(Severity::error,
+				R"([NATPMP/PCP] Port forwarding failed, error "{}")", error_string(result.error())
+			);
 			mapping_active_ = false; // mapping can succeed and later fail when refreshed
 		}
 	});
 }
 
-std::string_view Forward::error_string(const Error& error) {
+std::string_view Forward::error_string(const Error& error) const {
 	if(error.code == ErrorCode::natpmp_code) {
 		return to_string(error.natpmp_code);
 	} else if(error.code == ErrorCode::pcp_code) {
@@ -133,9 +164,13 @@ void Forward::unmap_upnp() {
 
 	upnp_device_->delete_port_mapping(map, [&](ports::upnp::ErrorCode ec) {
 		if(!ec) {
-			LOG_INFO_ASYNC(logger_, "[UPnP] Successfully unmapped forwarded port {}", port_);
+			log(Severity::info,
+				"[UPnP] Successfully unmapped forwarded port {}", port_
+			);
 		} else {
-			LOG_ERROR_ASYNC(logger_, "[UPnP] Failed to unmap forwarded port {}, error ", ec.value());
+			log(Severity::info,
+				"[UPnP] Failed to unmap forwarded port {}, error ", ec.value()
+			);
 		}
 
 		shutdown_wait_.release();
@@ -147,9 +182,13 @@ void Forward::unmap_pmp() {
 
 	daemon_->delete_mapping(port_, ports::Protocol::tcp, [&](const ports::Result& result) {
 		if(result) {
-			LOG_INFO_ASYNC(logger_, "[NATPMP/PCP] Successfully unmapped forwarded port", port_);
+			log(Severity::info,
+				"[NATPMP/PCP] Successfully unmapped forwarded port", port_
+			);
 		} else {
-			LOG_ERROR_ASYNC(logger_, "[NATPMP/PCP] Failed to unmap forwarded port, error {}", result.error().code);
+			log(Severity::error,
+				"[NATPMP/PCP] Failed to unmap forwarded port, error {}", result.error().code
+			);
 		}
 
 		shutdown_wait_.release();
@@ -169,13 +208,15 @@ void Forward::try_pmp(const std::string& iface, const std::string& gateway, std:
 			return;
 		}
 		
-		LOG_WARN_ASYNC(logger_, "Automatic port forwarding not permitted by NAT gateway"
-		                        " or gateway address is incorrectly configured");
+		log(Severity::warn,
+			"Automatic port forwarding not permitted by NAT gateway"
+		    " or gateway address is incorrectly configured"
+		);
 	});
 }
 
 void Forward::start_auto(const std::string& iface, const std::string& gateway, std::uint16_t port) {
-	LOG_INFO_ASYNC(logger_, "Attempting port forwarding with UPnP...");
+	log(Severity::info, "Attempting port forwarding with UPnP...");
 
 	start_upnp(iface, port);
 
@@ -189,7 +230,7 @@ void Forward::start_auto(const std::string& iface, const std::string& gateway, s
 			return;
 		}
 		
-		LOG_INFO_ASYNC(logger_, "Attempting port forwarding with NAT-PMP & PCP...");
+		log(Severity::info, "Attempting port forwarding with NAT-PMP & PCP...");
 		try_pmp(iface, gateway, port);
 	});
 }

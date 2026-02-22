@@ -75,7 +75,7 @@ auto SyslogSink::impl::severity_map(Severity severity) -> SyslogSeverity {
 	switch(severity) {
 		case Severity::fatal:
 			return SyslogSink::impl::SyslogSeverity::syslog_emergency;
-		case Severity::ERROR_:
+		case Severity::error:
 			return SyslogSink::impl::SyslogSeverity::syslog_error;
 		case Severity::warn:
 			return SyslogSink::impl::SyslogSeverity::syslog_warning;

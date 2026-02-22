@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Ember
+ * Copyright (c) 2024 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,24 +8,12 @@
 
 #pragma once
 
+#include <stun/Attributes.h>
+#include <stun/LogSeverity.h>
 #include <shared/smartenum.hpp>
 #include <functional>
 
 namespace ember::stun {
-
-/*
- * STUN_LOG prefix is just to reduce the odds of annoying define collisions from
- * rage-inducing headers such as Windows.h when they end up being accidentally
- * transitively included through ten layers of crap.
- */
-enum class Verbosity {
-	trivial,
-	debug,
-	info,
-	warn,
-	error,
-	fatal
-};
 
 /*
  * Opting to provide the client (ourselves) with a reason enumeration rather than
@@ -75,6 +63,6 @@ struct ErrorRet {
 	attributes::ErrorCode ec;
 };
 
-using LogCB = std::function<void(Verbosity, Error)>;
+using LogCB = std::function<void(Severity, Error)>;
 
 } // stun, ember

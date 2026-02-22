@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 - 2025 Ember
+ * Copyright (c) 2023 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -26,7 +26,7 @@ using namespace ember;
 
 void launch(const po::variables_map& args);
 po::variables_map parse_arguments(int argc, const char* argv[]);
-void log_cb(stun::Verbosity verbosity, stun::Error reason);
+void log_cb(stun::Severity severity, stun::Error reason);
 void print_error(const std::string_view test, const stun::ErrorRet& error);
 
 int main(int argc, const char* argv[]) try {
@@ -107,26 +107,26 @@ void print_error(const std::string_view test, const stun::ErrorRet& error) {
 	}
 }
 
-void log_cb(const stun::Verbosity verbosity, const stun::Error reason) {
+void log_cb(const stun::Severity severity, const stun::Error reason) {
 	std::string_view verbstr{};
 
-	switch(verbosity) {
-		case stun::Verbosity::trivial:
-			verbstr = "[trivial]";
+	switch(severity) {
+		case stun::Severity::trace:
+			verbstr = "[trace]";
 			break;
-		case stun::Verbosity::debug:
+		case stun::Severity::debug:
 			verbstr = "[debug]";
 			break;
-		case stun::Verbosity::info:
+		case stun::Severity::info:
 			verbstr = "[info]";
 			break;
-		case stun::Verbosity::warn:
+		case stun::Severity::warn:
 			verbstr = "[warn]";
 			break;
-		case stun::Verbosity::error:
+		case stun::Severity::error:
 			verbstr = "[error]";
 			break;
-		case stun::Verbosity::fatal:
+		case stun::Severity::fatal:
 			verbstr = "[fatal]";
 			break;
 		default:

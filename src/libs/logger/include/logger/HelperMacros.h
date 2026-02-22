@@ -55,8 +55,8 @@ inline auto& log_deref(auto* x) { return *x; }
 
 #if !defined(NO_LOGGING) && !defined(NO_ERROR_LOGGING)
 	#define LOG_ERROR(logger) \
-		if(logger->severity() <= ember::log::Severity::ERROR_) \
-			log_deref(logger) << ember::log::Severity::ERROR_
+		if(logger->severity() <= ember::log::Severity::error) \
+			log_deref(logger) << ember::log::Severity::error
 #else
 	#define LOG_ERROR(logger) \
 		if(false) \
@@ -136,8 +136,8 @@ inline auto& log_deref(auto* x) { return *x; }
 
 #if !defined(NO_LOGGING) && !defined(NO_ERROR_LOGGING)
 	#define LOG_ERROR_FILTER(logger, type) \
-		if(logger->severity() <= ember::log::Severity::ERROR_ && !(logger->filter() & type)) \
-			log_deref(logger) << ember::log::Severity::ERROR_ << ember::log::Filter(type)
+		if(logger->severity() <= ember::log::Severity::error && !(logger->filter() & type)) \
+			log_deref(logger) << ember::log::Severity::error << ember::log::Filter(type)
 #else
 	#define LOG_ERROR_FILTER(logger, type) \
 		if(false) \
@@ -261,8 +261,8 @@ inline auto& log_deref(auto* x) { return *x; }
 
 #if !defined(NO_LOGGING) && !defined(NO_ERROR_LOGGING)
 	#define LOG_ERROR_ASYNC(logger, fmt_str, ...) \
-		if(logger->severity() <= ember::log::Severity::ERROR_) \
-			logger->fmt_write<true>(ember::log::Severity::ERROR_, fmt_str __VA_OPT__(,) __VA_ARGS__);
+		if(logger->severity() <= ember::log::Severity::error) \
+			logger->fmt_write<true>(ember::log::Severity::error, fmt_str __VA_OPT__(,) __VA_ARGS__);
 #else
 	#define LOG_ERROR_ASYNC(logger, fmt_str, ...) \
 		if(false);
@@ -333,8 +333,8 @@ inline auto& log_deref(auto* x) { return *x; }
 
 #if !defined(NO_LOGGING) && !defined(NO_ERROR_LOGGING)
 	#define LOG_ERROR_SYNC(logger, fmt_str, ...) \
-		if(logger->severity() <= ember::log::Severity::ERROR_) \
-			logger->fmt_write<false>(ember::log::Severity::ERROR_, fmt_str __VA_OPT__(,) __VA_ARGS__);
+		if(logger->severity() <= ember::log::Severity::error) \
+			logger->fmt_write<false>(ember::log::Severity::error, fmt_str __VA_OPT__(,) __VA_ARGS__);
 #else
 	#define LOG_ERROR_SYNC(logger, fmt_str, ...) \
 		if(false);

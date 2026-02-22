@@ -54,6 +54,7 @@ set(LIBRARY_HDR
     packet_log/FBSink.h
     packet_log/LogSink.h
     Service.h
+    LoggingCallbacks.h
 )
 
 set(LIBRARY_SRC

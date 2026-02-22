@@ -14,6 +14,7 @@ set(LIBRARY_HDR
     CharacterService.h
     Service.h
     Config.h
+    LoggingCallbacks.h
     )
 
 set(LIBRARY_SRC

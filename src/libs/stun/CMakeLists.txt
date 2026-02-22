@@ -21,6 +21,7 @@ add_library(${LIBRARY_NAME} STATIC
     include/stun/Exception.h
     include/stun/detail/Shared.h
     include/stun/MessageBuilder.h
+    include/stun/LogSeverity.h
     src/Client.cpp
     src/DatagramTransport.cpp
     src/StreamTransport.cpp

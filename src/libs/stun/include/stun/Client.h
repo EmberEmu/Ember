@@ -47,7 +47,7 @@ class Client final {
 	Protocol proto_;
 	std::unique_ptr<Transport> transport_;
 	RFCMode mode_;
-	LogCB logger_ = [](Verbosity, Error){};
+	LogCB logger_ = [](Severity, Error){};
 	std::unordered_map<std::string, std::chrono::steady_clock::time_point> dest_hist_;
 	std::string host_;
 	std::uint16_t port_;
