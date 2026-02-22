@@ -12,6 +12,7 @@
 #include "Arguments.h"
 #include "ArgumentType.h"
 #include "Result.h"
+#include "ScopedCommand.h"
 #include <functional>
 #include <memory>
 #include <mutex>
@@ -26,7 +27,6 @@
 namespace ember::commands {
 
 class Command;
-class ScopedCommand;
 
 using CommandHandler = std::function<void(const Arguments&)>;
 using CommandMap = std::unordered_map<std::string, std::shared_ptr<Command>>;

@@ -9,7 +9,6 @@
 #include "Command.h"
 #include "Exception.h"
 #include "TypeMap.h"
-#include "ScopedCommand.h"
 #include <algorithm>
 #include <ranges>
 
