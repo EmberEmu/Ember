@@ -76,7 +76,7 @@ Result Command::execute(std::span<const ArgumentValue> arg_values) {
 			return Result::invalid_types;
 		}
 
-		if(auto result = can_execute_handler(handler_); result != Result::success) {
+		if(auto result = can_execute_handler(); result != Result::success) {
 			return result;
 		}
 		
@@ -91,7 +91,7 @@ Result Command::execute(std::span<const ArgumentValue> arg_values) {
 	return Result::success;
 }
 
-auto Command::can_execute_handler(const std::shared_ptr<const CommandHandler>& handler) const -> Result {
+auto Command::can_execute_handler() const -> Result {
 	if(handler_) {
 		return Result::success;
 	} else {
