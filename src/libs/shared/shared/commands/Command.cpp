@@ -188,6 +188,11 @@ std::shared_ptr<Command> Command::insert(std::string name) {
 	return entry->second;
 }
 
+ScopedCommand Command::scoped_insert(std::shared_ptr<Command> command) {
+	insert(command);
+	return ScopedCommand(command, this->weak_from_this());
+}
+
 void Command::insert(std::shared_ptr<Command> command) {
 	std::lock_guard guard(mutex_);
 	const auto& name = command->name(); // avoid issues if right-to-left evaluation

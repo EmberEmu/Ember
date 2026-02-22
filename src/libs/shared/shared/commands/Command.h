@@ -12,6 +12,7 @@
 #include "Arguments.h"
 #include "ArgumentType.h"
 #include "Result.h"
+#include "ScopedCommand.h"
 #include <functional>
 #include <memory>
 #include <mutex>
@@ -22,7 +23,6 @@
 #include <unordered_map>
 #include <vector>
 #include <cstddef>
-
 
 namespace ember::commands {
 
@@ -68,6 +68,7 @@ public:
 	std::shared_ptr<Command> handler(CommandHandler handler);
 
 	void insert(std::shared_ptr<Command> command);
+	ScopedCommand scoped_insert(std::shared_ptr<Command> command);
 	bool erase_argument(const std::string& argument);
 	void clear_arguments();
 	std::optional<std::shared_ptr<Command>> erase(const std::string& name);
