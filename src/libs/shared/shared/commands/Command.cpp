@@ -76,11 +76,11 @@ Result Command::execute(std::span<const ArgumentValue> arg_values) {
 			return Result::invalid_types;
 		}
 
-		if(handler_) {
-			handler = handler_;
-		} else {
-			return commands_.empty()? Result::unavailable : Result::subcommands;
+		if(auto result = can_execute_handler(handler_); result != Result::success) {
+			return result;
 		}
+		
+		handler = handler_;
 	}
 
 	// handler copy is used to prevent potential deadlocks if a handler invokes its own command
@@ -89,6 +89,14 @@ Result Command::execute(std::span<const ArgumentValue> arg_values) {
 	const Arguments arguments(std::move(arg_store));
 	(*handler)(arguments);
 	return Result::success;
+}
+
+auto Command::can_execute_handler(const std::shared_ptr<const CommandHandler>& handler) const -> Result {
+	if(handler_) {
+		return Result::success;
+	} else {
+		return commands_.empty()? Result::unavailable : Result::subcommands;
+	}
 }
 
 std::shared_ptr<Command> Command::argument(std::string argument, ArgumentType type) {
@@ -220,7 +228,7 @@ void Command::clear_commands() {
 }
 
 bool Command::validate_type(ArgumentType type, const ArgumentValue& value) const {
-	if(auto it = types.find(type); it != types.end()) {
+	if(auto it = detail::types.find(type); it != detail::types.end()) {
 		auto& [_, typeinfo] = *it;
 		return typeinfo == arg_type(value);
 	}

@@ -12,8 +12,8 @@
 #include <typeindex>
 #include <boost/unordered/unordered_flat_map.hpp>
 
-namespace ember::commands {
+namespace ember::commands::detail {
 
 extern const boost::unordered_flat_map<ArgumentType, std::type_index> types;
 
-} // commands, ember
+} // detail, commands, ember

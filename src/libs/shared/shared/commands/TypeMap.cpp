@@ -9,9 +9,9 @@
 #include "TypeMap.h"
 #include <string>
 
-namespace ember::commands {
+namespace ember::commands::detail {
 
-boost::unordered_flat_map<ArgumentType, std::type_index> types {
+const boost::unordered_flat_map<ArgumentType, std::type_index> types {
 	{ ArgumentType::at_string, typeid(std::string),   },
 	{ ArgumentType::at_uint8,  typeid(std::uint8_t),  },
 	{ ArgumentType::at_uint16, typeid(std::uint16_t), },
