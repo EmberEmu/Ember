@@ -68,7 +68,7 @@ ba::awaitable<void> Server::accept_connection() {
 		co_return;
 	}
 
-	LOG_DEBUG_ASYNC(logger_, "[spark] Accepted connection {}:{}", ep.address().to_string(), ep.port());
+	LOG_DEBUG_ASYNC(logger_, "[spark] Accepted connection from {}:{}", ep.address().to_string(), ep.port());
 	co_await accept(std::move(socket));
 }
 

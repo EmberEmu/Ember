@@ -64,7 +64,7 @@ class NetworkListener final {
 				const auto& ip = ep.address();
 
 				if(!ban_list_.is_banned(ip)) {
-					LOG_DEBUG_ASYNC(logger_, "Accepted connection {}", ip.to_string());
+					LOG_DEBUG_ASYNC(logger_, "Accepted connection from {}", ip.to_string());
 					metrics_.increment("accepted_connections");
 					start_session(std::move(socket_));
 					peak_connections_ = std::max(peak_connections_, sessions_.count());
