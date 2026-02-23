@@ -97,12 +97,12 @@ TEST_F(Registry, AddCommand) {
 		->description("test_description");
 
 	const auto input = commands::Registry::parse_input("test");
-	ASSERT_NE(registry.search(input).command, nullptr);
+	ASSERT_NE(registry.find(input).command, nullptr);
 }
 
 TEST_F(Registry, EraseCommand) {
 	ASSERT_TRUE(registry.erase("root"));
-	ASSERT_EQ(registry.search("root").command, nullptr);
+	ASSERT_EQ(registry.find("root").command, nullptr);
 }
 
 TEST_F(Registry, EraseNotFoundCommand) {
@@ -114,7 +114,7 @@ TEST_F(Registry, GetRoot) {
 }
 
 TEST_F(Registry, SearchSubcommands) {
-	const auto result = registry.search("root root_nested_1 root_nested_2");
+	const auto result = registry.find("root root_nested_1 root_nested_2");
 	ASSERT_TRUE(result.command);
 	ASSERT_EQ(result.depth, 2);
 }
@@ -158,7 +158,7 @@ TEST_F(Registry, PathFragment) {
 }
 
 TEST_F(Commands, InsertCommand) {
-	auto cmd = registry.search("root").command;
+	auto cmd = registry.find("root").command;
 	cmd->insert("subcommand")->description("It's a subcommand");
 	auto subcommands = cmd->commands();
 	ASSERT_EQ(subcommands.size(), 3);
@@ -167,70 +167,70 @@ TEST_F(Commands, InsertCommand) {
 }
 
 TEST_F(Commands, EraseCommand) {
-	auto cmd = registry.search("root").command;
+	auto cmd = registry.find("root").command;
 	cmd->erase("root_nested_1");
 	ASSERT_FALSE(cmd->commands().contains("root_nested_1"));
 }
 
 TEST_F(Commands, ClearCommands) {
-	auto cmd = registry.search("root").command;
+	auto cmd = registry.find("root").command;
 	cmd->clear_commands();
 	ASSERT_TRUE(cmd->commands().empty());
 }
 
 TEST_F(Commands, UpdateDescription) {
-	auto cmd = registry.search("root").command;
+	auto cmd = registry.find("root").command;
 	ASSERT_EQ(cmd->description(), "root command");
 	cmd->description("New description!");
 	ASSERT_EQ(cmd->description(), "New description!");
 }
 
 TEST_F(Commands, ArgumentCount) {
-	auto cmd = registry.search("root").command;
+	auto cmd = registry.find("root").command;
 	ASSERT_EQ(cmd->argument_count(), 3);
 }
 
 TEST_F(Commands, AddArgument) {
-	auto cmd = registry.search("root").command;
+	auto cmd = registry.find("root").command;
 	cmd->optional_argument("arg4", commands::args::Type::at_char);
 	ASSERT_EQ(cmd->argument_count(), 4);
 }
 
 TEST_F(Commands, AddArgumentOutOfOrder) {
-	auto cmd = registry.search("root").command;
+	auto cmd = registry.find("root").command;
 	ASSERT_THROW(cmd->argument("arg4", commands::args::Type::at_char), std::invalid_argument);
 }
 
 TEST_F(Commands, EraseInsertArgument) {
-	auto cmd = registry.search("root").command;
+	auto cmd = registry.find("root").command;
 	ASSERT_TRUE(cmd->erase_argument("arg3"));
 	cmd->argument("arg3", commands::args::Type::at_char);
 	ASSERT_EQ(cmd->argument_count(), 3);
 }
 
 TEST_F(Commands, EraseArgument) {
-	auto cmd = registry.search("root").command;
+	auto cmd = registry.find("root").command;
 	ASSERT_TRUE(cmd->erase_argument("arg1"));
 }
 
 TEST_F(Commands, EraseNotFoundArgument) {
-	auto cmd = registry.search("root").command;
+	auto cmd = registry.find("root").command;
 	ASSERT_FALSE(cmd->erase_argument("fake_arg1"));
 }
 
 TEST_F(Commands, ClearArguments) {
-	auto cmd = registry.search("root").command;
+	auto cmd = registry.find("root").command;
 	cmd->clear_arguments();
 	ASSERT_TRUE(cmd->arguments().empty());
 }
 
 TEST_F(Commands, ExecuteNoHandler) {
-	auto cmd = registry.search("root_1").command;
+	auto cmd = registry.find("root_1").command;
 	ASSERT_EQ(cmd->execute(), commands::Result::unavailable);
 }
 
 TEST_F(Commands, Execute_InvalidTypes) {
-	auto cmd = registry.search("root").command;
+	auto cmd = registry.find("root").command;
 
 	std::array<commands::args::Value, 3> args {
 		"Are you sure that's the point, Doctor?",
@@ -242,17 +242,17 @@ TEST_F(Commands, Execute_InvalidTypes) {
 }
 
 TEST_F(Commands, Execute_SubcommandsOnly) {
-	auto cmd = registry.search("root_2").command;
+	auto cmd = registry.find("root_2").command;
 	ASSERT_EQ(cmd->execute(), commands::Result::subcommands);
 }
 
 TEST_F(Commands, Execute_MissingArgsEmpty) {
-	auto cmd = registry.search("root").command;
+	auto cmd = registry.find("root").command;
 	ASSERT_EQ(cmd->execute(), commands::Result::missing_args);
 }
 
 TEST_F(Commands, Execute_TooManyArgs) {
-	auto cmd = registry.search("root").command;
+	auto cmd = registry.find("root").command;
 
 	std::array<commands::args::Value, 4> args {
 		"The", "quick", "brown", "fox"
@@ -262,7 +262,7 @@ TEST_F(Commands, Execute_TooManyArgs) {
 }
 
 TEST_F(Commands, Execute_MissingArgs) {
-	auto cmd = registry.search("root").command;
+	auto cmd = registry.find("root").command;
 
 	std::array<commands::args::Value, 1> args {
 		"jumped",
@@ -272,7 +272,7 @@ TEST_F(Commands, Execute_MissingArgs) {
 }
 
 TEST_F(Commands, Execute_RequiredArgs_Success) {
-	auto cmd = registry.search("root").command;
+	auto cmd = registry.find("root").command;
 
 	std::array<commands::args::Value, 2> args {
 		"over", "the",
@@ -283,7 +283,7 @@ TEST_F(Commands, Execute_RequiredArgs_Success) {
 }
 
 TEST_F(Commands, Execute_OptionalArgs_Success) {
-	auto cmd = registry.search("root").command;
+	auto cmd = registry.find("root").command;
 
 	std::array<commands::args::Value, 3> args {
 		"lazy", "dog", std::uint32_t(42)
@@ -294,7 +294,7 @@ TEST_F(Commands, Execute_OptionalArgs_Success) {
 }
 
 TEST_F(Commands, Execute_AllArgTypes_Success) {
-	auto cmd = registry.search("root").command;
+	auto cmd = registry.find("root").command;
 	cmd->clear_arguments();
 
 	cmd->argument("arg1", commands::args::Type::at_string)
