@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2024 Ember
+ * Copyright (c) 2016 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -63,5 +63,6 @@ bool page_unlock(void* address, std::size_t length);
 std::uint32_t to_u32bit(const Botan::BigInt& value);
 
 std::string time_duration_format(std::chrono::nanoseconds uptime);
+std::string start_time_format(std::chrono::steady_clock::time_point start_time);
 
 } // utility, ember

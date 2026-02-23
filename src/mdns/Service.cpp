@@ -86,9 +86,7 @@ void Service::launch(const po::variables_map& args, boost::asio::io_context& ser
 	// All done setting up
 	boost::asio::dispatch(service, [&]() {
 		LOG_INFO_SYNC(logger, "{} started successfully in {}", APP_NAME,
-			std::chrono::duration_cast<std::chrono::milliseconds>(
-				std::chrono::steady_clock::now() - start_time)
-		);
+			utility::start_time_format(start_time));
 	});
 
 	stop_flag.acquire();

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 - 2025 Ember
+ * Copyright (c) 2024 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,6 +11,7 @@
 #include "utilities/Utility.h"
 #include <logger/Logger.h>
 #include <dbcreader/Reader.h>
+#include <shared/utility/Utility.h>
 #include <boost/program_options.hpp>
 #include <vector>
 #include <cstdint>
@@ -49,9 +50,7 @@ int Service::run(const boost::program_options::variables_map& args) {
 
 	// All done setting up
 	LOG_INFO_SYNC(logger, "{} started successfully in {}", APP_NAME,
-		std::chrono::duration_cast<std::chrono::milliseconds>(
-			std::chrono::steady_clock::now() - start_time)
-	);
+		utility::start_time_format(start_time));
 
 	map::run(logger);
 

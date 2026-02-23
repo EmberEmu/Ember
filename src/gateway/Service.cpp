@@ -34,9 +34,9 @@
 #include <shared/threading/ServicePool.h>
 #include <shared/threading/Utility.h>
 #include <shared/utility/cstring_view.hpp>
-#include <shared/utility/Utility.h>
 #include <shared/utility/LogConfig.h>
 #include <shared/utility/STUN.h>
+#include <shared/utility/Utility.h>
 #include <shared/utility/xoroshiro128plus.h>
 #include <stun/Client.h>
 #include <stun/Utility.h>
@@ -273,9 +273,7 @@ void Service::launch(const po::variables_map& args, ServicePool& service_pool) t
 		realm_svc.set_online();
 
 		LOG_INFO_SYNC(logger, "{} started successfully in {}", APP_NAME,
-			std::chrono::duration_cast<std::chrono::milliseconds>(
-				std::chrono::steady_clock::now() - start_time)
-		);
+			utility::start_time_format(start_time));
 	});
 
 	stop_flag.acquire();
