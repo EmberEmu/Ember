@@ -11,7 +11,7 @@
                             template_dir
                             target_name
                             fverbosity)
-    set(dbc_parser "dbc-parser")
+    set(dbcparser "dbcparser")
 
     set(${dbc_hdr} "")
     set(${dbc_src} "")
@@ -35,19 +35,19 @@
 
     add_custom_command(
         OUTPUT ${${dbc_hdr}} ${${dbc_src}}
-        COMMAND ${dbc_parser} 
+        COMMAND ${dbcparser} 
         -d ${definition_dirs}
         -t ${template_dir} 
         -o ${output_dir} 
         --fverbosity ${fverbosity} 
         --disk
-        DEPENDS ${dbc_parser} ${input_dbcs}
+        DEPENDS ${dbcparser} ${input_dbcs}
         COMMENT "Generating DBC loaders..."
     )
 
     add_custom_target(
         ${target_name}
-        DEPENDS ${dbc_parser} ${${dbc_hdr}} ${${dbc_src}} ${additional_dependencies}
+        DEPENDS ${dbcparser} ${${dbc_hdr}} ${${dbc_src}} ${additional_dependencies}
     )
 
     set(${dbc_hdr} ${${dbc_hdr}} PARENT_SCOPE)
