@@ -113,11 +113,11 @@ void install_shutdown_callbacks(boost::asio::steady_timer& timer,
 
 	register_shutdown_command(timer, pending_flag, registry,
 		[&](auto time) {
-			LOG_CONSOLE_ASYNC(logger, "Service will shut down in {}", utility::time_duration_format(time));
+			LOG_CONSOLE_ASYNC(logger, "Server will shut down in {}", utility::time_duration_format(time));
 		}, [&] {
-			LOG_CONSOLE_ASYNC(logger, "Service shutdown has been cancelled");
+			LOG_CONSOLE_ASYNC(logger, "Server shutdown has been cancelled");
 		}, [&] {
-			LOG_CONSOLE_ASYNC(logger, "Service is shutting down now");
+			LOG_CONSOLE_ASYNC(logger, "Server is shutting down now");
 			std::raise(SIGINT);
 		}
 	);
