@@ -63,7 +63,6 @@ set(LIBRARY_HDR
     SocketType.h
     Service.h
     LoggingCallbacks.h
-    commands/Shutdown.h
 )
 
 set(LIBRARY_SRC
@@ -82,7 +81,12 @@ set(LIBRARY_SRC
     IntegrityData.cpp
     LocaleMap.cpp
     Survey.cpp
-    Service.cpp
+    Service.cpp   
+)
+
+set(EXECUTABLE_SOURCE
+    main.cpp
+    commands/Shutdown.h
     commands/Shutdown.cpp
 )
 
@@ -93,7 +97,7 @@ add_dependencies(${LIBRARY_NAME} FB_SCHEMA_COMPILE)
 add_dependencies(${LIBRARY_NAME} SPARK_RPC_GENERATE)
 target_link_libraries(${LIBRARY_NAME} dbcreader spark srp6 logger stun ports commands shared ${ZLIB_LIBRARY} botan::botan-static ${Boost_LIBRARIES} Threads::Threads)
 
-add_executable(${EXECUTABLE_NAME} main.cpp)
+add_executable(${EXECUTABLE_NAME} ${EXECUTABLE_SOURCE})
 target_link_libraries(${EXECUTABLE_NAME} ${LIBRARY_NAME} banner logger commands shared ${Boost_LIBRARIES} Threads::Threads)
 
 INSTALL(TARGETS ${EXECUTABLE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})
