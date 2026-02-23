@@ -12,6 +12,7 @@
 #include <commands/ArgumentMap.h>
 #include <commands/ArgumentValue.h>
 #include <commands/ArgumentType.h>
+#include <commands/Flags.h>
 #include <commands/Result.h>
 #include <commands/ScopedCommand.h>
 #include <functional>
@@ -40,6 +41,7 @@ class Command : public std::enable_shared_from_this<Command> {
 	std::vector<Argument> args_;
 	std::shared_ptr<CommandHandler> handler_;
 	CommandMap commands_;
+	Flags flags_;
 
 	Result validate_arg_count(std::size_t count) const;
 	bool validate_type(args::Type type, const args::Value& value) const;
@@ -67,6 +69,7 @@ public:
 	std::shared_ptr<Command> argument(std::string argument, args::Type type);
 	std::shared_ptr<Command> optional_argument(std::string argument, args::Type type);
 	std::shared_ptr<Command> handler(CommandHandler handler);
+	std::shared_ptr<Command> flags(const Flags& flags);
 
 	void insert(std::shared_ptr<Command> command);
 	ScopedCommand scoped_insert(std::shared_ptr<Command> command);
@@ -82,6 +85,7 @@ public:
 	std::string usage_string() const;
 	CommandMap commands() const;
 	std::size_t argument_count() const;
+	const Flags& flags() const;
 
 	Result execute();
 	Result execute(std::span<const args::Value> arg_values);
@@ -89,6 +93,7 @@ public:
 	Command& operator()(CommandHandler handler);
 	Command& operator()(std::shared_ptr<Command> command);
 	Command& operator()(std::string description);
+	Command& operator()(const Flags& flags);
 	Command& operator()(std::string argument, args::Type type, required);
 	Command& operator()(std::string argument, args::Type type, optional);
 };

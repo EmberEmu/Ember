@@ -8,12 +8,11 @@
 
 #pragma once
 
-#include <any>
+namespace ember::commands {
 
-namespace ember::commands::args {
-
-struct UserData {
-	std::any data;
+struct Flags {
+	unsigned int custom;
+	unsigned int security;
 };
 
-} // args, commands, ember
+} // commands, ember

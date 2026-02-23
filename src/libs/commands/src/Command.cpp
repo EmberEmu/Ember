@@ -15,7 +15,8 @@
 namespace ember::commands {
 
 Command::Command(std::string name)
-	: name_(std::move(name)) {
+	: name_(std::move(name)),
+	  flags_{} {
 	if(name_.empty()) {
 		throw exception("Command name cannot be empty");
 	}
@@ -130,6 +131,11 @@ std::shared_ptr<Command> Command::handler(CommandHandler handler) {
 	// during invocation for thread safety reasons - guaranteeing the lifetime
 	// of the handler rather than copying is sufficient
 	handler_ = std::make_shared<CommandHandler>(handler);
+	return this->shared_from_this();
+}
+
+std::shared_ptr<Command> Command::flags(const Flags& flags) {
+	flags_ = flags;
 	return this->shared_from_this();
 }
 
@@ -257,6 +263,10 @@ std::size_t Command::argument_count() const {
 	return args_.size();
 }
 
+const Flags& Command::flags() const {
+	return flags_;
+}
+
 Command& Command::operator()(std::shared_ptr<Command> command) {
 	this->insert(command);
 	return *this;
@@ -269,6 +279,11 @@ Command& Command::operator()(CommandHandler handler) {
 
 Command& Command::operator()(std::string description) {
 	this->description(description);
+	return *this;
+}
+
+Command& Command::operator()(const Flags& flags) {
+	this->flags(flags);
 	return *this;
 }
 

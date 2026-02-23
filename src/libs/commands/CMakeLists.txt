@@ -24,6 +24,7 @@ add_library(${LIBRARY_NAME} STATIC
     include/commands/PrefixedRegistry.h
     include/commands/ScopedCommand.h
     include/commands/UserData.h
+    include/commands/Flags.h
 )
 
 target_link_libraries(${LIBRARY_NAME} PUBLIC shared ${Boost_LIBRARIES})
