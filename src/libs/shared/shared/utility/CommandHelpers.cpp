@@ -37,7 +37,7 @@ void handle_command_result(commands::Result result,
         case commands::Result::missing_args:
 			[[fallthrough]];
         case commands::Result::too_many_args:
-			LOG_CONSOLE_ERROR_ASYNC(logger, "Usage: {}{}", path, command.usage_string());
+			LOG_CONSOLE_ERROR_ASYNC(logger, "Usage: {} {}", path, command.usage_string());
             break;
         case commands::Result::subcommands:
 			log_subcommands(logger, path, command.commands());
@@ -151,48 +151,58 @@ void execute_command(const std::string_view input, const commands::Registry& reg
 	LOG_CONSOLE_ERROR_ASYNC(logger, R"(Error during command execution, "{}")", e.what());
 }
 
+void handle_help_command(const commands::args::Map& arguments,
+                         const commands::Registry& registry,
+                         log::Logger& logger) {
+	if(arguments.empty()) {
+		LOG_CONSOLE_ASYNC(
+			logger,
+			R"(Type "help "<command>" (quoted) to display command usage or press tab for autocompletion)"
+		);
+
+		return;
+	}
+
+	const auto command = std::get<std::string>(arguments.at("command"));
+	const auto tokens = commands::Registry::parse_input(command);
+	const auto result = registry.search(tokens);
+
+	if(result.command) {
+		LOG_CONSOLE_ASYNC(logger, "Usage: {} {}", command, result.command->usage_string());
+		LOG_CONSOLE_ASYNC(logger, "Description: {}", result.command->description());
+	} else {
+		LOG_CONSOLE_ERROR_ASYNC(logger, R"(Command "{}" not found)", command);
+	}
+}
+
+void handle_cls_command(log::Logger& logger) {
+	auto sinks = logger.fetch_sink(log::CommandSink::sink_name);
+
+	if(sinks.empty()) {
+		LOG_ERROR_SYNC(logger, "Could not locate a command sink, cannot execute command");
+	}
+
+	assert(sinks.size() == 1 && "multiple command sinks?");
+
+	auto command_sink = static_cast<log::CommandSink*>(sinks.front().get());
+	assert(command_sink->name() == log::CommandSink::sink_name && "unexpected sink name");
+	command_sink->clear_console();
+}
+
 void register_shared_commands(commands::Registry& registry, log::Logger& logger) {
 	registry.insert("help")
 		->description("Display console command usage information")
 		->optional_argument("command", commands::args::Type::at_string)
 		->handler([&](const auto& arguments) {
-			if(arguments.empty()) {
-				LOG_CONSOLE_ASYNC(
-					logger,
-					R"(Type "help "<command>" (quoted) to display command usage or press tab for autocompletion)"
-				);
-
-				return;
-			}
-
-			const auto command = std::get<std::string>(arguments.at("command"));
-			const auto tokens = commands::Registry::parse_input(command);
-			const auto result = registry.search(tokens);
-
-			if(result.command) {
-				LOG_CONSOLE_ASYNC(logger, "Usage: {} {}", command, result.command->usage_string());
-				LOG_CONSOLE_ASYNC(logger, "Description: {}", result.command->description());
-			} else {
-				LOG_CONSOLE_ERROR_ASYNC(logger, R"(Command "{}" not found)", command);
-			}
+			handle_help_command(arguments, registry, logger);
 		});
 
 #ifdef _WIN32
 	registry.insert("cls")
 		->description("Clears the console")
-		->handler([&](const auto& arguments) {
-			auto sinks = logger.fetch_sink(log::CommandSink::sink_name);
-
-			if(sinks.empty()) {
-				LOG_ERROR_SYNC(logger, "Could not locate a command sink, cannot execute command");
-			}
-
-			assert(sinks.size() == 1 && "multiple command sinks?");
-
-			auto command_sink = static_cast<log::CommandSink*>(sinks.front().get());
-			assert(command_sink->name() == log::CommandSink::sink_name && "unexpected sink name");
-			command_sink->clear_console();
-	});
+		->handler([&](const auto&) {
+			handle_cls_command(logger);
+		});
 #endif
 }
 
