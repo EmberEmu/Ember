@@ -15,6 +15,7 @@
 #include <boost/program_options/variables_map.hpp>
 #include <boost/program_options/options_description.hpp>
 #include <boost/asio/io_context.hpp>
+#include <atomic>
 #include <chrono>
 #include <exception>
 #include <memory>
@@ -27,6 +28,7 @@ constexpr cstring_view APP_NAME { "Login Daemon" };
 class Service {
 	std::exception_ptr eptr;
 	std::binary_semaphore stop_flag { 0 };
+	std::atomic_bool stopping_;
 
 	log::Logger& logger;
 	commands::PrefixedRegistry& cmd_register;
@@ -45,7 +47,8 @@ public:
 	explicit Service(log::Logger& logger, commands::PrefixedRegistry& cmd_register)
 		: logger(logger),
 		  cmd_register(cmd_register),
-		  start_time(std::chrono::steady_clock::now()) {}
+		  start_time(std::chrono::steady_clock::now()),
+		  stopping_(false) {}
 
 	~Service() {
 		stop();

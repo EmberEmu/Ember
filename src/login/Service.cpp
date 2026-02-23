@@ -37,6 +37,7 @@
 #include <shared/game/GameVersion.h>
 #include <shared/game/Utility.h>
 #include <shared/IPBanCache.h>
+#include <shared/utility/CommandExecutor.h>
 #include <shared/utility/cstring_view.hpp>
 #include <shared/utility/polyfill/inplace_vector>
 #include <shared/utility/Utility.h>
@@ -122,6 +123,7 @@ int Service::run(const po::variables_map& args) try {
 }
 
 void Service::stop() {
+	stopping_ = true;
 	stop_flag.release();
 }
 
@@ -297,7 +299,6 @@ void Service::launch(const po::variables_map& args, boost::asio::io_context& ser
 	}
 
 	// Start port forwarding
-	
 	std::unique_ptr<ports::Forward> forward;
 
 	if(forward_enabled) {
@@ -312,24 +313,28 @@ void Service::launch(const po::variables_map& args, boost::asio::io_context& ser
 	}
 
 	// Install service command handlers
+	utility::CommandExecutor executor(service, stopping_, [&]() {
+		LOG_CONSOLE_ERROR_ASYNC(logger, "Command cannot be executed, service is shutting down");
+	});
+
 	std::inplace_vector<commands::ScopedCommand, 2> commands;
 	
 	auto handle = cmd_register.scoped_insert(commands::Command::create("connections")
 		->description("Display open connection count")
-		->handler([&](auto& command) {
+		->handler(executor([&](auto& command) {
 			LOG_CONSOLE_ASYNC(logger, "{} active connection(s), {} peak",
 				server.connection_count(), server.peak_connections());
-		})
+		}))
 	);
 
 	commands.emplace_back(std::move(handle));
 
 	handle = cmd_register.scoped_insert(commands::Command::create("uptime")
 		->description("Display service uptime")
-		->handler([&](auto& command) {
+		->handler(executor([&](auto& command) {
 			const auto uptime = std::chrono::steady_clock::now() - start_time;
 			LOG_CONSOLE_ASYNC(logger, "Server has been up for {}", utility::time_duration_format(uptime));
-		})
+		}))
 	);
 
 	commands.emplace_back(std::move(handle));
