@@ -52,8 +52,8 @@ public:
 
 	Suggestions autocomplete(const std::string_view query) const;
 
-	SearchResult search(const std::string_view query) const;
-	SearchResult search(std::span<const std::string> tokens) const;
+	SearchResult find(const std::string_view query) const;
+	SearchResult find(std::span<const std::string> tokens) const;
 	std::shared_ptr<Command> root() const;
 };
 

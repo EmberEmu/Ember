@@ -99,7 +99,7 @@ commands::args::Value convert_type(commands::args::Type type, std::string_view t
 
 void execute_command(const std::string_view input, const commands::Registry& registry, log::Logger& logger) try {
 	const auto tokens = registry.parse_input(input);
-	const auto search = registry.search(tokens);
+	const auto search = registry.find(tokens);
 
 	if(!search.command) {
 		LOG_CONSOLE_ERROR_ASYNC(
@@ -165,7 +165,7 @@ void handle_help_command(const commands::args::Map& arguments,
 
 	const auto command = std::get<std::string>(arguments.at("command"));
 	const auto tokens = commands::Registry::parse_input(command);
-	const auto result = registry.search(tokens);
+	const auto result = registry.find(tokens);
 
 	if(result.command) {
 		LOG_CONSOLE_ASYNC(logger, "Usage: {} {}", command, result.command->usage_string());
