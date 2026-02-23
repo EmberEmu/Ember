@@ -49,7 +49,7 @@ int main(int argc, const char* argv[]) try {
 
 	LOG_INFO_SYNC(logger, "Logger configured successfully");
 
-	LOG_INFO_SYNC(logger, "Registering command handlers...");
+	LOG_DEBUG_SYNC(logger, "Registering command handlers...");
 	commands::Registry registry;
 	commands::PrefixedRegistry cmd_register(registry);
 	utility::register_command_handlers(registry, logger);

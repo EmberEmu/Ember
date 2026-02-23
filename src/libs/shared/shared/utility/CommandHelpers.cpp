@@ -175,7 +175,7 @@ void register_shared_commands(commands::Registry& registry, log::Logger& logger)
 			} else {
 				LOG_CONSOLE_ERROR_ASYNC(logger, R"(Command "{}" not found)", command);
 			}
-		}); 
+		});
 
 #ifdef _WIN32
 	registry.insert("cls")
