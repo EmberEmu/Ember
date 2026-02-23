@@ -171,7 +171,7 @@ std::string Command::usage_string() const {
 	std::string result;
 
 	for(const auto& arg : args_) {
-		result += (arg.required? " <" : " [") + arg.name + (arg.required ? ">" : "]");
+		result += (arg.required? "<" : "[") + arg.name + (arg.required ? "> " : "] ");
 	}
 
 	return result;
