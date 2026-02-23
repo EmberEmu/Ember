@@ -172,7 +172,7 @@ void register_shared_commands(commands::Registry& registry, log::Logger& logger)
 			if(result.command) {
 				LOG_CONSOLE_ASYNC(logger, "Usage: {} {}", command, result.command->usage_string());
 			} else {
-				LOG_CONSOLE_ERROR_ASYNC(logger, R"(Command "{} "not found)", command);
+				LOG_CONSOLE_ERROR_ASYNC(logger, R"(Command "{}" not found)", command);
 			}
 		});
 
