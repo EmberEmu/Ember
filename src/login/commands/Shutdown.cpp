@@ -26,7 +26,7 @@ void handle_shutdown_command(commands::args::Map& arguments,
 		on_initiate(time);
 	}
 
-	timer.async_wait([&](const auto& ec) {			
+	timer.async_wait([on_expire = std::move(on_expire)](const auto& ec) {
 		if(!ec) {
 			on_expire();
 		}
