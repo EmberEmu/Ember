@@ -29,7 +29,6 @@
 #include <shared/metrics/MetricsPoll.h>
 #include <shared/metrics/Monitor.h>
 #include <shared/threading/ThreadPool.h>
-#include <shared/threading/Utility.h>
 #include <shared/database/daos/IPBanDAO.h>
 #include <shared/database/daos/PatchDAO.h>
 #include <shared/database/daos/RealmDAO.h>
@@ -90,8 +89,6 @@ void print_lib_versions(log::Logger& logger);
  * explicit shutdown() calls in a signal handler.
  */
 int Service::run(const po::variables_map& args) try {
-	const auto concurrency = thread::hardware_concurrency(logger);
-	boost::asio::io_context service(concurrency);
 	auto work = boost::asio::make_work_guard(service);
 
 	std::thread thread([&]() {
@@ -100,6 +97,7 @@ int Service::run(const po::variables_map& args) try {
 	});
 
 	// Spawn worker threads for Asio
+	const auto concurrency = thread::hardware_concurrency(logger);
 	boost::container::small_vector<std::jthread, WORKER_NUM_HINT> workers;
 	workers.reserve(concurrency);
 
@@ -123,8 +121,10 @@ int Service::run(const po::variables_map& args) try {
 }
 
 void Service::stop() {
-	stopping_ = true;
-	stop_flag.release();
+	boost::asio::dispatch(serialise, [&] {
+		stopping_ = true;
+		stop_flag.release();
+	});
 }
 
 void Service::launch(const po::variables_map& args, boost::asio::io_context& service) try {
@@ -313,7 +313,7 @@ void Service::launch(const po::variables_map& args, boost::asio::io_context& ser
 	}
 
 	// Install service command handlers
-	utility::CommandExecutor executor(service, stopping_, [&]() {
+	utility::CommandExecutor executor(serialise, stopping_, [&]() {
 		LOG_CONSOLE_ERROR_ASYNC(logger, "Command cannot be executed, service is shutting down");
 	});
 

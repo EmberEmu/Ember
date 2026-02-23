@@ -9,12 +9,14 @@
 #pragma once
 
 #include <logger/LoggerFwd.h>
-#include <shared/metrics/Metrics.h>
 #include <commands/PrefixedRegistry.h>
+#include <shared/metrics/Metrics.h>
+#include <shared/threading/Utility.h>
 #include <shared/utility/cstring_view.hpp>
 #include <boost/program_options/variables_map.hpp>
 #include <boost/program_options/options_description.hpp>
 #include <boost/asio/io_context.hpp>
+#include <boost/asio/strand.hpp>
 #include <atomic>
 #include <chrono>
 #include <exception>
@@ -26,6 +28,8 @@ namespace ember::login {
 constexpr cstring_view APP_NAME { "Login Daemon" };
 
 class Service {
+	boost::asio::io_context service;
+	boost::asio::io_context::strand serialise;
 	std::exception_ptr eptr;
 	std::binary_semaphore stop_flag { 0 };
 	std::atomic_bool stopping_;
@@ -45,7 +49,9 @@ public:
 	static boost::program_options::options_description options();
 
 	explicit Service(log::Logger& logger, commands::PrefixedRegistry& cmd_register)
-		: logger(logger),
+		: service(thread::hardware_concurrency(logger)),
+		  serialise(service),
+		  logger(logger),
 		  cmd_register(cmd_register),
 		  start_time(std::chrono::steady_clock::now()),
 		  stopping_(false) {}
