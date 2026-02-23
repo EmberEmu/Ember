@@ -8,7 +8,8 @@
 
 #pragma once
 
-#include <any>
+#include <commands/ArgumentType.h>
+#include <commands/UserData.h>
 #include <string>
 #include <variant>
 #include <cstdint>
@@ -28,7 +29,7 @@ using Value = std::variant<
 	float,
 	double,
 	char,
-	std::any
+	UserData
 >;
 
 } // commands, ember

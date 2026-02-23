@@ -8,22 +8,12 @@
 
 #pragma once
 
+#include <any>
+
 namespace ember::commands::args {
 
-enum class Type {
-	at_string,
-	at_uint8,
-	at_uint16,
-	at_uint32,
-	at_uint64,
-	at_int8,
-	at_int16,
-	at_int32,
-	at_int64,
-	at_float,
-	at_double,
-	at_char,
-	at_user_data
+struct UserData {
+	std::any data;
 };
 
 } // commands, ember
