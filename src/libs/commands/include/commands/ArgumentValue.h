@@ -8,8 +8,9 @@
 
 #pragma once
 
-#include <variant>
+#include <any>
 #include <string>
+#include <variant>
 #include <cstdint>
 
 namespace ember::commands::args {
@@ -26,7 +27,8 @@ using Value = std::variant<
 	std::int64_t,
 	float,
 	double,
-	char
+	char,
+	std::any
 >;
 
 } // commands, ember

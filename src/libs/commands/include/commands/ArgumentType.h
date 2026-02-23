@@ -23,6 +23,7 @@ enum class Type {
 	at_float,
 	at_double,
 	at_char,
+	at_any
 };
 
 } // commands, ember

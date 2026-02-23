@@ -11,8 +11,10 @@
 #include <gtest/gtest.h>
 #include <array>
 #include <ranges>
+#include <string_view>
 
 using namespace ember;
+using namespace std::string_view_literals;
 
 class Registry : public ::testing::Test {
 public:
@@ -233,9 +235,9 @@ TEST_F(Commands, Execute_InvalidTypes) {
 	auto cmd = registry.find("root").command;
 
 	std::array<commands::args::Value, 3> args {
-		"Are you sure that's the point, Doctor?",
-		"Of course. What else could it be?",
-		"That you should never tell the same lie twice."
+		"Are you sure that's the point, Doctor?"sv,
+		"Of course. What else could it be?"sv,
+		"That you should never tell the same lie twice."sv
 	};
 
 	ASSERT_EQ(cmd->execute(args), commands::Result::invalid_types);
@@ -255,7 +257,7 @@ TEST_F(Commands, Execute_TooManyArgs) {
 	auto cmd = registry.find("root").command;
 
 	std::array<commands::args::Value, 4> args {
-		"The", "quick", "brown", "fox"
+		"The"sv, "quick"sv, "brown"sv, "fox"sv
 	};
 
 	ASSERT_EQ(cmd->execute(args), commands::Result::too_many_args);
@@ -265,7 +267,7 @@ TEST_F(Commands, Execute_MissingArgs) {
 	auto cmd = registry.find("root").command;
 
 	std::array<commands::args::Value, 1> args {
-		"jumped",
+		"jumped"sv,
 	};
 
 	ASSERT_EQ(cmd->execute(), commands::Result::missing_args);
@@ -275,7 +277,7 @@ TEST_F(Commands, Execute_RequiredArgs_Success) {
 	auto cmd = registry.find("root").command;
 
 	std::array<commands::args::Value, 2> args {
-		"over", "the",
+		"over"sv, "the"sv,
 	};
 
 	ASSERT_EQ(cmd->execute(args), commands::Result::success);
@@ -286,7 +288,7 @@ TEST_F(Commands, Execute_OptionalArgs_Success) {
 	auto cmd = registry.find("root").command;
 
 	std::array<commands::args::Value, 3> args {
-		"lazy", "dog", std::uint32_t(42)
+		"lazy"sv, "dog"sv, std::uint32_t(42)
 	};
 
 	ASSERT_EQ(cmd->execute(args), commands::Result::success);
@@ -311,7 +313,7 @@ TEST_F(Commands, Execute_AllArgTypes_Success) {
 		->argument("arg12", commands::args::Type::at_uint8);
 
 	std::array<commands::args::Value, 12> args {
-		"Hello, world", 'c', 1.0, 1.0f,
+		"Hello, world"sv, 'c', 1.0, 1.0f,
 		std::int16_t(0), std::int32_t(0), std::int64_t(0), std::int8_t(0),
 		std::uint16_t(0), std::uint32_t(0), std::uint64_t(0), std::uint8_t(0)
 	};
