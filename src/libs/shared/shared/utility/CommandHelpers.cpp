@@ -16,6 +16,7 @@
 #include <span>
 #include <string>
 #include <string_view>
+#include <utility>
 #include <vector>
 
 namespace ember::utility {
@@ -153,9 +154,27 @@ void execute_command(const std::string_view input, const commands::Registry& reg
 void register_shared_commands(commands::Registry& registry, log::Logger& logger) {
 	registry.insert("help")
 		->description("Display console command usage information")
-		->handler([&](const auto&) {
-			LOG_CONSOLE_ASYNC(logger, "To display a list of available commands, press tab for autocompletion");
-	});
+		->optional_argument("command", commands::args::Type::at_string)
+		->handler([&](const auto& arguments) {
+			if(arguments.empty()) {
+				LOG_CONSOLE_ASYNC(
+					logger,
+					R"(Type "help "<command>" (quoted) to display command usage or press tab for autocompletion)"
+				);
+
+				return;
+			}
+
+			const auto command = std::get<std::string>(arguments.at("command"));
+			const auto tokens = commands::Registry::parse_input(command);
+			const auto result = registry.search(tokens);
+
+			if(result.command) {
+				LOG_CONSOLE_ASYNC(logger, "Usage: {} {}", command, result.command->usage_string());
+			} else {
+				LOG_CONSOLE_ERROR_ASYNC(logger, R"(Command "{} "not found)", command);
+			}
+		});
 
 #ifdef _WIN32
 	registry.insert("cls")

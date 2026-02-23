@@ -8,8 +8,6 @@
 
 #pragma once
 
-#include <memory>
-
 namespace ember {
 
 namespace log { class Logger; }
