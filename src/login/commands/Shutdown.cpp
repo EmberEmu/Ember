@@ -52,18 +52,17 @@ void register_shutdown_command(commands::PrefixedRegistry& cmd_register,
                                shutdown::OnInitiate on_initiate,
                                shutdown::OnCancel on_cancel,
                                shutdown::OnExpire on_expire) {
-	auto root = cmd_register("shutdown")
+	cmd_register("shutdown")
 		->description("Shuts the service down")
 		->argument("seconds", commands::args::Type::at_uint32)
 		->handler([&, on_initiate, on_expire](auto arguments) {
 			handle_shutdown_command(arguments, timer, pending_flag, on_initiate, on_expire);
-		});
-	
-	root->insert("cancel")
-		->description("Cancels pending shutdown")
-		->handler([&, on_cancel](auto arguments) {
-			handle_cancel_command(timer, pending_flag, on_cancel);
-		});
+		})->insert("cancel") // subcommand
+			->description("Cancels pending shutdown")
+			->handler([&, on_cancel](auto arguments) {
+				handle_cancel_command(timer, pending_flag, on_cancel);
+			}
+		);
 
 	pending_flag = false;
 }

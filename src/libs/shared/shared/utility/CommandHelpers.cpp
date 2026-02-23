@@ -175,6 +175,7 @@ void handle_help_command(const commands::args::Map& arguments,
 	}
 }
 
+#ifdef _WIN32
 void handle_cls_command(log::Logger& logger) {
 	auto sinks = logger.fetch_sink(log::CommandSink::sink_name);
 
@@ -188,6 +189,7 @@ void handle_cls_command(log::Logger& logger) {
 	assert(command_sink->name() == log::CommandSink::sink_name && "unexpected sink name");
 	command_sink->clear_console();
 }
+#endif
 
 void register_shared_commands(commands::Registry& registry, log::Logger& logger) {
 	registry.insert("help")
