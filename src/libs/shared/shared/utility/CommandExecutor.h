@@ -39,7 +39,7 @@ public:
 	CommandExecutor(boost::asio::io_context::strand& strand, const std::atomic_bool& stop_flag, OnFailure&& failure_cb)
 		: strand_(strand),
 		  stop_flag_(stop_flag),
-		  failure_cb_(failure_cb) { }
+		  failure_cb_(std::move(failure_cb)) { }
 
 	template<typename Handler>
 	auto operator()(Handler&& handler) {
