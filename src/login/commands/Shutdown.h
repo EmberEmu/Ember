@@ -23,9 +23,9 @@ using OnExpire = std::function<void()>;
 
 } // shutdown
 
-void register_shutdown_command(boost::asio::steady_timer& timer,
-							   bool& pending_flag,
-                               commands::PrefixedRegistry& cmd_register,
+void register_shutdown_command(commands::PrefixedRegistry& cmd_register,
+                               boost::asio::steady_timer& timer,
+                               bool& pending_flag,
                                shutdown::OnInitiate on_initiate,
                                shutdown::OnCancel on_cancel,
                                shutdown::OnExpire handler);

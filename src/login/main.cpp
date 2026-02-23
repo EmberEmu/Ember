@@ -38,9 +38,9 @@ namespace po = boost::program_options;
 po::variables_map parse_arguments(int argc, const char* argv[]);
 int run(const po::variables_map& args, log::Logger& logger, commands::PrefixedRegistry& cmd_register);
 
-void install_shutdown_callbacks(boost::asio::steady_timer& timer,
-                                log::Logger& logger,
-                                commands::PrefixedRegistry& registry);
+void install_shutdown_callbacks(commands::PrefixedRegistry& registry,
+                                boost::asio::steady_timer& timer,
+                                log::Logger& logger);
 
 /*
  * We want to do the minimum amount of work required to get 
@@ -96,7 +96,7 @@ int run(const po::variables_map& args, log::Logger& logger, commands::PrefixedRe
 	});
 
 	boost::asio::steady_timer timer(io_ctx);
-	install_shutdown_callbacks(timer, logger, cmd_register);
+	install_shutdown_callbacks(cmd_register, timer, logger);
 
 	const auto ret = service.run(args);
 	signals.cancel();
@@ -106,12 +106,12 @@ int run(const po::variables_map& args, log::Logger& logger, commands::PrefixedRe
 	return EXIT_FAILURE;
 }
 
-void install_shutdown_callbacks(boost::asio::steady_timer& timer,
-                               log::Logger& logger,
-                               commands::PrefixedRegistry& registry) {
+void install_shutdown_callbacks(commands::PrefixedRegistry& registry,
+                                boost::asio::steady_timer& timer,
+                                log::Logger& logger) {
 	static bool pending_flag = false;
 
-	register_shutdown_command(timer, pending_flag, registry,
+	register_shutdown_command(registry, timer, pending_flag,
 		[&](auto time) {
 			LOG_CONSOLE_ASYNC(logger, "Server will shut down in {}", utility::time_duration_format(time));
 		}, [&] {
