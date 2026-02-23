@@ -63,6 +63,7 @@ set(LIBRARY_HDR
     SocketType.h
     Service.h
     LoggingCallbacks.h
+    commands/Shutdown.h
 )
 
 set(LIBRARY_SRC
@@ -82,6 +83,7 @@ set(LIBRARY_SRC
     LocaleMap.cpp
     Survey.cpp
     Service.cpp
+    commands/Shutdown.cpp
 )
 
 source_group("Grunt Protocol" FILES ${GRUNT_SRC})

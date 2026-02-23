@@ -101,7 +101,12 @@ void execute_command(const std::string_view input, const commands::Registry& reg
 	const auto search = registry.search(tokens);
 
 	if(!search.command) {
-		LOG_CONSOLE_ERROR_ASYNC(logger, R"(Command "{}" not found)", tokens.front());
+		LOG_CONSOLE_ERROR_ASYNC(
+			logger,
+			R"(Command "{}" not found)",
+			tokens.front()
+		);
+
 		return;
 	}
 
@@ -113,8 +118,14 @@ void execute_command(const std::string_view input, const commands::Registry& reg
 	 * trigger from here. This check is only for user feedback, it is not required for correct behaviour.
 	 */
 	if(arguments.size() > search.command->argument_count()) {
-		LOG_CONSOLE_ERROR_ASYNC(logger, R"(Too many arguments passed to "{}" (takes {}, got {}))",
-			tokens.front(), search.command->argument_count(), arguments.size());
+		LOG_CONSOLE_ERROR_ASYNC(
+			logger,
+			R"(Too many arguments passed to "{}" (takes {}, got {}))",
+			tokens.front(),
+			search.command->argument_count(),
+			arguments.size()
+		);
+
 		return;
 	}
 
@@ -133,6 +144,8 @@ void execute_command(const std::string_view input, const commands::Registry& reg
 	}
 } catch(const commands::parse_error& e) {
 	LOG_CONSOLE_ERROR_ASYNC(logger, R"(Error parsing command arguments, "{}")", e.what());
+} catch(const boost::bad_lexical_cast&) {
+	LOG_CONSOLE_ERROR_ASYNC(logger, R"(Unable to execute command, invalid argument types provided)");
 } catch(const std::exception& e) {
 	LOG_CONSOLE_ERROR_ASYNC(logger, R"(Error during command execution, "{}")", e.what());
 }

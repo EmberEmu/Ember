@@ -7,6 +7,7 @@
  */
 
 #include "Service.h"
+#include "commands/Shutdown.h"
 #include <logger/CommandSink.h>
 #include <logger/Logger.h>
 #include <banner/Banner.h>
@@ -20,6 +21,7 @@
 #include <shared/utility/Utility.h>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/signal_set.hpp>
+#include <boost/asio/steady_timer.hpp>
 #include <boost/program_options.hpp>
 #include <exception>
 #include <fstream>
@@ -27,6 +29,7 @@
 #include <ranges>
 #include <string>
 #include <thread>
+#include <csignal>
 #include <cstdlib>
 
 using namespace ember;
@@ -34,6 +37,10 @@ namespace po = boost::program_options;
 
 po::variables_map parse_arguments(int argc, const char* argv[]);
 int run(const po::variables_map& args, log::Logger& logger, commands::PrefixedRegistry& cmd_register);
+
+void install_shutdown_callbacks(commands::PrefixedRegistry& registry,
+                                boost::asio::steady_timer& timer,
+                                log::Logger& logger);
 
 /*
  * We want to do the minimum amount of work required to get 
@@ -85,8 +92,11 @@ int run(const po::variables_map& args, log::Logger& logger, commands::PrefixedRe
 
 	std::jthread worker([&]() {
 		thread::set_name("Signal handler");
-		io_ctx.run_one();
+		io_ctx.run();
 	});
+
+	boost::asio::steady_timer timer(io_ctx);
+	install_shutdown_callbacks(cmd_register, timer, logger);
 
 	const auto ret = service.run(args);
 	signals.cancel();
@@ -94,6 +104,23 @@ int run(const po::variables_map& args, log::Logger& logger, commands::PrefixedRe
 } catch(const std::exception& e) {
 	LOG_FATAL(logger) << e.what() << LOG_SYNC;
 	return EXIT_FAILURE;
+}
+
+void install_shutdown_callbacks(commands::PrefixedRegistry& registry,
+                                boost::asio::steady_timer& timer,
+                                log::Logger& logger) {
+	static bool pending_flag = false;
+
+	register_shutdown_command(registry, timer, pending_flag,
+		[&](auto time) {
+			LOG_CONSOLE_ASYNC(logger, "Server will shut down in {}", utility::time_duration_format(time));
+		}, [&] {
+			LOG_CONSOLE_ASYNC(logger, "Server shutdown has been cancelled");
+		}, [&] {
+			LOG_CONSOLE_ASYNC(logger, "Server is shutting down now");
+			std::raise(SIGINT);
+		}
+	);
 }
 
 po::variables_map parse_arguments(const int argc, const char* argv[]) {
