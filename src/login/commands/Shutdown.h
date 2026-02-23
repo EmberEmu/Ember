@@ -9,8 +9,6 @@
 #pragma once
 
 #include <commands/PrefixedRegistry.h>
-#include <shared/utility/Utility.h>
-#include <logger/Logger.h>
 #include <boost/asio/steady_timer.hpp>
 #include <chrono>
 #include <functional>
@@ -26,7 +24,6 @@ using OnExpire = std::function<void()>;
 } // shutdown
 
 void register_shutdown_command(boost::asio::steady_timer& timer,
-                               log::Logger& logger,
 							   bool& pending_flag,
                                commands::PrefixedRegistry& cmd_register,
                                shutdown::OnInitiate on_initiate,

@@ -111,7 +111,7 @@ void install_shutdown_callbacks(boost::asio::steady_timer& timer,
                                commands::PrefixedRegistry& registry) {
 	static bool pending_flag = false;
 
-	register_shutdown_command(timer, logger, pending_flag, registry,
+	register_shutdown_command(timer, pending_flag, registry,
 		[&](auto time) {
 			LOG_CONSOLE_ASYNC(logger, "Service will shut down in {}", utility::time_duration_format(time));
 		}, [&] {

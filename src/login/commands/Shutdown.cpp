@@ -14,7 +14,6 @@ using namespace std::chrono_literals;
 namespace ember {
 
 void register_shutdown_command(boost::asio::steady_timer& timer,
-                               log::Logger& logger,
                                bool& pending_flag,
                                commands::PrefixedRegistry& cmd_register,
                                shutdown::OnInitiate on_initiate,
