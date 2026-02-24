@@ -99,6 +99,10 @@ auto Command::can_execute_handler() const -> Result {
 	}
 }
 
+void Command::prefix_name(std::string prefix) {
+	name_ = prefix + name_;
+}
+
 std::shared_ptr<Command> Command::argument(std::string argument, args::Type type) {
 	std::lock_guard guard(mutex_);
 

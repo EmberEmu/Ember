@@ -28,6 +28,7 @@ public:
 	}
 
 	ScopedCommand scoped_insert(std::shared_ptr<Command> command) {
+		command->prefix_name(prefix_);
 		return registry_.scoped_insert(command);
 	}
 
