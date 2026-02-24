@@ -14,7 +14,7 @@
 #include <ports/upnp/SSDP.h>
 #include <ports/upnp/IGDevice.h>
 #include <boost/asio/io_context.hpp>
-#include <boost/asio/deadline_timer.hpp>
+#include <boost/asio/steady_timer.hpp>
 #include <atomic>
 #include <chrono>
 #include <functional>
@@ -22,7 +22,6 @@
 #include <memory>
 #include <string>
 #include <string_view>
-#include <cassert>
 #include <cstdint>
 
 namespace ember::ports {
@@ -69,6 +68,10 @@ public:
 	void start_upnp(const std::string& iface, std::uint16_t port);
 	void start_pmp(const std::string& iface, const std::string& gateway, std::uint16_t port);
 	void start_auto(const std::string& iface, const std::string& gateway, std::uint16_t port);
+
+	void daemon_add_handler(const ports::MapRequest& request, const ports::Result& result);
+	void daemon_log_event(const ports::Daemon::Event& event, const MapRequest& result);
+	bool locate_result_handler(std::uint16_t port, ports::upnp::LocateResult result);
 
 	void unmap_upnp();
 	void unmap_pmp();

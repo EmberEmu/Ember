@@ -9,6 +9,8 @@
 #include <ports/Forward.h>
 #include <boost/asio/post.hpp>
 #include <format>
+#include <utility>
+#include <cassert>
 
 namespace ember::ports {
 
@@ -37,39 +39,108 @@ void Forward::log(Severity severity, const std::format_string<Args...> fmt, Args
 	log_cb_(severity, formatted);
 }
 
+bool  Forward::locate_result_handler(std::uint16_t port, ports::upnp::LocateResult result) {
+	if(!result) {
+		log(
+			Severity::error,
+			"UPnP gateway search failed with error code {}", result.error().value()
+		);
+
+		return true;
+	}
+
+	const ports::upnp::Mapping map {
+		.external = port,
+		.internal = port,
+		.ttl = 0,
+		.protocol = ports::Protocol::tcp
+	};
+
+	result->device->add_port_mapping(map, [&](ports::upnp::ErrorCode ec) {
+		if(!ec) {
+			log(Severity::info, "[UPnP] Port {} successfully forwarded", port);
+			mapping_active_ = true;
+		} else {
+			log(Severity::error, "[UPnP] Port forwarding failed, error {}", ec.value());
+		}
+
+	});
+
+	upnp_device_ = std::move(result->device);
+	return false;
+}
+
 void Forward::start_upnp(const std::string& iface, std::uint16_t port) {
 	ssdp_ = std::make_unique<ports::upnp::SSDP>(iface, ctx_);
 
 	ssdp_->locate_gateways([&, port](ports::upnp::LocateResult result) {
-		if(!result) {
-			log(
-				Severity::error,
-				"UPnP gateway search failed with error code {}", result.error().value()
-			);
-
-			return true;
-		}
-
-		const ports::upnp::Mapping map {
-			.external = port,
-			.internal = port,
-			.ttl = 0,
-			.protocol = ports::Protocol::tcp
-		};
-
-		result->device->add_port_mapping(map, [&](ports::upnp::ErrorCode ec) {
-			if(!ec) {
-				log(Severity::info, "[UPnP] Port {} successfully forwarded", port);
-				mapping_active_ = true;
-			} else {
-				log(Severity::error, "[UPnP] Port forwarding failed, error {}", ec.value());
-			}
-
-		});
-
-		upnp_device_ = std::move(result->device);
-		return false;
+		return locate_result_handler(port, std::move(result));
 	});
+}
+
+void Forward::daemon_log_event(const ports::Daemon::Event& event, const MapRequest& result) {
+	const auto v6 = boost::asio::ip::address_v6(result.external_ip);
+
+	switch(event) {
+		case ports::Daemon::Event::added_mapping:
+			log(
+				Severity::debug,
+				"[NATPMP/PCP][Daemon] {}:{} -> {} forwarded for {} seconds",
+				v6.to_string(), result.external_port, result.internal_port, result.lifetime
+			);
+			break;
+		case ports::Daemon::Event::failed_mapping:
+			log(Severity::debug,
+				"[NATPMP / PCP][Daemon] Port forwarding attempt failed, will retry...",
+				v6.to_string(), result.external_port, result.internal_port, result.lifetime
+			);
+			break;
+		case ports::Daemon::Event::renewed_mapping:
+			log(Severity::debug,
+				"[NATPMP/PCP] [Daemon] Port {} forwarding renewed for {} seconds",
+				result.external_port, result.lifetime
+			);
+			break;
+		case ports::Daemon::Event::failed_to_renew:
+			log(
+				Severity::warn,
+				"[NATPMP/PCP] [Daemon] Port forwarding renewal failure, will retry..."
+			);
+			break;
+		case ports::Daemon::Event::mapping_expired:
+			log(Severity::warn,
+				"[NATPMP/PCP] [Daemon] Port forwarding expired, service may be unavailable"
+				"to outside hosts, remapping will be attempted"
+			);
+			break;
+		default:
+			log(Severity::error,
+				"[NATPMP/PCP] [Daemon] Unhandled daemon event type"
+			);
+			break;
+	}
+}
+
+void Forward::daemon_add_handler(const ports::MapRequest& request, const ports::Result& result) {
+	if(result) {
+		const auto v6 = boost::asio::ip::address_v6(result->external_ip);
+
+		log(Severity::info,
+			"[NATPMP/PCP] {}:{} -> {} forwarded for {} seconds (requested {} seconds)",
+			v6.to_string(),
+			result->external_port,
+			result->internal_port,
+			result->lifetime,
+			request.lifetime
+		);
+
+		mapping_active_ = true;
+	} else {
+		log(Severity::error,
+			R"([NATPMP/PCP] Port forwarding failed, error "{}")", error_string(result.error())
+		);
+		mapping_active_ = false; // mapping can succeed and later fail when refreshed
+	}
 }
 
 void Forward::start_pmp(const std::string& iface, const std::string& gateway, std::uint16_t port) try {
@@ -83,62 +154,11 @@ void Forward::start_pmp(const std::string& iface, const std::string& gateway, st
 	client_ = std::make_unique<ports::Client>(iface, gateway, ctx_);
 
 	daemon_ = std::make_unique<ports::Daemon>(*client_, ctx_, [&](auto event, const auto& result) {
-		const auto v6 = boost::asio::ip::address_v6(result.external_ip);
-	
-		switch(event) {
-			case ports::Daemon::Event::added_mapping:
-				log(
-					Severity::debug,
-					"[NATPMP/PCP][Daemon] {}:{} -> {} forwarded for {} seconds",
-					v6.to_string(), result.external_port, result.internal_port, result.lifetime
-				);
-				break;
-			case ports::Daemon::Event::failed_mapping:
-				log(Severity::debug,
-					"[NATPMP / PCP][Daemon] Port forwarding attempt failed, will retry...",
-					v6.to_string(), result.external_port, result.internal_port, result.lifetime
-				);
-				break;
-			case ports::Daemon::Event::renewed_mapping:
-				log(Severity::debug,
-					"[NATPMP/PCP] [Daemon] Port {} forwarding renewed for {} seconds",
-					result.external_port, result.lifetime
-				);
-				break;
-			case ports::Daemon::Event::failed_to_renew:
-				log(
-					Severity::warn,
-					"[NATPMP/PCP] [Daemon] Port forwarding renewal failure, will retry..."
-				);
-				break;
-			case ports::Daemon::Event::mapping_expired:
-				log(Severity::warn,
-					"[NATPMP/PCP] [Daemon] Port forwarding expired, service may be unavailable"
-					"to outside hosts, remapping will be attempted"
-				);
-				break;
-		}
+		daemon_log_event(event, result);
 	});
 
 	daemon_->add_mapping(request, false, [&, request](const ports::Result& result) {
-		if(result) {
-			const auto v6 = boost::asio::ip::address_v6(result->external_ip);
-
-			log(Severity::info,
-				"[NATPMP/PCP] {}:{} -> {} forwarded for {} seconds (requested {} seconds)",
-				v6.to_string(),
-			    result->external_port,
-			    result->internal_port,
-			    result->lifetime,
-				request.lifetime
-			);
-			mapping_active_ = true;
-		} else {
-			log(Severity::error,
-				R"([NATPMP/PCP] Port forwarding failed, error "{}")", error_string(result.error())
-			);
-			mapping_active_ = false; // mapping can succeed and later fail when refreshed
-		}
+		daemon_add_handler(request, result);
 	});
 } catch(const std::exception& e) {
 	log(Severity::error, R"([NATPMP/PCP] Port forwarding failed, error "{}")", e.what());
