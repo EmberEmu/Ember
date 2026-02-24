@@ -1,9 +1,9 @@
 /*
-  ___        _          Version 3.4.0
+  ___        _          Version 3.5.0
  |_ _|_ __  (_) __ _    https://github.com/pantor/inja
   | || '_ \ | |/ _` |   Licensed under the MIT License <http://opensource.org/licenses/MIT>.
   | || | | || | (_| |
- |___|_| |_|/ |\__,_|   Copyright (c) 2018-2023 Lars Berscheid
+ |___|_| |_|/ |\__,_|   Copyright (c) 2018-2025 Lars Berscheid
           |__/
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,10 @@ SOFTWARE.
 #ifndef INCLUDE_INJA_INJA_HPP_
 #define INCLUDE_INJA_INJA_HPP_
 
+// #include "json.hpp"
+#ifndef INCLUDE_INJA_JSON_HPP_
+#define INCLUDE_INJA_JSON_HPP_
+
 #include <nlohmann/json.hpp>
 
 namespace inja {
@@ -35,6 +39,12 @@ using json = INJA_DATA_TYPE;
 #endif
 } // namespace inja
 
+#endif // INCLUDE_INJA_JSON_HPP_
+
+// #include "throw.hpp"
+#ifndef INCLUDE_INJA_THROW_HPP_
+#define INCLUDE_INJA_THROW_HPP_
+
 #if (defined(__cpp_exceptions) || defined(__EXCEPTIONS) || defined(_CPPUNWIND)) && !defined(INJA_NOEXCEPTION)
 #ifndef INJA_THROW
 #define INJA_THROW(exception) throw exception
@@ -42,29 +52,35 @@ using json = INJA_DATA_TYPE;
 #else
 #include <cstdlib>
 #ifndef INJA_THROW
-#define INJA_THROW(exception)                                                                                                                                  \
-  std::abort();                                                                                                                                                \
-  std::ignore = exception
+#define INJA_THROW(exception) \
+std::abort();                 \
+    std::ignore = exception
 #endif
 #ifndef INJA_NOEXCEPTION
 #define INJA_NOEXCEPTION
 #endif
 #endif
 
+#endif // INCLUDE_INJA_THROW_HPP_
+
 // #include "environment.hpp"
 #ifndef INCLUDE_INJA_ENVIRONMENT_HPP_
 #define INCLUDE_INJA_ENVIRONMENT_HPP_
 
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <string>
 #include <string_view>
 
+// #include "json.hpp"
+
 // #include "config.hpp"
 #ifndef INCLUDE_INJA_CONFIG_HPP_
 #define INCLUDE_INJA_CONFIG_HPP_
 
+#include <filesystem>
 #include <functional>
 #include <string>
 
@@ -98,7 +114,7 @@ using json = INJA_DATA_TYPE;
 #include <utility>
 #include <vector>
 
-// #include "inja.hpp"
+// #include "json.hpp"
 
 
 namespace inja {
@@ -154,6 +170,7 @@ public:
     Min,
     Odd,
     Range,
+    Replace,
     Round,
     Sort,
     Upper,
@@ -197,6 +214,7 @@ private:
       {std::make_pair("min", 1), FunctionData {Operation::Min}},
       {std::make_pair("odd", 1), FunctionData {Operation::Odd}},
       {std::make_pair("range", 1), FunctionData {Operation::Range}},
+      {std::make_pair("replace", 3), FunctionData {Operation::Replace}},
       {std::make_pair("round", 2), FunctionData {Operation::Round}},
       {std::make_pair("sort", 1), FunctionData {Operation::Sort}},
       {std::make_pair("upper", 1), FunctionData {Operation::Upper}},
@@ -234,8 +252,6 @@ public:
 } // namespace inja
 
 #endif // INCLUDE_INJA_FUNCTION_STORAGE_HPP_
-
-// #include "inja.hpp"
 
 // #include "utils.hpp"
 #ifndef INCLUDE_INJA_UTILS_HPP_
@@ -358,6 +374,8 @@ inline void replace_substring(std::string& s, const std::string& f, const std::s
 
 #endif // INCLUDE_INJA_UTILS_HPP_
 
+// #include "json.hpp"
+
 
 namespace inja {
 
@@ -410,7 +428,7 @@ public:
 
   size_t pos;
 
-  AstNode(size_t pos): pos(pos) {}
+  explicit AstNode(size_t pos): pos(pos) {}
   virtual ~AstNode() {}
 };
 
@@ -420,7 +438,7 @@ public:
 
   explicit BlockNode(): AstNode(0) {}
 
-  void accept(NodeVisitor& v) const {
+  void accept(NodeVisitor& v) const override {
     v.visit(*this);
   }
 };
@@ -431,7 +449,7 @@ public:
 
   explicit TextNode(size_t pos, size_t length): AstNode(pos), length(length) {}
 
-  void accept(NodeVisitor& v) const {
+  void accept(NodeVisitor& v) const override {
     v.visit(*this);
   }
 };
@@ -440,7 +458,7 @@ class ExpressionNode : public AstNode {
 public:
   explicit ExpressionNode(size_t pos): AstNode(pos) {}
 
-  void accept(NodeVisitor& v) const {
+  void accept(NodeVisitor& v) const override {
     v.visit(*this);
   }
 };
@@ -451,7 +469,7 @@ public:
 
   explicit LiteralNode(std::string_view data_text, size_t pos): ExpressionNode(pos), value(json::parse(data_text)) {}
 
-  void accept(NodeVisitor& v) const {
+  void accept(NodeVisitor& v) const override {
     v.visit(*this);
   }
 };
@@ -474,7 +492,7 @@ public:
 
   explicit DataNode(std::string_view ptr_name, size_t pos): ExpressionNode(pos), name(ptr_name), ptr(json::json_pointer(convert_dot_to_ptr(ptr_name))) {}
 
-  void accept(NodeVisitor& v) const {
+  void accept(NodeVisitor& v) const override {
     v.visit(*this);
   }
 };
@@ -594,7 +612,7 @@ public:
     }
   }
 
-  void accept(NodeVisitor& v) const {
+  void accept(NodeVisitor& v) const override {
     v.visit(*this);
   }
 };
@@ -606,14 +624,14 @@ public:
   explicit ExpressionListNode(): AstNode(0) {}
   explicit ExpressionListNode(size_t pos): AstNode(pos) {}
 
-  void accept(NodeVisitor& v) const {
+  void accept(NodeVisitor& v) const override {
     v.visit(*this);
   }
 };
 
 class StatementNode : public AstNode {
 public:
-  StatementNode(size_t pos): AstNode(pos) {}
+  explicit StatementNode(size_t pos): AstNode(pos) {}
 
   virtual void accept(NodeVisitor& v) const = 0;
 };
@@ -624,7 +642,7 @@ public:
   BlockNode body;
   BlockNode* const parent;
 
-  ForStatementNode(BlockNode* const parent, size_t pos): StatementNode(pos), parent(parent) {}
+  explicit ForStatementNode(BlockNode* const parent, size_t pos): StatementNode(pos), parent(parent) {}
 
   virtual void accept(NodeVisitor& v) const = 0;
 };
@@ -635,7 +653,7 @@ public:
 
   explicit ForArrayStatementNode(const std::string& value, BlockNode* const parent, size_t pos): ForStatementNode(parent, pos), value(value) {}
 
-  void accept(NodeVisitor& v) const {
+  void accept(NodeVisitor& v) const override {
     v.visit(*this);
   }
 };
@@ -648,7 +666,7 @@ public:
   explicit ForObjectStatementNode(const std::string& key, const std::string& value, BlockNode* const parent, size_t pos)
       : ForStatementNode(parent, pos), key(key), value(value) {}
 
-  void accept(NodeVisitor& v) const {
+  void accept(NodeVisitor& v) const override {
     v.visit(*this);
   }
 };
@@ -666,7 +684,7 @@ public:
   explicit IfStatementNode(BlockNode* const parent, size_t pos): StatementNode(pos), parent(parent), is_nested(false) {}
   explicit IfStatementNode(bool is_nested, BlockNode* const parent, size_t pos): StatementNode(pos), parent(parent), is_nested(is_nested) {}
 
-  void accept(NodeVisitor& v) const {
+  void accept(NodeVisitor& v) const override {
     v.visit(*this);
   }
 };
@@ -677,7 +695,7 @@ public:
 
   explicit IncludeStatementNode(const std::string& file, size_t pos): StatementNode(pos), file(file) {}
 
-  void accept(NodeVisitor& v) const {
+  void accept(NodeVisitor& v) const override {
     v.visit(*this);
   }
 };
@@ -688,7 +706,7 @@ public:
 
   explicit ExtendsStatementNode(const std::string& file, size_t pos): StatementNode(pos), file(file) {}
 
-  void accept(NodeVisitor& v) const {
+  void accept(NodeVisitor& v) const override {
     v.visit(*this);
   }
 };
@@ -701,7 +719,7 @@ public:
 
   explicit BlockStatementNode(BlockNode* const parent, const std::string& name, size_t pos): StatementNode(pos), name(name), parent(parent) {}
 
-  void accept(NodeVisitor& v) const {
+  void accept(NodeVisitor& v) const override {
     v.visit(*this);
   }
 };
@@ -713,7 +731,7 @@ public:
 
   explicit SetStatementNode(const std::string& key, size_t pos): StatementNode(pos), key(key) {}
 
-  void accept(NodeVisitor& v) const {
+  void accept(NodeVisitor& v) const override {
     v.visit(*this);
   }
 };
@@ -735,63 +753,63 @@ namespace inja {
  * \brief A class for counting statistics on a Template.
  */
 class StatisticsVisitor : public NodeVisitor {
-  void visit(const BlockNode& node) {
+  void visit(const BlockNode& node) override {
     for (const auto& n : node.nodes) {
       n->accept(*this);
     }
   }
 
-  void visit(const TextNode&) {}
-  void visit(const ExpressionNode&) {}
-  void visit(const LiteralNode&) {}
+  void visit(const TextNode&) override {}
+  void visit(const ExpressionNode&) override {}
+  void visit(const LiteralNode&) override {}
 
-  void visit(const DataNode&) {
+  void visit(const DataNode&) override {
     variable_counter += 1;
   }
 
-  void visit(const FunctionNode& node) {
+  void visit(const FunctionNode& node) override {
     for (const auto& n : node.arguments) {
       n->accept(*this);
     }
   }
 
-  void visit(const ExpressionListNode& node) {
+  void visit(const ExpressionListNode& node) override {
     node.root->accept(*this);
   }
 
-  void visit(const StatementNode&) {}
-  void visit(const ForStatementNode&) {}
+  void visit(const StatementNode&) override {}
+  void visit(const ForStatementNode&) override {}
 
-  void visit(const ForArrayStatementNode& node) {
+  void visit(const ForArrayStatementNode& node) override {
     node.condition.accept(*this);
     node.body.accept(*this);
   }
 
-  void visit(const ForObjectStatementNode& node) {
+  void visit(const ForObjectStatementNode& node) override {
     node.condition.accept(*this);
     node.body.accept(*this);
   }
 
-  void visit(const IfStatementNode& node) {
+  void visit(const IfStatementNode& node) override {
     node.condition.accept(*this);
     node.true_statement.accept(*this);
     node.false_statement.accept(*this);
   }
 
-  void visit(const IncludeStatementNode&) {}
+  void visit(const IncludeStatementNode&) override {}
 
-  void visit(const ExtendsStatementNode&) {}
+  void visit(const ExtendsStatementNode&) override {}
 
-  void visit(const BlockStatementNode& node) {
+  void visit(const BlockStatementNode& node) override {
     node.block.accept(*this);
   }
 
-  void visit(const SetStatementNode&) {}
+  void visit(const SetStatementNode&) override {}
 
 public:
-  unsigned int variable_counter;
+  size_t variable_counter {0};
 
-  explicit StatisticsVisitor(): variable_counter(0) {}
+  explicit StatisticsVisitor() {}
 };
 
 } // namespace inja
@@ -810,10 +828,10 @@ struct Template {
   std::map<std::string, std::shared_ptr<BlockStatementNode>> block_storage;
 
   explicit Template() {}
-  explicit Template(const std::string& content): content(content) {}
+  explicit Template(std::string content): content(std::move(content)) {}
 
   /// Return number of variables (total number, not distinct ones) in the template
-  int count_variables() const {
+  size_t count_variables() const {
     auto statistic_visitor = StatisticsVisitor();
     root.accept(statistic_visitor);
     return statistic_visitor.variable_counter;
@@ -887,7 +905,7 @@ struct LexerConfig {
 struct ParserConfig {
   bool search_included_templates_in_files {true};
 
-  std::function<Template(const std::string&, const std::string&)> include_callback;
+  std::function<Template(const std::filesystem::path&, const std::string&)> include_callback;
 };
 
 /*!
@@ -904,13 +922,12 @@ struct RenderConfig {
 
 // #include "function_storage.hpp"
 
-// #include "inja.hpp"
-
 // #include "parser.hpp"
 #ifndef INCLUDE_INJA_PARSER_HPP_
 #define INCLUDE_INJA_PARSER_HPP_
 
 #include <cstddef>
+#include <filesystem>
 #include <fstream>
 #include <iterator>
 #include <memory>
@@ -925,8 +942,6 @@ struct RenderConfig {
 // #include "exceptions.hpp"
 
 // #include "function_storage.hpp"
-
-// #include "inja.hpp"
 
 // #include "lexer.hpp"
 #ifndef INCLUDE_INJA_LEXER_HPP_
@@ -987,6 +1002,7 @@ struct Token {
     GreaterEqual,       // >=
     LessThan,           // <
     LessEqual,          // <=
+    Pipe,               // |
     Unknown,
     Eof,
   };
@@ -1123,6 +1139,8 @@ class Lexer {
       return make_token(Token::Kind::Comma);
     case ':':
       return make_token(Token::Kind::Colon);
+    case '|':
+      return make_token(Token::Kind::Pipe);
     case '(':
       return make_token(Token::Kind::LeftParen);
     case ')':
@@ -1281,7 +1299,7 @@ class Lexer {
   }
 
 public:
-  explicit Lexer(const LexerConfig& config): config(config), state(State::Text), minus_state(MinusState::Number) {}
+  explicit Lexer(const LexerConfig& config): config(config), state(State::Text), minus_state(MinusState::Number), tok_start(0), pos(0) {}
 
   SourceLocation current_position() const {
     return get_source_location(m_in, tok_start);
@@ -1448,6 +1466,8 @@ public:
 
 // #include "template.hpp"
 
+// #include "throw.hpp"
+
 // #include "token.hpp"
 
 
@@ -1478,11 +1498,11 @@ class Parser {
   std::stack<ForStatementNode*> for_statement_stack;
   std::stack<BlockStatementNode*> block_statement_stack;
 
-  inline void throw_parser_error(const std::string& message) const {
+  void throw_parser_error(const std::string& message) const {
     INJA_THROW(ParserError(message, lexer.current_position()));
   }
 
-  inline void get_next_token() {
+  void get_next_token() {
     if (have_peek_tok) {
       tok = peek_tok;
       have_peek_tok = false;
@@ -1491,19 +1511,19 @@ class Parser {
     }
   }
 
-  inline void get_peek_token() {
+  void get_peek_token() {
     if (!have_peek_tok) {
       peek_tok = lexer.scan();
       have_peek_tok = true;
     }
   }
 
-  inline void add_literal(Arguments &arguments, const char* content_ptr) {
+  void add_literal(Arguments &arguments, const char* content_ptr) {
     const std::string_view data_text(literal_start.data(), tok.text.data() - literal_start.data() + tok.text.size());
     arguments.emplace_back(std::make_shared<LiteralNode>(data_text, data_text.data() - content_ptr));
   }
 
-  inline void add_operator(Arguments &arguments, OperatorStack &operator_stack) {
+  void add_operator(Arguments &arguments, OperatorStack &operator_stack) {
     auto function = operator_stack.top();
     operator_stack.pop();
 
@@ -1518,17 +1538,16 @@ class Parser {
     arguments.emplace_back(function);
   }
 
-  void add_to_template_storage(std::string_view path, std::string& template_name) {
+  void add_to_template_storage(const std::filesystem::path& path, std::string& template_name) {
     if (template_storage.find(template_name) != template_storage.end()) {
       return;
     }
 
-    const std::string original_path = static_cast<std::string>(path);
     const std::string original_name = template_name;
 
     if (config.search_included_templates_in_files) {
       // Build the relative path
-      template_name = original_path + original_name;
+      template_name = (path / original_name).string();
       if (template_name.compare(0, 2, "./") == 0) {
         template_name.erase(0, 2);
       }
@@ -1552,7 +1571,7 @@ class Parser {
 
     // Try include callback
     if (config.include_callback) {
-      auto include_template = config.include_callback(original_path, original_name);
+      auto include_template = config.include_callback(path, original_name);
       template_storage.emplace(template_name, include_template);
     }
   }
@@ -1781,6 +1800,47 @@ class Parser {
         }
         arguments.emplace_back(expr);
       } break;
+
+      // parse function call pipe syntax
+      case Token::Kind::Pipe: {
+        // get function name
+        get_next_token();
+        if (tok.kind != Token::Kind::Id) {
+          throw_parser_error("expected function name, got '" + tok.describe() + "'");
+        }
+        auto func = std::make_shared<FunctionNode>(tok.text, tok.text.data() - tmpl.content.c_str());
+        // add first parameter as last value from arguments
+        func->number_args += 1;
+        func->arguments.emplace_back(arguments.back());
+        arguments.pop_back();
+        get_peek_token();
+        if (peek_tok.kind == Token::Kind::LeftParen) {
+          get_next_token();
+          // parse additional parameters
+          do {
+            get_next_token();
+            auto expr = parse_expression(tmpl);
+            if (!expr) {
+              break;
+            }
+            func->number_args += 1;
+            func->arguments.emplace_back(expr);
+          } while (tok.kind == Token::Kind::Comma);
+          if (tok.kind != Token::Kind::RightParen) {
+            throw_parser_error("expected right parenthesis, got '" + tok.describe() + "'");
+          }
+        }
+        // search store for defined function with such name and number of args
+        auto function_data = function_storage.find_function(func->name, func->number_args);
+        if (function_data.operation == FunctionStorage::Operation::None) {
+          throw_parser_error("unknown function " + func->name);
+        }
+        func->operation = function_data.operation;
+        if (function_data.operation == FunctionStorage::Operation::Callback) {
+          func->callback = function_data.callback;
+        }
+        arguments.emplace_back(func);
+      } break;
       default:
         goto break_loop;
       }
@@ -1803,7 +1863,7 @@ class Parser {
     return expr;
   }
 
-  bool parse_statement(Template& tmpl, Token::Kind closing, std::string_view path) {
+  bool parse_statement(Template& tmpl, Token::Kind closing, const std::filesystem::path& path) {
     if (tok.kind != Token::Kind::Id) {
       return false;
     }
@@ -1907,7 +1967,7 @@ class Parser {
           throw_parser_error("expected id, got '" + tok.describe() + "'");
         }
 
-        const Token key_token = std::move(value_token);
+        const Token key_token = value_token;
         value_token = tok;
         get_next_token();
 
@@ -1989,7 +2049,7 @@ class Parser {
     return true;
   }
 
-  void parse_into(Template& tmpl, std::string_view path) {
+  void parse_into(Template& tmpl, const std::filesystem::path& path) {
     lexer.start(tmpl.content);
     current_block = &tmpl.root;
 
@@ -2004,6 +2064,7 @@ class Parser {
           throw_parser_error("unmatched for");
         }
       }
+        current_block = nullptr;
         return;
       case Token::Kind::Text: {
         current_block->nodes.emplace_back(std::make_shared<TextNode>(tok.text.data() - tmpl.content.c_str(), tok.text.size()));
@@ -2055,25 +2116,22 @@ public:
                   const FunctionStorage& function_storage)
       : config(parser_config), lexer(lexer_config), template_storage(template_storage), function_storage(function_storage) {}
 
-  Template parse(std::string_view input, std::string_view path) {
-    auto result = Template(static_cast<std::string>(input));
+  Template parse(std::string_view input, const std::filesystem::path& path) {
+    auto result = Template(std::string(input));
     parse_into(result, path);
     return result;
   }
 
-  void parse_into_template(Template& tmpl, std::string_view filename) {
-    const std::string_view path = filename.substr(0, filename.find_last_of("/\\") + 1);
-
-    // StringRef path = sys::path::parent_path(filename);
+  void parse_into_template(Template& tmpl, const std::filesystem::path& filename) {
     auto sub_parser = Parser(config, lexer.get_config(), template_storage, function_storage);
-    sub_parser.parse_into(tmpl, path);
+    sub_parser.parse_into(tmpl, filename.parent_path());
   }
 
-  static std::string load_file(const std::string& filename) {
+  static std::string load_file(const std::filesystem::path& filename) {
     std::ifstream file;
     file.open(filename);
     if (file.fail()) {
-      INJA_THROW(FileError("failed accessing file at '" + filename + "'"));
+      INJA_THROW(FileError("failed accessing file at '" + filename.string() + "'"));
     }
     std::string text((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
     return text;
@@ -2108,16 +2166,35 @@ public:
 
 // #include "function_storage.hpp"
 
-// #include "inja.hpp"
-
 // #include "node.hpp"
 
 // #include "template.hpp"
+
+// #include "throw.hpp"
 
 // #include "utils.hpp"
 
 
 namespace inja {
+
+/*!
+@brief Escapes HTML
+*/
+inline std::string htmlescape(const std::string& data) {
+  std::string buffer;
+  buffer.reserve(static_cast<size_t>(1.1 * data.size()));
+  for (size_t pos = 0; pos != data.size(); ++pos) {
+    switch (data[pos]) {
+      case '&':  buffer.append("&amp;");       break;
+      case '\"': buffer.append("&quot;");      break;
+      case '\'': buffer.append("&apos;");      break;
+      case '<':  buffer.append("&lt;");        break;
+      case '>':  buffer.append("&gt;");        break;
+      default:   buffer.append(&data[pos], 1); break;
+    }
+  }
+  return buffer;
+}
 
 /*!
  * \brief Class for rendering a Template with data.
@@ -2157,22 +2234,6 @@ class Renderer : public NodeVisitor {
     return !data->empty();
   }
 
-  static std::string htmlescape(const std::string& data) {
-    std::string buffer;
-    buffer.reserve(1.1 * data.size());
-    for (size_t pos = 0; pos != data.size(); ++pos) {
-      switch (data[pos]) {
-        case '&':  buffer.append("&amp;");       break;
-        case '\"': buffer.append("&quot;");      break;
-        case '\'': buffer.append("&apos;");      break;
-        case '<':  buffer.append("&lt;");        break;
-        case '>':  buffer.append("&gt;");        break;
-        default:   buffer.append(&data[pos], 1); break;
-      }
-    }
-    return buffer;
-  }
-
   void print_data(const std::shared_ptr<json>& value) {
     if (value->is_string()) {
       if (config.html_autoescape) {
@@ -2206,7 +2267,7 @@ class Renderer : public NodeVisitor {
     const auto result = data_eval_stack.top();
     data_eval_stack.pop();
 
-    if (!result) {
+    if (result == nullptr) {
       if (not_found_stack.empty()) {
         throw_renderer_error("expression could not be evaluated", expression_list);
       }
@@ -2287,7 +2348,7 @@ class Renderer : public NodeVisitor {
     return result;
   }
 
-  void visit(const BlockNode& node) {
+  void visit(const BlockNode& node) override {
     for (const auto& n : node.nodes) {
       n->accept(*this);
 
@@ -2297,17 +2358,17 @@ class Renderer : public NodeVisitor {
     }
   }
 
-  void visit(const TextNode& node) {
+  void visit(const TextNode& node) override {
     output_stream->write(current_template->content.c_str() + node.pos, node.length);
   }
 
-  void visit(const ExpressionNode&) {}
+  void visit(const ExpressionNode&) override {}
 
-  void visit(const LiteralNode& node) {
+  void visit(const LiteralNode& node) override {
     data_eval_stack.push(&node.value);
   }
 
-  void visit(const DataNode& node) {
+  void visit(const DataNode& node) override {
     if (additional_data.contains(node.ptr)) {
       data_eval_stack.push(&(additional_data[node.ptr]));
     } else if (data_input->contains(node.ptr)) {
@@ -2327,7 +2388,7 @@ class Renderer : public NodeVisitor {
     }
   }
 
-  void visit(const FunctionNode& node) {
+  void visit(const FunctionNode& node) override {
     switch (node.operation) {
     case Op::Not: {
       const auto args = get_arguments<1>(node);
@@ -2441,7 +2502,7 @@ class Renderer : public NodeVisitor {
     } break;
     case Op::Default: {
       const auto test_arg = get_arguments<1, 0, false>(node)[0];
-      data_eval_stack.push(test_arg ? test_arg : get_arguments<1, 1>(node)[0]);
+      data_eval_stack.push((test_arg != nullptr) ? test_arg : get_arguments<1, 1>(node)[0]);
     } break;
     case Op::DivisibleBy: {
       const auto args = get_arguments<2>(node);
@@ -2505,12 +2566,18 @@ class Renderer : public NodeVisitor {
       std::iota(result.begin(), result.end(), 0);
       make_result(std::move(result));
     } break;
+    case Op::Replace: {
+      const auto args = get_arguments<3>(node);
+      auto result = args[0]->get<std::string>();
+      replace_substring(result, args[1]->get<std::string>(), args[2]->get<std::string>());
+      make_result(std::move(result));
+    } break;
     case Op::Round: {
       const auto args = get_arguments<2>(node);
       const auto precision = args[1]->get<const json::number_integer_t>();
       const double result = std::round(args[0]->get<const json::number_float_t>() * std::pow(10.0, precision)) / std::pow(10.0, precision);
       if (precision == 0) {
-        make_result(int(result));
+        make_result(static_cast<int>(result));
       } else {
         make_result(result);
       }
@@ -2601,15 +2668,15 @@ class Renderer : public NodeVisitor {
     }
   }
 
-  void visit(const ExpressionListNode& node) {
+  void visit(const ExpressionListNode& node) override {
     print_data(eval_expression_list(node));
   }
 
-  void visit(const StatementNode&) {}
+  void visit(const StatementNode&) override {}
 
-  void visit(const ForStatementNode&) {}
+  void visit(const ForStatementNode&) override {}
 
-  void visit(const ForArrayStatementNode& node) {
+  void visit(const ForArrayStatementNode& node) override {
     const auto result = eval_expression_list(node.condition);
     if (!result->is_array()) {
       throw_renderer_error("object must be an array", node);
@@ -2642,13 +2709,13 @@ class Renderer : public NodeVisitor {
     additional_data[static_cast<std::string>(node.value)].clear();
     if (!(*current_loop_data)["parent"].empty()) {
       const auto tmp = (*current_loop_data)["parent"];
-      *current_loop_data = std::move(tmp);
+      *current_loop_data = tmp;
     } else {
       current_loop_data = &additional_data["loop"];
     }
   }
 
-  void visit(const ForObjectStatementNode& node) {
+  void visit(const ForObjectStatementNode& node) override {
     const auto result = eval_expression_list(node.condition);
     if (!result->is_object()) {
       throw_renderer_error("object must be an object", node);
@@ -2687,7 +2754,7 @@ class Renderer : public NodeVisitor {
     }
   }
 
-  void visit(const IfStatementNode& node) {
+  void visit(const IfStatementNode& node) override {
     const auto result = eval_expression_list(node.condition);
     if (truthy(result.get())) {
       node.true_statement.accept(*this);
@@ -2696,7 +2763,7 @@ class Renderer : public NodeVisitor {
     }
   }
 
-  void visit(const IncludeStatementNode& node) {
+  void visit(const IncludeStatementNode& node) override {
     auto sub_renderer = Renderer(config, template_storage, function_storage);
     const auto included_template_it = template_storage.find(node.file);
     if (included_template_it != template_storage.end()) {
@@ -2706,7 +2773,7 @@ class Renderer : public NodeVisitor {
     }
   }
 
-  void visit(const ExtendsStatementNode& node) {
+  void visit(const ExtendsStatementNode& node) override {
     const auto included_template_it = template_storage.find(node.file);
     if (included_template_it != template_storage.end()) {
       const Template* parent_template = &included_template_it->second;
@@ -2717,7 +2784,7 @@ class Renderer : public NodeVisitor {
     }
   }
 
-  void visit(const BlockStatementNode& node) {
+  void visit(const BlockStatementNode& node) override {
     const size_t old_level = current_level;
     current_level = 0;
     current_template = template_stack.front();
@@ -2731,7 +2798,7 @@ class Renderer : public NodeVisitor {
     current_template = template_stack.back();
   }
 
-  void visit(const SetStatementNode& node) {
+  void visit(const SetStatementNode& node) override {
     std::string ptr = node.key;
     replace_substring(ptr, ".", "/");
     ptr = "/" + ptr;
@@ -2739,14 +2806,14 @@ class Renderer : public NodeVisitor {
   }
 
 public:
-  Renderer(const RenderConfig& config, const TemplateStorage& template_storage, const FunctionStorage& function_storage)
+  explicit Renderer(const RenderConfig& config, const TemplateStorage& template_storage, const FunctionStorage& function_storage)
       : config(config), template_storage(template_storage), function_storage(function_storage) {}
 
   void render_to(std::ostream& os, const Template& tmpl, const json& data, json* loop_data = nullptr) {
     output_stream = &os;
     current_template = &tmpl;
     data_input = &data;
-    if (loop_data) {
+    if (loop_data != nullptr) {
       additional_data = *loop_data;
       current_loop_data = &additional_data["loop"];
     }
@@ -2764,6 +2831,8 @@ public:
 
 // #include "template.hpp"
 
+// #include "throw.hpp"
+
 
 namespace inja {
 
@@ -2779,15 +2848,13 @@ protected:
   ParserConfig parser_config;
   RenderConfig render_config;
 
-  std::string input_path;
-  std::string output_path;
+  std::filesystem::path input_path;
+  std::filesystem::path output_path;
 
 public:
   Environment(): Environment("") {}
-
-  explicit Environment(const std::string& global_path): input_path(global_path), output_path(global_path) {}
-
-  Environment(const std::string& input_path, const std::string& output_path): input_path(input_path), output_path(output_path) {}
+  explicit Environment(const std::filesystem::path& global_path): input_path(global_path), output_path(global_path) {}
+  Environment(const std::filesystem::path& input_path, const std::filesystem::path& output_path): input_path(input_path), output_path(output_path) {}
 
   /// Sets the opener and closer for template statements
   void set_statement(const std::string& open, const std::string& close) {
@@ -2853,14 +2920,14 @@ public:
     return parser.parse(input, input_path);
   }
 
-  Template parse_template(const std::string& filename) {
+  Template parse_template(const std::filesystem::path& filename) {
     Parser parser(parser_config, lexer_config, template_storage, function_storage);
-    auto result = Template(Parser::load_file(input_path + static_cast<std::string>(filename)));
-    parser.parse_into_template(result, input_path + static_cast<std::string>(filename));
+    auto result = Template(Parser::load_file(input_path / filename));
+    parser.parse_into_template(result, (input_path / filename).string());
     return result;
   }
 
-  Template parse_file(const std::string& filename) {
+  Template parse_file(const std::filesystem::path& filename) {
     return parse_template(filename);
   }
 
@@ -2874,28 +2941,28 @@ public:
     return os.str();
   }
 
-  std::string render_file(const std::string& filename, const json& data) {
+  std::string render_file(const std::filesystem::path& filename, const json& data) {
     return render(parse_template(filename), data);
   }
 
-  std::string render_file_with_json_file(const std::string& filename, const std::string& filename_data) {
+  std::string render_file_with_json_file(const std::filesystem::path& filename, const std::string& filename_data) {
     const json data = load_json(filename_data);
     return render_file(filename, data);
   }
 
-  void write(const std::string& filename, const json& data, const std::string& filename_out) {
-    std::ofstream file(output_path + filename_out);
+  void write(const std::filesystem::path& filename, const json& data, const std::string& filename_out) {
+    std::ofstream file(output_path / filename_out);
     file << render_file(filename, data);
     file.close();
   }
 
   void write(const Template& temp, const json& data, const std::string& filename_out) {
-    std::ofstream file(output_path + filename_out);
+    std::ofstream file(output_path / filename_out);
     file << render(temp, data);
     file.close();
   }
 
-  void write_with_json_file(const std::string& filename, const std::string& filename_data, const std::string& filename_out) {
+  void write_with_json_file(const std::filesystem::path& filename, const std::string& filename_data, const std::string& filename_out) {
     const json data = load_json(filename_data);
     write(filename, data, filename_out);
   }
@@ -2915,15 +2982,15 @@ public:
   }
 
   std::string load_file(const std::string& filename) {
-    Parser parser(parser_config, lexer_config, template_storage, function_storage);
-    return Parser::load_file(input_path + filename);
+    const Parser parser(parser_config, lexer_config, template_storage, function_storage);
+    return Parser::load_file(input_path / filename);
   }
 
   json load_json(const std::string& filename) {
     std::ifstream file;
-    file.open(input_path + filename);
+    file.open(input_path / filename);
     if (file.fail()) {
-      INJA_THROW(FileError("failed accessing file at '" + input_path + filename + "'"));
+      INJA_THROW(FileError("failed accessing file at '" + (input_path / filename).string() + "'"));
     }
 
     return json::parse(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
@@ -2971,7 +3038,7 @@ public:
   /*!
   @brief Sets a function that is called when an included file is not found
   */
-  void set_include_callback(const std::function<Template(const std::string&, const std::string&)>& callback) {
+  void set_include_callback(const std::function<Template(const std::filesystem::path&, const std::string&)>& callback) {
     parser_config.include_callback = callback;
   }
 };
