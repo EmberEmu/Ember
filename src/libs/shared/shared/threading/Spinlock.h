@@ -42,7 +42,7 @@ public:
 	Spinlock() : state(State::unlocked) {}
 
 	inline bool acquire() {
-		// relaxed load before attempting the exchange helps is friendlier to shared cache
+		// relaxed load before attempting the exchange is friendlier to shared cache
 		if(state.load(std::memory_order_relaxed) == State::locked) {
 			return false;
 		}
