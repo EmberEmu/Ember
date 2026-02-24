@@ -1,0 +1,73 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "ember/schemas/message",
+	"title": "World Message",
+	"description": "A schema that validates world message JSON inputs",
+	"required": [
+		"opcode",
+		"type",
+		"fields"
+	],
+	"type": "object",
+	"properties": {
+		"opcode": {
+			"type": "string",
+			"enum": [
+				"cmsg",
+				"smsg"
+			],
+			"description": "The opcode field"
+		},
+		"type": {
+			"type": "string",
+			"enum": [
+				"msg",
+				"cmsg",
+				"smsg"
+			],
+			"description": "The packet type"
+		},
+		"fields": {
+			"$ref": "#/$defs/fields"
+		}
+	},
+	"additionalProperties": false,
+	"$defs": {
+		"field_type": {
+			"type": "string",
+			"enum": [
+				"uint8",
+				"uint16",
+				"uint32",
+				"uint64",
+				"int8",
+				"int16",
+				"int32",
+				"int64",
+				"float",
+				"double"
+			],
+			"description": "The field type within the packet"
+		},
+		"fields": {
+			"type": "array",
+			"items": {
+				"type": "object",
+				"$ref": "#/$defs/field"
+			},
+			"minItems" : 1,
+			"uniqueItems" : true
+		},
+		"field": {
+			"type": "object",
+			"properties": {
+				"name": {
+					"type": "string"
+				},
+				"type": {
+					"$ref": "#/$defs/field_type"
+				}
+			}
+		}
+	}
+}
