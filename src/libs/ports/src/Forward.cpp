@@ -72,7 +72,7 @@ void Forward::start_upnp(const std::string& iface, std::uint16_t port) {
 	});
 }
 
-void Forward::start_pmp(const std::string& iface, const std::string& gateway, std::uint16_t port) {
+void Forward::start_pmp(const std::string& iface, const std::string& gateway, std::uint16_t port) try {
 	const ports::MapRequest request {
 		.protocol      = ports::Protocol::tcp,
 		.internal_port = port,
@@ -140,6 +140,8 @@ void Forward::start_pmp(const std::string& iface, const std::string& gateway, st
 			mapping_active_ = false; // mapping can succeed and later fail when refreshed
 		}
 	});
+} catch(const std::exception& e) {
+	log(Severity::error, R"([NATPMP/PCP] Port forwarding failed, error "{}")", e.what());
 }
 
 std::string_view Forward::error_string(const Error& error) const {
