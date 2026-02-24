@@ -16,6 +16,7 @@
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/deadline_timer.hpp>
 #include <atomic>
+#include <chrono>
 #include <functional>
 #include <semaphore>
 #include <memory>
@@ -25,6 +26,8 @@
 #include <cstdint>
 
 namespace ember::ports {
+
+using namespace std::chrono_literals;
 
 /*
  * Helper class that provides a basic API for forwarding a port for
