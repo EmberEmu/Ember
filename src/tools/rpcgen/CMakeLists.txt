@@ -14,9 +14,9 @@ set(EXECUTABLE_SRC
     Utility.cpp
 )
 
-include_directories(${CMAKE_SOURCE_DIR}/deps/nlohmann)
 add_executable(${EXECUTABLE_NAME} ${EXECUTABLE_SRC})
 add_dependencies(${EXECUTABLE_NAME} FB_SCHEMA_COMPILE)
-target_link_libraries(${EXECUTABLE_NAME} PRIVATE logger ${Boost_LIBRARIES})
-INSTALL(TARGETS ${EXECUTABLE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/tools)
+target_include_directories(${EXECUTABLE_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/deps/nlohmann)
+target_link_libraries(${EXECUTABLE_NAME} PRIVATE logger shared ${Boost_LIBRARIES})
+install(TARGETS ${EXECUTABLE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/tools)
 set_target_properties(${EXECUTABLE_NAME} PROPERTIES FOLDER "Tools")

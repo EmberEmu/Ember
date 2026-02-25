@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include <shared/utility/Exception.h>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -16,13 +15,13 @@
 
 namespace ember::commands {
 
-class exception : public ember::exception {
+class exception : public std::runtime_error {
 public:
 	exception()
-		: ember::exception("An unknown command handling exception occurred") { }
+		: std::runtime_error("An unknown command handling exception occurred") { }
 
 	exception(std::string msg)
-		: ember::exception(std::move(msg)) { };
+		: std::runtime_error(std::move(msg)) { };
 };
 
 class parse_error : public exception {

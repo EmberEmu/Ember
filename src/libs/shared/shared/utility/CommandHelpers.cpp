@@ -93,7 +93,7 @@ commands::args::Value convert_type(commands::args::Type type, std::string_view t
 			return boost::lexical_cast<double>(token);
 			break;
 		default:
-			throw exception("Unhandled argument type");
+			throw std::runtime_error("Unhandled argument type");
 	}
 }
 

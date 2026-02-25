@@ -38,6 +38,6 @@ if(WIN32)
     target_sources(${LIBRARY_NAME} PRIVATE src/win32/CommandSink.cpp)
 endif(WIN32)
 
-target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_link_libraries(${LIBRARY_NAME} INTERFACE shared PRIVATE bprinter PUBLIC commands ${Boost_LIBRARIES} Threads::Threads)
+target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/src/libs/shared)
+target_link_libraries(${LIBRARY_NAME} PRIVATE bprinter PUBLIC commands ${Boost_LIBRARIES} Threads::Threads)
 set_target_properties(${LIBRARY_NAME} PROPERTIES FOLDER "Common Libraries")
