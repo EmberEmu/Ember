@@ -8,9 +8,9 @@ set(EXECUTABLE_NAME srpgen)
 
 set(EXECUTABLE_SRC
     main.cpp
-    )
+)
 
 add_executable(${EXECUTABLE_NAME} ${EXECUTABLE_SRC})
-target_link_libraries(${EXECUTABLE_NAME} srp6 ${Boost_LIBRARIES})
+target_link_libraries(${EXECUTABLE_NAME} PRIVATE srp6 ${Boost_LIBRARIES})
 INSTALL(TARGETS ${EXECUTABLE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/tools)
 set_target_properties(srpgen PROPERTIES FOLDER "Tools")

@@ -34,6 +34,6 @@ add_library(${LIBRARY_NAME} STATIC ${DBC_HDR} ${DBC_SRC}
 )
 
 set_target_properties(${LIBRARY_NAME} PROPERTIES LINKER_LANGUAGE CXX)
-target_link_libraries(${LIBRARY_NAME} shared ${Boost_LIBRARIES})
-target_include_directories(${LIBRARY_NAME} PUBLIC shared ${PROJECT_BINARY_DIR}/src ${PROJECT_BINARY_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(${LIBRARY_NAME} PUBLIC ${PROJECT_BINARY_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/src/libs/shared)
+target_link_libraries(${LIBRARY_NAME} PUBLIC ${Boost_LIBRARIES})
 set_target_properties(dbcreader PROPERTIES FOLDER "Common Libraries")

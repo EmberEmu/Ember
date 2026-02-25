@@ -15,5 +15,5 @@ set(LIBRARY_SRC
 )
 
 add_library(${LIBRARY_NAME} ${LIBRARY_HDR} ${LIBRARY_SRC})
-target_link_libraries(${LIBRARY_NAME} banner spark logger shared ${Boost_LIBRARIES})
+target_link_libraries(${LIBRARY_NAME} PUBLIC dbcreader)
 set_target_properties(game PROPERTIES FOLDER "Services/Libraries")

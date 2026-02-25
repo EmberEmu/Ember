@@ -22,6 +22,6 @@ add_library(${LIBRARY_NAME} STATIC
     include/conpool/drivers/DummyDriver.h
 )
 
-target_link_libraries(${LIBRARY_NAME} shared ${MYSQLCCPP_LIBRARY})
 target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_link_libraries(${LIBRARY_NAME} PUBLIC shared ${MYSQLCCPP_LIBRARY})
 set_target_properties(${LIBRARY_NAME} PROPERTIES FOLDER "Common Libraries")

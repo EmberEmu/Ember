@@ -56,6 +56,6 @@ add_library(${LIBRARY_NAME} STATIC
     src/Utility.cpp
 )
 
-target_link_libraries(${LIBRARY_NAME} PRIVATE storm_pklib bzip2 lzma storm_adpcm storm_sparse storm_huffman ${ZLIB_LIBRARY} PUBLIC shared ${Boost_LIBRARIES})
 target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_link_libraries(${LIBRARY_NAME} PRIVATE storm_pklib bzip2 lzma storm_adpcm storm_sparse storm_huffman ${ZLIB_LIBRARY} PUBLIC shared ${Boost_LIBRARIES})
 set_target_properties(${LIBRARY_NAME} PROPERTIES FOLDER "Common Libraries")

@@ -163,6 +163,7 @@ include_directories(${ZLIB_INCLUDE_DIR})
 ##############################
 find_package(PCRE 8.39 REQUIRED)
 option(PCRE_STATIC_LIB "Statically link to PCRE" ON)
+include_directories(${PCRE_INCLUDE_DIR})
 
 if(PCRE_STATIC_LIB)
     add_compile_definitions(PCRE_STATIC)

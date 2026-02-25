@@ -14,10 +14,10 @@ set(EXECUTABLE_SRC
     ConsoleSink.h
     ConsoleSink.cpp
     OutputOption.h	
-    )
+)
 
 add_executable(${EXECUTABLE_NAME} ${EXECUTABLE_SRC})
 add_dependencies(${EXECUTABLE_NAME} FB_SCHEMA_COMPILE)
-target_link_libraries(${EXECUTABLE_NAME} shared protocol ${Boost_LIBRARIES})
-INSTALL(TARGETS ${EXECUTABLE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/tools)
+target_link_libraries(${EXECUTABLE_NAME} PRIVATE shared protocol ${Boost_LIBRARIES})
+install(TARGETS ${EXECUTABLE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/tools)
 set_target_properties(packetconvert PROPERTIES FOLDER "Tools")

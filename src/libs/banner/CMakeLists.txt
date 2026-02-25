@@ -13,6 +13,6 @@ add_library(${LIBRARY_NAME}
     ${version_file}
 )
 
-target_link_libraries(${LIBRARY_NAME} PRIVATE shared)
 target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_link_libraries(${LIBRARY_NAME} PRIVATE shared)
 set_target_properties(${LIBRARY_NAME} PROPERTIES FOLDER "Common Libraries")
