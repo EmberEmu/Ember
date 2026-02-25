@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include <shared/utility/ConsoleColour.h>
+#include <logger/ConsoleColour.h>
 
 #ifdef _WIN32
 	#include <Windows.h>
@@ -15,7 +15,7 @@
 	#include <string_view>
 #endif
 
-namespace ember::utility {
+namespace ember::log {
 
 namespace {
 
@@ -182,4 +182,4 @@ Colour save_console_out_colour() {
 #endif
 }
 
-} // utility, ember
+} // log, ember

@@ -10,7 +10,7 @@
 
 #include <logger/Sink.h>
 #include <commands/Suggestions.h>
-#include <shared/utility/ConsoleColour.h>
+#include <logger/ConsoleColour.h>
 #include <boost/container/small_vector.hpp>
 #include <atomic>
 #include <deque>
@@ -63,7 +63,7 @@ class CommandSink final : public Sink {
 	std::deque<std::string> cmd_history_;
 	std::size_t history_idx_;
 
-	utility::Colour severity_colour(Severity severity);
+	Colour severity_colour(Severity severity);
 	boost::container::small_vector<char, sv_reserve> out_buf_;
 	void print_command_table(std::span<const commands::Suggestions::Record> matches);
 	std::string truncate_description(const std::string_view description);

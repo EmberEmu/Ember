@@ -9,7 +9,7 @@
 #pragma once
 
 #include <logger/Sink.h>
-#include <shared/utility/ConsoleColour.h>
+#include <logger/ConsoleColour.h>
 #include <boost/container/small_vector.hpp>
 #include <mutex>
 #include <string>
@@ -26,7 +26,7 @@ class ConsoleSink final : public Sink {
 	std::string prefix_;
 	boost::container::small_vector<char, SV_RESERVE> out_buf_;
 
-	utility::Colour severity_colour(Severity severity);
+	Colour severity_colour(Severity severity);
 	void do_batch_write(const std::span<std::pair<RecordDetail, std::vector<char>>>& records);
 
 public:

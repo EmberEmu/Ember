@@ -136,7 +136,7 @@ void CommandSink::write(Severity severity, Filter type, std::span<const char> re
 	append(record);
 
 	if(colour_) [[likely]] {
-		utility::ConsoleColour concol(severity_colour(severity));
+		ConsoleColour concol(severity_colour(severity));
 		write_buffer(out_buf_, false);
 	} else {
 		write_buffer(out_buf_, false);
@@ -157,28 +157,28 @@ void CommandSink::write(Severity severity, Filter type, std::span<const char> re
 	}
 }
 
-utility::Colour CommandSink::severity_colour(Severity severity) {
+Colour CommandSink::severity_colour(Severity severity) {
 	switch(severity) {
 		case Severity::console:
-			return utility::Colour::white_on_cyan_bg;
+			return Colour::white_on_cyan_bg;
 		case Severity::console_error:
-			return utility::Colour::white_on_red_bg;
+			return Colour::white_on_red_bg;
 		case Severity::fatal:
 			[[fallthrough]];
 		case Severity::error:
 			[[fallthrough]];
 		case Severity::warn:
-			return utility::Colour::light_red;
+			return Colour::light_red;
 		case Severity::info:
-			return utility::Colour::white;
+			return Colour::white;
 		case Severity::debug:
-			return utility::Colour::light_cyan;
+			return Colour::light_cyan;
 		case Severity::trace:
-			return utility::Colour::dark_grey;
+			return Colour::dark_grey;
 		case Severity::disabled:
 			[[fallthrough]];
 		default:
-			return utility::Colour::default_colour;
+			return Colour::default_colour;
 	}
 }
 
@@ -269,7 +269,7 @@ void CommandSink::dispatch_command() {
 		std::string_view msg = "Unable to execute command, no command handler has been registered";
 
 		if(colour_) {
-			utility::ConsoleColour concol(utility::Colour::white_on_red_bg);
+			ConsoleColour concol(Colour::white_on_red_bg);
 			write_buffer(msg, true);
 		} else {
 			write_buffer(msg, true);

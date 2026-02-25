@@ -71,8 +71,6 @@ set(UTIL_SRC
     shared/utility/FormatPacket.h
     shared/utility/LogConfig.cpp
     shared/utility/LogConfig.h
-    shared/utility/ConsoleColour.h
-    shared/utility/ConsoleColour.cpp
     shared/utility/base32.h
     shared/utility/base32.cpp
     shared/utility/FileMD5.h

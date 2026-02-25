@@ -8,29 +8,29 @@
 
 #include <banner/Banner.h>
 #include <banner/Version.h>
-#include <shared/utility/ConsoleColour.h>
+#include <logger/ConsoleColour.h>
 #include <shared/utility/polyfill/print>
 #include <iostream>
 
 namespace ember {
 
 void print_banner(const std::string_view display_name) {
-	utility::ConsoleColour console;
+	log::ConsoleColour console;
 
-	console.set(utility::Colour::dark_grey);
+	console.set(log::Colour::dark_grey);
 	std::cout << "\n"
 		R"(                                      d8b)" << "\n";
-	console.set(utility::Colour::grey);
+	console.set(log::Colour::grey);
 	std::cout <<
 		R"(                                      ?88)" << "\n";
-	console.set(utility::Colour::yellow);
+	console.set(log::Colour::yellow);
 	std::cout <<
 		R"(                                       88b)" << "\n"
 		R"(       )         d8888b  88bd8b,d88b   888888b  d8888b  88bd88b)" << "\n";
-	console.set(utility::Colour::light_red);
+	console.set(log::Colour::light_red);
 	std::cout <<
 		R"(      ) \       d8b_,dP  88P'`?8P'?8b  88P `?8bd8b_,dP  88P'  `)" << "\n";
-	console.set(utility::Colour::red);
+	console.set(log::Colour::red);
 	std::cout <<
 		R"(     / ) (      88b     d88  d88  88P d88,  d8888b     d88)" << "\n"
 		R"(     \(_)/      `?888P'd88' d88'  88bd88'`?88P'`?888P'd88')" << "\n\n";

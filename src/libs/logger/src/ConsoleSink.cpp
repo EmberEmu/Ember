@@ -100,7 +100,7 @@ void ConsoleSink::write(Severity severity, Filter type, std::span<const char> re
 
 	if(colour_) [[likely]] {
 		std::lock_guard guard(colour_lock);
-		utility::ConsoleColour concol(severity_colour(severity));
+		ConsoleColour concol(severity_colour(severity));
 		std::fwrite(out_buf_.data(), out_buf_.size(), 1, stdout);
 	} else {
 		std::fwrite(out_buf_.data(), out_buf_.size(), 1, stdout);
@@ -119,28 +119,28 @@ void ConsoleSink::write(Severity severity, Filter type, std::span<const char> re
 	}
 }
 
-utility::Colour ConsoleSink::severity_colour(Severity severity) {
+Colour ConsoleSink::severity_colour(Severity severity) {
 	switch(severity) {
 		case Severity::fatal:
 			[[fallthrough]];
 		case Severity::error:
 			[[fallthrough]];
 		case Severity::warn:
-			return utility::Colour::light_red;
+			return Colour::light_red;
 			break;
 		case Severity::info:
-			return utility::Colour::white;
+			return Colour::white;
 			break;
 		case Severity::debug:
-			return utility::Colour::light_cyan;
+			return Colour::light_cyan;
 			break;
 		case Severity::trace:
-			return utility::Colour::dark_grey;
+			return Colour::dark_grey;
 			break;
 		case Severity::disabled:
 			[[fallthrough]];
 		default:
-			return utility::Colour::default_colour;
+			return log::Colour::default_colour;
 	}
 }
 

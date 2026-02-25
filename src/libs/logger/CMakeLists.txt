@@ -14,6 +14,7 @@ add_library(${LIBRARY_NAME} STATIC
     src/Worker.cpp
     src/ConsoleSink.cpp
     src/GlobalLogger.cpp
+    src/ConsoleColour.cpp
     include/logger/concurrentqueue.h
     include/logger/LoggerImpl.h
     include/logger/FileSink.h
@@ -29,6 +30,7 @@ add_library(${LIBRARY_NAME} STATIC
     include/logger/FileWrapper.h
     include/logger/Severity.h
     include/logger/GlobalLogger.h
+    include/logger/ConsoleColour.h
     include/logger/detail/StreamBuffer.h
 )
 
@@ -36,6 +38,6 @@ if(WIN32)
     target_sources(${LIBRARY_NAME} PRIVATE src/win32/CommandSink.cpp)
 endif(WIN32)
 
-target_link_libraries(${LIBRARY_NAME} PRIVATE bprinter PUBLIC commands shared ${Boost_LIBRARIES} Threads::Threads)
+target_link_libraries(${LIBRARY_NAME} INTERFACE shared PRIVATE bprinter PUBLIC commands ${Boost_LIBRARIES} Threads::Threads)
 target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set_target_properties(${LIBRARY_NAME} PROPERTIES FOLDER "Common Libraries")
