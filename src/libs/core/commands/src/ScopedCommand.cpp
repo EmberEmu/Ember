@@ -38,7 +38,6 @@ ScopedCommand& ScopedCommand::operator=(ScopedCommand&& rhs) noexcept {
 		reset();
 		command_ = std::move(rhs.command_);
 		parent_  = std::move(rhs.parent_);
-		rhs.reset();
 	}
 
 	return *this;
