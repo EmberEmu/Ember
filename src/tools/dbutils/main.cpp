@@ -49,6 +49,7 @@ const std::unordered_map<std::string_view, std::array<std::string_view, 2>> db_a
 
 const std::chrono::seconds UPDATE_BACKOUT_PERIOD { 10 };
 
+void configure_logger(log::Logger& logger, const po::variables_map& args);
 int launch(const po::variables_map& args, log::Logger& logger);
 int launch(const po::variables_map& args, log::Logger& logger);
 po::variables_map parse_arguments(int argc, const char* argv[]);
@@ -65,25 +66,29 @@ bool pluralise(auto value);
 int main(int argc, const char* argv[]) try {
 	std::cout << "Build " << ember::version::VERSION << " (" << ember::version::GIT_HASH << ")\n";
 	const auto args = parse_arguments(argc, argv);
-	const auto con_verbosity = args["verbosity"].as<log::Severity>();
-	const auto file_verbosity = args["fverbosity"].as<log::Severity>();
-
+	
 	log::Logger logger;
-
-	auto fsink = std::make_unique<log::FileSink>(
-		file_verbosity, log::Filter(0), "dbmanage.log", log::FileSink::Mode::append
-	);
-
-	auto consink = std::make_unique<log::ConsoleSink>(con_verbosity, log::Filter(0));
-	consink->colourise(true);
-	logger.add_sink(std::move(consink));
-	logger.add_sink(std::move(fsink));
-	log::global_logger(logger);
+	configure_logger(logger, args);
 
 	return launch(args, logger);
 } catch(const std::exception& e) {
 	std::cerr << e.what() << "\n";
 	return EXIT_FAILURE;
+}
+
+void configure_logger(log::Logger& logger, const po::variables_map& args) {
+	const auto con_verbosity = args["verbosity"].as<log::Severity>();
+	const auto file_verbosity = args["fverbosity"].as<log::Severity>();
+
+	auto fsink = std::make_shared<log::FileSink>(
+		file_verbosity, log::Filter(0), "dbmanage.log", log::FileSink::Mode::append
+	);
+
+	auto consink = std::make_shared<log::ConsoleSink>(con_verbosity, log::Filter(0));
+	consink->colourise(true);
+	logger.add_sink(std::move(consink));
+	logger.add_sink(std::move(fsink));
+	log::global_logger(logger);
 }
 
 std::unique_ptr<QueryExecutor> db_executor(const std::string& type, const DatabaseDetails& details) {

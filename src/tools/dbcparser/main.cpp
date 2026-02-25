@@ -39,23 +39,13 @@ std::vector<std::string> fetch_definitions(std::span<const std::string> paths);
 void print_dbc_table(const dbc::types::Definitions& defs);
 void print_dbc_fields(const dbc::types::Definitions& defs);
 void handle_options(const po::variables_map& args, const dbc::types::Definitions& defs);
+void configure_logger(log::Logger& logger, const po::variables_map& args);
 
 int main(int argc, const char* argv[]) try {
 	const auto args = parse_arguments(argc, argv);
-	const auto con_verbosity = args["verbosity"].as<log::Severity>();
-	const auto file_verbosity = args["fverbosity"].as<log::Severity>();
 
-	auto logger = std::make_unique<log::Logger>();
-
-	auto fsink = std::make_unique<log::FileSink>(
-		file_verbosity, log::Filter(0), "dbcparser.log", log::FileSink::Mode::append
-	);
-
-	auto consink = std::make_unique<log::ConsoleSink>(con_verbosity, log::Filter(0));
-	consink->colourise(true);
-	logger->add_sink(std::move(consink));
-	logger->add_sink(std::move(fsink));
-	log::global_logger(logger.get());
+	log::Logger logger;
+	configure_logger(logger, args);
 
 	return launch(args);
 } catch(const std::exception& e) {
@@ -65,7 +55,6 @@ int main(int argc, const char* argv[]) try {
 
 int launch(const po::variables_map& args) try {
 	const auto def_paths = args["definitions"].as<std::vector<std::string>>();
-
 	std::vector<std::string> paths = fetch_definitions(def_paths);
 
 	dbc::Parser parser;
@@ -75,6 +64,21 @@ int launch(const po::variables_map& args) try {
 } catch(const std::exception& e) {
 	LOG_FATAL_GLOB << e.what() << LOG_SYNC;
 	return EXIT_FAILURE;
+}
+
+void configure_logger(log::Logger& logger, const po::variables_map& args) {
+	const auto con_verbosity = args["verbosity"].as<log::Severity>();
+	const auto file_verbosity = args["fverbosity"].as<log::Severity>();
+
+	auto fsink = std::make_shared<log::FileSink>(
+		file_verbosity, log::Filter(0), "dbcparser.log", log::FileSink::Mode::append
+	);
+
+	auto consink = std::make_shared<log::ConsoleSink>(con_verbosity, log::Filter(0));
+	consink->colourise(true);
+	logger->add_sink(std::move(consink));
+	logger->add_sink(std::move(fsink));
+	log::global_logger(logger);
 }
 
 void handle_options(const po::variables_map& args, const dbc::types::Definitions& defs) {

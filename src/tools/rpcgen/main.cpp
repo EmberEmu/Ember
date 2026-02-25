@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - 2024 Ember
+ * Copyright (c) 2021 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -56,11 +56,11 @@ void configure_logger(log::Logger& logger, const po::variables_map& args) {
 	const auto con_verbosity = args["verbosity"].as<log::Severity>();
 	const auto file_verbosity = args["fverbosity"].as<log::Severity>();
 	
-	auto fsink = std::make_unique<log::FileSink>(
+	auto fsink = std::make_shared<log::FileSink>(
 		file_verbosity, log::Filter(0), "rpcgen.log", log::FileSink::Mode::append
 	);
 
-	auto consink = std::make_unique<log::ConsoleSink>(con_verbosity, log::Filter(0));
+	auto consink = std::make_shared<log::ConsoleSink>(con_verbosity, log::Filter(0));
 	consink->colourise(true);
 	logger->add_sink(std::move(consink));
 	logger->add_sink(std::move(fsink));

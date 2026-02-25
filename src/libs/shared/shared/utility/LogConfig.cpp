@@ -23,16 +23,16 @@ namespace ember::utility {
 
 namespace {
 
-std::unique_ptr<log::Sink> init_remote_sink(const po::variables_map& args, log::Severity severity) {
+std::shared_ptr<log::Sink> init_remote_sink(const po::variables_map& args, log::Severity severity) {
 	const auto& host = args["remote_log.host"].as<std::string>();
 	const auto& service = args["remote_log.service_name"].as<std::string>();
 	auto port = args["remote_log.port"].as<std::uint16_t>();
 	auto facility = log::SyslogSink::Facility::local_use_0;
 	auto filter = args["remote_log.filter-mask"].as<std::uint32_t>();
-	return std::make_unique<log::SyslogSink>(severity, log::Filter(filter), host, port, facility, service);
+	return std::make_shared<log::SyslogSink>(severity, log::Filter(filter), host, port, facility, service);
 }
 
-std::unique_ptr<log::Sink> init_file_sink(const po::variables_map& args, log::Severity severity) {
+std::shared_ptr<log::Sink> init_file_sink(const po::variables_map& args, log::Severity severity) {
 	const auto& mode_str = args["file_log.mode"].as<std::string>();
 	const auto& path = args["file_log.path"].as<std::string>();
 	auto filter = args["file_log.filter-mask"].as<std::uint32_t>();
@@ -44,7 +44,7 @@ std::unique_ptr<log::Sink> init_file_sink(const po::variables_map& args, log::Se
 	auto mode = (mode_str == "append")? log::FileSink::Mode::append :
 	                                    log::FileSink::Mode::truncate;
 
-	auto sink = std::make_unique<log::FileSink>(severity, log::Filter(filter), path, mode);
+	auto sink = std::make_shared<log::FileSink>(severity, log::Filter(filter), path, mode);
 	sink->size_limit( args["file_log.size_rotate"].as<std::uint32_t>());
 	sink->log_severity(args["file_log.log_severity"].as<bool>());
 	sink->log_date(args["file_log.log_timestamp"].as<bool>());
@@ -53,10 +53,10 @@ std::unique_ptr<log::Sink> init_file_sink(const po::variables_map& args, log::Se
 	return sink;
 }
 
-std::unique_ptr<log::Sink> init_console_sink(const po::variables_map& args, log::Severity severity) {
+std::shared_ptr<log::Sink> init_console_sink(const po::variables_map& args, log::Severity severity) {
 	auto filter = args["console_log.filter-mask"].as<std::uint32_t>();
 	auto colourise = args["console_log.colours"].as<bool>();
-	auto sink = std::make_unique<log::ConsoleSink>(severity, log::Filter(filter));
+	auto sink = std::make_shared<log::ConsoleSink>(severity, log::Filter(filter));
 	sink->colourise(colourise);
 
 	if(args.count("console_log.prefix")) {
@@ -67,10 +67,10 @@ std::unique_ptr<log::Sink> init_console_sink(const po::variables_map& args, log:
 }
 
 #ifdef _WIN32
-std::unique_ptr<log::Sink> init_command_sink(const po::variables_map& args, log::Severity severity) {
+std::shared_ptr<log::Sink> init_command_sink(const po::variables_map& args, log::Severity severity) {
 	auto filter = args["console_log.filter-mask"].as<std::uint32_t>();
 	auto colourise = args["console_log.colours"].as<bool>();
-	auto sink = std::make_unique<log::CommandSink>(severity, log::Filter(filter), "ember( ");
+	auto sink = std::make_shared<log::CommandSink>(severity, log::Filter(filter), "ember( ");
 	sink->colourise(colourise);
 
 	if(args.count("console_log.prefix")) {
