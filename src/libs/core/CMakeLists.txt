@@ -5,3 +5,5 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 add_subdirectory(thread)
+add_subdirectory(banner)
+add_subdirectory(commands)

@@ -130,7 +130,7 @@ find_package(Boost 1.90.0 REQUIRED COMPONENTS program_options)
 include(GetGitRevisionDescription)
 get_git_head_revision(GIT_REFSPEC GIT_SHA1)
 git_describe(VERSION --tags --dirty=-d)
-configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/libs/banner/Version.cpp.in" "${CMAKE_CURRENT_BINARY_DIR}/Version.cpp" @ONLY)
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/libs/core/banner/Version.cpp.in" "${CMAKE_CURRENT_BINARY_DIR}/Version.cpp" @ONLY)
 list(APPEND SOURCES "${CMAKE_CURRENT_BINARY_DIR}/Version.cpp" Version.h)
 set(version_file "${CMAKE_CURRENT_BINARY_DIR}/Version.cpp")
 
