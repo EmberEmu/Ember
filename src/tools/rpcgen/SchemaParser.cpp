@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - 2025 Ember
+ * Copyright (c) 2021 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,7 +8,7 @@
 
 #include "SchemaParser.h"
 #include "Utility.h"
-#include "inja/inja.hpp"
+#include <inja/inja.hpp>
 #include <gsl/narrow>
 #include <flatbuffers/reflection.h>
 #include <chrono>

@@ -44,6 +44,8 @@ auto load_schema(const boost::program_options::variables_map& args) -> jsonschem
 }
 
 void launch(const boost::program_options::variables_map& args) {
+	auto verose = args["messages"].as<std::filesystem::path>();
+
 	auto schema = load_schema(args);
 
 	auto msgs_path = args["messages"].as<std::filesystem::path>();
