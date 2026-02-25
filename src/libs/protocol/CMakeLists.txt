@@ -52,6 +52,6 @@ source_group("Core Headers" FILES ${CORE_HEADERS})
 
 add_library(${LIBRARY_NAME} INTERFACE)
 target_sources(${LIBRARY_NAME} INTERFACE ${HEADERS})
-target_link_libraries(${LIBRARY_NAME} INTERFACE shared spark ${Boost_LIBRARIES})
 target_include_directories(${LIBRARY_NAME} INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_link_libraries(${LIBRARY_NAME} INTERFACE shared spark ${Boost_LIBRARIES})
 set_target_properties(${LIBRARY_NAME} PROPERTIES FOLDER "Common Libraries")

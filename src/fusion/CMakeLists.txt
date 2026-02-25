@@ -17,8 +17,8 @@ set(SERVICE_LIBRARIES
     libcharacter
 )
 
-target_link_libraries(${EXECUTABLE_NAME} ${SERVICE_LIBRARIES} banner logger commands shared ${Boost_LIBRARIES})
+target_link_libraries(${EXECUTABLE_NAME} PRIVATE ${SERVICE_LIBRARIES} banner logger commands shared ${Boost_LIBRARIES})
 target_include_directories(${EXECUTABLE_NAME} PRIVATE ../)
 
-INSTALL(TARGETS ${EXECUTABLE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})
+install(TARGETS ${EXECUTABLE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})
 set_target_properties(fusion PROPERTIES FOLDER "Services/Applications")

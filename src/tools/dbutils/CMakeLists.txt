@@ -11,14 +11,14 @@ set(EXECUTABLE_HDR
     DatabaseDetails.h
     QueryExecutor.h
     mysql/MySQLQueryExecutor.h
-    )
+)
 
 set(EXECUTABLE_SRC
     main.cpp
     mysql/MySQLQueryExecutor.cpp
-    )
+)
 
 add_executable(${EXECUTABLE_NAME} ${EXECUTABLE_HDR} ${EXECUTABLE_SRC})
-target_link_libraries(${EXECUTABLE_NAME} banner logger shared conpool ${MYSQLCCPP_LIBRARY} ${Boost_LIBRARIES} Threads::Threads)
-INSTALL(TARGETS ${EXECUTABLE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/tools)
+target_link_libraries(${EXECUTABLE_NAME} PRIVATE banner logger shared conpool ${MYSQLCCPP_LIBRARY} ${Boost_LIBRARIES} Threads::Threads)
+install(TARGETS ${EXECUTABLE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/tools)
 set_target_properties(dbutils PROPERTIES FOLDER "Tools")
