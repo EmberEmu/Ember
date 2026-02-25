@@ -15,7 +15,7 @@
 #include <commands/PrefixedRegistry.h>
 #include <commands/Registry.h>
 #include <commands/Utility.h>
-#include <shared/threading/Utility.h>
+#include <thread/Utility.h>
 #include <shared/utility/CommandHelpers.h>
 #include <shared/utility/LogConfig.h>
 #include <shared/utility/Utility.h>

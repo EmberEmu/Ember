@@ -10,7 +10,7 @@
 #include <stun/Protocol.h>
 #include <spark/buffers/BinaryStream.h>
 #include <spark/buffers/BufferAdaptor.h>
-#include <shared/threading/Utility.h>
+#include <thread/Utility.h>
 #include <boost/asio/connect.hpp>
 #include <boost/asio/post.hpp>
 #include <boost/asio/read.hpp>

@@ -11,7 +11,6 @@
 #include "FilterTypes.h"
 #include <logger/Logger.h>
 #include <shared/metrics/Metrics.h>
-#include <shared/threading/ThreadPool.h>
 #include <boost/asio/post.hpp>
 #include <exception>
 #include <functional>
@@ -21,7 +20,7 @@
 namespace ember {
 
 LoginSession::LoginSession(SessionManager& sessions, tcp_strand_socket socket, log::Logger& logger,
-                           ThreadPool& pool, const LoginHandlerBuilder& builder)
+                           thread::ThreadPool& pool, const LoginHandlerBuilder& builder)
 		: NetworkSession(sessions, std::move(socket), logger),
 		  handler_(builder.create(remote_address())),
 		  logger_(logger),

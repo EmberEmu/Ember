@@ -16,10 +16,10 @@
 #include <conpool/Policies.h>
 #include <conpool/drivers/AutoSelect.h>
 #include <shared/database/daos/CharacterDAO.h>
-#include <shared/threading/ThreadPool.h>
 #include <shared/utility/PCREHelper.h>
 #include <shared/utility/Utility.h>
 #include <spark/Server.h>
+#include <thread/ThreadPool.h>
 #include <boost/asio/dispatch.hpp>
 #include <boost/asio/executor_work_guard.hpp>
 #include <chrono>
@@ -141,7 +141,7 @@ void Service::launch(const po::variables_map& args, boost::asio::io_context& ser
 		.defer_zone_placement = args["defer_zone_placement"].as<bool>()
 	};
 
-	ThreadPool thread_pool(concurrency);
+	thread::ThreadPool thread_pool(concurrency);
 	CharacterHandler handler(std::move(profanity), std::move(reserved), std::move(spam),
 	                         dbc_store, character_dao, config, thread_pool, temp, logger);
 

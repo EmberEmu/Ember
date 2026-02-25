@@ -12,7 +12,7 @@
 #include "NSDService.h"
 #include <logger/Logger.h>
 #include <spark/Server.h>
-#include <shared/threading/Utility.h>
+#include <thread/Utility.h>
 #include <shared/utility/Utility.h>
 #include <boost/asio/dispatch.hpp>
 #include <boost/asio/executor_work_guard.hpp>

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 - 2025 Ember
+ * Copyright (c) 2014 - 2027 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -26,7 +26,7 @@
 #include <x86intrin.h>
 #endif
 
-namespace ember {
+namespace ember::thread {
 
 class Spinlock final {
 	static constexpr auto spin_count { 16 };
@@ -66,4 +66,4 @@ public:
 	}
 };
 
-} // ember
+} // thread, ember

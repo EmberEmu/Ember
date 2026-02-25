@@ -13,7 +13,7 @@
 #include <logger/LoggerFwd.h>
 #include <shared/ClientRef.h>
 #include <shared/memory/AsioAllocator.h>
-#include <shared/threading/ServicePool.h>
+#include <thread/ServicePool.h>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <string>
@@ -27,7 +27,7 @@ namespace bai = boost::asio::ip;
 class NetworkListener final {
 	SessionManager sessions_;
 	tcp_acceptor acceptor_;
-	ServicePool& pool_;
+	thread::ServicePool& pool_;
 	std::size_t index_;
 	tcp_socket socket_;
 	log::Logger& logger_;
@@ -36,7 +36,7 @@ class NetworkListener final {
 	void dispatch_socket();
 
 public:
-	NetworkListener(ServicePool& pool, std::string_view interface, std::uint16_t port,
+	NetworkListener(thread::ServicePool& pool, std::string_view interface, std::uint16_t port,
 	                bool tcp_no_delay, log::Logger& logger)
 		: acceptor_(
 			pool.get(), 

@@ -28,7 +28,6 @@
 #include <shared/metrics/MetricsImpl.h>
 #include <shared/metrics/MetricsPoll.h>
 #include <shared/metrics/Monitor.h>
-#include <shared/threading/ThreadPool.h>
 #include <shared/database/daos/IPBanDAO.h>
 #include <shared/database/daos/PatchDAO.h>
 #include <shared/database/daos/RealmDAO.h>
@@ -45,6 +44,7 @@
 #include <spark/Server.h>
 #include <stun/Client.h>
 #include <stun/Utility.h>
+#include <thread/ThreadPool.h>
 #include <botan/version.h>
 #include <boost/asio/dispatch.hpp>
 #include <boost/asio/executor_work_guard.hpp>
@@ -240,7 +240,7 @@ void Service::launch(const po::variables_map& args, boost::asio::io_context& ser
 	auto metrics = start_metrics(service, args);
 
 	LOG_INFO_SYNC(logger, "Starting thread pool with {} threads...", concurrency);
-	ThreadPool thread_pool(concurrency);
+	thread::ThreadPool thread_pool(concurrency);
 
 	LoginHandlerBuilder builder(logger, patcher, survey, bin_data, user_dao,
 	                            acct_svc, realm_list, *metrics,

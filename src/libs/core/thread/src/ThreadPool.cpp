@@ -1,15 +1,15 @@
 /*
- * Copyright (c) 2015 - 2025 Ember
+ * Copyright (c) 2015 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include "ThreadPool.h"
-#include <shared/threading/Utility.h>
+#include <thread/ThreadPool.h>
+#include <thread/Utility.h>
 
-namespace ember {
+namespace ember::thread {
 
 ThreadPool::ThreadPool(std::size_t initial_count)
 	: work_(boost::asio::make_work_guard(service_)) {
@@ -30,4 +30,4 @@ ThreadPool::~ThreadPool() {
 	shutdown();
 }
 
-} // ember
+} // thread, ember

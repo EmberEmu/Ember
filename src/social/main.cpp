@@ -14,7 +14,6 @@
 #include <shared/utility/LogConfig.h>
 #include <shared/metrics/MetricsImpl.h>
 #include <shared/metrics/Monitor.h>
-#include <shared/threading/ThreadPool.h>
 #include <boost/asio/dispatch.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/version.hpp>

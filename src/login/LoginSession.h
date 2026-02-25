@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2024 Ember
+ * Copyright (c) 2015 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -14,17 +14,16 @@
 #include "grunt/Packet.h"
 #include "grunt/Handler.h"
 #include <logger/LoggerFwd.h>
-#include <shared/threading/ThreadPool.h>
 #include <spark/buffers/pmr/Buffer.h>
+#include <thread/ThreadPool.h>
 #include <memory>
 
 namespace ember {
 
 class LoginHandlerBuilder;
-class ThreadPool;
 
 class LoginSession final : public NetworkSession<LoginSession> {
-	ThreadPool& pool_;
+	thread::ThreadPool& pool_;
 	LoginHandler handler_;
 	log::Logger& logger_;
 	grunt::Handler grunt_handler_;
@@ -35,7 +34,7 @@ class LoginSession final : public NetworkSession<LoginSession> {
 
 public:
 	LoginSession(SessionManager& sessions, tcp_strand_socket socket, log::Logger& logger,
-	             ThreadPool& pool, const LoginHandlerBuilder& builder);
+	             thread::ThreadPool& pool, const LoginHandlerBuilder& builder);
 
 	bool handle_packet(spark::io::pmr::Buffer& buffer);
 };

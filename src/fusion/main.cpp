@@ -17,7 +17,7 @@
 #include <commands/PrefixedRegistry.h>
 #include <shared/utility/CommandHelpers.h>
 #include <shared/utility/cstring_view.hpp>
-#include <shared/threading/Utility.h>
+#include <thread/Utility.h>
 #include <shared/utility/LogConfig.h>
 #include <shared/utility/Utility.h>
 #include <boost/asio/io_context.hpp>

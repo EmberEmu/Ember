@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <thread/ThreadPool.h>
 #include <shared/database/daos/UserDAO.h>
 #include <expected>
 #include <functional>
@@ -26,10 +27,10 @@ public:
 
 private:
 	dal::UserDAO& user_dao_;
-	ThreadPool& pool_;
+	thread::ThreadPool& pool_;
 
 public:
-	AccountHandler(dal::UserDAO& user_dao, ThreadPool& pool);
+	AccountHandler(dal::UserDAO& user_dao, thread::ThreadPool& pool);
 
 	std::optional<std::uint32_t> lookup_id(const std::string& username);
 	void lookup_id(const std::string& username, LookupCB cb);

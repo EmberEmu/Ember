@@ -16,6 +16,7 @@
 #include <shared/utility/PCREHelper.h>
 #include <shared/utility/UTF8.h>
 #include <logger/LoggerFwd.h>
+#include <thread/ThreadPool.h>
 //#include <boost/locale.hpp>
 #include <pcre.h>
 #include <locale>
@@ -49,7 +50,7 @@ class CharacterHandler final {
 	const Config& config_;
 	const std::locale locale_;
 
-	ThreadPool& pool_;
+	thread::ThreadPool& pool_;
 	log::Logger& logger_;
 
 	protocol::Result validate_name(const utf8_string& name) const;
@@ -93,7 +94,9 @@ public:
 	                 const dbc::Storage& dbc,
 	                 const dal::CharacterDAO& dao,
 	                 const Config& config,
-	                 ThreadPool& pool, const std::locale& locale, log::Logger& logger)
+                     thread::ThreadPool& pool,
+                     const std::locale& locale,
+                     log::Logger& logger)
 		: profane_names_(std::move(profane_names)),
 		  reserved_names_(std::move(reserved_names)),
 		  spam_names_(std::move(spam_names)),

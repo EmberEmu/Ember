@@ -19,8 +19,8 @@
 #include <shared/database/daos/UserDAO.h>
 #include <shared/metrics/MetricsImpl.h>
 #include <shared/metrics/Monitor.h>
-#include <shared/threading/ThreadPool.h>
-#include <shared/threading/Utility.h>
+#include <thread/ThreadPool.h>
+#include <thread/Utility.h>
 #include <shared/utility/Utility.h>
 #include <spark/Server.h>
 #include <boost/asio/dispatch.hpp>
@@ -72,7 +72,7 @@ int Service::run(const po::variables_map& args) try {
 void Service::launch(const po::variables_map& args, boost::asio::io_context& service) try {
 	constexpr auto concurrency = 1u; // temp
 	LOG_INFO_SYNC(logger, "Starting thread pool with {} threads...", concurrency);
-	ThreadPool thread_pool(concurrency);
+	thread::ThreadPool thread_pool(concurrency);
 
 	LOG_INFO_SYNC(logger, "Initialising database driver...");
 	const auto& db_config_path = args["database.config_path"].as<std::string>();

@@ -12,8 +12,8 @@
 #include "Connection.h"
 #include "ConnectionPool.h"
 #include "LogSeverity.h"
-#include <shared/threading/Spinlock.h>
-#include <shared/threading/Utility.h>
+#include <thread/Spinlock.h>
+#include <thread/Utility.h>
 #include <atomic>
 #include <chrono>
 #include <string>
@@ -37,7 +37,7 @@ template<typename ConType, typename Driver, typename ReusePolicy, typename Growt
 class PoolManager final {
 	using ConnectionPool = Pool<Driver, ReusePolicy, GrowthPolicy, size_hint>*;
 	ConnectionPool pool_;
-	Spinlock exception_lock_;
+	thread::Spinlock exception_lock_;
 	sc::seconds interval_, max_idle_;
 	std::thread manager_;
 	std::exception_ptr exception_;

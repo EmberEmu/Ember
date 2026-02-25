@@ -10,7 +10,7 @@
 #include "FilterTypes.h"
 #include <logger/Logger.h>
 #include <shared/utility/Utility.h>
-#include <shared/threading/ThreadPool.h>
+#include <thread/ThreadPool.h>
 #include <boost/assert.hpp>
 
 namespace ember {
