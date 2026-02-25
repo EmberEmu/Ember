@@ -17,6 +17,6 @@ set(EXECUTABLE_SRC
 include_directories(${CMAKE_SOURCE_DIR}/deps/nlohmann)
 add_executable(${EXECUTABLE_NAME} ${EXECUTABLE_SRC})
 add_dependencies(${EXECUTABLE_NAME} FB_SCHEMA_COMPILE)
-target_link_libraries(${EXECUTABLE_NAME} logger shared ${Boost_LIBRARIES})
+target_link_libraries(${EXECUTABLE_NAME} logger ${Boost_LIBRARIES})
 INSTALL(TARGETS ${EXECUTABLE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/tools)
 set_target_properties(${EXECUTABLE_NAME} PROPERTIES FOLDER "Tools")
