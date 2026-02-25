@@ -14,7 +14,7 @@
 #include <stun/MessageBuilder.h>
 #include <stun/Utility.h>
 #include <stun/detail/Shared.h>
-#include <shared/threading/Utility.h>
+#include <thread/Utility.h>
 #include <boost/assert.hpp>
 #include <boost/endian.hpp>
 #include <chrono>

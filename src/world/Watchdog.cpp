@@ -8,7 +8,7 @@
 
 #include "Watchdog.h"
 #include <logger/Logger.h>
-#include <shared/threading/Utility.h>
+#include <thread/Utility.h>
 #include <condition_variable>
 #include <functional>
 #include <mutex>

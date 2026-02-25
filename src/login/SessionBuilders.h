@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2025 Ember
+ * Copyright (c) 2015 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,6 +11,7 @@
 #include "LoginSession.h"
 #include "SocketType.h"
 #include <logger/LoggerFwd.h>
+#include <thread/ThreadPool.h>
 #include <memory>
 #include <utility>
 
@@ -20,7 +21,6 @@ namespace bai = boost::asio::ip;
 
 class LoginHandlerBuilder;
 class SessionManager;
-class ThreadPool;
 
 class NetworkSessionBuilder {
 public:
@@ -33,10 +33,10 @@ public:
 
 class LoginSessionBuilder final : public NetworkSessionBuilder {
 	const LoginHandlerBuilder& builder_;
-	ThreadPool& pool_;
+	thread::ThreadPool& pool_;
 
 public:
-	LoginSessionBuilder(const LoginHandlerBuilder& builder, ThreadPool& pool)
+	LoginSessionBuilder(const LoginHandlerBuilder& builder, thread::ThreadPool& pool)
 		: builder_(builder), pool_(pool) { }
 
 	std::shared_ptr<LoginSession> create(SessionManager& sessions,

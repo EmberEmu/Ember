@@ -17,10 +17,8 @@
 #include <chrono>
 #include <semaphore>
 
-namespace ember {
-
-class ServicePool;
-
+namespace ember::thread {
+	class ServicePool;
 };
 
 namespace ember::gateway {
@@ -35,7 +33,7 @@ class Service {
 	commands::PrefixedRegistry& cmd_register;
 	std::chrono::steady_clock::time_point start_time;
 
-	void launch(const boost::program_options::variables_map& args, ServicePool& service_pool);
+	void launch(const boost::program_options::variables_map& args, thread::ServicePool& service_pool);
 
 public:
 	static boost::program_options::options_description options();

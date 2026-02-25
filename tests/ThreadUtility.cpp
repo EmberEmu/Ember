@@ -6,7 +6,7 @@
 * file, You can obtain one at http://mozilla.org/MPL/2.0/.
 */
 
-#include <shared/threading/Utility.h>
+#include <thread/Utility.h>
 #include <gtest/gtest.h>
 #include <semaphore>
 #include <string>

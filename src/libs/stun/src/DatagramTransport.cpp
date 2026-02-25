@@ -7,7 +7,7 @@
  */
 
 #include <stun/DatagramTransport.h>
-#include <shared/threading/Utility.h>
+#include <thread/Utility.h>
 #include <boost/asio/post.hpp>
 #include <boost/asio/ip/basic_resolver.hpp>
 #include <boost/asio/ip/host_name.hpp>

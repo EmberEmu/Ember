@@ -46,17 +46,6 @@ set(MEMORY_SRC
     shared/memory/AsioAllocator.h
 )
 
-set(THREADING_SRC
-    shared/threading/Semaphore.h
-    shared/threading/Spinlock.h
-    shared/threading/ThreadPool.cpp
-    shared/threading/ThreadPool.h
-    shared/threading/Utility.h
-    shared/threading/Utility.cpp
-    shared/threading/ServicePool.h
-    shared/threading/ServicePool.cpp
-)
-
 set(UTIL_SRC
     shared/utility/xoroshiro128plus.h
     shared/utility/xoroshiro128plus.cpp
@@ -118,7 +107,6 @@ set(LIBRARY_SRC
     ${MYSQL_DAOS_SRC}
     ${POSTGRESQL_DAOS_SRC}
     ${MEMORY_SRC}
-    ${THREADING_SRC}
     ${UTIL_SRC}
     ${METRICS_SRC}
     shared/ClientRef.h

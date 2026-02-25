@@ -1,17 +1,17 @@
 /*
- * Copyright (c) 2016 - 2025 Ember
+ * Copyright (c) 2016 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include "ServicePool.h"
-#include <shared/threading/Utility.h>
+#include <thread/ServicePool.h>
+#include <thread/Utility.h>
 #include <utility>
 #include <stdexcept>
 
-namespace ember {
+namespace ember::thread {
 
 ServicePool::ServicePool(const std::size_t pool_size, const int hint)
 	: pool_size_(pool_size),
@@ -81,4 +81,4 @@ std::size_t ServicePool::size() const {
 	return pool_size_;
 }
 
-} // ember
+} // thread, ember

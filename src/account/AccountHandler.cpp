@@ -7,11 +7,10 @@
  */
 
 #include "AccountHandler.h"
-#include <shared/threading/ThreadPool.h>
 
 namespace ember {
 
-AccountHandler::AccountHandler(dal::UserDAO& user_dao, ThreadPool& pool)
+AccountHandler::AccountHandler(dal::UserDAO& user_dao, thread::ThreadPool& pool)
 	: user_dao_(user_dao),
 	  pool_(pool) {}
 

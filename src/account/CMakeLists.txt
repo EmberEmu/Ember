@@ -27,7 +27,7 @@ include_directories(${SPARK_INCLUDES_DIR})
 add_library(${LIBRARY_NAME} ${LIBRARY_HDR} ${LIBRARY_SRC})
 add_dependencies(${LIBRARY_NAME} FB_SCHEMA_COMPILE)
 add_dependencies(${LIBRARY_NAME} SPARK_RPC_GENERATE)
-target_link_libraries(${LIBRARY_NAME} PRIVATE spark conpool ${MYSQLCCPP_LIBRARY} Threads::Threads PUBLIC logger commands shared ${Boost_LIBRARIES})
+target_link_libraries(${LIBRARY_NAME} PRIVATE spark conpool ${MYSQLCCPP_LIBRARY} Threads::Threads PUBLIC thread logger commands shared ${Boost_LIBRARIES})
 
 add_executable(${EXECUTABLE_NAME} main.cpp)
 target_link_libraries(${EXECUTABLE_NAME} PRIVATE ${LIBRARY_NAME} banner logger commands shared ${Boost_LIBRARIES} Threads::Threads)

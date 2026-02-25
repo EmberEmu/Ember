@@ -11,7 +11,7 @@
 #include "Event.h"
 #include "ClientHandler.h"
 #include <logger/Logger.h>
-#include <shared/threading/ServicePool.h>
+#include <thread/ServicePool.h>
 #include <shared/ClientRef.h>
 #include <boost/asio/post.hpp>
 #include <boost/unordered/unordered_flat_map.hpp>
@@ -26,13 +26,13 @@ class EventDispatcher final {
 		ClientRef, ClientHandler*, boost::hash<ClientRef>
 	>;
 
-	const ServicePool& pool_;
+	const thread::ServicePool& pool_;
 	log::Logger& logger_;
 
 	static inline thread_local HandlerMap handlers_;
 
 public:
-	explicit EventDispatcher(const ServicePool& pool, log::Logger& logger)
+	explicit EventDispatcher(const thread::ServicePool& pool, log::Logger& logger)
 		: pool_(pool),
 		  logger_(logger) {}
 

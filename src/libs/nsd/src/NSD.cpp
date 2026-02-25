@@ -8,7 +8,7 @@
 
 #include <nsd/NSD.h>
 #include <logger/Logger.h>
-#include <shared/threading/Utility.h>
+#include <thread/Utility.h>
 
 namespace ember {
 

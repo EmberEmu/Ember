@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 - 2024 Ember
+ * Copyright (c) 2014 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -12,7 +12,7 @@
 #include <chrono>
 #include <mutex>
 
-namespace ember {
+namespace ember::thread {
 
 /*
  * This semaphore predates the additions to std::* and it does
@@ -84,4 +84,4 @@ public:
 	}
 };
 
-} // ember
+} // thread, ember

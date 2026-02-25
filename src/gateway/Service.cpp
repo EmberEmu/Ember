@@ -31,8 +31,6 @@
 #include <shared/database/daos/UserDAO.h>
 #include <shared/game/GameVersion.h>
 #include <shared/game/Utility.h>
-#include <shared/threading/ServicePool.h>
-#include <shared/threading/Utility.h>
 #include <shared/utility/cstring_view.hpp>
 #include <shared/utility/LogConfig.h>
 #include <shared/utility/STUN.h>
@@ -40,6 +38,8 @@
 #include <shared/utility/xoroshiro128plus.h>
 #include <stun/Client.h>
 #include <stun/Utility.h>
+#include <thread/ServicePool.h>
+#include <thread/Utility.h>
 #include <boost/asio/dispatch.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/version.hpp>
@@ -79,7 +79,7 @@ int Service::run(const po::variables_map& args) try {
 
 	// Start Asio service pool
 	LOG_INFO_SYNC(logger, "Starting service pool with {} threads", concurrency);
-	ServicePool service_pool(concurrency, BOOST_ASIO_CONCURRENCY_HINT_UNSAFE_IO);
+	thread::ServicePool service_pool(concurrency, BOOST_ASIO_CONCURRENCY_HINT_UNSAFE_IO);
 	service_pool.run();
 
 	std::thread thread([&]() {
@@ -103,7 +103,7 @@ void Service::stop() {
 	stop_flag.release();
 }
 
-void Service::launch(const po::variables_map& args, ServicePool& service_pool) try {
+void Service::launch(const po::variables_map& args, thread::ServicePool& service_pool) try {
 #ifdef DEBUG_NO_THREADS
 	LOG_WARN_SYNC(logger, "Compiled with DEBUG_NO_THREADS!");
 #endif

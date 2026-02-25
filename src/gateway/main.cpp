@@ -10,7 +10,7 @@
 #include <logger/Logger.h>
 #include <banner/Banner.h>
 #include <commands/PrefixedRegistry.h>
-#include <shared/threading/Utility.h>
+#include <thread/Utility.h>
 #include <shared/utility/CommandHelpers.h>
 #include <shared/utility/LogConfig.h>
 #include <shared/utility/Utility.h>

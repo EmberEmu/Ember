@@ -13,8 +13,8 @@
 #include "Policies.h"
 #include "Exception.h"
 #include "LogSeverity.h"
-#include <shared/threading/Semaphore.h>
-#include <shared/threading/Spinlock.h>
+#include <thread/Semaphore.h>
+#include <thread/Spinlock.h>
 #include <boost/assert.hpp>
 #include <boost/container/small_vector.hpp>
 #include <optional>
@@ -51,11 +51,11 @@ class Pool final : private ReusePolicy, private GrowthPolicy {
 	Driver& driver_;
 	const std::size_t min_, max_;
 	std::atomic<std::size_t> size_;
-	Spinlock lock_;
+	thread::Spinlock lock_;
 	boost::container::small_vector<ConnDetail<ConType>, size_hint> pool_;
 	boost::container::small_vector<std::atomic<bool>, size_hint> pool_guards_;
 
-	Semaphore<std::mutex> semaphore_;
+	thread::Semaphore<std::mutex> semaphore_;
 	std::function<void(Severity, std::string)> log_cb_;
 	std::atomic_bool closed_;
 
