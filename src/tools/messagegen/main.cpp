@@ -14,6 +14,8 @@
 #include <filesystem>
 #include <stdexcept>
 
+using namespace jsoncons;
+
 void launch(const boost::program_options::variables_map& args);
 boost::program_options::variables_map parse_arguments(int argc, const char* argv[]);
 
@@ -22,46 +24,39 @@ int main(int argc, const char* argv[]) try {
 	launch(args);
 	return EXIT_SUCCESS;
 } catch(const std::exception& e) {
-	std::cerr << e.what();
+	std::println(stderr, "Fatal error: {}", e.what());
 	return EXIT_FAILURE;
 }
 
-void launch(const boost::program_options::variables_map& args) {
+auto load_schema(const boost::program_options::variables_map& args) -> jsonschema::json_schema<json> {
 	auto schema_path = args["schema"].as<std::filesystem::path>();
 	std::ifstream stream(schema_path);
 
 	if(!stream) {
-		std::println("Unable to open schema, {}", schema_path.string());
-		return;
+		throw std::invalid_argument("Unable to read provided schema file");
 	}
 
-	auto json = jsoncons::json::parse(stream, [](const jsoncons::json_errc ec, const jsoncons::ser_context& context) {
-		std::println("Error while parsing schema, error on line {}", context.line());
-		return false;
-	});
+	auto json = jsoncons::json::parse(stream);
 
-	auto schema = jsoncons::jsonschema::make_json_schema(json);
+	return jsoncons::jsonschema::make_json_schema(
+		json, jsoncons::jsonschema::evaluation_options{}.require_format_validation(true)
+	);
+}
+
+void launch(const boost::program_options::variables_map& args) {
+	auto schema = load_schema(args);
+
 	auto msgs_path = args["messages"].as<std::filesystem::path>();
-
-	stream.close();
-	stream.open(msgs_path);
+	std::ifstream stream(msgs_path);
 
 	if(!stream) {
-		std::println("Unable to open test message, {}", msgs_path.string());
-		return;
+		throw std::runtime_error(
+			std::format("Unable to open test message, {}", msgs_path.string())
+		);
 	}
 
-	auto reporter = [&](const jsoncons::jsonschema::validation_message& message) {
-		std::println("Error parsing {}: {}:{}", msgs_path.string(), message.instance_location().string(), message.message());
-		return jsoncons::jsonschema::walk_result::abort;
-	};
-
-	json = jsoncons::json::parse(stream, [](const jsoncons::json_errc ec, const jsoncons::ser_context& context) {
-		std::println("Error while parsing message, error on line {}", context.line());
-		return false;
-	});
-
-	schema.validate(json, reporter);
+	auto json = jsoncons::json::parse(stream);
+	schema.validate(json);
 }
 
 boost::program_options::variables_map parse_arguments(const int argc, const char* argv[]) {
