@@ -93,6 +93,7 @@ set(UTIL_SRC
     shared/utility/CommandHelpers.cpp
     shared/utility/HashDefines.h
     shared/utility/CommandExecutor.h
+    shared/utility/cstring_view.hpp
 )
 
 set(METRICS_SRC
