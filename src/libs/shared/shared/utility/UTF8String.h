@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2019 Ember
+* Copyright (c) 2019 - 2026 Ember
 *
 * This Source Code Form is subject to the terms of the Mozilla Public
 * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -13,9 +13,11 @@
 #pragma once
 
 #include <string>
+#include <string_view>
 
 namespace ember {
 
 using utf8_string = std::string;
+using utf8_string_view = std::string_view;
 
 } // ember
