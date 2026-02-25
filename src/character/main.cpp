@@ -97,7 +97,7 @@ po::variables_map parse_arguments(const int argc, const char* argv[]) {
 	//Command-line options
 	po::options_description cmdline_opts("Generic options");
 	cmdline_opts.add_options()
-		("help", "Displays a list of available options")
+		("help,h", "Displays a list of available options")
 		("config,c", po::value<std::string>()->default_value("character.conf"),
 			"Path to the configuration file");
 

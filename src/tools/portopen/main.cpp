@@ -174,8 +174,8 @@ void protocol_validate(const ports::Protocol& protocol) {
 po::variables_map parse_arguments(const int argc, const char* argv[]) {
 	po::options_description cmdline_opts("Options");
 	cmdline_opts.add_options()
-		("help", "Displays a list of available options")
-		("upnp", "Use UPnP rather than NAT-PMP/PCP")
+		("help,h", "Displays a list of available options")
+		("upnp,u", "Use UPnP rather than NAT-PMP/PCP")
 		("internal,i", po::value<std::uint16_t>()->default_value(8085), "Internal port")
 		("external,x", po::value<std::uint16_t>()->default_value(8085), "External port")
 		("interface,f", po::value<std::string>()->default_value("0.0.0.0"), "Interface to bind to")

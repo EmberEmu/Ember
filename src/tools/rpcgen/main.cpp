@@ -70,6 +70,7 @@ void configure_logger(log::Logger& logger, const po::variables_map& args) {
 po::variables_map parse_arguments(const int argc, const char* argv[]) {
 	po::options_description cmdline_opts("Options");
 	cmdline_opts.add_options()
+		("help,h", "Displays a list of available options")
 		("schemas,s", po::value<std::vector<std::string>>()->multitoken()->required(), ".fbsb schemas")
 		("out,o",     po::value<std::string>()->required(), "Output directory for generated code")
 		("tpl,t",     po::value<std::string>()->default_value("templates/"),

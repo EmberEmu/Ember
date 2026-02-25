@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 - 2025 Ember
+ * Copyright (c) 2024 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -75,7 +75,7 @@ po::variables_map parse_arguments(const int argc, const char* argv[]) {
 	// Command-line options
 	po::options_description cmdline_opts("Generic options");
 	cmdline_opts.add_options()
-		("help", "Displays a list of available options")
+		("help,h", "Displays a list of available options")
 		("database.config_path,d", po::value<std::string>(),
 			"Path to the database configuration file")
 		("config,c", po::value<std::string>()->default_value("world.conf"),

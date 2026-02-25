@@ -107,6 +107,7 @@ void json_output(const std::string_view username, const Botan::BigInt& verifier,
 po::variables_map parse_arguments(const int argc, const char* argv[]) {
 	po::options_description cmdline_opts("Options");
 	cmdline_opts.add_options()
+		("help,h",     "Displays a list of available options")
 		("username,u", po::value<std::string>()->required(), "Username")
 		("password,p", po::value<std::string>()->required(), "Password")
 		("sbin,s",     po::value<std::string>(), "Output salt into a binary file")

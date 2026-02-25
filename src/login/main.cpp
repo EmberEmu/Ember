@@ -127,7 +127,7 @@ po::variables_map parse_arguments(const int argc, const char* argv[]) {
 	//Command-line options
 	po::options_description cmdline_opts("Generic options");
 	cmdline_opts.add_options()
-		("help", "Displays a list of available options")
+		("help,h", "Displays a list of available options")
 		("database.config_path,d", po::value<std::string>(),
 			"Path to the database configuration file")
 		("config,c", po::value<std::string>()->default_value("login.conf"),
