@@ -11,6 +11,7 @@
 #include <ports/pcp/Client.h>
 #include <boost/asio/steady_timer.hpp>
 #include <boost/asio/io_context.hpp>
+#include <boost/asio/strand.hpp>
 #include <chrono>
 #include <deque>
 #include <functional>

@@ -7,7 +7,7 @@
  */
 
 #include <ports/pcp/DatagramTransport.h>
-#include <boost/asio/bind_executor.hpp>
+#include <boost/asio/strand.hpp>
 #include <boost/asio/post.hpp>
 #include <boost/asio/ip/multicast.hpp>
 #include <boost/container/small_vector.hpp>
@@ -15,19 +15,17 @@
 namespace ember::ports {
 
 DatagramTransport::DatagramTransport(const std::string_view bind, std::uint16_t port, ba::io_context& ctx)
-	: ctx_(ctx), strand_(ctx),
-	  socket_(ctx_, ba::ip::udp::endpoint(ba::ip::make_address(bind), port)),
-	  resolver_(ctx_) {
+	: socket_(boost::asio::make_strand(ctx), ba::ip::udp::endpoint(ba::ip::make_address(bind), port))
+	, resolver_(socket_.get_executor()) {
 	socket_.set_option(ba::ip::udp::socket::reuse_address(true));
 
-	ba::post(ctx_, ba::bind_executor(strand_, [&]() {
+	ba::post(socket_.get_executor(), [&]() {
 		receive();
-	}));
+	});
 }
 
 DatagramTransport::~DatagramTransport() {
 	socket_.close();
-	ctx_.stop();
 }
 
 void DatagramTransport::join_group(const std::string_view address) {
@@ -44,16 +42,15 @@ void DatagramTransport::join_group(const std::string_view address) {
 }
 
 void DatagramTransport::resolve(const std::string_view host, const std::uint16_t port, OnResolve&& cb) {
-	resolver_.async_resolve(host, std::to_string(port), ba::bind_executor(strand_, 
-		[&, cb = std::move(cb)](const boost::system::error_code& ec,
-		                        ba::ip::udp::resolver::results_type results) {
+	resolver_.async_resolve(host, std::to_string(port),
+		[&, cb = std::move(cb)](const auto& ec, ba::ip::udp::resolver::results_type results) {
 			if(!ec) {
 				remote_ep_ = results.begin()->endpoint();
 			}
 
 			cb(ec, remote_ep_);
 		}
-	));
+	);
 }
 
 void DatagramTransport::do_write() {
@@ -61,9 +58,8 @@ void DatagramTransport::do_write() {
 	auto buffer = ba::buffer(*datagram);
 	queue_.pop();
 
-	socket_.async_send_to(buffer, remote_ep_, ba::bind_executor(strand_,
-		[this, dg = std::move(datagram)](boost::system::error_code ec,
-		                                 std::size_t /*bytes_sent*/) {
+	socket_.async_send_to(buffer, remote_ep_,
+		[this, dg = std::move(datagram)](auto ec, std::size_t /*bytes_sent*/) {
 			if(ec == ba::error::operation_aborted) {
 				return;
 			} else if(ec) {
@@ -75,17 +71,17 @@ void DatagramTransport::do_write() {
 				do_write();
 			}
 		}
-	));
+	);
 }
 
 void DatagramTransport::send(std::shared_ptr<std::vector<std::uint8_t>> message) {
-	ba::post(ctx_, ba::bind_executor(strand_, [&, datagram = std::move(message)]() mutable {
+	ba::post(socket_.get_executor(), [&, datagram = std::move(message)]() mutable {
 		queue_.emplace(std::move(datagram));
 
 		if(queue_.size() == 1) {
 			do_write();
 		}
-	}));
+	});
 }
 
 void DatagramTransport::send(std::vector<std::uint8_t> message) {
@@ -94,7 +90,7 @@ void DatagramTransport::send(std::vector<std::uint8_t> message) {
 }
 
 void DatagramTransport::receive() {
-	socket_.async_wait(ba::ip::udp::socket::wait_read, ba::bind_executor(strand_,
+	socket_.async_wait(ba::ip::udp::socket::wait_read,
 		[this](boost::system::error_code ec) {
 			if(ec == ba::error::operation_aborted) {
 				return;
@@ -115,7 +111,7 @@ void DatagramTransport::receive() {
 			}
 
 			receive();
-		}));
+		});
 }
 
 void DatagramTransport::close() {
