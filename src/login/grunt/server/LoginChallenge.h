@@ -43,6 +43,11 @@ class LoginChallenge final : public Packet {
 		B = Botan::BigInt(b_buff);
 
 		stream >> g_len;
+
+		if(g_len > 1) {
+			throw bad_packet("invalid generator length");
+		}
+
 		stream >> g;
 		stream >> n_len;
 
@@ -136,6 +141,10 @@ public:
 		std::array<std::uint8_t, PUB_KEY_LENGTH> bytes{};
 		B.serialize_to(bytes);
 		stream.put(bytes.rbegin(), bytes.rend());
+
+		if(g_len > 1) {
+			throw bad_packet("invalid generator length");
+		}
 
 		stream << g_len;
 		stream << g;
