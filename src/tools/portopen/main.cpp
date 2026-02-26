@@ -101,7 +101,7 @@ void use_natpmp(const po::variables_map& args) {
 		             result->internal_port,
 		             result->lifetime);
 	} else {
-		std::cout << "Error: could not map port" << std::endl;
+		std::println("Error: could not map port");
 		print_error(result.error());
 	}
 
@@ -112,7 +112,7 @@ void use_natpmp(const po::variables_map& args) {
 		const auto v6 = boost::asio::ip::address_v6(xresult->external_ip);
 		std::print("External address: {}", v6.to_string());
 	} else {
-		std::cout << "Error: could not retrieve external address" << std::endl;
+		std::println("Error: could not retrieve external address");
 		print_error(xresult.error());
 	}
 

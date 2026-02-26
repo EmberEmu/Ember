@@ -10,7 +10,6 @@
 #include <banner/Version.h>
 #include <logger/ConsoleColour.h>
 #include <shared/utility/polyfill/print>
-#include <iostream>
 
 namespace ember {
 
@@ -18,22 +17,19 @@ void print_banner(const std::string_view display_name) {
 	log::ConsoleColour console;
 
 	console.set(log::Colour::dark_grey);
-	std::cout << "\n"
-		R"(                                      d8b)" << "\n";
+	std::println();
+	std::println(R"(                                      d8b)");
 	console.set(log::Colour::grey);
-	std::cout <<
-		R"(                                      ?88)" << "\n";
+	std::println(R"(                                      ?88)");
 	console.set(log::Colour::yellow);
-	std::cout <<
-		R"(                                       88b)" << "\n"
-		R"(       )         d8888b  88bd8b,d88b   888888b  d8888b  88bd88b)" << "\n";
+	std::println(R"(                                       88b)");
+	std::println(R"(       )         d8888b  88bd8b,d88b   888888b  d8888b  88bd88b)");
 	console.set(log::Colour::light_red);
-	std::cout <<
-		R"(      ) \       d8b_,dP  88P'`?8P'?8b  88P `?8bd8b_,dP  88P'  `)" << "\n";
+	std::println(R"(      ) \       d8b_,dP  88P'`?8P'?8b  88P `?8bd8b_,dP  88P'  `)");
 	console.set(log::Colour::red);
-	std::cout <<
-		R"(     / ) (      88b     d88  d88  88P d88,  d8888b     d88)" << "\n"
-		R"(     \(_)/      `?888P'd88' d88'  88bd88'`?88P'`?888P'd88')" << "\n\n";
+	std::println(R"(     / ) (      88b     d88  d88  88P d88,  d8888b     d88)");
+	std::println(R"(     \(_)/      `?888P'd88' d88'  88bd88'`?88P'`?888P'd88')");
+	std::println();
 
 	console.reset();
 	std::print("{}, v{} ({})\n\n", display_name, version::VERSION, version::GIT_HASH);

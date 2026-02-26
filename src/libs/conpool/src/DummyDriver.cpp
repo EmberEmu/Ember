@@ -8,44 +8,44 @@
 
 #include <conpool/drivers/DummyDriver.h>
 #include <conpool/drivers/DummyConnection.h>
-#include <iostream>
+#include <shared/utility/polyfill/print>
 
 namespace ember::drivers {
 	
 DummyDriver::DummyDriver() {
-	std::cout << "DummyDriver opened\n";
+	std::println("DummyDriver opened");
 }
 
 DummyConnection DummyDriver::open() const {
-	std::cout << "DummyConnection opened\n";
+	std::println("DummyConnection opened");
 	return DummyConnection();
 }
 
 DummyConnection DummyDriver::clean(DummyConnection conn) const {
-	std::cout << "DummyConnection cleaned\n";
+	std::println("DummyConnection cleaned");
 	return conn;
 }
 
 void DummyDriver::close(DummyConnection conn) const {
-	std::cout << "DummyConnection closed\n";
+	std::println("DummyConnection closed");
 }
 
 
 void DummyDriver::clear_state(DummyConnection conn) const {
-	std::cout << "DummyConnection state cleared\n";
+	std::println("DummyConnection state cleared");
 }
 
 DummyConnection DummyDriver::keep_alive(DummyConnection conn) const {
-	std::cout << "DummyConnection keep-alive\n";
+	std::println("DummyConnection keep-alive");
 	return conn;
 }
 
 void DummyDriver::thread_enter() const {
-	std::cout << "DummyDriver thread enter\n";
+	std::println("DummyDriver thread enter");
 }
 
 void DummyDriver::thread_exit() const {
-	std::cout << "DummyDriver thread exit\n";
+	std::println("DummyDriver thread exit");
 }
 
 std::string DummyDriver::name() const {

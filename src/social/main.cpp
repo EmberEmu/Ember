@@ -12,6 +12,7 @@
 #include <logger/Logger.h>
 #include <banner/Banner.h>
 #include <shared/utility/LogConfig.h>
+#include <shared/utility/polyfill/pr>
 #include <shared/metrics/MetricsImpl.h>
 #include <shared/metrics/Monitor.h>
 #include <boost/asio/dispatch.hpp>
