@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - 2025 Ember
+ * Copyright (c) 2021 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -156,9 +156,9 @@ public:
 		return *this;
 	}
 
-	template<is_iterable T>
-	BinaryStreamWriter& operator<<(prefixed<T> adaptor) {
-		const auto count = endian::native_to_little(static_cast<std::uint32_t>(adaptor->size()));
+	template<is_iterable type, std::integral prefix_type>
+	BinaryStreamWriter& operator<<(prefixed<type, prefix_type> adaptor) {
+		const auto count = endian::native_to_little(static_cast<prefix_type>(adaptor->size()));
 		write(&count, sizeof(count));
 		write_container(adaptor.str);
 		return *this;

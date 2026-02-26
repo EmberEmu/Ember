@@ -56,13 +56,7 @@ std::string parse_label_notation(std::span<const std::uint8_t> buffer) try {
 	spark::io::BinaryStream stream(adaptor);
 
 	std::string segment;
-	std::uint8_t length;
-	stream >> length;
-
-	if(length) {
-		stream.get(segment, length);
-	}
-
+	stream >> spark::io::prefixed<std::string, std::uint8_t>(segment);
 	return segment;
 } catch(const spark::exception&) {
 	throw Result::label_parse_error;

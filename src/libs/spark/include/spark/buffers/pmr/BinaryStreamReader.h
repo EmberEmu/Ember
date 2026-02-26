@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - 2025 Ember
+ * Copyright (c) 2021 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -140,8 +140,9 @@ public:
 		return *this;
 	}
 
-	BinaryStreamReader& operator>>(prefixed<std::string> adaptor) {
-		std::uint32_t size = 0;
+	template<std::integral prefix_type>
+	BinaryStreamReader& operator>>(prefixed<std::string, prefix_type> adaptor) {
+		prefix_type size = 0;
 		*this >> endian::le(size);
 
 		if(state() != StreamState::ok) {
@@ -222,17 +223,17 @@ public:
 		return *this;
 	}
 
-	template<is_iterable T>
-	requires (!std::is_same_v<std::decay_t<T>, std::string>
-		&& !std::is_same_v<std::decay_t<T>, std::string_view>)
-	BinaryStreamReader& operator>>(prefixed<T> adaptor) {
-		std::uint32_t count = 0;
+	template<is_iterable type, std::integral prefix_type>
+	requires (!std::is_same_v<std::decay_t<type>, std::string>
+		&& !std::is_same_v<std::decay_t<type>, std::string_view>)
+	BinaryStreamReader& operator>>(prefixed<type, prefix_type> adaptor) {
+		prefix_type count = 0;
 		*this >> endian::le(count);
 		read_container(adaptor.str, count);
 		return *this;
 	}
 
-	template<is_iterable T>
+	template<is_iterable T, std::integral prefix_type>
 	requires (!std::is_same_v<std::decay_t<T>, std::string>
 		&& !std::is_same_v<std::decay_t<T>, std::string_view>)
 	BinaryStreamReader& operator>>(prefixed_varint<T> adaptor) {
