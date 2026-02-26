@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Ember
+ * Copyright (c) 2015 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -16,7 +16,7 @@ namespace ember {
 using namespace std::chrono_literals;
 
 void install_net_monitor(Monitor& monitor, const NetworkListener& server, log::Logger& logger) {
-	Monitor::Source source{ "network_connections", std::bind(&NetworkListener::connection_count, &server),
+	Monitor::Source source{ "network_connections", [&] { return server.connection_count(); },
 		10s, 1000,
 		[](std::intmax_t value, std::intmax_t threshold) {
 			return value > threshold;
@@ -25,8 +25,9 @@ void install_net_monitor(Monitor& monitor, const NetworkListener& server, log::L
 	};
 
 	monitor.add_source(source, Monitor::Severity::warn,
-		std::bind(monitor_log_callback, std::placeholders::_1, std::placeholders::_2,
-		          std::placeholders::_3, std::ref(logger))
+		[&](const auto& source, auto severity, auto value) {
+			monitor_log_callback(source, severity, value, logger);
+		}
 	);
 
 }

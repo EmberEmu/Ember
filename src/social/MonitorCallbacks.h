@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Ember
+ * Copyright (c) 2015 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -25,7 +25,7 @@ void monitor_log_callback(const Monitor::Source& source, Monitor::Severity sever
 
 template<typename T>
 void install_pool_monitor(Monitor& monitor, const T& pool, log::Logger& logger) {
-	Monitor::Source source{ "db_pool_size", std::bind(&T::size, &pool),
+	Monitor::Source source{ "db_pool_size", [&]{ return pool.size(); },
 		30s, 0,
 		[](std::intmax_t value, std::intmax_t threshold) {
 			return value == threshold;
@@ -34,8 +34,9 @@ void install_pool_monitor(Monitor& monitor, const T& pool, log::Logger& logger) 
 	};
 
 	monitor.add_source(source, Monitor::Severity::error,
-		std::bind(monitor_log_callback, std::placeholders::_1, std::placeholders::_2,
-		          std::placeholders::_3, std::ref(logger))
+		[&](const auto& source, auto severity, auto value) {
+			monitor_log_callback(source, severity, value, logger);
+		}
 	);
 }
 
