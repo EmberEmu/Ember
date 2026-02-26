@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2025 Ember
+ * Copyright (c) 2015 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,7 +8,7 @@
 
 #include <shared/metrics/Monitor.h>
 #include <boost/asio/bind_executor.hpp>
-#include <array>
+#include <boost/asio/strand.hpp>
 #include <memory>
 #include <sstream>
 
@@ -17,12 +17,13 @@ namespace ember {
 using namespace std::chrono_literals;
 namespace bai = boost::asio::ip;
 
-Monitor::Monitor(boost::asio::io_context& service, std::string_view interface,
-                 std::uint16_t port, std::chrono::seconds frequency)
-	: strand_(service),
-	  timer_(service),
-	  TIMER_FREQUENCY(frequency),
-	  socket_(service, bai::udp::endpoint(bai::make_address(interface), port)) {
+Monitor::Monitor(boost::asio::io_context& service,
+                 std::string_view interface,
+                 std::uint16_t port,
+                 std::chrono::seconds frequency)
+	: timer_(service)
+	, timer_frequency(frequency)
+	, socket_(boost::asio::make_strand(service), bai::udp::endpoint(bai::make_address(interface), port)) {
 	set_timer();
 	receive();
 }
@@ -40,22 +41,29 @@ void Monitor::shutdown() {
 }
 
 void Monitor::receive() {
-	std::array<char, 1> buffer;
+	socket_.async_wait(boost::asio::ip::udp::socket::wait_read,
+		[&](const boost::system::error_code& ec) {
+			if(ec) {
+				return;
+			}
 
-	socket_.async_receive_from(boost::asio::buffer(buffer), endpoint_, 
-		boost::asio::bind_executor(strand_, [this](const boost::system::error_code& ec, std::size_t) {
+			// ignore all of the data
+			std::vector<char> buffer(socket_.available());
+			socket_.receive_from(boost::asio::buffer(buffer), endpoint_);
+
 			if(!ec || ec == boost::asio::error::message_size) {
 				send_health_status();
 				receive();
 			}
-	}));
+		}
+	);
 }
 
 void Monitor::send_health_status() {
 	auto message = std::make_shared<std::string>(generate_message());
 
-	socket_.async_send_to(boost::asio::buffer(*message), endpoint_,
-		boost::asio::bind_executor(strand_, [message](const boost::system::error_code&, std::size_t) { }));
+	socket_.async_send_to(boost::asio::buffer(*message), endpoint_, 
+		[message](const boost::system::error_code&, std::size_t) { });
 }
 
 void Monitor::add_source(Source source, Severity severity, LogCallback log_callback) {
@@ -81,7 +89,7 @@ void Monitor::timer_tick(const boost::system::error_code& ec) {
 
 void Monitor::execute_source(Source& source, Severity severity, const LogCallback& log,
                              std::chrono::seconds& last_tick) {
-	last_tick += TIMER_FREQUENCY;
+	last_tick += timer_frequency;
 
 	if(last_tick < source.frequency) {
 		return; // too soon!
@@ -132,7 +140,7 @@ std::string Monitor::generate_message() const {
 }
 
 void Monitor::set_timer() {
-	timer_.expires_after(TIMER_FREQUENCY);
+	timer_.expires_after(timer_frequency);
 	timer_.async_wait(std::bind(&Monitor::timer_tick, this, std::placeholders::_1));
 }
 

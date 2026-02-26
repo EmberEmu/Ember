@@ -49,11 +49,11 @@ public:
 	using LogCallback = std::function<void(const Source, Severity, std::intmax_t)>;
 
 private:
-	const std::chrono::seconds TIMER_FREQUENCY;
+	const std::chrono::seconds timer_frequency;
+
 	boost::asio::steady_timer timer_;
 	boost::asio::ip::udp::socket socket_;
 	boost::asio::ip::udp::endpoint endpoint_;
-	boost::asio::io_context::strand strand_;
 
 	std::vector<std::tuple<Source, Severity, LogCallback, std::chrono::seconds>> sources_;
 	mutable std::mutex source_lock_;
@@ -70,8 +70,10 @@ private:
 	void shutdown();
 
 public:
-	Monitor(boost::asio::io_context& service, std::string_view interface,
-	        std::uint16_t port, std::chrono::seconds frequency = 5s);
+	Monitor(boost::asio::io_context& service,
+	        std::string_view interface,
+	        std::uint16_t port,
+	        std::chrono::seconds frequency = 5s);
 
 	void add_source(Source source, Severity severity, LogCallback log_callback);
 };
