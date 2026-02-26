@@ -11,8 +11,8 @@
 #include <ports/pcp/DatagramTransport.h>
 #include <ports/pcp/Protocol.h>
 #include <ports/pcp/Results.h>
-#include <boost/asio/io_context.hpp>
 #include <boost/asio/steady_timer.hpp>
+#include <boost/asio/io_context.hpp>
 #include <array>
 #include <atomic>
 #include <expected>
@@ -50,9 +50,7 @@ private:
 		errored
 	};
 
-	ba::io_context& ctx_;
 	ba::steady_timer timer_;
-	ba::io_context::strand strand_;
 	DatagramTransport transport_;
 	std::string gateway_;
 	const std::string interface_;

@@ -11,7 +11,7 @@
 #include <ports/pcp/Serialise.h>
 #include <spark/buffers/BinaryStream.h>
 #include <spark/buffers/BufferAdaptor.h>
-#include <boost/asio/bind_executor.hpp>
+#include <boost/asio/strand.hpp>
 #include <boost/asio/dispatch.hpp>
 #include <algorithm>
 #include <random>
@@ -21,24 +21,24 @@ namespace ember::ports {
 namespace bai = boost::asio::ip;
 
 Client::Client(const std::string& interface, std::string gateway, boost::asio::io_context& ctx)
-	: ctx_(ctx),
-	  timer_(ctx),
-	  strand_(ctx),
-	  transport_(interface, PORT_IN, ctx),
-	  gateway_(std::move(gateway)),
-	  interface_(interface),
-	  has_resolved_(false), resolve_res_(false) {
+	: timer_(boost::asio::make_strand(ctx))
+	, transport_(interface, PORT_IN, ctx)
+	, gateway_(std::move(gateway))
+	, interface_(interface)
+	, has_resolved_(false), resolve_res_(false) {
+
+	auto& executor = timer_.get_executor();
 
 	transport_.set_callbacks(
 		[&](std::span<std::uint8_t> buffer, const bai::udp::endpoint& ep) {
-			boost::asio::dispatch(ctx_, boost::asio::bind_executor(strand_, [&, buffer = std::move(buffer), ep]() {
+			boost::asio::dispatch(executor, [&, buffer = std::move(buffer), ep]() {
 				handle_message(buffer, ep);
-			}));
+			});
 		},
 		[&](const boost::system::error_code&) { 
-			boost::asio::dispatch(ctx_, boost::asio::bind_executor(strand_, [&]() {
+			boost::asio::dispatch(executor, [&]() {
 				handle_connection_error(); 
-			}));
+			});
 		}
 	);
 
@@ -401,7 +401,7 @@ void Client::timeout_handler() {
 
 void Client::start_retry_timer(const std::chrono::milliseconds& timeout, const int retries) {
 	timer_.expires_after(timeout);
-	timer_.async_wait(boost::asio::bind_executor(strand_, [&, timeout, retries](const boost::system::error_code& ec) {
+	timer_.async_wait([&, timeout, retries](const boost::system::error_code& ec) {
 		if(ec) {
 			return;
 		}
@@ -417,7 +417,7 @@ void Client::start_retry_timer(const std::chrono::milliseconds& timeout, const i
 			finagle_state();
 			timeout_handler();
 		}
-	}));
+	});
 }
 
 ErrorCode Client::announce_pcp() {
