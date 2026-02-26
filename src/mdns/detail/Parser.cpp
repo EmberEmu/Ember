@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - 2025 Ember
+ * Copyright (c) 2021 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -55,17 +55,15 @@ std::string parse_label_notation(std::span<const std::uint8_t> buffer) try {
 	spark::io::BufferAdaptor adaptor(buffer);
 	spark::io::BinaryStream stream(adaptor);
 
-	std::stringstream name;
+	std::string segment;
 	std::uint8_t length;
 	stream >> length;
 
 	if(length) {
-		std::string segment;
 		stream.get(segment, length);
-		name.str(std::move(segment));
 	}
 
-	return name.str();
+	return segment;
 } catch(const spark::exception&) {
 	throw Result::label_parse_error;
 }
