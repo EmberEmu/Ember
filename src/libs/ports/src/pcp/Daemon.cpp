@@ -17,8 +17,8 @@ namespace ember::ports {
 
 Daemon::Daemon(Client& client, boost::asio::io_context& ctx, EventHandler&& handler)
 	: client_(client),
-	  timer_(ctx),
-	  strand_(ctx),
+	  strand_(boost::asio::make_strand(ctx)),
+	  timer_(strand_),
 	  daemon_callback_(handler),
 	  consecutive_failures_(0) {
 	client_.announce_handler(boost::asio::bind_executor(strand_, [&](std::uint32_t epoch) {
@@ -32,7 +32,7 @@ void Daemon::start_renew_timer(const std::chrono::seconds time) {
 	state_ = State::timer_wait;
 
 	timer_.expires_after(time);
-	timer_.async_wait(boost::asio::bind_executor(strand_, [&](const boost::system::error_code& ec) {
+	timer_.async_wait([&](const boost::system::error_code& ec) {
 		if(ec) {
 			return;
 		}
@@ -52,7 +52,7 @@ void Daemon::start_renew_timer(const std::chrono::seconds time) {
 		}
 
 		process_queue();
-	}));
+	});
 }
 
 /*

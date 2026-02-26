@@ -54,8 +54,8 @@ private:
 	} state_ = State::idle;
 
 	Client& client_;
+	boost::asio::strand<boost::asio::io_context::executor_type> strand_;
 	boost::asio::steady_timer timer_;
-	boost::asio::io_context::strand strand_;
 	std::vector<Mapping> mappings_;
 	std::deque<Mapping> queue_;
 	std::uint32_t gateway_epoch_{};
