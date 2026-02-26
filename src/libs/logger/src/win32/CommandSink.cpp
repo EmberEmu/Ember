@@ -381,8 +381,13 @@ void CommandSink::read_console_input() {
 	auto handle = GetStdHandle(STD_INPUT_HANDLE);
 
 	while(!stopped_) {
+		if(WaitForSingleObject(handle, 1000) != WAIT_OBJECT_0) {
+			continue;
+		}
+
 		std::array<INPUT_RECORD, 32> events{};
 		DWORD event_count = 0;
+
 		ReadConsoleInput(handle, events.data(), events.size(), &event_count);
 		
 		for(const auto& e : std::span(events.data(), event_count)) {
