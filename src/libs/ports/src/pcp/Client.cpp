@@ -15,16 +15,17 @@
 #include <boost/asio/dispatch.hpp>
 #include <algorithm>
 #include <random>
+#include <utility>
 
 namespace ember::ports {
 
 namespace bai = boost::asio::ip;
 
-Client::Client(const std::string& interface, std::string gateway, boost::asio::io_context& ctx)
+Client::Client(std::string interface, std::string gateway, boost::asio::io_context& ctx)
 	: timer_(boost::asio::make_strand(ctx))
 	, transport_(interface, PORT_IN, ctx)
 	, gateway_(std::move(gateway))
-	, interface_(interface)
+	, interface_(std::move(interface))
 	, has_resolved_(false), resolve_res_(false) {
 
 	auto& executor = timer_.get_executor();

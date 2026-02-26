@@ -92,7 +92,7 @@ private:
 	bool handle_announce(std::span<const std::uint8_t> buffer);
 
 public:
-	Client(const std::string& interface, std::string gateway, boost::asio::io_context& ctx);
+	Client(std::string interface, std::string gateway, boost::asio::io_context& ctx);
 
 	void external_address(RequestHandler handler);
 	void add_mapping(const MapRequest& mapping, bool strict, RequestHandler handler);
