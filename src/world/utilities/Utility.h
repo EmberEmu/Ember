@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Ember
+ * Copyright (c) 2024 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,12 +11,12 @@
 #include <dbcreader/Storage.h>
 #include <logger/LoggerFwd.h>
 #include <span>
-#include <string>
+#include <string_view>
 #include <cstdint>
 
 namespace ember {
 
-std::string random_tip(const dbc::Store<dbc::GameTips>& tips);
+const std::string_view random_tip(const dbc::Store<dbc::GameTips>& tips);
 bool validate_maps(std::span<const std::int32_t> maps, const dbc::Store<dbc::Map>& dbc, log::Logger& logger);
 void print_maps(std::span<const std::int32_t> maps, const dbc::Store<dbc::Map>& dbc, log::Logger& logger);
 

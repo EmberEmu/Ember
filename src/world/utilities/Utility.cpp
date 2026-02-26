@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Ember
+ * Copyright (c) 2024 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,24 +8,26 @@
 
 #include "Utility.h"
 #include <logger/Logger.h>
-#include <boost/container/static_vector.hpp>
 #include <algorithm>
 #include <random>
 #include <string_view>
 
 namespace ember {
 
-std::string random_tip(const dbc::Store<dbc::GameTips>& tips) {
-	boost::container::static_vector<dbc::GameTips, 1> out;
-	std::mt19937 gen{std::random_device{}()};
-	std::ranges::sample(tips.values(), std::back_inserter(out), 1, gen);
-
-	if(out.empty()) {
+const std::string_view random_tip(const dbc::Store<dbc::GameTips>& tips) {
+	if(!tips.size()) {
 		return {};
 	}
 
+	// select a random tip
+	std::mt19937 gen{std::random_device{}()};
+	std::uniform_int_distribution<> index(0, std::ranges::distance(tips.values()) - 1);
+	auto it = tips.values().begin();
+	std::advance(it, index(gen));
+	const auto& game_tip = *it;
+
 	// trim any leading formatting that we can't make use of
-	std::string_view text(out.front().text.en_gb);
+	std::string_view text(game_tip.text.en_gb);
 	std::string_view needle("|cffffd100Tip:|r ");
 	
 	if(text.find(needle) != text.npos) {
@@ -37,7 +39,12 @@ std::string random_tip(const dbc::Store<dbc::GameTips>& tips) {
 		text = text.substr(0, pos);
 	}
 
-	return std::string(text);
+	// remove formatting byte that we can't print
+	if(!text.empty()) {
+		text.remove_suffix(1);
+	}
+
+	return text;
 }
 
 bool validate_maps(std::span<const std::int32_t> maps, const dbc::Store<dbc::Map>& dbc, log::Logger& logger) {
