@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 - 2024 Ember
+ * Copyright (c) 2014 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -25,6 +25,11 @@
 #include <cassert>
 #include <cstddef>
 
+#define POOL_LOG(sev, msg)               \
+if(pool_->log_cb_) {                     \
+	pool_->log_cb_(sev, std::move(msg)); \
+}
+
 namespace ember::connection_pool {
 
 namespace sc = std::chrono;
@@ -49,9 +54,7 @@ class PoolManager final {
 		try {
 			pool_->driver_.close(conn.conn);
 		} catch(const std::exception& e) { 
-			if(pool_->log_cb_) {
-				pool_->log_cb_(Severity::error, "Connection close, driver threw: "s + e.what());
-			}
+			POOL_LOG(Severity::error, "Connection close, driver threw: "s + e.what());
 		}
 
 		conn = ConnDetail<ConType>();
@@ -66,10 +69,7 @@ class PoolManager final {
 			conn.idle = 0s;
 		} catch(const std::exception& e) { 
 			conn.error = true;
-
-			if(pool_->log_cb_) {
-				pool_->log_cb_(Severity::error, "Connection keep-alive, driver threw: "s + e.what());
-			}
+			POOL_LOG(Severity::error, "Connection keep-alive, driver threw: "s + e.what());
 		}
 
 		conn.refresh = false;
@@ -91,10 +91,7 @@ class PoolManager final {
 				pool_->open_connections(pool_->min_ - pool_->size_);
 			} catch(const std::exception& e) { 
 				guard.unlock();
-
-				if(pool_->log_cb_) {
-					pool_->log_cb_(Severity::error, "Failed to refill connection pool: "s + e.what());
-				}
+				POOL_LOG(Severity::error, "Failed to refill connection pool: "s + e.what());
 			}
 		}
 	}
@@ -177,10 +174,7 @@ public:
 		std::lock_guard lock(exception_lock_);
 		exception_ = std::current_exception();
 
-		if(pool_->log_cb_) {
-			pool_->log_cb_(Severity::debug, "Pool manager trapped exception - passing to next caller");
-		}
-
+		POOL_LOG(Severity::debug, "Pool manager trapped exception - passing to next caller");
 		pool_->driver_.thread_exit();
 	}
 
@@ -191,9 +185,7 @@ public:
 			manager_.join();
 		}
 
-		if(pool_->log_cb_) {
-			pool_->log_cb_(Severity::debug, "Pool manager terminated");
-		}
+		POOL_LOG(Severity::debug, "Pool manager terminated");
 	}
 
 	void start() {
@@ -205,3 +197,5 @@ public:
 };
 
 } // connection_pool, ember
+
+#undef POOL_LOG

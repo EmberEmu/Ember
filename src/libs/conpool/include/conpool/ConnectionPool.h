@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 - 2025 Ember
+ * Copyright (c) 2014 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -29,6 +29,11 @@
 #include <atomic>
 #include <vector>
 #include <cstddef>
+
+#define POOL_LOG(sev, msg)        \
+if(log_cb_) {                     \
+	log_cb_(sev, std::move(msg)); \
+}
 
 namespace ember::connection_pool {
 
@@ -113,9 +118,7 @@ class Pool final : private ReusePolicy, private GrowthPolicy {
 						return false;
 					}
 				} catch(const std::exception& e) {
-					if(log_cb_) {
-						log_cb_(Severity::debug, "On connection clean: "s + e.what());
-					}
+					POOL_LOG(Severity::debug, "On connection clean: "s + e.what());
 					return false;
 				}
 			}
@@ -205,9 +208,7 @@ public:
 			try {
 				driver_.close(c.conn);
 			} catch(const std::exception& e) { 
-				if(log_cb_) {
-					log_cb_(Severity::error, "Closing pool, driver threw: "s + e.what());
-				}
+				POOL_LOG(Severity::error, "Closing pool, driver threw: "s + e.what());
 			}
 		}
 
@@ -341,3 +342,5 @@ public:
 };
 
 } // connection_pool, ember
+
+#undef POOL_LOG
