@@ -61,19 +61,15 @@ class LoginChallenge final : public Packet {
 		stream >> locale;
 		stream >> timezone_bias;
 		stream >> ip;
-		stream >> username_len_;
+
+		if(stream.size() < username_len_) {
+			throw bad_packet("Invalid username length supplied!");
+		}
+
+		stream >> spark::io::prefixed<std::string, std::uint8_t>(username);
 
 		if(username_len_ > max_username_len) {
 			throw bad_packet("Username length was too long!");
-		}
-
-		if(stream.size() >= username_len_) {
-			username.resize_and_overwrite(username_len_, [&](char* strlen, std::size_t size) {
-				stream.get(strlen, size);
-				return size;
-			});
-		} else {
-			throw bad_packet("Invalid username length supplied!");
 		}
 
 		// handle endianness
@@ -140,8 +136,7 @@ public:
 		stream << be::native_to_little(locale);
 		stream << timezone_bias;
 		stream << ip;
-		stream << gsl::narrow<std::uint8_t>(username.length());
-		stream.put(username);
+		stream << spark::io::prefixed<const utf8_string, std::uint8_t>(username);
 		const auto end_pos = stream.total_write();
 		const auto size = (end_pos - start_pos) - header_length;
 
