@@ -156,7 +156,7 @@ public:
 		return *this;
 	}
 
-	template<is_iterable type, std::integral prefix_type = typename prefixed<type>::size_type>
+	template<is_iterable type, std::integral prefix_type>
 	BinaryStreamWriter& operator<<(prefixed<type, prefix_type> adaptor) {
 		const auto count = endian::native_to_little(static_cast<prefix_type>(adaptor->size()));
 		write(&count, sizeof(count));

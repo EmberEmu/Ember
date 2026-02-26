@@ -223,7 +223,7 @@ public:
 		return *this;
 	}
 
-	template<is_iterable type, std::integral prefix_type = typename prefixed<type>::size_type>
+	template<is_iterable type, std::integral prefix_type>
 	requires (!std::is_same_v<std::decay_t<type>, std::string>
 		&& !std::is_same_v<std::decay_t<type>, std::string_view>)
 	BinaryStreamReader& operator>>(prefixed<type, prefix_type> adaptor) {
