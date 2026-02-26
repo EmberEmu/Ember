@@ -6,7 +6,14 @@
 
 set(EXECUTABLE_NAME fusion)
 
-add_executable(${EXECUTABLE_NAME} main.cpp)
+if(WIN32)
+    set(ICON_RESOURCE resources.rc)
+endif()
+
+add_executable(${EXECUTABLE_NAME}
+    main.cpp
+    ${ICON_RESOURCE}
+)
 
 set(SERVICE_LIBRARIES
     libworld

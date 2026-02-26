@@ -37,7 +37,15 @@ add_dependencies(${LIBRARY_NAME} FB_SCHEMA_COMPILE)
 add_dependencies(${LIBRARY_NAME} SPARK_RPC_GENERATE)
 target_link_libraries(${LIBRARY_NAME} PRIVATE spark PUBLIC logger commands shared ${Boost_LIBRARIES} Threads::Threads)
 
-add_executable(${EXECUTABLE_NAME} main.cpp)
+if(WIN32)
+    set(ICON_RESOURCE resources.rc)
+endif()
+
+add_executable(${EXECUTABLE_NAME}
+    main.cpp
+    ${ICON_RESOURCE}
+)
+
 target_link_libraries(${EXECUTABLE_NAME} PRIVATE ${LIBRARY_NAME} banner logger commands shared ${Boost_LIBRARIES} Threads::Threads)
 
 install(TARGETS ${EXECUTABLE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})

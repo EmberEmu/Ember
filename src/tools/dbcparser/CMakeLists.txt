@@ -28,6 +28,10 @@ set(EXECUTABLE_SRC
 	DBCHeader.h
 )
 
+if(WIN32)
+    set(EXECUTABLE_SRC ${EXECUTABLE_SRC} resources.rc)
+endif()
+
 add_executable(${EXECUTABLE_NAME} ${EXECUTABLE_SRC})
 target_include_directories(${EXECUTABLE_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/src)
 target_include_directories(${EXECUTABLE_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/deps/rapidxml)

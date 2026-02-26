@@ -84,10 +84,15 @@ set(LIBRARY_SRC
     Service.cpp   
 )
 
+if(WIN32)
+    set(ICON_RESOURCE resources.rc)
+endif()
+
 set(EXECUTABLE_SOURCE
     main.cpp
     commands/Shutdown.h
     commands/Shutdown.cpp
+	${ICON_RESOURCE}
 )
 
 source_group("Grunt Protocol" FILES ${GRUNT_SRC})
