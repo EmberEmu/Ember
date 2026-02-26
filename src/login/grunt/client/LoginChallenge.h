@@ -28,14 +28,14 @@ namespace ember::grunt::client {
 namespace be = boost::endian;
 
 class LoginChallenge final : public Packet {
-	static const std::size_t MAX_USERNAME_LEN = 16;
-	static const std::size_t HEADER_LENGTH = 4;
+	static const std::size_t max_username_len = 16 * 4; // * 4 to account for UTF8
+	static const std::size_t header_length = 4;
 
 	State state_ = State::initial;
 	std::uint8_t username_len_ = 0;
 
 	void header(spark::io::pmr::BinaryStream& stream) {
-		if(stream.size() < HEADER_LENGTH) {
+		if(stream.size() < header_length) {
 			return;
 		}
 
@@ -63,7 +63,7 @@ class LoginChallenge final : public Packet {
 		stream >> ip;
 		stream >> username_len_;
 
-		if(username_len_ > MAX_USERNAME_LEN) {
+		if(username_len_ > max_username_len) {
 			throw bad_packet("Username length was too long!");
 		}
 
@@ -121,7 +121,7 @@ public:
 	}
 
 	void write_to_stream(spark::io::pmr::BinaryStream& stream) const override {
-		if(username.length() > MAX_USERNAME_LEN) {
+		if(username.length() > max_username_len) {
 			throw bad_packet("Provided username was too long!");
 		}
 
@@ -143,7 +143,7 @@ public:
 		stream << gsl::narrow<std::uint8_t>(username.length());
 		stream.put(username);
 		const auto end_pos = stream.total_write();
-		const auto size = (end_pos - start_pos) - HEADER_LENGTH;
+		const auto size = (end_pos - start_pos) - header_length;
 
 		stream.write_seek(spark::io::StreamSeek::sk_stream_absolute, size_pos);
 		stream << be::native_to_little(gsl::narrow<std::uint16_t>(size));
