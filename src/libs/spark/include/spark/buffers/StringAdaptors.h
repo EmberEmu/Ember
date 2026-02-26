@@ -18,11 +18,11 @@ namespace ember::spark::io {
 template<                                                                   \
     typename string_type,                                                   \
     std::integral prefix_type = std::uint32_t,                              \
-    std::derived_from<endian::storage_tag> endianness = endian::as_little_t \
+    std::derived_from<endian::storage_tag> endian_tag = endian::as_little_t \
 >                                                                           \
 struct adaptor_name {                                                       \
     using size_type = prefix_type;                                          \
-    static constexpr endianness byte_order{};                               \
+    static constexpr endian_tag byte_order{};                               \
     string_type& str;                                                       \
     string_type* operator->() { return &str; }                              \
 };                                                                          \

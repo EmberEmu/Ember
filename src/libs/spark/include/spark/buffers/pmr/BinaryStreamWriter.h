@@ -157,8 +157,8 @@ public:
 		return *this;
 	}
 
-	template<is_iterable type, std::integral prefix_type, typename endianness>
-	BinaryStreamWriter& operator<<(prefixed<type, prefix_type, endianness> adaptor) {
+	template<is_iterable type, std::integral prefix_type, typename endian_tag>
+	BinaryStreamWriter& operator<<(prefixed<type, prefix_type, endian_tag> adaptor) {
 		const auto count = endian::storage_in(
 			static_cast<prefix_type>(adaptor->size()), adaptor.byte_order
 		);

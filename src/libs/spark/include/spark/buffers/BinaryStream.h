@@ -283,8 +283,8 @@ public:
 		return *this;
 	}
 
-	template<is_iterable type, std::integral prefix_type, typename endianness>
-	BinaryStream& operator<<(prefixed<type, prefix_type, endianness> adaptor) requires writeable<buf_type> {
+	template<is_iterable type, std::integral prefix_type, typename endian_tag>
+	BinaryStream& operator<<(prefixed<type, prefix_type, endian_tag> adaptor) requires writeable<buf_type> {
 		const auto count = endian::storage_in(static_cast<prefix_type>(adaptor->size()), adaptor.byte_order);
 		write(count);
 		write_container(adaptor.str);
@@ -347,8 +347,8 @@ public:
 		return *this;
 	}
 
-	template<std::integral prefix_type, typename endianness>
-	BinaryStream& operator>>(prefixed<std::string, prefix_type, endianness> adaptor) {
+	template<std::integral prefix_type, typename endian_tag>
+	BinaryStream& operator>>(prefixed<std::string, prefix_type, endian_tag> adaptor) {
 		prefix_type size = 0;
 		*this >> size;
 		endian::storage_out(size, adaptor.byte_order);
@@ -367,8 +367,8 @@ public:
 		return *this;
 	}
 
-	template<std::integral prefix_type, typename endianness>
-	BinaryStream& operator>>(prefixed<std::string_view, prefix_type, endianness> adaptor) {
+	template<std::integral prefix_type, typename endian_tag>
+	BinaryStream& operator>>(prefixed<std::string_view, prefix_type, endian_tag> adaptor) {
 		prefix_type size = 0;
 		*this >> size;
 		endian::storage_out(size, adaptor.byte_order);
@@ -467,8 +467,8 @@ public:
 		return *this;
 	}
 
-	template<is_iterable type, std::integral prefix_type, typename endianness>
-	BinaryStream& operator>>(prefixed<type, prefix_type, endianness> adaptor) {
+	template<is_iterable type, std::integral prefix_type, typename endian_tag>
+	BinaryStream& operator>>(prefixed<type, prefix_type, endian_tag> adaptor) {
 		prefix_type count = 0;
 		*this >> count;
 		endian::storage_out(count, adaptor.byte_order);

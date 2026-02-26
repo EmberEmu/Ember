@@ -141,8 +141,8 @@ public:
 		return *this;
 	}
 
-	template<std::integral prefix_type, typename endianness>
-	BinaryStreamReader& operator>>(prefixed<std::string, prefix_type, endianness> adaptor) {
+	template<std::integral prefix_type, typename endian_tag>
+	BinaryStreamReader& operator>>(prefixed<std::string, prefix_type, endian_tag> adaptor) {
 		prefix_type size = 0;
 		*this >> size;
 		endian::storage_out(size, adaptor.byte_order);
@@ -225,10 +225,10 @@ public:
 		return *this;
 	}
 
-	template<is_iterable type, std::integral prefix_type, typename endianness>
+	template<is_iterable type, std::integral prefix_type, typename endian_tag>
 	requires (!std::is_same_v<std::decay_t<type>, std::string>
 		&& !std::is_same_v<std::decay_t<type>, std::string_view>)
-	BinaryStreamReader& operator>>(prefixed<type, prefix_type, endianness> adaptor) {
+	BinaryStreamReader& operator>>(prefixed<type, prefix_type, endian_tag> adaptor) {
 		prefix_type count = 0;
 		*this >> count;
 		endian::storage_out(count, adaptor.byte_order);
