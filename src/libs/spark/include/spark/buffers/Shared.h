@@ -30,22 +30,6 @@ struct no_throw_t final : except_tag {};
 struct init_empty_t {};
 constexpr static init_empty_t init_empty {};
 
-#define STRING_ADAPTOR(adaptor_name)                                      \
-template<typename string_type, std::integral prefix_type = std::uint32_t> \
-struct adaptor_name {                                                     \
-    using size_type = prefix_type;                                        \
-    string_type& str;                                                     \
-    string_type* operator->() { return &str; }                            \
-};                                                                        \
-/* deduction guide required for clang 17 support */                       \
-template<typename string_type>                                            \
-adaptor_name(string_type&) -> adaptor_name<string_type>;                  \
-
-STRING_ADAPTOR(raw)
-STRING_ADAPTOR(prefixed)
-STRING_ADAPTOR(prefixed_varint)
-STRING_ADAPTOR(null_terminated)
-
 enum class BufferSeek {
 	sk_absolute,
 	sk_backward,

@@ -13,6 +13,7 @@
 #include <spark/buffers/Exception.h>
 #include <spark/buffers/Endian.h>
 #include <spark/buffers/StreamAdaptors.h>
+#include <spark/buffers/StringAdaptors.h>
 #include <shared/utility/polyfill/start_lifetime_as>
 #include <concepts>
 #include <ranges>
@@ -282,10 +283,10 @@ public:
 		return *this;
 	}
 
-	template<is_iterable type, std::integral prefix_type>
-	BinaryStream& operator<<(prefixed<type, prefix_type> adaptor) requires writeable<buf_type> {
-		const auto count = static_cast<prefix_type>(adaptor->size());
-		write(endian::native_to_little(count));
+	template<is_iterable type, std::integral prefix_type, typename endianness>
+	BinaryStream& operator<<(prefixed<type, prefix_type, endianness> adaptor) requires writeable<buf_type> {
+		const auto count = endian::storage_in(static_cast<prefix_type>(adaptor->size()), adaptor.byte_order);
+		write(count);
 		write_container(adaptor.str);
 		return *this;
 	}
@@ -346,10 +347,11 @@ public:
 		return *this;
 	}
 
-	template<std::integral prefix_type>
-	BinaryStream& operator>>(prefixed<std::string, prefix_type> adaptor) {
+	template<std::integral prefix_type, typename endianness>
+	BinaryStream& operator>>(prefixed<std::string, prefix_type, endianness> adaptor) {
 		prefix_type size = 0;
-		*this >> endian::le(size);
+		*this >> size;
+		endian::storage_out(size, adaptor.byte_order);
 
 		if(state_ != StreamState::ok) {
 			return *this;
@@ -365,10 +367,11 @@ public:
 		return *this;
 	}
 
-	template<std::integral prefix_type>
-	BinaryStream& operator>>(prefixed<std::string_view, prefix_type> adaptor) {
+	template<std::integral prefix_type, typename endianness>
+	BinaryStream& operator>>(prefixed<std::string_view, prefix_type, endianness> adaptor) {
 		prefix_type size = 0;
-		*this >> endian::le(size);
+		*this >> size;
+		endian::storage_out(size, adaptor.byte_order);
 
 		if(state_ != StreamState::ok) {
 			return *this;
@@ -464,10 +467,11 @@ public:
 		return *this;
 	}
 
-	template<is_iterable type, std::integral prefix_type>
-	BinaryStream& operator>>(prefixed<type, prefix_type> adaptor) {
+	template<is_iterable type, std::integral prefix_type, typename endianness>
+	BinaryStream& operator>>(prefixed<type, prefix_type, endianness> adaptor) {
 		prefix_type count = 0;
-		*this >> endian::le(count);
+		*this >> count;
+		endian::storage_out(count, adaptor.byte_order);
 		read_container(adaptor.str, count);
 		return *this;
 	}

@@ -15,6 +15,7 @@
 #include <spark/buffers/Exception.h>
 #include <spark/buffers/Shared.h>
 #include <spark/buffers/StreamAdaptors.h>
+#include <spark/buffers/StringAdaptors.h>
 #include <ranges>
 #include <string>
 #include <cassert>
@@ -140,10 +141,11 @@ public:
 		return *this;
 	}
 
-	template<std::integral prefix_type>
-	BinaryStreamReader& operator>>(prefixed<std::string, prefix_type> adaptor) {
+	template<std::integral prefix_type, typename endianness>
+	BinaryStreamReader& operator>>(prefixed<std::string, prefix_type, endianness> adaptor) {
 		prefix_type size = 0;
-		*this >> endian::le(size);
+		*this >> size;
+		endian::storage_out(size, adaptor.byte_order);
 
 		if(state() != StreamState::ok) {
 			return *this;
@@ -223,12 +225,14 @@ public:
 		return *this;
 	}
 
-	template<is_iterable type, std::integral prefix_type>
+	template<is_iterable type, std::integral prefix_type, typename endianness>
 	requires (!std::is_same_v<std::decay_t<type>, std::string>
 		&& !std::is_same_v<std::decay_t<type>, std::string_view>)
-	BinaryStreamReader& operator>>(prefixed<type, prefix_type> adaptor) {
+	BinaryStreamReader& operator>>(prefixed<type, prefix_type, endianness> adaptor) {
 		prefix_type count = 0;
-		*this >> endian::le(count);
+		*this >> count;
+		endian::storage_out(count, adaptor.byte_order);
+
 		read_container(adaptor.str, count);
 		return *this;
 	}

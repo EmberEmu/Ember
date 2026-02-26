@@ -10,6 +10,7 @@
 
 #include <protocol/StreamResult.h>
 #include <spark/buffers/Shared.h>
+#include <spark/buffers/StringAdaptors.h>
 #include <shared/database/objects/Character.h>
 #include <boost/endian/conversion.hpp>
 #include <boost/endian/buffers.hpp>

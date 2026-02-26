@@ -14,6 +14,7 @@
 #include <spark/buffers/Endian.h>
 #include <spark/buffers/Shared.h>
 #include <spark/buffers/StreamAdaptors.h>
+#include <spark/buffers/StringAdaptors.h>
 #include <algorithm>
 #include <string>
 #include <string_view>
@@ -156,9 +157,12 @@ public:
 		return *this;
 	}
 
-	template<is_iterable type, std::integral prefix_type>
-	BinaryStreamWriter& operator<<(prefixed<type, prefix_type> adaptor) {
-		const auto count = endian::native_to_little(static_cast<prefix_type>(adaptor->size()));
+	template<is_iterable type, std::integral prefix_type, typename endianness>
+	BinaryStreamWriter& operator<<(prefixed<type, prefix_type, endianness> adaptor) {
+		const auto count = endian::storage_in(
+			static_cast<prefix_type>(adaptor->size()), adaptor.byte_order
+		);
+
 		write(&count, sizeof(count));
 		write_container(adaptor.str);
 		return *this;
