@@ -26,7 +26,15 @@ set(LIBRARY_SRC
 add_library(${LIBRARY_NAME} ${LIBRARY_HDR} ${LIBRARY_SRC})
 target_link_libraries(${LIBRARY_NAME} PRIVATE dbcreader spark Threads::Threads PUBLIC logger commands shared ${Boost_LIBRARIES})
 
-add_executable(${EXECUTABLE_NAME} main.cpp)
+if(WIN32)
+    set(ICON_RESOURCE resources.rc)
+endif()
+
+add_executable(${EXECUTABLE_NAME}
+    main.cpp
+    ${ICON_RESOURCE}
+)
+
 target_link_libraries(${EXECUTABLE_NAME} PRIVATE ${LIBRARY_NAME} banner logger commands shared ${Boost_LIBRARIES})
 
 install(TARGETS ${EXECUTABLE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})

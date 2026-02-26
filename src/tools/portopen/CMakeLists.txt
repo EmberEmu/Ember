@@ -10,6 +10,10 @@ set(EXECUTABLE_SRC
     main.cpp
 )
 
+if(WIN32)
+    set(EXECUTABLE_SRC ${EXECUTABLE_SRC} resources.rc)
+endif()
+
 add_executable(${EXECUTABLE_NAME} ${EXECUTABLE_SRC})
 target_link_libraries(${EXECUTABLE_NAME} PRIVATE ports ${Boost_LIBRARIES})
 install(TARGETS ${EXECUTABLE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/tools)

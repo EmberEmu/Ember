@@ -14,6 +14,10 @@ set(EXECUTABLE_SRC
     Utility.cpp
 )
 
+if(WIN32)
+    set(EXECUTABLE_SRC ${EXECUTABLE_SRC} resources.rc)
+endif()
+
 add_executable(${EXECUTABLE_NAME} ${EXECUTABLE_SRC})
 add_dependencies(${EXECUTABLE_NAME} FB_SCHEMA_COMPILE)
 target_include_directories(${EXECUTABLE_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/deps/nlohmann)

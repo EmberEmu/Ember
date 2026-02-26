@@ -16,6 +16,10 @@ set(EXECUTABLE_SRC
     OutputOption.h	
 )
 
+if(WIN32)
+    set(EXECUTABLE_SRC ${EXECUTABLE_SRC} resources.rc)
+endif()
+
 add_executable(${EXECUTABLE_NAME} ${EXECUTABLE_SRC})
 add_dependencies(${EXECUTABLE_NAME} FB_SCHEMA_COMPILE)
 target_link_libraries(${EXECUTABLE_NAME} PRIVATE shared thread protocol ${Boost_LIBRARIES})
