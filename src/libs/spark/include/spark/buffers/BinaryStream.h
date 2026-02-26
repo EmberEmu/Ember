@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 - 2025 Ember
+ * Copyright (c) 2024 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -282,9 +282,9 @@ public:
 		return *this;
 	}
 
-	template<is_iterable T>
-	BinaryStream& operator<<(prefixed<T> adaptor) requires writeable<buf_type> {
-		const auto count = static_cast<std::uint32_t>(adaptor->size());
+	template<is_iterable type, std::integral prefix_type = typename prefixed<type>::size_type>
+	BinaryStream& operator<<(prefixed<type, prefix_type> adaptor) requires writeable<buf_type> {
+		const auto count = static_cast<prefix_type>(adaptor->size());
 		write(endian::native_to_little(count));
 		write_container(adaptor.str);
 		return *this;
@@ -346,8 +346,9 @@ public:
 		return *this;
 	}
 
-	BinaryStream& operator>>(prefixed<std::string> adaptor) {
-		std::uint32_t size = 0;
+	template<std::integral prefix_type>
+	BinaryStream& operator>>(prefixed<std::string, prefix_type> adaptor) {
+		prefix_type size = 0;
 		*this >> endian::le(size);
 
 		if(state_ != StreamState::ok) {
@@ -364,8 +365,9 @@ public:
 		return *this;
 	}
 
-	BinaryStream& operator>>(prefixed<std::string_view> adaptor) {
-		std::uint32_t size = 0;
+	template<std::integral prefix_type>
+	BinaryStream& operator>>(prefixed<std::string_view, prefix_type> adaptor) {
+		prefix_type size = 0;
 		*this >> endian::le(size);
 
 		if(state_ != StreamState::ok) {
@@ -462,16 +464,16 @@ public:
 		return *this;
 	}
 
-	template<is_iterable T>
-	BinaryStream& operator>>(prefixed<T> adaptor) {
-		std::uint32_t count = 0;
+	template<is_iterable type, std::integral prefix_type>
+	BinaryStream& operator>>(prefixed<type, prefix_type> adaptor) {
+		prefix_type count = 0;
 		*this >> endian::le(count);
 		read_container(adaptor.str, count);
 		return *this;
 	}
 
-	template<is_iterable T>
-	BinaryStream& operator>>(prefixed_varint<T> adaptor) {
+	template<is_iterable type>
+	BinaryStream& operator>>(prefixed_varint<type> adaptor) {
 		const auto count = varint_decode<size_type>(*this);
 		read_container(adaptor.str, count);
 		return *this;

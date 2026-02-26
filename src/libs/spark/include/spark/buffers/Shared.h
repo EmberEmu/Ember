@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 - 2025 Ember
+ * Copyright (c) 2024 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -30,15 +30,16 @@ struct no_throw_t final : except_tag {};
 struct init_empty_t {};
 constexpr static init_empty_t init_empty {};
 
-#define STRING_ADAPTOR(adaptor_name)                      \
-template<typename string_type>                            \
-struct adaptor_name {                                     \
-    string_type& str;                                     \
-    string_type* operator->() { return &str; }            \
-};                                                        \
-/* deduction guide required for clang 17 support */       \
-template<typename string_type>                            \
-adaptor_name(string_type&) -> adaptor_name<string_type>;  \
+#define STRING_ADAPTOR(adaptor_name)                                      \
+template<typename string_type, std::integral prefix_type = std::uint32_t> \
+struct adaptor_name {                                                     \
+    using size_type = prefix_type;                                        \
+    string_type& str;                                                     \
+    string_type* operator->() { return &str; }                            \
+};                                                                        \
+/* deduction guide required for clang 17 support */                       \
+template<typename string_type>                                            \
+adaptor_name(string_type&) -> adaptor_name<string_type>;                  \
 
 STRING_ADAPTOR(raw)
 STRING_ADAPTOR(prefixed)
