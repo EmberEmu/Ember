@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 - 2025 Ember
+ * Copyright (c) 2018 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -115,10 +115,8 @@ public:
 		write_ += length;
 	}
 
-	void reserve(const size_type length) {
-		if constexpr(has_reserve<buf_type>) {
-			buffer_.reserve(length);
-		}
+	void reserve(const size_type length) requires has_reserve<buf_type> {
+		buffer_.reserve(length);
 	}
 
 	size_type find_first_of(value_type val) const {
