@@ -7,7 +7,6 @@
  */
 
 #include <shared/metrics/Monitor.h>
-#include <boost/asio/bind_executor.hpp>
 #include <boost/asio/strand.hpp>
 #include <memory>
 #include <sstream>
@@ -100,7 +99,8 @@ void Monitor::execute_source(Source& source, Severity severity, const LogCallbac
 	auto value = source.callback();
 	bool trigger = source.comparator(value, source.threshold);
 
-	if(trigger && !source.triggered) { // Uh, it's probably not a problem, probably, but I'm showing a small discrepancy in...
+	// Uh, it's probably not a problem, probably, but I'm showing a small discrepancy in...
+	if(trigger && !source.triggered) {
 		source.triggered = true;
 		log(source, severity, value);
 		++counters_[severity];
@@ -141,7 +141,9 @@ std::string Monitor::generate_message() const {
 
 void Monitor::set_timer() {
 	timer_.expires_after(timer_frequency);
-	timer_.async_wait(std::bind(&Monitor::timer_tick, this, std::placeholders::_1));
+	timer_.async_wait([&](auto ec) {
+		timer_tick(ec);
+	});
 }
 
 } // ember
