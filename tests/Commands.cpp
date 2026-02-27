@@ -308,12 +308,23 @@ TEST_F(Commands, Execute_AllArgTypes_Success) {
 		->argument("arg9", commands::args::Type::at_uint16)
 		->argument("arg10", commands::args::Type::at_uint32)
 		->argument("arg11", commands::args::Type::at_uint64)
-		->argument("arg12", commands::args::Type::at_uint8);
+		->argument("arg12", commands::args::Type::at_uint8)
+		->argument("arg13", commands::args::Type::at_user_data);
 
-	std::array<commands::args::Value, 12> args {
+	struct Data {
+		int foo;
+		float bar;
+	} data;
+
+	auto user_data = commands::args::UserData{
+		.data = data
+	};
+
+	std::array<commands::args::Value, 13> args {
 		"Hello, world", 'c', 1.0, 1.0f,
 		std::int16_t(0), std::int32_t(0), std::int64_t(0), std::int8_t(0),
-		std::uint16_t(0), std::uint32_t(0), std::uint64_t(0), std::uint8_t(0)
+		std::uint16_t(0), std::uint32_t(0), std::uint64_t(0), std::uint8_t(0),
+		user_data
 	};
 
 	ASSERT_EQ(cmd->execute(args), commands::Result::success);
