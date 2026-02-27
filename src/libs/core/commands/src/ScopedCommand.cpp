@@ -57,4 +57,7 @@ std::shared_ptr<Command> ScopedCommand::release() {
 	return std::move(command_);
 }
 
+std::shared_ptr<Command> ScopedCommand::command() {
+	return command_;
+}
 } // commands, ember

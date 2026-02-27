@@ -23,7 +23,8 @@ class ScopedCommand {
 	ScopedCommand(std::shared_ptr<Command> command, std::weak_ptr<Command> parent);
 
 public:
-	void reset();
+	~ScopedCommand();
+
 	std::shared_ptr<Command> release();
 
 	ScopedCommand(ScopedCommand&&) noexcept;
@@ -32,7 +33,8 @@ public:
 	ScopedCommand(ScopedCommand&) = delete;
 	ScopedCommand& operator=(ScopedCommand&) = delete;
 
-	~ScopedCommand();
+	void reset();
+	std::shared_ptr<Command> command();
 };
 
 } // commands, ember
