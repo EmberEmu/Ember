@@ -1126,3 +1126,87 @@ TEST(BinaryStream, StdArrayTest) {
 	ASSERT_EQ(adaptor.size(), 0);
 	ASSERT_EQ(stream.size(), 0);
 }
+
+TEST(BinaryStream, StringAdaptor_Prefixed1b) {
+	spark::io::StaticBuffer<char, 128> buffer;
+	spark::io::BinaryStream stream(buffer);
+	const std::string input { "The quick brown fox jumped over the lazy dog" };
+	stream << spark::io::prefixed<const std::string, std::uint8_t>(input);
+	std::string output;
+	stream >> spark::io::prefixed<std::string, std::uint8_t>(output);
+	ASSERT_EQ(input, output);
+	ASSERT_TRUE(stream.empty());
+}
+
+TEST(BinaryStream, StringAdaptor_Prefixed2b) {
+	spark::io::StaticBuffer<char, 128> buffer;
+	spark::io::BinaryStream stream(buffer);
+	const std::string input { "The quick brown fox jumped over the lazy dog" };
+	stream << spark::io::prefixed<const std::string, std::uint16_t>(input);
+	std::string output;
+	stream >> spark::io::prefixed<std::string, std::uint16_t>(output);
+	ASSERT_EQ(input, output);
+	ASSERT_TRUE(stream.empty());
+}
+
+TEST(BinaryStream, StringAdaptor_Prefixed4b) {
+	spark::io::StaticBuffer<char, 128> buffer;
+	spark::io::BinaryStream stream(buffer);
+	const std::string input { "The quick brown fox jumped over the lazy dog" };
+	stream << spark::io::prefixed<const std::string, std::uint32_t>(input);
+	std::string output;
+	stream >> spark::io::prefixed<std::string, std::uint32_t>(output);
+	ASSERT_EQ(input, output);
+	ASSERT_TRUE(stream.empty());
+}
+
+TEST(BinaryStream, StringAdaptor_Prefixed8b) {
+	spark::io::StaticBuffer<char, 128> buffer;
+	spark::io::BinaryStream stream(buffer);
+	const std::string input { "The quick brown fox jumped over the lazy dog" };
+	stream << spark::io::prefixed<const std::string, std::uint64_t>(input);
+	std::string output;
+	stream >> spark::io::prefixed<std::string, std::uint64_t>(output);
+	ASSERT_EQ(input, output);
+	ASSERT_TRUE(stream.empty());
+}
+
+TEST(BinaryStream, StringAdaptor_PrefixedBigEndian) {
+	spark::io::StaticBuffer<char, 128> buffer;
+	spark::io::BinaryStream stream(buffer);
+	const std::string input { "The quick brown fox jumped over the lazy dog" };
+	stream << spark::io::prefixed<const std::string, std::uint32_t, spark::io::endian::as_big_t>(input);
+	std::uint32_t read{};
+	stream >> spark::io::endian::be(read);
+	ASSERT_EQ(input.size(), read);
+}
+
+TEST(BinaryStream, StringAdaptor_PrefixedLittleEndian) {
+	spark::io::StaticBuffer<char, 128> buffer;
+	spark::io::BinaryStream stream(buffer);
+	const std::string input { "The quick brown fox jumped over the lazy dog" };
+	stream << spark::io::prefixed<const std::string, std::uint32_t, spark::io::endian::as_little_t>(input);
+	std::uint32_t read{};
+	stream >> spark::io::endian::le(read);
+	ASSERT_EQ(input.size(), read);
+}
+
+TEST(BinaryStream, StringAdaptor_PrefixedNativeEndian) {
+	spark::io::StaticBuffer<char, 128> buffer;
+	spark::io::BinaryStream stream(buffer);
+	const std::string input { "The quick brown fox jumped over the lazy dog" };
+	stream << spark::io::prefixed<const std::string, std::uint32_t, spark::io::endian::as_native_t>(input);
+	std::uint32_t read{};
+	stream >> read;
+	ASSERT_EQ(input.size(), read);
+}
+
+TEST(BinaryStream, StringAdaptor_PrefixedEndianMismatch) {
+	spark::io::StaticBuffer<char, 128> buffer;
+	spark::io::BinaryStream stream(buffer);
+	const std::string input { "The quick brown fox jumped over the lazy dog" };
+	stream << spark::io::prefixed<const std::string, std::uint32_t, spark::io::endian::as_big_t>(input);
+	std::uint32_t read{};
+	stream >> spark::io::endian::le(read);
+	ASSERT_NE(input.size(), read);
+}

@@ -387,7 +387,6 @@ TEST_F(Commands, CommandFlags) {
 	ASSERT_EQ(command->flags().security, 117);
 }
 
-
 TEST_F(Commands, CommandFlagsUpdate) {
 	auto command = registry.insert("test")
 		->flags({ 42, 117 });
