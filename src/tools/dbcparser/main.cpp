@@ -30,16 +30,16 @@
 #include <cstdlib>
 
 using namespace ember;
-namespace po = boost::program_options;
+namespace opts = boost::program_options;
 namespace fs = std::filesystem;
 
-int launch(const po::variables_map& args);
-po::variables_map parse_arguments(int argc, const char* argv[]);
+int launch(const opts::variables_map& args);
+opts::variables_map parse_arguments(int argc, const char* argv[]);
 std::vector<std::string> fetch_definitions(std::span<const std::string> paths);
 void print_dbc_table(const dbc::types::Definitions& defs);
 void print_dbc_fields(const dbc::types::Definitions& defs);
-void handle_options(const po::variables_map& args, const dbc::types::Definitions& defs);
-void configure_logger(log::Logger& logger, const po::variables_map& args);
+void handle_options(const opts::variables_map& args, const dbc::types::Definitions& defs);
+void configure_logger(log::Logger& logger, const opts::variables_map& args);
 
 int main(int argc, const char* argv[]) try {
 	const auto args = parse_arguments(argc, argv);
@@ -53,7 +53,7 @@ int main(int argc, const char* argv[]) try {
 	return EXIT_FAILURE;
 }
 
-int launch(const po::variables_map& args) try {
+int launch(const opts::variables_map& args) try {
 	const auto def_paths = args["definitions"].as<std::vector<std::string>>();
 	std::vector<std::string> paths = fetch_definitions(def_paths);
 
@@ -66,7 +66,7 @@ int launch(const po::variables_map& args) try {
 	return EXIT_FAILURE;
 }
 
-void configure_logger(log::Logger& logger, const po::variables_map& args) {
+void configure_logger(log::Logger& logger, const opts::variables_map& args) {
 	const auto con_verbosity = args["verbosity"].as<log::Severity>();
 	const auto file_verbosity = args["fverbosity"].as<log::Severity>();
 
@@ -81,7 +81,7 @@ void configure_logger(log::Logger& logger, const po::variables_map& args) {
 	log::global_logger(logger);
 }
 
-void handle_options(const po::variables_map& args, const dbc::types::Definitions& defs) {
+void handle_options(const opts::variables_map& args, const dbc::types::Definitions& defs) {
 	dbc::Validator validator;
 	dbc::Validator::Options val_opts { dbc::Validator::val_skip_foreign_keys };
 
@@ -207,37 +207,37 @@ std::vector<std::string> fetch_definitions(std::span<const std::string> paths) {
 	return xml_paths;
 }
 
-po::variables_map parse_arguments(const int argc, const char* argv[]) {
-	po::options_description opt("Options");
+opts::variables_map parse_arguments(const int argc, const char* argv[]) {
+	opts::options_description opt("Options");
 	opt.add_options()
 		("help,h", "Displays a list of available options")
-		("definitions,d", po::value<std::vector<std::string>>()->multitoken()->default_value({"/"}, "/"),
+		("definitions,d", opts::value<std::vector<std::string>>()->multitoken()->default_value({"/"}, "/"),
 			"Path to a directory containing DBC definitions or a specific DBC definition. "
 			"Multiple paths may be specified but there should be no overlap of DBC definitions.")
-		("output,o", po::value<std::string>()->default_value(""),
+		("output,o", opts::value<std::string>()->default_value(""),
 			"Directory to save output to")
-		("templates,t", po::value<std::string>()->default_value("templates/"),
+		("templates,t", opts::value<std::string>()->default_value("templates/"),
 			"Path to the code generation templates")
-		("verbosity,v", po::value<log::Severity>()->default_value(log::Severity::info),
+		("verbosity,v", opts::value<log::Severity>()->default_value(log::Severity::info),
 			"Logging verbosity")
-		("fverbosity", po::value<log::Severity>()->default_value(log::Severity::disabled),
+		("fverbosity", opts::value<log::Severity>()->default_value(log::Severity::disabled),
 			"File logging verbosity")
-		("disk", po::bool_switch(),
+		("disk", opts::bool_switch(),
 			"Generate files required for loading DBC data from disk")
-		("print-dbcs", po::bool_switch(),
+		("print-dbcs", opts::bool_switch(),
 			"Print out a summary of the DBC definitions in a table")
-		("print-fields", po::bool_switch(),
+		("print-fields", opts::bool_switch(),
 			"Print out of a summary of the loaded DBC definitions")
-		("dbc-gen", po::bool_switch(),
+		("dbc-gen", opts::bool_switch(),
 			"Generate empty DBC files for editing in other tools")
-		("sql-schema", po::bool_switch(),
+		("sql-schema", opts::bool_switch(),
 			"Generate SQL DDL from DBC schemas")
-		("sql-data", po::bool_switch(),
+		("sql-data", opts::bool_switch(),
 			"Generate SQL DML from DBC files");
 
-	po::variables_map options;
-	po::store(po::command_line_parser(argc, argv).options(opt)
-	          .style(po::command_line_style::default_style & ~po::command_line_style::allow_guessing)
+	opts::variables_map options;
+	opts::store(opts::command_line_parser(argc, argv).options(opt)
+	          .style(opts::command_line_style::default_style & ~opts::command_line_style::allow_guessing)
 	          .run(), options);
 
 	if(options.count("help") || argc <= 1) {
@@ -245,7 +245,7 @@ po::variables_map parse_arguments(const int argc, const char* argv[]) {
 		std::exit(EXIT_SUCCESS);
 	}
 
-	po::notify(options);
+	opts::notify(options);
 
 	return options;
 }

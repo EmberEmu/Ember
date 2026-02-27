@@ -19,20 +19,20 @@ using Options = std::unordered_map<std::string, std::string>;
 
 namespace {
 
-namespace po = boost::program_options;
+namespace opts = boost::program_options;
 
-po::variables_map parse_arguments(const std::string& config_path, const Options& opts) {
+opts::variables_map parse_arguments(const std::string& config_path, const Options& opts) {
 
 	// Config file options
-	po::options_description config_opts("Configuration options");
+	opts::options_description config_opts("Configuration options");
 	config_opts.add_options()
-		(opts.at("username").c_str(), po::value<std::string>()->required())
-		(opts.at("password").c_str(), po::value<std::string>()->default_value(""))
-		(opts.at("database").c_str(), po::value<std::string>()->required())
-		(opts.at("host").c_str(), po::value<std::string>()->required())
-		(opts.at("port").c_str(), po::value<std::uint16_t>()->required());
+		(opts.at("username").c_str(), opts::value<std::string>()->required())
+		(opts.at("password").c_str(), opts::value<std::string>()->default_value(""))
+		(opts.at("database").c_str(), opts::value<std::string>()->required())
+		(opts.at("host").c_str(), opts::value<std::string>()->required())
+		(opts.at("port").c_str(), opts::value<std::uint16_t>()->required());
 
-	po::variables_map options;
+	opts::variables_map options;
 	std::ifstream ifs(config_path);
 
 	if(!ifs) {
@@ -40,8 +40,8 @@ po::variables_map parse_arguments(const std::string& config_path, const Options&
 		throw std::invalid_argument(message);
 	}
 
-	po::store(po::parse_config_file(ifs, config_opts), options);
-	po::notify(options);
+	opts::store(opts::parse_config_file(ifs, config_opts), options);
+	opts::notify(options);
 
 	return options;
 }

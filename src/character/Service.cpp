@@ -28,7 +28,7 @@
 #include <cstdlib>
 #include <cstdint>
 
-namespace po = boost::program_options;
+namespace opts = boost::program_options;
 using namespace std::chrono_literals;
 
 namespace ember::character {
@@ -41,7 +41,7 @@ namespace ember::character {
  * services can cleanly shut down upon destruction without requiring
  * explicit shutdown() calls in a signal handler.
  */
-int Service::run(const po::variables_map& args) try {
+int Service::run(const opts::variables_map& args) try {
 	boost::asio::io_context service(BOOST_ASIO_CONCURRENCY_HINT_UNSAFE_IO);
 	auto work = boost::asio::make_work_guard(service);
 
@@ -71,7 +71,7 @@ void Service::stop() {
 	stop_flag.release();
 }
 
-void Service::launch(const po::variables_map& args, boost::asio::io_context& service) try {
+void Service::launch(const opts::variables_map& args, boost::asio::io_context& service) try {
 #ifdef DEBUG_NO_THREADS
 	LOG_WARN_SYNC(logger, "Compiled with DEBUG_NO_THREADS!");
 #endif
@@ -164,42 +164,42 @@ void Service::launch(const po::variables_map& args, boost::asio::io_context& ser
 	eptr = std::current_exception();
 }
 
-po::options_description Service::options() {
-	po::options_description opts;
+opts::options_description Service::options() {
+	opts::options_description opts;
 	opts.add_options()
-		("defer_zone_placement", po::value<bool>()->required())
-		("dbc.path", po::value<std::string>()->required())
-		("spark.address", po::value<std::string>()->required())
-		("spark.port", po::value<std::uint16_t>()->required())
-		("nsd.host", po::value<std::string>()->required())
-		("nsd.port", po::value<std::uint16_t>()->required())
-		("console_log.enable_input", po::value<bool>()->required())
-		("console_log.verbosity", po::value<log::Severity>()->required())
-		("console_log.filter-mask", po::value<std::uint32_t>()->default_value(0))
-		("console_log.colours", po::value<bool>()->required())
-		("remote_log.verbosity", po::value<log::Severity>()->required())
-		("remote_log.filter-mask", po::value<std::uint32_t>()->default_value(0))
-		("remote_log.service_name", po::value<std::string>()->required())
-		("remote_log.host", po::value<std::string>()->required())
-		("remote_log.port", po::value<std::uint16_t>()->required())
-		("file_log.verbosity", po::value<log::Severity>()->required())
-		("file_log.filter-mask", po::value<std::uint32_t>()->default_value(0))
-		("file_log.path", po::value<std::string>()->default_value("character.log"))
-		("file_log.timestamp_format", po::value<std::string>())
-		("file_log.mode", po::value<std::string>()->required())
-		("file_log.size_rotate", po::value<std::uint32_t>()->required())
-		("file_log.midnight_rotate", po::value<bool>()->required())
-		("file_log.log_timestamp", po::value<bool>()->required())
-		("file_log.log_severity", po::value<bool>()->required())
-		("database.config_path", po::value<std::string>()->required())
-		("database.min_connections", po::value<unsigned short>()->required())
-		("database.max_connections", po::value<unsigned short>()->required())
-		("metrics.enabled", po::value<bool>()->required())
-		("metrics.statsd_host", po::value<std::string>()->required())
-		("metrics.statsd_port", po::value<std::uint16_t>()->required())
-		("monitor.enabled", po::value<bool>()->required())
-		("monitor.interface", po::value<std::string>()->required())
-		("monitor.port", po::value<std::uint16_t>()->required());
+		("defer_zone_placement", opts::value<bool>()->required())
+		("dbc.path", opts::value<std::string>()->required())
+		("spark.address", opts::value<std::string>()->required())
+		("spark.port", opts::value<std::uint16_t>()->required())
+		("nsd.host", opts::value<std::string>()->required())
+		("nsd.port", opts::value<std::uint16_t>()->required())
+		("console_log.enable_input", opts::value<bool>()->required())
+		("console_log.verbosity", opts::value<log::Severity>()->required())
+		("console_log.filter-mask", opts::value<std::uint32_t>()->default_value(0))
+		("console_log.colours", opts::value<bool>()->required())
+		("remote_log.verbosity", opts::value<log::Severity>()->required())
+		("remote_log.filter-mask", opts::value<std::uint32_t>()->default_value(0))
+		("remote_log.service_name", opts::value<std::string>()->required())
+		("remote_log.host", opts::value<std::string>()->required())
+		("remote_log.port", opts::value<std::uint16_t>()->required())
+		("file_log.verbosity", opts::value<log::Severity>()->required())
+		("file_log.filter-mask", opts::value<std::uint32_t>()->default_value(0))
+		("file_log.path", opts::value<std::string>()->default_value("character.log"))
+		("file_log.timestamp_format", opts::value<std::string>())
+		("file_log.mode", opts::value<std::string>()->required())
+		("file_log.size_rotate", opts::value<std::uint32_t>()->required())
+		("file_log.midnight_rotate", opts::value<bool>()->required())
+		("file_log.log_timestamp", opts::value<bool>()->required())
+		("file_log.log_severity", opts::value<bool>()->required())
+		("database.config_path", opts::value<std::string>()->required())
+		("database.min_connections", opts::value<unsigned short>()->required())
+		("database.max_connections", opts::value<unsigned short>()->required())
+		("metrics.enabled", opts::value<bool>()->required())
+		("metrics.statsd_host", opts::value<std::string>()->required())
+		("metrics.statsd_port", opts::value<std::uint16_t>()->required())
+		("monitor.enabled", opts::value<bool>()->required())
+		("monitor.interface", opts::value<std::string>()->required())
+		("monitor.port", opts::value<std::uint16_t>()->required());
 	return opts;
 }
 

@@ -20,12 +20,12 @@
 #include <cstdint>
 #include <cstdlib>
 
-namespace po = boost::program_options;
+namespace opts = boost::program_options;
 
 using namespace ember;
 
-void launch(const po::variables_map& args);
-po::variables_map parse_arguments(int argc, const char* argv[]);
+void launch(const opts::variables_map& args);
+opts::variables_map parse_arguments(int argc, const char* argv[]);
 void log_cb(stun::Severity severity, stun::Error reason);
 void print_error(const std::string_view test, const stun::ErrorRet& error);
 
@@ -38,7 +38,7 @@ int main(int argc, const char* argv[]) try {
 	return EXIT_FAILURE;
 }
 
-void launch(const po::variables_map& args) {
+void launch(const opts::variables_map& args) {
 	const auto& host = args["host"].as<std::string>();
 	const auto port = args["port"].as<std::uint16_t>();
 	const auto& protocol = args["protocol"].as<std::string>();
@@ -136,23 +136,23 @@ void log_cb(const stun::Severity severity, const stun::Error reason) {
 	std::println("{} {} ({})", verbstr, stun::to_string(reason), std::to_underlying(reason));
 }
 
-po::variables_map parse_arguments(const int argc, const char* argv[]) {
-	po::options_description cmdline_opts("Options");
+opts::variables_map parse_arguments(const int argc, const char* argv[]) {
+	opts::options_description cmdline_opts("Options");
 	cmdline_opts.add_options()
 		("help,h", "Displays a list of available options")
-		("host,o", po::value<std::string>()->default_value("stun.l.google.com"), "Host")
-		("port,p", po::value<std::uint16_t>()->default_value(3478), "Port")
-		("protocol,c", po::value<std::string>()->default_value("udp"), "Protocol (udp, tcp)")
-		("bind,b", po::value<std::string>()->default_value("0.0.0.0"), "The network interface to bind to");
+		("host,o", opts::value<std::string>()->default_value("stun.l.google.com"), "Host")
+		("port,p", opts::value<std::uint16_t>()->default_value(3478), "Port")
+		("protocol,c", opts::value<std::string>()->default_value("udp"), "Protocol (udp, tcp)")
+		("bind,b", opts::value<std::string>()->default_value("0.0.0.0"), "The network interface to bind to");
 
-	po::variables_map options;
-	po::store(po::command_line_parser(argc, argv).options(cmdline_opts).run(), options);
+	opts::variables_map options;
+	opts::store(opts::command_line_parser(argc, argv).options(cmdline_opts).run(), options);
 
 	if(options.count("help")) {
 		std::cout << cmdline_opts;
 		std::exit(EXIT_SUCCESS);
 	}
 
-	po::notify(options);
+	opts::notify(options);
 	return options;
 }

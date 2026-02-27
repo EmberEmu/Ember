@@ -22,10 +22,10 @@
 #include <cstdlib>
 
 using namespace nlohmann;
-namespace po = boost::program_options;
+namespace opts = boost::program_options;
 
-void launch(const po::variables_map& args);
-po::variables_map parse_arguments(int argc, const char* argv[]);
+void launch(const opts::variables_map& args);
+opts::variables_map parse_arguments(int argc, const char* argv[]);
 void plaintext_output(const std::string_view username, const Botan::BigInt& verifier, std::span<std::uint8_t> salt);
 void json_output(const std::string_view username, const Botan::BigInt& verifier, std::span<std::uint8_t> salt);
 
@@ -38,7 +38,7 @@ int main(int argc, const char* argv[]) try {
 	return EXIT_FAILURE;
 }
 
-void launch(const po::variables_map& args) {
+void launch(const opts::variables_map& args) {
 	using namespace ember;
 
 	auto username = args["username"].as<std::string>();
@@ -104,24 +104,24 @@ void json_output(const std::string_view username, const Botan::BigInt& verifier,
 	std::cout << data.dump(4);
 }
 
-po::variables_map parse_arguments(const int argc, const char* argv[]) {
-	po::options_description cmdline_opts("Options");
+opts::variables_map parse_arguments(const int argc, const char* argv[]) {
+	opts::options_description cmdline_opts("Options");
 	cmdline_opts.add_options()
 		("help,h",     "Displays a list of available options")
-		("username,u", po::value<std::string>()->required(), "Username")
-		("password,p", po::value<std::string>()->required(), "Password")
-		("sbin,s",     po::value<std::string>(), "Output salt into a binary file")
-		("json,j",     po::bool_switch(), "Output parameters as JSON");
+		("username,u", opts::value<std::string>()->required(), "Username")
+		("password,p", opts::value<std::string>()->required(), "Password")
+		("sbin,s",     opts::value<std::string>(), "Output salt into a binary file")
+		("json,j",     opts::bool_switch(), "Output parameters as JSON");
 
-	po::variables_map options;
-	po::store(po::command_line_parser(argc, argv).options(cmdline_opts).run(), options);
+	opts::variables_map options;
+	opts::store(opts::command_line_parser(argc, argv).options(cmdline_opts).run(), options);
 
 	if(options.count("help") || argc <= 1) {
 		std::cout << cmdline_opts;
 		std::exit(EXIT_SUCCESS);
 	}
 
-	po::notify(options);
+	opts::notify(options);
 
 	return options;
 }

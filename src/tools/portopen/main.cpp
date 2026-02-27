@@ -23,15 +23,15 @@
 #include <cstdint>
 #include <cstdlib>
 
-namespace po = boost::program_options;
+namespace opts = boost::program_options;
 
 using namespace ember;
 
-void launch(const po::variables_map& args);
-po::variables_map parse_arguments(int argc, const char* argv[]);
+void launch(const opts::variables_map& args);
+opts::variables_map parse_arguments(int argc, const char* argv[]);
 void print_error(const ports::Error& error);
-void use_upnp(const po::variables_map& args);
-void use_natpmp(const po::variables_map& args);
+void use_upnp(const opts::variables_map& args);
+void use_natpmp(const opts::variables_map& args);
 
 int main(int argc, const char* argv[]) try {
 	const auto args = parse_arguments(argc, argv);
@@ -42,7 +42,7 @@ int main(int argc, const char* argv[]) try {
 	return EXIT_FAILURE;
 }
 
-void launch(const po::variables_map& args) {
+void launch(const opts::variables_map& args) {
 	if(args.contains("upnp")) {
 		use_upnp(args);
 	} else {
@@ -60,7 +60,7 @@ void print_error(const ports::Error& error) {
 	}
 }
 
-void use_natpmp(const po::variables_map& args) {
+void use_natpmp(const opts::variables_map& args) {
 	const auto internal = args["internal"].as<std::uint16_t>();
 	const auto external = args["external"].as<std::uint16_t>();
 	const auto& interface = args["interface"].as<std::string>();
@@ -119,7 +119,7 @@ void use_natpmp(const po::variables_map& args) {
 	ctx.stop();
 }
 
-void use_upnp(const po::variables_map& args) {
+void use_upnp(const opts::variables_map& args) {
 	const auto& interface = args["interface"].as<std::string>();
 	const auto protocol = args["protocol"].as<ports::Protocol>();
 	const auto internal = args["internal"].as<std::uint16_t>();
@@ -171,27 +171,27 @@ void protocol_validate(const ports::Protocol& protocol) {
 	}
 }
 
-po::variables_map parse_arguments(const int argc, const char* argv[]) {
-	po::options_description cmdline_opts("Options");
+opts::variables_map parse_arguments(const int argc, const char* argv[]) {
+	opts::options_description cmdline_opts("Options");
 	cmdline_opts.add_options()
 		("help,h", "Displays a list of available options")
 		("upnp,u", "Use UPnP rather than NAT-PMP/PCP")
-		("internal,i", po::value<std::uint16_t>()->default_value(8085), "Internal port")
-		("external,x", po::value<std::uint16_t>()->default_value(8085), "External port")
-		("interface,f", po::value<std::string>()->default_value("0.0.0.0"), "Interface to bind to")
-		("gateway,g", po::value<std::string>()->default_value(""), "Gateway address")
+		("internal,i", opts::value<std::uint16_t>()->default_value(8085), "Internal port")
+		("external,x", opts::value<std::uint16_t>()->default_value(8085), "External port")
+		("interface,f", opts::value<std::string>()->default_value("0.0.0.0"), "Interface to bind to")
+		("gateway,g", opts::value<std::string>()->default_value(""), "Gateway address")
 		("delete,d", "Delete mapping")
-		("protocol,p", po::value<ports::Protocol>()->default_value(ports::Protocol::udp)->notifier(protocol_validate), "Protocol (udp, tcp)");
+		("protocol,p", opts::value<ports::Protocol>()->default_value(ports::Protocol::udp)->notifier(protocol_validate), "Protocol (udp, tcp)");
 
-	po::variables_map options;
-	po::store(po::command_line_parser(argc, argv).options(cmdline_opts).run(), options);
+	opts::variables_map options;
+	opts::store(opts::command_line_parser(argc, argv).options(cmdline_opts).run(), options);
 
 	if(options.count("help")) {
 		std::cout << cmdline_opts;
 		std::exit(EXIT_SUCCESS);
 	}
 
-	po::notify(options);
+	opts::notify(options);
 
 	return options;
 }

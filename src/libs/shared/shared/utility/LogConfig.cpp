@@ -17,13 +17,13 @@
 #include <utility>
 #include <cstdint>
 
-namespace po = boost::program_options;
+namespace opts = boost::program_options;
 
 namespace ember::utility {
 
 namespace {
 
-std::shared_ptr<log::Sink> init_remote_sink(const po::variables_map& args, log::Severity severity) {
+std::shared_ptr<log::Sink> init_remote_sink(const opts::variables_map& args, log::Severity severity) {
 	const auto& host = args["remote_log.host"].as<std::string>();
 	const auto& service = args["remote_log.service_name"].as<std::string>();
 	auto port = args["remote_log.port"].as<std::uint16_t>();
@@ -32,7 +32,7 @@ std::shared_ptr<log::Sink> init_remote_sink(const po::variables_map& args, log::
 	return std::make_shared<log::SyslogSink>(severity, log::Filter(filter), host, port, facility, service);
 }
 
-std::shared_ptr<log::Sink> init_file_sink(const po::variables_map& args, log::Severity severity) {
+std::shared_ptr<log::Sink> init_file_sink(const opts::variables_map& args, log::Severity severity) {
 	const auto& mode_str = args["file_log.mode"].as<std::string>();
 	const auto& path = args["file_log.path"].as<std::string>();
 	auto filter = args["file_log.filter-mask"].as<std::uint32_t>();
@@ -53,7 +53,7 @@ std::shared_ptr<log::Sink> init_file_sink(const po::variables_map& args, log::Se
 	return sink;
 }
 
-std::shared_ptr<log::Sink> init_console_sink(const po::variables_map& args, log::Severity severity) {
+std::shared_ptr<log::Sink> init_console_sink(const opts::variables_map& args, log::Severity severity) {
 	auto filter = args["console_log.filter-mask"].as<std::uint32_t>();
 	auto colourise = args["console_log.colours"].as<bool>();
 	auto sink = std::make_shared<log::ConsoleSink>(severity, log::Filter(filter));
@@ -67,7 +67,7 @@ std::shared_ptr<log::Sink> init_console_sink(const po::variables_map& args, log:
 }
 
 #ifdef _WIN32
-std::shared_ptr<log::Sink> init_command_sink(const po::variables_map& args, log::Severity severity) {
+std::shared_ptr<log::Sink> init_command_sink(const opts::variables_map& args, log::Severity severity) {
 	auto filter = args["console_log.filter-mask"].as<std::uint32_t>();
 	auto colourise = args["console_log.colours"].as<bool>();
 	auto sink = std::make_shared<log::CommandSink>(severity, log::Filter(filter), "ember( ");
@@ -83,7 +83,7 @@ std::shared_ptr<log::Sink> init_command_sink(const po::variables_map& args, log:
 
 } // unnamed
 
-void configure_logger(log::Logger& logger, const po::variables_map& args) {
+void configure_logger(log::Logger& logger, const opts::variables_map& args) {
 	const bool enable_input = args["console_log.enable_input"].as<bool>();
 	log::Severity severity = args["console_log.verbosity"].as<log::Severity>();
 

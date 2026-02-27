@@ -33,19 +33,19 @@
 
 constexpr ember::cstring_view APP_NAME { "Fusion" };
 
-namespace po = boost::program_options;
+namespace opts = boost::program_options;
 
 using namespace ember;
 
-po::variables_map parse_arguments(int, const char*[]);
-po::variables_map load_options(const std::string&, const po::options_description&);
-int launch(const po::variables_map&, commands::Registry&, bool, log::Logger&);
-void launch_dns(const po::variables_map&, commands::Registry&, bool, log::Logger&);
-void launch_login(const po::variables_map&, commands::Registry&, bool, log::Logger&);
-void launch_gateway(const po::variables_map&, commands::Registry&, bool, log::Logger&);
-void launch_account(const po::variables_map&, commands::Registry&, bool, log::Logger&);
-void launch_character(const po::variables_map&, commands::Registry&, bool, log::Logger&);
-void launch_world(const po::variables_map&, commands::Registry&, bool, log::Logger&);
+opts::variables_map parse_arguments(int, const char*[]);
+opts::variables_map load_options(const std::string&, const opts::options_description&);
+int launch(const opts::variables_map&, commands::Registry&, bool, log::Logger&);
+void launch_dns(const opts::variables_map&, commands::Registry&, bool, log::Logger&);
+void launch_login(const opts::variables_map&, commands::Registry&, bool, log::Logger&);
+void launch_gateway(const opts::variables_map&, commands::Registry&, bool, log::Logger&);
+void launch_account(const opts::variables_map&, commands::Registry&, bool, log::Logger&);
+void launch_character(const opts::variables_map&, commands::Registry&, bool, log::Logger&);
+void launch_world(const opts::variables_map&, commands::Registry&, bool, log::Logger&);
 void stop_services();
 
 std::vector<std::function<void()>> stop_handlers;
@@ -61,7 +61,7 @@ int main(int argc, const char* argv[]) try {
 
 	if(share_logger) {
 		boost::any prefix(std::string(""));
-		args.insert_or_assign("console_log.prefix", po::variable_value(prefix, false));
+		args.insert_or_assign("console_log.prefix", opts::variable_value(prefix, false));
 	}
 
 	log::Logger logger;
@@ -80,7 +80,7 @@ int main(int argc, const char* argv[]) try {
 	return EXIT_FAILURE;
 }
 
-int launch(const po::variables_map& args, commands::Registry& registry, bool share_logger, log::Logger& logger) try {
+int launch(const opts::variables_map& args, commands::Registry& registry, bool share_logger, log::Logger& logger) try {
 	boost::asio::io_context service;
 	boost::asio::signal_set signals(service, SIGINT, SIGTERM);
 
@@ -158,7 +158,7 @@ void stop_services() {
 	}
 }
 
-void launch_dns(const po::variables_map& args, commands::Registry& registry, bool share_logger, log::Logger& logger) try {
+void launch_dns(const opts::variables_map& args, commands::Registry& registry, bool share_logger, log::Logger& logger) try {
 	LOG_INFO_SYNC(logger, "Starting DNS service...");
 
 	const auto& conf_path = args["dns.config"].as<std::string>();
@@ -166,14 +166,14 @@ void launch_dns(const po::variables_map& args, commands::Registry& registry, boo
 
 	if(!opts.contains("console_log.prefix")) {
 		boost::any prefix = std::string("[mdns]");
-		opts.try_emplace("console_log.prefix", po::variable_value(prefix, false));
+		opts.try_emplace("console_log.prefix", opts::variable_value(prefix, false));
 	}
 
 	log::Logger service_logger;
 	log::Logger* active_logger = &service_logger;
 
 	// disable console input option
-	opts.insert_or_assign("console_log.enable_input", po::variable_value(boost::any(false), false));
+	opts.insert_or_assign("console_log.enable_input", opts::variable_value(boost::any(false), false));
 
 	if(!share_logger) {
 		utility::configure_logger(*active_logger, opts);
@@ -199,7 +199,7 @@ void launch_dns(const po::variables_map& args, commands::Registry& registry, boo
 	std::exit(EXIT_FAILURE);
 }
 
-void launch_login(const po::variables_map& args, commands::Registry& registry, bool share_logger, log::Logger& logger) try {
+void launch_login(const opts::variables_map& args, commands::Registry& registry, bool share_logger, log::Logger& logger) try {
 	LOG_INFO_SYNC(logger, "Starting login service...");
 
 	const auto& conf_path = args["login.config"].as<std::string>();
@@ -207,14 +207,14 @@ void launch_login(const po::variables_map& args, commands::Registry& registry, b
 
 	if(!opts.contains("console_log.prefix")) {
 		boost::any prefix = std::string("[login]");
-		opts.try_emplace("console_log.prefix", po::variable_value(prefix, false));
+		opts.try_emplace("console_log.prefix", opts::variable_value(prefix, false));
 	}
 
 	log::Logger service_logger;
 	log::Logger* active_logger = &service_logger;
 
 	// disable console input option
-	opts.insert_or_assign("console_log.enable_input", po::variable_value(boost::any(false), false));
+	opts.insert_or_assign("console_log.enable_input", opts::variable_value(boost::any(false), false));
 
 	if(!share_logger) {
 		utility::configure_logger(*active_logger, opts);
@@ -240,7 +240,7 @@ void launch_login(const po::variables_map& args, commands::Registry& registry, b
 	std::exit(EXIT_FAILURE);
 }
 
-void launch_gateway(const po::variables_map& args, commands::Registry& registry, bool share_logger, log::Logger& logger) try {
+void launch_gateway(const opts::variables_map& args, commands::Registry& registry, bool share_logger, log::Logger& logger) try {
 	LOG_INFO_SYNC(logger, "Starting gateway service...");
 
 	const auto& conf_path = args["gateway.config"].as<std::string>();
@@ -248,14 +248,14 @@ void launch_gateway(const po::variables_map& args, commands::Registry& registry,
 
 	if(!opts.contains("console_log.prefix")) {
 		boost::any prefix = std::string("[gateway]");
-		opts.try_emplace("console_log.prefix", po::variable_value(prefix, false));
+		opts.try_emplace("console_log.prefix", opts::variable_value(prefix, false));
 	}
 
 	log::Logger service_logger;
 	log::Logger* active_logger = &service_logger;
 
 	// disable console input option
-	opts.insert_or_assign("console_log.enable_input", po::variable_value(boost::any(false), false));
+	opts.insert_or_assign("console_log.enable_input", opts::variable_value(boost::any(false), false));
 
 	if(!share_logger) {
 		utility::configure_logger(service_logger, opts);
@@ -281,7 +281,7 @@ void launch_gateway(const po::variables_map& args, commands::Registry& registry,
 	std::exit(EXIT_FAILURE);
 }
 
-void launch_account(const po::variables_map& args, commands::Registry& registry, bool share_logger, log::Logger& logger) try {
+void launch_account(const opts::variables_map& args, commands::Registry& registry, bool share_logger, log::Logger& logger) try {
 	LOG_INFO_SYNC(logger, "Starting account service...");
 
 	const auto& conf_path = args["account.config"].as<std::string>();
@@ -289,14 +289,14 @@ void launch_account(const po::variables_map& args, commands::Registry& registry,
 
 	if(!opts.contains("console_log.prefix")) {
 		boost::any prefix = std::string("[account]");
-		opts.try_emplace("console_log.prefix", po::variable_value(prefix, false));
+		opts.try_emplace("console_log.prefix", opts::variable_value(prefix, false));
 	}
 
 	log::Logger service_logger;
 	log::Logger* active_logger = &service_logger;
 
 	// disable console input option
-	opts.insert_or_assign("console_log.enable_input", po::variable_value(boost::any(false), false));
+	opts.insert_or_assign("console_log.enable_input", opts::variable_value(boost::any(false), false));
 
 	if(!share_logger) {
 		utility::configure_logger(service_logger, opts);
@@ -322,7 +322,7 @@ void launch_account(const po::variables_map& args, commands::Registry& registry,
 	std::exit(EXIT_FAILURE);
 }
 
-void launch_character(const po::variables_map& args, commands::Registry& registry, bool share_logger, log::Logger& logger) try {
+void launch_character(const opts::variables_map& args, commands::Registry& registry, bool share_logger, log::Logger& logger) try {
 	LOG_INFO_SYNC(logger, "Starting character service...");
 
 	const auto& conf_path = args["character.config"].as<std::string>();
@@ -330,14 +330,14 @@ void launch_character(const po::variables_map& args, commands::Registry& registr
 
 	if(!opts.contains("console_log.prefix")) {
 		boost::any prefix = std::string("[character]");
-		opts.try_emplace("console_log.prefix", po::variable_value(prefix, false));
+		opts.try_emplace("console_log.prefix", opts::variable_value(prefix, false));
 	}
 
 	log::Logger service_logger;
 	log::Logger* active_logger = &service_logger;
 
 	// disable console input option
-	opts.insert_or_assign("console_log.enable_input", po::variable_value(boost::any(false), false));
+	opts.insert_or_assign("console_log.enable_input", opts::variable_value(boost::any(false), false));
 
 	if(!share_logger) {
 		utility::configure_logger(*active_logger, opts);
@@ -363,7 +363,7 @@ void launch_character(const po::variables_map& args, commands::Registry& registr
 	std::exit(EXIT_FAILURE);
 }
 
-void launch_world(const po::variables_map& args, commands::Registry& registry, bool share_logger, log::Logger& logger) try {
+void launch_world(const opts::variables_map& args, commands::Registry& registry, bool share_logger, log::Logger& logger) try {
 	LOG_INFO_SYNC(logger, "Starting world service...");
 
 	const auto& conf_path = args["world.config"].as<std::string>();
@@ -371,14 +371,14 @@ void launch_world(const po::variables_map& args, commands::Registry& registry, b
 
 	if(!opts.contains("console_log.prefix")) {
 		boost::any prefix = std::string("[world]");
-		opts.try_emplace("console_log.prefix", po::variable_value(prefix, false));
+		opts.try_emplace("console_log.prefix", opts::variable_value(prefix, false));
 	}
 
 	log::Logger service_logger;
 	log::Logger* active_logger = &service_logger;
 
 	// disable console input option
-	opts.insert_or_assign("console_log.enable_input", po::variable_value(boost::any(false), false));
+	opts.insert_or_assign("console_log.enable_input", opts::variable_value(boost::any(false), false));
 
 	if(!share_logger) {
 		utility::configure_logger(*active_logger, opts);
@@ -404,69 +404,69 @@ void launch_world(const po::variables_map& args, commands::Registry& registry, b
 	std::exit(EXIT_FAILURE);
 }
 
-po::variables_map load_options(const std::string& config_path, const po::options_description& opt_desc) {
+opts::variables_map load_options(const std::string& config_path, const opts::options_description& opt_desc) {
 	std::ifstream ifs(config_path);
 
 	if(!ifs) {
 		throw std::invalid_argument("Unable to open configuration file: " + config_path);
 	}
 
-	po::variables_map options;
-	po::store(po::parse_config_file(ifs, opt_desc, true), options);
-	po::notify(options);
+	opts::variables_map options;
+	opts::store(opts::parse_config_file(ifs, opt_desc, true), options);
+	opts::notify(options);
 
 	return options;
 }
 
-po::variables_map parse_arguments(const int argc, const char* argv[]) {
+opts::variables_map parse_arguments(const int argc, const char* argv[]) {
 	// Command-line options
-	po::options_description cmdline_opts("Generic options");
+	opts::options_description cmdline_opts("Generic options");
 	cmdline_opts.add_options()
 		("help,h", "Displays a list of available options")
-		("config,c", po::value<std::string>()->default_value("fusion.conf"),
+		("config,c", opts::value<std::string>()->default_value("fusion.conf"),
 			 "Path to the configuration file");
 
-	po::positional_options_description pos;
+	opts::positional_options_description pos;
 	pos.add("config", 1);
 
 	// Config file options
-	po::options_description config_opts("Fusion configuration options");
+	opts::options_description config_opts("Fusion configuration options");
 	config_opts.add_options()
-		("dns.active", po::value<bool>()->required())
-		("dns.config", po::value<std::string>()->required())
-		("account.active", po::value<bool>()->required())
-		("account.config", po::value<std::string>()->required())
-		("character.active", po::value<bool>()->required())
-		("character.config", po::value<std::string>()->required())
-		("gateway.active", po::value<bool>()->required())
-		("gateway.config", po::value<std::string>()->required())
-		("world.active", po::value<bool>()->required())
-		("world.config", po::value<std::string>()->required())
-		("login.active", po::value<bool>()->required())
-		("login.config", po::value<std::string>()->required())
-		("console_log.enable_input", po::value<bool>()->required())
-		("console_log.verbosity", po::value<log::Severity>()->required())
-		("console_log.filter-mask", po::value<std::uint32_t>()->default_value(0))
-		("console_log.colours", po::value<bool>()->required())
-		("console_log.prefix", po::value<std::string>()->default_value(""))
-		("remote_log.verbosity", po::value<log::Severity>()->required())
-		("remote_log.filter-mask", po::value<std::uint32_t>()->default_value(0))
-		("remote_log.service_name", po::value<std::string>()->required())
-		("remote_log.host", po::value<std::string>()->required())
-		("remote_log.port", po::value<std::uint16_t>()->required())
-		("file_log.verbosity", po::value<log::Severity>()->required())
-		("file_log.filter-mask", po::value<std::uint32_t>()->default_value(0))
-		("file_log.path", po::value<std::string>()->default_value("fusion.log"))
-		("file_log.timestamp_format", po::value<std::string>())
-		("file_log.mode", po::value<std::string>()->required())
-		("file_log.size_rotate", po::value<std::uint32_t>()->required())
-		("file_log.midnight_rotate", po::value<bool>()->required())
-		("file_log.log_timestamp", po::value<bool>()->required())
-		("file_log.log_severity", po::value<bool>()->required());
+		("dns.active", opts::value<bool>()->required())
+		("dns.config", opts::value<std::string>()->required())
+		("account.active", opts::value<bool>()->required())
+		("account.config", opts::value<std::string>()->required())
+		("character.active", opts::value<bool>()->required())
+		("character.config", opts::value<std::string>()->required())
+		("gateway.active", opts::value<bool>()->required())
+		("gateway.config", opts::value<std::string>()->required())
+		("world.active", opts::value<bool>()->required())
+		("world.config", opts::value<std::string>()->required())
+		("login.active", opts::value<bool>()->required())
+		("login.config", opts::value<std::string>()->required())
+		("console_log.enable_input", opts::value<bool>()->required())
+		("console_log.verbosity", opts::value<log::Severity>()->required())
+		("console_log.filter-mask", opts::value<std::uint32_t>()->default_value(0))
+		("console_log.colours", opts::value<bool>()->required())
+		("console_log.prefix", opts::value<std::string>()->default_value(""))
+		("remote_log.verbosity", opts::value<log::Severity>()->required())
+		("remote_log.filter-mask", opts::value<std::uint32_t>()->default_value(0))
+		("remote_log.service_name", opts::value<std::string>()->required())
+		("remote_log.host", opts::value<std::string>()->required())
+		("remote_log.port", opts::value<std::uint16_t>()->required())
+		("file_log.verbosity", opts::value<log::Severity>()->required())
+		("file_log.filter-mask", opts::value<std::uint32_t>()->default_value(0))
+		("file_log.path", opts::value<std::string>()->default_value("fusion.log"))
+		("file_log.timestamp_format", opts::value<std::string>())
+		("file_log.mode", opts::value<std::string>()->required())
+		("file_log.size_rotate", opts::value<std::uint32_t>()->required())
+		("file_log.midnight_rotate", opts::value<bool>()->required())
+		("file_log.log_timestamp", opts::value<bool>()->required())
+		("file_log.log_severity", opts::value<bool>()->required());
 
-	po::variables_map options;
-	po::store(po::command_line_parser(argc, argv).positional(pos).options(cmdline_opts).run(), options);
-	po::notify(options);
+	opts::variables_map options;
+	opts::store(opts::command_line_parser(argc, argv).positional(pos).options(cmdline_opts).run(), options);
+	opts::notify(options);
 
 	if(options.count("help")) {
 		std::cout << cmdline_opts;
@@ -480,8 +480,8 @@ po::variables_map parse_arguments(const int argc, const char* argv[]) {
 		throw std::invalid_argument("Unable to open configuration file: " + config_path);
 	}
 
-	po::store(po::parse_config_file(ifs, config_opts), options);
-	po::notify(options);
+	opts::store(opts::parse_config_file(ifs, config_opts), options);
+	opts::notify(options);
 
 	return options;
 }

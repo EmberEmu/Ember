@@ -40,7 +40,7 @@
 #include <cstdlib>
 
 using namespace ember;
-namespace po = boost::program_options;
+namespace opts = boost::program_options;
 
 const std::unordered_map<std::string_view, std::array<std::string_view, 2>> db_args {
 	{ "login", { "login.root-user", "login.root-password" }},
@@ -49,16 +49,16 @@ const std::unordered_map<std::string_view, std::array<std::string_view, 2>> db_a
 
 const std::chrono::seconds UPDATE_BACKOUT_PERIOD { 10 };
 
-void configure_logger(log::Logger& logger, const po::variables_map& args);
-int launch(const po::variables_map& args, log::Logger& logger);
-int launch(const po::variables_map& args, log::Logger& logger);
-po::variables_map parse_arguments(int argc, const char* argv[]);
-void validate_options(const po::variables_map& args, log::Logger& logger);
-void validate_db_args(const po::variables_map& args, const std::string& mode, log::Logger& logger);
-void db_install(const po::variables_map& args, const std::string& db_name, const bool drop, log::Logger& logger);
-bool db_update(const po::variables_map& args, const std::string& db_name, log::Logger& logger);
-DatabaseDetails db_details(const po::variables_map& args, const std::string& db);
-bool apply_updates(const po::variables_map& args, QueryExecutor& exec,
+void configure_logger(log::Logger& logger, const opts::variables_map& args);
+int launch(const opts::variables_map& args, log::Logger& logger);
+int launch(const opts::variables_map& args, log::Logger& logger);
+opts::variables_map parse_arguments(int argc, const char* argv[]);
+void validate_options(const opts::variables_map& args, log::Logger& logger);
+void validate_db_args(const opts::variables_map& args, const std::string& mode, log::Logger& logger);
+void db_install(const opts::variables_map& args, const std::string& db_name, const bool drop, log::Logger& logger);
+bool db_update(const opts::variables_map& args, const std::string& db_name, log::Logger& logger);
+DatabaseDetails db_details(const opts::variables_map& args, const std::string& db);
+bool apply_updates(const opts::variables_map& args, QueryExecutor& exec,
                    std::span<std::string> migration_paths, const std::string& db,
                    log::Logger& logger);
 bool pluralise(auto value);
@@ -76,7 +76,7 @@ int main(int argc, const char* argv[]) try {
 	return EXIT_FAILURE;
 }
 
-void configure_logger(log::Logger& logger, const po::variables_map& args) {
+void configure_logger(log::Logger& logger, const opts::variables_map& args) {
 	const auto con_verbosity = args["verbosity"].as<log::Severity>();
 	const auto file_verbosity = args["fverbosity"].as<log::Severity>();
 
@@ -111,7 +111,7 @@ std::unique_ptr<QueryExecutor> db_executor(const std::string& type, const Databa
 	return nullptr;
 }
 
-int launch(const po::variables_map& args, log::Logger& logger) try {
+int launch(const opts::variables_map& args, log::Logger& logger) try {
 	validate_options(args, logger);
 
 	if(!args["install"].empty()) {
@@ -188,7 +188,7 @@ int launch(const po::variables_map& args, log::Logger& logger) try {
 	return EXIT_FAILURE;
 }
 
-void validate_options(const po::variables_map& args, log::Logger& logger) {
+void validate_options(const opts::variables_map& args, log::Logger& logger) {
 	LOG_TRACE(logger) << log_func << LOG_SYNC;
 
 	if(args["install"].empty() && args["update"].empty()) {
@@ -221,7 +221,7 @@ bool validate_db_names(std::span<const std::string> input_names, log::Logger& lo
 	return bad_names.empty();
 }
 
-void validate_db_args(const po::variables_map& po_args, const std::string& mode, log::Logger& logger) {
+void validate_db_args(const opts::variables_map& po_args, const std::string& mode, log::Logger& logger) {
 	LOG_TRACE(logger) << log_func << LOG_SYNC;
 
 	const auto& dbs = po_args[mode].as<std::vector<std::string>>();
@@ -266,7 +266,7 @@ std::vector<std::string> load_queries(const std::string& path, log::Logger& logg
 	return queries;
 }
 
-DatabaseDetails db_details(const po::variables_map& args, const std::string& db) {
+DatabaseDetails db_details(const opts::variables_map& args, const std::string& db) {
 	const auto root_user_arg = std::string(db) + ".root-user";
 	const auto root_pass_arg = std::string(db) + ".root-password";
 	const auto hostname_arg = std::string(db) + ".hostname";
@@ -284,7 +284,7 @@ DatabaseDetails db_details(const po::variables_map& args, const std::string& db)
 	};
 }
 
-void db_install(const po::variables_map& args, const std::string& db, const bool drop, log::Logger& logger) {
+void db_install(const opts::variables_map& args, const std::string& db, const bool drop, log::Logger& logger) {
 	LOG_TRACE(logger) << log_func << LOG_SYNC;
 	const auto& sql_dir = args["sql-dir"].as<std::string>();
 	const auto& dbs = args["install"].as<std::vector<std::string>>();
@@ -344,7 +344,7 @@ void db_install(const po::variables_map& args, const std::string& db, const bool
 	LOG_INFO_SYNC(logger, "Successfully installed {}", db);
 }
 
-bool apply_updates(const po::variables_map& args, QueryExecutor& exec,
+bool apply_updates(const opts::variables_map& args, QueryExecutor& exec,
                    std::span<std::string> migration_paths, const std::string& db,
                    log::Logger& logger) {
 	LOG_TRACE(logger) << log_func << LOG_SYNC;
@@ -408,7 +408,7 @@ bool apply_updates(const po::variables_map& args, QueryExecutor& exec,
 	return true;
 }
 
-bool db_update(const po::variables_map& args, const std::string& db, log::Logger& logger) {
+bool db_update(const opts::variables_map& args, const std::string& db, log::Logger& logger) {
 	LOG_TRACE(logger) << log_func << LOG_SYNC;
 	LOG_INFO_SYNC(logger, "Applying updates for {}...", db);
 
@@ -491,67 +491,67 @@ bool pluralise(auto value) {
 	return value != 1;
 }
 
-po::variables_map parse_arguments(const int argc, const char* argv[]) {
-	po::options_description opt("Options");
+opts::variables_map parse_arguments(const int argc, const char* argv[]) {
+	opts::options_description opt("Options");
 	opt.add_options()
 		("help,h", "Displays a list of available options")
-		("install", po::value<std::vector<std::string>>()->multitoken(),
+		("install", opts::value<std::vector<std::string>>()->multitoken(),
 			"Perform initial installation of the listed database types")
-		("update", po::value<std::vector<std::string>>()->multitoken(),
+		("update", opts::value<std::vector<std::string>>()->multitoken(),
 			"Apply any updates to the provided database types. Valid types are: "
 			" world, character, login")
-		("world.root-user", po::value<std::string>()->default_value("root"),
+		("world.root-user", opts::value<std::string>()->default_value("root"),
 			"A root database user, or at least one with liberal permissions.")
-		("world.root-password", po::value<std::string>()->default_value(""),
+		("world.root-password", opts::value<std::string>()->default_value(""),
 			"The password for the provided root user.")
-		("login.root-user", po::value<std::string>()->default_value("root"),
+		("login.root-user", opts::value<std::string>()->default_value("root"),
 			"A root database user, or at least one with liberal permissions.")
-		("login.root-password", po::value<std::string>()->default_value(""),
+		("login.root-password", opts::value<std::string>()->default_value(""),
 			"The password for the provided root user.")
-		("login.set-user", po::value<std::string>(),
+		("login.set-user", opts::value<std::string>(),
 			"The login user to create when initial setting up the databases.")
-		("login.set-password", po::value<std::string>(),
+		("login.set-password", opts::value<std::string>(),
 			"The login password to create when initial setting up the databases.")
-		("world.set-user", po::value<std::string>(),
+		("world.set-user", opts::value<std::string>(),
 			"The world user to create when initial setting up the databases.")
-		("world.set-password", po::value<std::string>(),
+		("world.set-password", opts::value<std::string>(),
 			"The world password to create when initial setting up the databases.")
-		("login.db-name", po::value<std::string>()->default_value("ember_login"),
+		("login.db-name", opts::value<std::string>()->default_value("ember_login"),
 			"The login database name used when creating/updating the databases.")
-		("login.hostname", po::value<std::string>()->default_value("localhost"),
+		("login.hostname", opts::value<std::string>()->default_value("localhost"),
 			"The hostname used when connecting to the login database.")
-		("login.port", po::value<std::uint16_t>()->default_value(3306),
+		("login.port", opts::value<std::uint16_t>()->default_value(3306),
 			"The port used when connecting to the login database.")
-		("world.db-name", po::value<std::string>()->default_value("ember_world"),
+		("world.db-name", opts::value<std::string>()->default_value("ember_world"),
 			"The world database name used when updating the databases.")
-		("world.hostname", po::value<std::string>()->default_value("localhost"),
+		("world.hostname", opts::value<std::string>()->default_value("localhost"),
 			"The hostname used when connecting to the world database.")
-		("world.port", po::value<std::uint16_t>()->default_value(3306),
+		("world.port", opts::value<std::uint16_t>()->default_value(3306),
 			"The port used when connecting to the world database.")
-		("sql-dir", po::value<std::string>()->default_value("sql/"),
+		("sql-dir", opts::value<std::string>()->default_value("sql/"),
 			"The directory containing the SQL scripts.")
-		("database-type", po::value<std::string>()->default_value("mysql"),
+		("database-type", opts::value<std::string>()->default_value("mysql"),
 			"The database type to connect to (e.g. MySQL).")
-		("clean", po::bool_switch()->default_value(false),
+		("clean", opts::bool_switch()->default_value(false),
 			"Drops any existing users or databases if there's a clash during --install. "
 			"Useful if you want to restore the database to a clean state or recover from a failed install.")
-		("single-transaction", po::bool_switch()->default_value(false),
+		("single-transaction", opts::bool_switch()->default_value(false),
 			"Whether to apply all updates within a single transaction. "
 			"Note that not all migrations can be applied transactionally (e.g. DDL queries).")
-		("transactional-updates", po::bool_switch()->default_value(false),
+		("transactional-updates", opts::bool_switch()->default_value(false),
 			"Whether to use transactions to allow for rolling back updates in the event of failure. "
 			"Note that not all migrations can be applied transactionally (e.g. DDL queries).")
-		("shutup", po::bool_switch()->default_value(false),
+		("shutup", opts::bool_switch()->default_value(false),
 			"Silence the timed warnings displayed during a updates or a --clean install.")
-		("verbosity,v", po::value<log::Severity>()->default_value(log::Severity::trace),
+		("verbosity,v", opts::value<log::Severity>()->default_value(log::Severity::trace),
 			"Logging verbosity")
-		("fverbosity", po::value<log::Severity>()->default_value(log::Severity::disabled),
+		("fverbosity", opts::value<log::Severity>()->default_value(log::Severity::disabled),
 			"File logging verbosity");
 
-	po::variables_map options;
+	opts::variables_map options;
 	
-	po::store(po::command_line_parser(argc, argv).options(opt)
-			  .style(po::command_line_style::default_style & ~po::command_line_style::allow_guessing)
+	opts::store(opts::command_line_parser(argc, argv).options(opt)
+			  .style(opts::command_line_style::default_style & ~opts::command_line_style::allow_guessing)
 			  .run(), options);
 
 	if(options.count("help")) {
@@ -559,6 +559,6 @@ po::variables_map parse_arguments(const int argc, const char* argv[]) {
 		std::exit(EXIT_SUCCESS);
 	}
 
-	po::notify(options);
+	opts::notify(options);
 	return options;
 }

@@ -16,11 +16,11 @@
 #include <string>
 #include <cstdint>
 
-namespace po = boost::program_options;
+namespace opts = boost::program_options;
 
 namespace ember {
 
-inline static stun::Client create_stun_client(const po::variables_map& args) {
+inline static stun::Client create_stun_client(const opts::variables_map& args) {
 	return stun::Client(
 		args["network.interface"].as<std::string>(),
 		args["stun.server"].as<std::string>(),

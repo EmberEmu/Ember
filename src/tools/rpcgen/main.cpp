@@ -18,11 +18,11 @@
 #include <cstdlib>
 
 using namespace ember;
-namespace po = boost::program_options;
+namespace opts = boost::program_options;
 
-int launch(const po::variables_map& args);
-void configure_logger(log::Logger& logger, const po::variables_map& args);
-po::variables_map parse_arguments(int argc, const char* argv[]);
+int launch(const opts::variables_map& args);
+void configure_logger(log::Logger& logger, const opts::variables_map& args);
+opts::variables_map parse_arguments(int argc, const char* argv[]);
 
 int main(int argc, const char* argv[]) try {
 	const auto args = parse_arguments(argc, argv);
@@ -34,7 +34,7 @@ int main(int argc, const char* argv[]) try {
 	return EXIT_FAILURE;
 }
 
-int launch(const po::variables_map& args) try {
+int launch(const opts::variables_map& args) try {
 	const auto& out_path = args["out"].as<std::string>();
 	const auto& tpl_path = args["tpl"].as<std::string>();
 	const auto& schemas = args["schemas"].as<std::vector<std::string>>();
@@ -52,7 +52,7 @@ int launch(const po::variables_map& args) try {
 	return EXIT_FAILURE;
 }
 
-void configure_logger(log::Logger& logger, const po::variables_map& args) {
+void configure_logger(log::Logger& logger, const opts::variables_map& args) {
 	const auto con_verbosity = args["verbosity"].as<log::Severity>();
 	const auto file_verbosity = args["fverbosity"].as<log::Severity>();
 	
@@ -67,28 +67,28 @@ void configure_logger(log::Logger& logger, const po::variables_map& args) {
 	log::global_logger(logger);
 }
 
-po::variables_map parse_arguments(const int argc, const char* argv[]) {
-	po::options_description cmdline_opts("Options");
+opts::variables_map parse_arguments(const int argc, const char* argv[]) {
+	opts::options_description cmdline_opts("Options");
 	cmdline_opts.add_options()
 		("help,h", "Displays a list of available options")
-		("schemas,s", po::value<std::vector<std::string>>()->multitoken()->required(), ".fbsb schemas")
-		("out,o",     po::value<std::string>()->required(), "Output directory for generated code")
-		("tpl,t",     po::value<std::string>()->default_value("templates/"),
+		("schemas,s", opts::value<std::vector<std::string>>()->multitoken()->required(), ".fbsb schemas")
+		("out,o",     opts::value<std::string>()->required(), "Output directory for generated code")
+		("tpl,t",     opts::value<std::string>()->default_value("templates/"),
 			"Path to the templates")
-		("verbosity,v", po::value<log::Severity>()->default_value(log::Severity::info),
+		("verbosity,v", opts::value<log::Severity>()->default_value(log::Severity::info),
 			"Logging verbosity")
-		("fverbosity", po::value<log::Severity>()->default_value(log::Severity::disabled),
+		("fverbosity", opts::value<log::Severity>()->default_value(log::Severity::disabled),
 			"File logging verbosity");
 
-	po::variables_map options;
-	po::store(po::command_line_parser(argc, argv).options(cmdline_opts).run(), options);
+	opts::variables_map options;
+	opts::store(opts::command_line_parser(argc, argv).options(cmdline_opts).run(), options);
 
 	if(options.count("help") || argc <= 1) {
 		std::cout << cmdline_opts;
 		std::exit(EXIT_SUCCESS);
 	}
 
-	po::notify(options);
+	opts::notify(options);
 
 	return options;
 }

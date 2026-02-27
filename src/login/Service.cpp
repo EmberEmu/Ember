@@ -67,7 +67,7 @@
 #include <cstdlib>
 
 using namespace std::chrono_literals;
-namespace po = boost::program_options;
+namespace opts = boost::program_options;
 namespace ep = ember::connection_pool;
 
 #if defined TARGET_WORKER_COUNT
@@ -88,7 +88,7 @@ void print_lib_versions(log::Logger& logger);
  * services can cleanly shut down upon destruction without requiring
  * explicit shutdown() calls in a signal handler.
  */
-int Service::run(const po::variables_map& args) try {
+int Service::run(const opts::variables_map& args) try {
 	auto work = boost::asio::make_work_guard(service);
 
 	std::thread thread([&]() {
@@ -127,7 +127,7 @@ void Service::stop() {
 	});
 }
 
-void Service::launch(const po::variables_map& args, boost::asio::io_context& service) try {
+void Service::launch(const opts::variables_map& args, boost::asio::io_context& service) try {
 #ifdef DEBUG_NO_THREADS
 	LOG_WARN_SYNC(logger, "Compiled with DEBUG_NO_THREADS!");
 #endif
@@ -351,7 +351,7 @@ void Service::launch(const po::variables_map& args, boost::asio::io_context& ser
 	eptr = std::current_exception();
 }
 
-std::unique_ptr<Metrics> Service::start_metrics(boost::asio::io_context& service, const po::variables_map& args) {
+std::unique_ptr<Metrics> Service::start_metrics(boost::asio::io_context& service, const opts::variables_map& args) {
 	auto metrics = std::make_unique<Metrics>();
 
 	if(args["metrics.enabled"].as<bool>()) {
@@ -365,58 +365,58 @@ std::unique_ptr<Metrics> Service::start_metrics(boost::asio::io_context& service
 	return metrics;
 }
 
-po::options_description Service::options() {
-	po::options_description opts;
+opts::options_description Service::options() {
+	opts::options_description opts;
 	opts.add_options()
-		("login.builds", po::value<std::vector<GameVersion>>()->composing()->required())
-		("misc.locale_enforce", po::value<bool>()->required())
-		("misc.verified_emails", po::value<bool>()->required())
-		("patches.bin_path", po::value<std::string>()->required())
-		("survey.path", po::value<std::string>()->required())
-		("survey.id", po::value<std::uint32_t>()->required())
-		("integrity.enabled", po::value<bool>()->default_value(false))
-		("integrity.bin_path", po::value<std::string>()->required())
-		("spark.address", po::value<std::string>()->required())
-		("spark.port", po::value<std::uint16_t>()->required())
-		("nsd.host", po::value<std::string>()->required())
-		("nsd.port", po::value<std::uint16_t>()->required())
-		("stun.enabled", po::value<bool>()->required())
-		("stun.server", po::value<std::string>()->required())
-		("stun.port", po::value<std::uint16_t>()->required())
-		("stun.protocol", po::value<stun::Protocol>()->required())
-		("forward.enabled", po::value<bool>()->required())
-		("forward.method", po::value<ports::Forward::Method>()->required())
-		("forward.gateway", po::value<std::string>()->required())
-		("network.interface", po::value<std::string>()->required())
-		("network.port", po::value<std::uint16_t>()->required())
-		("network.tcp_no_delay", po::value<bool>()->default_value(true))
-		("console_log.enable_input", po::value<bool>()->required())
-		("console_log.verbosity", po::value<log::Severity>()->required())
-		("console_log.filter-mask", po::value<std::uint32_t>()->default_value(0))
-		("console_log.colours", po::value<bool>()->required())
-		("remote_log.verbosity", po::value<log::Severity>()->required())
-		("remote_log.filter-mask", po::value<std::uint32_t>()->default_value(0))
-		("remote_log.service_name", po::value<std::string>()->required())
-		("remote_log.host", po::value<std::string>()->required())
-		("remote_log.port", po::value<std::uint16_t>()->required())
-		("file_log.verbosity", po::value<log::Severity>()->required())
-		("file_log.filter-mask", po::value<std::uint32_t>()->default_value(0))
-		("file_log.path", po::value<std::string>()->default_value("login.log"))
-		("file_log.timestamp_format", po::value<std::string>())
-		("file_log.mode", po::value<std::string>()->required())
-		("file_log.size_rotate", po::value<std::uint32_t>()->required())
-		("file_log.midnight_rotate", po::bool_switch()->required())
-		("file_log.log_timestamp", po::value<bool>()->required())
-		("file_log.log_severity", po::value<bool>()->required())
-		("database.config_path", po::value<std::string>()->required())
-		("database.min_connections", po::value<unsigned short>()->required())
-		("database.max_connections", po::value<unsigned short>()->required())
-		("metrics.enabled", po::value<bool>()->required())
-		("metrics.statsd_host", po::value<std::string>()->required())
-		("metrics.statsd_port", po::value<std::uint16_t>()->required())
-		("monitor.enabled", po::value<bool>()->required())
-		("monitor.interface", po::value<std::string>()->required())
-		("monitor.port", po::value<std::uint16_t>()->required());
+		("login.builds", opts::value<std::vector<GameVersion>>()->composing()->required())
+		("misc.locale_enforce", opts::value<bool>()->required())
+		("misc.verified_emails", opts::value<bool>()->required())
+		("patches.bin_path", opts::value<std::string>()->required())
+		("survey.path", opts::value<std::string>()->required())
+		("survey.id", opts::value<std::uint32_t>()->required())
+		("integrity.enabled", opts::value<bool>()->default_value(false))
+		("integrity.bin_path", opts::value<std::string>()->required())
+		("spark.address", opts::value<std::string>()->required())
+		("spark.port", opts::value<std::uint16_t>()->required())
+		("nsd.host", opts::value<std::string>()->required())
+		("nsd.port", opts::value<std::uint16_t>()->required())
+		("stun.enabled", opts::value<bool>()->required())
+		("stun.server", opts::value<std::string>()->required())
+		("stun.port", opts::value<std::uint16_t>()->required())
+		("stun.protocol", opts::value<stun::Protocol>()->required())
+		("forward.enabled", opts::value<bool>()->required())
+		("forward.method", opts::value<ports::Forward::Method>()->required())
+		("forward.gateway", opts::value<std::string>()->required())
+		("network.interface", opts::value<std::string>()->required())
+		("network.port", opts::value<std::uint16_t>()->required())
+		("network.tcp_no_delay", opts::value<bool>()->default_value(true))
+		("console_log.enable_input", opts::value<bool>()->required())
+		("console_log.verbosity", opts::value<log::Severity>()->required())
+		("console_log.filter-mask", opts::value<std::uint32_t>()->default_value(0))
+		("console_log.colours", opts::value<bool>()->required())
+		("remote_log.verbosity", opts::value<log::Severity>()->required())
+		("remote_log.filter-mask", opts::value<std::uint32_t>()->default_value(0))
+		("remote_log.service_name", opts::value<std::string>()->required())
+		("remote_log.host", opts::value<std::string>()->required())
+		("remote_log.port", opts::value<std::uint16_t>()->required())
+		("file_log.verbosity", opts::value<log::Severity>()->required())
+		("file_log.filter-mask", opts::value<std::uint32_t>()->default_value(0))
+		("file_log.path", opts::value<std::string>()->default_value("login.log"))
+		("file_log.timestamp_format", opts::value<std::string>())
+		("file_log.mode", opts::value<std::string>()->required())
+		("file_log.size_rotate", opts::value<std::uint32_t>()->required())
+		("file_log.midnight_rotate", opts::bool_switch()->required())
+		("file_log.log_timestamp", opts::value<bool>()->required())
+		("file_log.log_severity", opts::value<bool>()->required())
+		("database.config_path", opts::value<std::string>()->required())
+		("database.min_connections", opts::value<unsigned short>()->required())
+		("database.max_connections", opts::value<unsigned short>()->required())
+		("metrics.enabled", opts::value<bool>()->required())
+		("metrics.statsd_host", opts::value<std::string>()->required())
+		("metrics.statsd_port", opts::value<std::uint16_t>()->required())
+		("monitor.enabled", opts::value<bool>()->required())
+		("monitor.interface", opts::value<std::string>()->required())
+		("monitor.port", opts::value<std::uint16_t>()->required());
 
 	return opts;
 }

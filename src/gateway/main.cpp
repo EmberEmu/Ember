@@ -26,10 +26,10 @@
 #include <cstdlib>
 
 using namespace ember;
-namespace po = boost::program_options;
+namespace opts = boost::program_options;
 
-po::variables_map parse_arguments(int argc, const char* argv[]);
-int run(const po::variables_map& args, log::Logger& logger, commands::PrefixedRegistry& cmd_register);
+opts::variables_map parse_arguments(int argc, const char* argv[]);
+int run(const opts::variables_map& args, log::Logger& logger, commands::PrefixedRegistry& cmd_register);
 
 /*
  * We want to do the minimum amount of work required to get 
@@ -64,7 +64,7 @@ int main(int argc, const char* argv[]) try {
 	return EXIT_FAILURE;
 }
 
-int run(const po::variables_map& args, log::Logger& logger, commands::PrefixedRegistry& cmd_register) try {
+int run(const opts::variables_map& args, log::Logger& logger, commands::PrefixedRegistry& cmd_register) try {
 	boost::asio::io_context io_ctx;
 	boost::asio::signal_set signals(io_ctx, SIGINT, SIGTERM);
 
@@ -93,24 +93,24 @@ int run(const po::variables_map& args, log::Logger& logger, commands::PrefixedRe
 	return EXIT_FAILURE;
 }
 
-po::variables_map parse_arguments(const int argc, const char* argv[]) {
+opts::variables_map parse_arguments(const int argc, const char* argv[]) {
 	//Command-line options
-	po::options_description cmdline_opts("Generic options");
+	opts::options_description cmdline_opts("Generic options");
 	cmdline_opts.add_options()
 		("help,h", "Displays a list of available options")
-		("config,c", po::value<std::string>()->default_value("gateway.conf"),
+		("config,c", opts::value<std::string>()->default_value("gateway.conf"),
 			"Path to the configuration file");
 
-	po::positional_options_description pos; 
+	opts::positional_options_description pos; 
 	pos.add("config", 1);
 
 	//Config file options
-	po::options_description config_opts("Realm gateway configuration options");
+	opts::options_description config_opts("Realm gateway configuration options");
 	config_opts.add(gateway::Service::options());
 
-	po::variables_map options;
-	po::store(po::command_line_parser(argc, argv).positional(pos).options(cmdline_opts).run(), options);
-	po::notify(options);
+	opts::variables_map options;
+	opts::store(opts::command_line_parser(argc, argv).positional(pos).options(cmdline_opts).run(), options);
+	opts::notify(options);
 
 	if(options.count("help")) {
 		std::cout << cmdline_opts;
@@ -124,8 +124,8 @@ po::variables_map parse_arguments(const int argc, const char* argv[]) {
 		throw std::invalid_argument("Unable to open configuration file: " + config_path);
 	}
 
-	po::store(po::parse_config_file(ifs, config_opts), options);
-	po::notify(options);
+	opts::store(opts::parse_config_file(ifs, config_opts), options);
+	opts::notify(options);
 
 	return options;
 }

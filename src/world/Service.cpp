@@ -17,7 +17,7 @@
 #include <cstdint>
 #include <cstdlib>
 
-namespace po = boost::program_options;
+namespace opts = boost::program_options;
 
 namespace ember::world {
 
@@ -61,40 +61,40 @@ void Service::stop() {
 	// todo
 }
 
-po::options_description Service::options() {
-	po::options_description opts;
+opts::options_description Service::options() {
+	opts::options_description opts;
 	opts.add_options()
-		("console_log.enable_input", po::value<bool>()->required())
-		("console_log.verbosity", po::value<log::Severity>()->required())
-		("console_log.filter-mask", po::value<std::uint32_t>()->default_value(0))
-		("console_log.colours", po::value<bool>()->required())
-		("remote_log.verbosity", po::value<log::Severity>()->required())
-		("remote_log.filter-mask", po::value<std::uint32_t>()->default_value(0))
-		("remote_log.service_name", po::value<std::string>()->required())
-		("remote_log.host", po::value<std::string>()->required())
-		("remote_log.port", po::value<std::uint16_t>()->required())
-		("file_log.verbosity", po::value<log::Severity>()->required())
-		("file_log.filter-mask", po::value<std::uint32_t>()->default_value(0))
-		("file_log.path", po::value<std::string>()->default_value("world.log"))
-		("file_log.timestamp_format", po::value<std::string>())
-		("file_log.mode", po::value<std::string>()->required())
-		("file_log.size_rotate", po::value<std::uint32_t>()->required())
-		("file_log.midnight_rotate", po::bool_switch()->required())
-		("file_log.log_timestamp", po::value<bool>()->required())
-		("file_log.log_severity", po::value<bool>()->required())
-		("database.min_connections", po::value<unsigned short>()->required())
-		("database.max_connections", po::value<unsigned short>()->required())
-		("database.config_path", po::value<std::string>()->required())
-		("network.interface", po::value<std::string>()->required())
-		("network.port", po::value<std::uint16_t>()->required())
-		("network.tcp_no_delay", po::value<bool>()->required())
-		("dbc.path", po::value<std::string>()->required())
-		("spark.address", po::value<std::string>()->required())
-		("spark.port", po::value<std::uint16_t>()->required())
-		("nsd.host", po::value<std::string>()->required())
-		("nsd.port", po::value<std::uint16_t>()->required())
-		("world.id", po::value<std::uint32_t>()->required())
-		("world.map_id", po::value<std::vector<std::int32_t>>()->required());
+		("console_log.enable_input", opts::value<bool>()->required())
+		("console_log.verbosity", opts::value<log::Severity>()->required())
+		("console_log.filter-mask", opts::value<std::uint32_t>()->default_value(0))
+		("console_log.colours", opts::value<bool>()->required())
+		("remote_log.verbosity", opts::value<log::Severity>()->required())
+		("remote_log.filter-mask", opts::value<std::uint32_t>()->default_value(0))
+		("remote_log.service_name", opts::value<std::string>()->required())
+		("remote_log.host", opts::value<std::string>()->required())
+		("remote_log.port", opts::value<std::uint16_t>()->required())
+		("file_log.verbosity", opts::value<log::Severity>()->required())
+		("file_log.filter-mask", opts::value<std::uint32_t>()->default_value(0))
+		("file_log.path", opts::value<std::string>()->default_value("world.log"))
+		("file_log.timestamp_format", opts::value<std::string>())
+		("file_log.mode", opts::value<std::string>()->required())
+		("file_log.size_rotate", opts::value<std::uint32_t>()->required())
+		("file_log.midnight_rotate", opts::bool_switch()->required())
+		("file_log.log_timestamp", opts::value<bool>()->required())
+		("file_log.log_severity", opts::value<bool>()->required())
+		("database.min_connections", opts::value<unsigned short>()->required())
+		("database.max_connections", opts::value<unsigned short>()->required())
+		("database.config_path", opts::value<std::string>()->required())
+		("network.interface", opts::value<std::string>()->required())
+		("network.port", opts::value<std::uint16_t>()->required())
+		("network.tcp_no_delay", opts::value<bool>()->required())
+		("dbc.path", opts::value<std::string>()->required())
+		("spark.address", opts::value<std::string>()->required())
+		("spark.port", opts::value<std::uint16_t>()->required())
+		("nsd.host", opts::value<std::string>()->required())
+		("nsd.port", opts::value<std::uint16_t>()->required())
+		("world.id", opts::value<std::uint32_t>()->required())
+		("world.map_id", opts::value<std::vector<std::int32_t>>()->required());
 	return opts;
 }
 

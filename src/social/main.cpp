@@ -34,11 +34,11 @@
 #include <cstdlib>
 
 using namespace ember;
-namespace po = boost::program_options;
+namespace opts = boost::program_options;
 
 void print_lib_versions(log::Logger& logger);
-int launch(const po::variables_map& args, log::Logger& logger);
-po::variables_map parse_arguments(int argc, const char* argv[]);
+int launch(const opts::variables_map& args, log::Logger& logger);
+opts::variables_map parse_arguments(int argc, const char* argv[]);
 
 /*
  * We want to do the minimum amount of work required to get 
@@ -67,7 +67,7 @@ int main(int argc, const char* argv[]) try {
 	return EXIT_FAILURE;
 }
 
-int launch(const po::variables_map& args, log::Logger& logger) try {
+int launch(const opts::variables_map& args, log::Logger& logger) try {
 #ifdef DEBUG_NO_THREADS
 	LOG_WARN_SYNC(logger, "Compiled with DEBUG_NO_THREADS!");
 #endif
@@ -107,60 +107,60 @@ int launch(const po::variables_map& args, log::Logger& logger) try {
 	return EXIT_FAILURE;
 }
 
-po::variables_map parse_arguments(const int argc, const char* argv[]) {
+opts::variables_map parse_arguments(const int argc, const char* argv[]) {
 	//Command-line options
-	po::options_description cmdline_opts("Generic options");
+	opts::options_description cmdline_opts("Generic options");
 	cmdline_opts.add_options()
 		("help,h", "Displays a list of available options")
-		("database.config_path,d", po::value<std::string>(),
+		("database.config_path,d", opts::value<std::string>(),
 			"Path to the database configuration file")
-		("config,c", po::value<std::string>()->default_value("social.conf"),
+		("config,c", opts::value<std::string>()->default_value("social.conf"),
 			"Path to the configuration file");
 
-	po::positional_options_description pos; 
+	opts::positional_options_description pos; 
 	pos.add("config", 1);
 
 	//Config file options
-	po::options_description config_opts("Login configuration options");
+	opts::options_description config_opts("Login configuration options");
 	config_opts.add_options()
-		("social.server_group", po::value<unsigned int>()->required())
-		("spark.address", po::value<std::string>()->required())
-		("spark.address", po::value<std::string>()->required())
-		("spark.port", po::value<std::uint16_t>()->required())
-		("network.interface", po::value<std::string>()->required())
-		("network.port", po::value<std::uint16_t>()->required())
-		("network.tcp_no_delay", po::value<bool>()->required())
-		("console_log.enable_input", po::value<bool>()->required())
-		("console_log.verbosity", po::value<log::Severity>()->required())
-		("console_log.filter-mask", po::value<std::uint32_t>()->default_value(0))
-		("console_log.colours", po::value<bool>()->required())
-		("remote_log.verbosity", po::value<log::Severity>()->required())
-		("remote_log.filter-mask", po::value<std::uint32_t>()->default_value(0))
-		("remote_log.service_name", po::value<std::string>()->required())
-		("remote_log.host", po::value<std::string>()->required())
-		("remote_log.port", po::value<std::uint16_t>()->required())
-		("file_log.verbosity", po::value<log::Severity>()->required())
-		("file_log.filter-mask", po::value<std::uint32_t>()->default_value(0))
-		("file_log.path", po::value<std::string>()->default_value("social.log"))
-		("file_log.timestamp_format", po::value<std::string>())
-		("file_log.mode", po::value<std::string>()->required())
-		("file_log.size_rotate", po::value<std::uint32_t>()->required())
-		("file_log.midnight_rotate", po::value<bool>()->required())
-		("file_log.log_timestamp", po::value<bool>()->required())
-		("file_log.log_severity", po::value<bool>()->required())
-		("database.config_path", po::value<std::string>()->required())
-		("database.min_connections", po::value<unsigned short>()->required())
-		("database.max_connections", po::value<unsigned short>()->required())
-		("metrics.enabled", po::value<bool>()->required())
-		("metrics.statsd_host", po::value<std::string>()->required())
-		("metrics.statsd_port", po::value<std::uint16_t>()->required())
-		("monitor.enabled", po::value<bool>()->required())
-		("monitor.interface", po::value<std::string>()->required())
-		("monitor.port", po::value<std::uint16_t>()->required());
+		("social.server_group", opts::value<unsigned int>()->required())
+		("spark.address", opts::value<std::string>()->required())
+		("spark.address", opts::value<std::string>()->required())
+		("spark.port", opts::value<std::uint16_t>()->required())
+		("network.interface", opts::value<std::string>()->required())
+		("network.port", opts::value<std::uint16_t>()->required())
+		("network.tcp_no_delay", opts::value<bool>()->required())
+		("console_log.enable_input", opts::value<bool>()->required())
+		("console_log.verbosity", opts::value<log::Severity>()->required())
+		("console_log.filter-mask", opts::value<std::uint32_t>()->default_value(0))
+		("console_log.colours", opts::value<bool>()->required())
+		("remote_log.verbosity", opts::value<log::Severity>()->required())
+		("remote_log.filter-mask", opts::value<std::uint32_t>()->default_value(0))
+		("remote_log.service_name", opts::value<std::string>()->required())
+		("remote_log.host", opts::value<std::string>()->required())
+		("remote_log.port", opts::value<std::uint16_t>()->required())
+		("file_log.verbosity", opts::value<log::Severity>()->required())
+		("file_log.filter-mask", opts::value<std::uint32_t>()->default_value(0))
+		("file_log.path", opts::value<std::string>()->default_value("social.log"))
+		("file_log.timestamp_format", opts::value<std::string>())
+		("file_log.mode", opts::value<std::string>()->required())
+		("file_log.size_rotate", opts::value<std::uint32_t>()->required())
+		("file_log.midnight_rotate", opts::value<bool>()->required())
+		("file_log.log_timestamp", opts::value<bool>()->required())
+		("file_log.log_severity", opts::value<bool>()->required())
+		("database.config_path", opts::value<std::string>()->required())
+		("database.min_connections", opts::value<unsigned short>()->required())
+		("database.max_connections", opts::value<unsigned short>()->required())
+		("metrics.enabled", opts::value<bool>()->required())
+		("metrics.statsd_host", opts::value<std::string>()->required())
+		("metrics.statsd_port", opts::value<std::uint16_t>()->required())
+		("monitor.enabled", opts::value<bool>()->required())
+		("monitor.interface", opts::value<std::string>()->required())
+		("monitor.port", opts::value<std::uint16_t>()->required());
 
-	po::variables_map options;
-	po::store(po::command_line_parser(argc, argv).positional(pos).options(cmdline_opts).run(), options);
-	po::notify(options);
+	opts::variables_map options;
+	opts::store(opts::command_line_parser(argc, argv).positional(pos).options(cmdline_opts).run(), options);
+	opts::notify(options);
 
 	if(options.count("help")) {
 		std::cout << cmdline_opts;
@@ -174,8 +174,8 @@ po::variables_map parse_arguments(const int argc, const char* argv[]) {
 		throw std::invalid_argument("Unable to open configuration file: " + config_path);
 	}
 
-	po::store(po::parse_config_file(ifs, config_opts), options);
-	po::notify(options);
+	opts::store(opts::parse_config_file(ifs, config_opts), options);
+	opts::notify(options);
 
 	return options;
 }
