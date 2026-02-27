@@ -49,7 +49,7 @@ public:
 	static boost::program_options::options_description options();
 
 	explicit Service(log::Logger& logger, commands::PrefixedRegistry& cmd_register)
-		: service(thread::hardware_concurrency(logger)),
+		: service(thread::hardware_concurrency()),
 		  serialise(service),
 		  logger(logger),
 		  cmd_register(cmd_register),

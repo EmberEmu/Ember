@@ -111,7 +111,10 @@ void Service::launch(const opts::variables_map& args, boost::asio::io_context& s
 	auto driver(drivers::init_db_driver(db_config_path, "login"));
 
 	LOG_INFO_SYNC(logger, "Initialising database connection pool...");
-	const auto concurrency = thread::hardware_concurrency(logger);
+	const auto concurrency = thread::hardware_concurrency([&](auto msg) {
+		LOG_ERROR_SYNC(logger, "{}", msg);
+	});
+
 	const auto min_conns = args["database.min_connections"].as<unsigned short>();
 	auto max_conns = args["database.max_connections"].as<unsigned short>();
 

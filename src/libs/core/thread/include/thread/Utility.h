@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2025 Ember
+ * Copyright (c) 2015 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,7 +9,9 @@
 #pragma once
 
 #include <expected>
+#include <functional>
 #include <string>
+#include <string_view>
 #include <thread>
 
 namespace ember::log {
@@ -34,7 +36,6 @@ std::expected<std::wstring, Result> get_name(std::thread& thread);
 std::expected<std::wstring, Result> get_name(std::jthread& thread);
 std::expected<std::wstring, Result> get_name();
 
-unsigned int hardware_concurrency();
-unsigned int hardware_concurrency(log::Logger& logger);
+unsigned int hardware_concurrency(std::function<void(const std::string_view msg)> callback = {});
 
 } // thread, ember

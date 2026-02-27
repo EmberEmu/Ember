@@ -97,7 +97,10 @@ int Service::run(const opts::variables_map& args) try {
 	});
 
 	// Spawn worker threads for Asio
-	const auto concurrency = thread::hardware_concurrency(logger);
+	const auto concurrency = thread::hardware_concurrency([&](auto msg) {
+		LOG_ERROR_SYNC(logger, "{}", msg);
+	});
+
 	boost::container::small_vector<std::jthread, WORKER_NUM_HINT> workers;
 	workers.reserve(concurrency);
 
@@ -169,7 +172,9 @@ void Service::launch(const opts::variables_map& args, boost::asio::io_context& s
 	auto min_conns = args["database.min_connections"].as<unsigned short>();
 	auto max_conns = args["database.max_connections"].as<unsigned short>();
 
-	unsigned int concurrency = thread::hardware_concurrency(logger);
+	const auto concurrency = thread::hardware_concurrency([&](auto msg) {
+		LOG_ERROR_SYNC(logger, "{}", msg);
+	});
 
 	if(!max_conns) {
 		max_conns = concurrency;
