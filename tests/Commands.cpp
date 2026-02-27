@@ -7,6 +7,7 @@
  */
 
 #include <commands/Registry.h>
+#include <commands/PrefixedRegistry.h>
 #include <commands/Utility.h>
 #include <gtest/gtest.h>
 #include <array>
@@ -329,4 +330,51 @@ TEST_F(Commands, Execute_AllArgTypes_Success) {
 
 	ASSERT_EQ(cmd->execute(args), commands::Result::success);
 	ASSERT_TRUE(success);
+}
+
+TEST_F(Commands, PrefixRegistry_Prefix) {
+	commands::PrefixedRegistry prefix_reg(registry, "unit_test_");
+	auto command = prefix_reg("example");
+	ASSERT_EQ(command->name(), "unit_test_example");
+}
+
+TEST_F(Commands, PrefixRegistry_ScopedPrefix) {
+	commands::PrefixedRegistry prefix_reg(registry, "unit_test_");
+	auto command = commands::Command::create("example");
+	auto scoped = prefix_reg.scoped_insert(command);
+	ASSERT_EQ(command->name(), scoped.command()->name());
+	ASSERT_EQ(command->name(), "unit_test_example");
+}
+
+TEST_F(Commands, PrefixRegistry_Scoping) {
+	commands::PrefixedRegistry prefix_reg(registry, "unit_test_");
+	auto command = commands::Command::create("example");
+
+	{
+		auto scoped = prefix_reg.scoped_insert(command);
+		ASSERT_TRUE(registry.find("unit_test_example").command);
+	}
+
+	ASSERT_FALSE(registry.find(command->name()).command);
+}
+
+TEST_F(Commands, PrefixRegistry_Release) {
+	commands::PrefixedRegistry prefix_reg(registry, "unit_test_");
+	auto command = commands::Command::create("example");
+	{
+		auto scoped = prefix_reg.scoped_insert(command);
+		ASSERT_TRUE(registry.find("unit_test_example").command);
+		scoped.release();
+	}
+
+	ASSERT_TRUE(registry.find("unit_test_example").command);
+}
+
+TEST_F(Commands, PrefixRegistry_Reset) {
+	commands::PrefixedRegistry prefix_reg(registry, "unit_test_");
+	auto command = commands::Command::create("example");
+	auto scoped = prefix_reg.scoped_insert(command);
+	ASSERT_TRUE(registry.find("unit_test_example").command);
+	scoped.reset();
+	ASSERT_FALSE(registry.find("unit_test_example").command);
 }
