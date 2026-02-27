@@ -17,7 +17,11 @@
 #elif defined(__APPLE__) && defined(__aarch64__)
 #define YIELD_INSTRUCTION __builtin_arm_yield()
 #elif defined(__arm__) || defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC) || defined(__aarch64__)
+#if defined __GNUC__
+#define YIELD_INSTRUCTION __asm__ volatile("yield" ::: "memory")
+#else
 #define YIELD_INSTRUCTION __yield()
+#endif
 #endif
 
 #ifdef _MSC_VER
