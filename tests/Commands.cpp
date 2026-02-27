@@ -378,3 +378,21 @@ TEST_F(Commands, PrefixRegistry_Reset) {
 	scoped.reset();
 	ASSERT_FALSE(registry.find("unit_test_example").command);
 }
+
+TEST_F(Commands, CommandFlags) {
+	auto command = registry.insert("test")
+		->flags({ 42, 117 });
+	
+	ASSERT_EQ(command->flags().custom, 42);
+	ASSERT_EQ(command->flags().security, 117);
+}
+
+
+TEST_F(Commands, CommandFlagsUpdate) {
+	auto command = registry.insert("test")
+		->flags({ 42, 117 });
+
+	command->flags({ 0xB105F00D, 0x8BADF00D });
+	ASSERT_EQ(command->flags().custom, 0xB105F00D);
+	ASSERT_EQ(command->flags().security, 0x8BADF00D);
+}
