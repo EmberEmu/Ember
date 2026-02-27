@@ -35,13 +35,8 @@ const std::string_view random_tip(const dbc::Store<dbc::GameTips>& tips) {
 	}
 
 	// trim any trailing newlines that we don't want to print
-	if(auto pos = text.find_first_of('\n'); pos != text.npos) {
+	if(auto pos = text.find("\r\n"); pos != text.npos) {
 		text = text.substr(0, pos);
-	}
-
-	// remove formatting byte that we can't print
-	if(!text.empty()) {
-		text.remove_suffix(1);
 	}
 
 	return text;
