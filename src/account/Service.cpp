@@ -38,8 +38,7 @@ Service::Service(log::Logger& logger, commands::PrefixedRegistry& cmd_register)
 	: logger(logger)
 	, cmd_register(cmd_register)
 	, start_time(std::chrono::steady_clock::now())
-	, service(BOOST_ASIO_CONCURRENCY_HINT_UNSAFE_IO)
-	, stopping(false) {}
+	, service(BOOST_ASIO_CONCURRENCY_HINT_UNSAFE_IO) {}
 
 int Service::run(const opts::variables_map& args) try {
 	initialise(args, service);

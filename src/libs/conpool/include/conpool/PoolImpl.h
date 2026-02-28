@@ -200,28 +200,19 @@ public:
 			return;
 		}
 
-		manager_.stop();
+		try {
 
-		for(auto& c : pool_) {
-			if(c.empty_slot) {
-				continue;
-			}
-
-			BOOST_ASSERT_MSG(!c.checked_out, "Closed connection pool without returning all connections.");
-
-			try {
-				driver_.close(c.conn);
-			} catch(const std::exception& e) { 
-				POOL_LOG(Severity::error, "Closing pool, driver threw: "s + e.what());
-			}
+			close();
+		} catch(const std::exception& e) { 
+			POOL_LOG(Severity::error, "Closing pool, threw: "s + e.what());
 		}
-
-		driver_.thread_exit();
 	}
 
 	void close() {
-		if(closed_) {
-			throw exception("Closed the same connection pool twice!");
+		bool expected = false;
+
+		if(!closed_.compare_exchange_strong(expected, true)) {
+			return;
 		}
 
 		closed_ = true;

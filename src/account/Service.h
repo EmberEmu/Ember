@@ -27,7 +27,6 @@ class Service {
 	std::chrono::steady_clock::time_point start_time;
 	boost::asio::io_context service;
 	ServiceContext context;
-	std::atomic_bool stopping;
 
 	void initialise(const boost::program_options::variables_map& args, boost::asio::io_context& service);
 	void shutdown();
