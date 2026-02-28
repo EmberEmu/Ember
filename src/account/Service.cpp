@@ -103,10 +103,7 @@ void Service::shutdown() {
 
 void Service::stop() {
 	LOG_TRACE_SYNC(logger, "Service termination requested");
-
-	boost::asio::post(service, [&] {
-		shutdown();
-	});
+	shutdown();
 }
 
 opts::options_description Service::options() {
