@@ -69,7 +69,7 @@ void Service::initialise(const opts::variables_map& args, boost::asio::io_contex
 	);
 
 	LOG_INFO_SYNC(logger,"Initialising DAOs...");
-	auto user_dao = dal::user_dao(*ctx->conn_pool);
+	auto user_dao = dal::user_dao(*(*ctx->conn_pool));
 	ctx->user_dao = std::make_unique<decltype(user_dao)>(std::move(user_dao));
 
 	LOG_INFO_SYNC(logger, "Initialising account handler..."); 

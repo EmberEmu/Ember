@@ -33,7 +33,7 @@ class MySQLUserDAO final : public UserDAO {
 public:
 	MySQLUserDAO(T& pool)
 		: pool_(pool)
-		, driver_(pool->get_driver()) { }
+		, driver_(pool.get_driver()) { }
 
 	std::optional<User> user(const std::string& username) const override try {
 		std::string_view query = "SELECT u.username, u.id, u.s, u.v, u.pin_method, u.pin, "
@@ -43,7 +43,7 @@ public:
 		                         "LEFT JOIN suspensions s ON u.id = s.user_id "
 		                         "WHERE username = ?";
 
-		auto conn = pool_->try_acquire_for(5s);
+		auto conn = pool_.try_acquire_for(5s);
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
 		stmt->setString(1, username);
 		std::unique_ptr<sql::ResultSet> res(stmt->executeQuery());
@@ -68,7 +68,7 @@ public:
 
 	void save_survey(std::uint32_t account_id, std::uint32_t survey_id,
 	                 const std::string& data) const override try {
-		auto conn = pool_->try_acquire_for(5s);
+		auto conn = pool_.try_acquire_for(5s);
 		conn->setAutoCommit(false);
 
 		try {
@@ -108,7 +108,7 @@ public:
 		std::string_view query = "INSERT INTO login_history (user_id, ip) VALUES "
 		                         "((SELECT id AS user_id FROM users WHERE id = ?), ?)";
 
-		auto conn = pool_->try_acquire_for(5s);
+		auto conn = pool_.try_acquire_for(5s);
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
 		stmt->setUInt(1, account_id);
 		stmt->setString(2, ip);
@@ -127,7 +127,7 @@ public:
 		                         "WHERE u.id = ? AND c.deletion_date IS NULL "
 		                         "GROUP BY c.realm_id";
 		
-		auto conn = pool_->try_acquire_for(5s);
+		auto conn = pool_.try_acquire_for(5s);
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
 		stmt->setUInt(1, account_id);
 		std::unique_ptr<sql::ResultSet> res(stmt->executeQuery());

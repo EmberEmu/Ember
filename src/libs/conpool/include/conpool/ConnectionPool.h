@@ -105,6 +105,10 @@ public:
 	const auto operator->() const {
 		return base.get();
 	}
+
+	PoolInterface<Driver>& operator*() {
+		return *base;
+	}
 };
 
 template<typename Driver, typename ReusePolicy, typename GrowthPolicy, unsigned int size_hint = 32>
