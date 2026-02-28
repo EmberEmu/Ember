@@ -64,7 +64,7 @@ int main(int argc, const char* argv[]) try {
 	return EXIT_FAILURE;
 }
 
-int run(const opts::variables_map& args, log::Logger& logger, commands::PrefixedRegistry& cmd_register) try {
+int run(const opts::variables_map& args, log::Logger& logger, commands::PrefixedRegistry& cmd_register) {
 	boost::asio::io_context io_ctx;
 	boost::asio::signal_set signals(io_ctx, SIGINT, SIGTERM);
 
@@ -76,20 +76,19 @@ int run(const opts::variables_map& args, log::Logger& logger, commands::Prefixed
 		}
 
 		LOG_DEBUG_SYNC(logger, "Received signal {}({})", utility::sig_str(signal), signal);
-		signals.clear();
 		service.stop();
 	});
 
 	std::jthread worker([&]() {
 		thread::set_name("Signal handler");
-		io_ctx.run_one();
+		io_ctx.run();
 	});
 
 	thread::set_name("Service runner");
-	return service.run(args);
-} catch(const std::exception& e) {
-	LOG_FATAL(logger) << e.what() << LOG_SYNC;
-	return EXIT_FAILURE;
+	const auto result = service.run(args);
+
+	signals.cancel();
+	return result;
 }
 
 opts::variables_map parse_arguments(const int argc, const char* argv[]) {

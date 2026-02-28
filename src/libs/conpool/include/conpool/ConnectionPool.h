@@ -98,8 +98,12 @@ public:
 	Pool(std::unique_ptr<PoolInterface<Driver>> base)
 		: base(std::move(base)) {}
 
-	auto operator->() {
-		return base.get();
+	PoolInterface<Driver>& get() {
+		return *(base.get());
+	}
+
+	const PoolInterface<Driver>& get() const {
+		return *(base.get());
 	}
 
 	const auto operator->() const {

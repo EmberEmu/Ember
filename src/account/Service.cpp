@@ -11,8 +11,9 @@
 #include "AccountService.h"
 #include "AccountHandler.h"
 #include "FilterTypes.h"
-#include "Sessions.h"
+#include "InitHelpers.h"
 #include "LoggingCallbacks.h"
+#include "Sessions.h"
 #include <logger/Logger.h>
 #include <conpool/ConnectionPool.h>
 #include <conpool/Policies.h>
@@ -33,15 +34,12 @@ namespace opts = boost::program_options;
 
 namespace ember::account {
 
-connection_pool::Pool<drivers::DriverType> init_database(
-	const boost::program_options::variables_map& args, log::Logger& logger
-);
-
 Service::Service(log::Logger& logger, commands::PrefixedRegistry& cmd_register)
 	: logger(logger)
 	, cmd_register(cmd_register)
 	, start_time(std::chrono::steady_clock::now())
-	, service(BOOST_ASIO_CONCURRENCY_HINT_UNSAFE_IO) {}
+	, service(BOOST_ASIO_CONCURRENCY_HINT_UNSAFE_IO)
+	, stopping(false) {}
 
 int Service::run(const opts::variables_map& args) try {
 	initialise(args, service);
@@ -50,7 +48,7 @@ int Service::run(const opts::variables_map& args) try {
 	LOG_INFO_SYNC(logger, "{} shutting down...", APP_NAME);
 	return EXIT_SUCCESS;
 } catch(const std::exception& e) {
-	LOG_FATAL(logger) << e.what() << LOG_SYNC;
+	LOG_INFO_SYNC(logger, "{}", e.what());
 	return EXIT_FAILURE;
 }
 
@@ -69,7 +67,7 @@ void Service::initialise(const opts::variables_map& args, boost::asio::io_contex
 	);
 
 	LOG_INFO_SYNC(logger,"Initialising DAOs...");
-	auto user_dao = dal::user_dao(*(*ctx->conn_pool));
+	auto user_dao = dal::user_dao(ctx->conn_pool->get());
 	ctx->user_dao = std::make_unique<decltype(user_dao)>(std::move(user_dao));
 
 	LOG_INFO_SYNC(logger, "Initialising account handler..."); 
@@ -98,30 +96,17 @@ void Service::initialise(const opts::variables_map& args, boost::asio::io_contex
 	});
 }
 
-void Service::stop() {
-	LOG_TRACE_SYNC(logger, "Service termination requested");
-	context.reset();
+void Service::shutdown() {
+	auto ctx = context.get();
+	ctx->spark->shutdown();
+	ctx->conn_pool->get().close();
 }
 
-connection_pool::Pool<drivers::DriverType> init_database(const opts::variables_map& args, log::Logger& logger) {
-	using namespace connection_pool;
-
-	const auto& db_config_path = args["database.config_path"].as<std::string>();
-	auto driver(drivers::init_db_driver(db_config_path, "login"));
-	auto min_conns = args["database.min_connections"].as<unsigned short>();
-	auto max_conns = args["database.max_connections"].as<unsigned short>();
-
-	LOG_INFO_SYNC(logger, "Initialising database connection pool...");
-
-	auto pool = create<decltype(driver), CheckinClean, ExponentialGrowth>(
-		std::move(driver), min_conns, max_conns, 30s
-	);
-
-	pool->logging_callback([&](auto severity, auto message) {
-		pool_log_callback(severity, message, logger);
+void Service::stop() {
+	boost::asio::post(service, [&] {
+		LOG_TRACE_SYNC(logger, "Service termination requested");
+		shutdown();
 	});
-
-	return pool;
 }
 
 opts::options_description Service::options() {
