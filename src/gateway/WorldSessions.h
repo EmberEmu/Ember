@@ -8,27 +8,20 @@
 
 #pragma once
 
-#include <memory>
-#include <unordered_map>
+#include <boost/unordered/unordered_flat_map.hpp>
 
 namespace ember::gateway {
 
 class WorldConnection;
 
 class WorldSessions final {
-	struct WorldID {
-		unsigned int realm_id;
-		unsigned int map_id;
-		unsigned int instance_id;
-	};
-
-	std::unordered_map<WorldID, std::shared_ptr<WorldConnection>> connections_; // todo, change, concurrent
+	static inline thread_local std::unordered_map<unsigned int, WorldConnection*> connections_;
 
 public:
-	void add_world(WorldID id, const std::shared_ptr<WorldConnection>& connection);
-	void remove_world(WorldID id);
-	void remove_world(const std::shared_ptr<WorldConnection>& connection);
-	std::shared_ptr<WorldConnection> locate_world(WorldID id) const;
+	void insert(unsigned int map_id, WorldConnection* connection);
+	void erase(unsigned int map_id);
+	void erase(const WorldConnection* connection);
+	WorldConnection* find(unsigned int map_id) const;
 };
 
 } // gateway, ember
