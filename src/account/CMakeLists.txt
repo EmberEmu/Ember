@@ -14,6 +14,7 @@ set(LIBRARY_HDR
     AccountHandler.h
     Service.h
     LoggingCallbacks.h
+    ServiceContext.h
 )
 
 set(LIBRARY_SRC
@@ -21,6 +22,7 @@ set(LIBRARY_SRC
     Sessions.cpp
     AccountHandler.cpp
     Service.cpp
+    ServiceContext.cpp
 )
 
 include_directories(${SPARK_INCLUDES_DIR})

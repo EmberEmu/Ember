@@ -10,12 +10,13 @@ add_library(${LIBRARY_NAME} STATIC
     src/MySQL/Driver.cpp
     src/MySQL/Config.cpp
     src/DummyDriver.cpp
-    include/conpool/ConnectionPool.h
+    include/conpool/PoolImpl.h
     include/conpool/PoolManager.h
     include/conpool/Connection.h
     include/conpool/Policies.h
     include/conpool/Exception.h
     include/conpool/LogSeverity.h
+    include/conpool/ConnectionPool.h
     include/conpool/drivers/AutoSelect.h
     include/conpool/drivers/MySQL/Driver.h
     include/conpool/drivers/MySQL/Config.h

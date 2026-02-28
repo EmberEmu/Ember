@@ -8,10 +8,10 @@
 
 #pragma once
 
-#include "Policies.h"
-#include "Connection.h"
-#include "ConnectionPool.h"
-#include "LogSeverity.h"
+#include <conpool/Policies.h>
+#include <conpool/Connection.h>
+#include <conpool/PoolImpl.h>
+#include <conpool/LogSeverity.h>
 #include <thread/Spinlock.h>
 #include <thread/Utility.h>
 #include <atomic>
@@ -26,8 +26,8 @@
 #include <cstddef>
 
 #define POOL_LOG(sev, msg)               \
-if(pool_->log_cb_) {                     \
-	pool_->log_cb_(sev, std::move(msg)); \
+if(pool_->logger_) {                     \
+	pool_->logger_(sev, std::move(msg)); \
 }
 
 namespace ember::connection_pool {
@@ -36,11 +36,11 @@ namespace sc = std::chrono;
 using namespace std::chrono_literals;
 using namespace std::string_literals;
 
-template<typename Driver, typename ReusePolicy, typename GrowthPolicy, unsigned int> class Pool;
+template<typename Driver, typename ReusePolicy, typename GrowthPolicy, unsigned int> class PoolImpl;
 
 template<typename ConType, typename Driver, typename ReusePolicy, typename GrowthPolicy, unsigned int size_hint>
 class PoolManager final {
-	using ConnectionPool = Pool<Driver, ReusePolicy, GrowthPolicy, size_hint>*;
+	using ConnectionPool = PoolImpl<Driver, ReusePolicy, GrowthPolicy, size_hint>*;
 	ConnectionPool pool_;
 	thread::Spinlock exception_lock_;
 	sc::seconds interval_, max_idle_;

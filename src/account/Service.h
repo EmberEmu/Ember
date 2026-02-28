@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include "ServiceContext.h"
 #include <logger/LoggerFwd.h>
 #include <commands/PrefixedRegistry.h>
 #include <shared/utility/cstring_view.hpp>
@@ -15,30 +16,24 @@
 #include <boost/program_options/variables_map.hpp>
 #include <boost/program_options/options_description.hpp>
 #include <chrono>
-#include <exception>
-#include <semaphore>
 
 namespace ember::account {
 
 constexpr cstring_view APP_NAME { "Account Daemon" };
 
 class Service {
-	std::exception_ptr eptr;
-	std::binary_semaphore stop_flag { 0 };
-
 	log::Logger& logger;
 	commands::PrefixedRegistry& cmd_register;
 	std::chrono::steady_clock::time_point start_time;
+	boost::asio::io_context service;
+	ServiceContext context;
 
-	void launch(const boost::program_options::variables_map& args, boost::asio::io_context& service);
+	void initialise(const boost::program_options::variables_map& args, boost::asio::io_context& service);
 
 public:
 	static boost::program_options::options_description options();
 
-	explicit Service(log::Logger& logger, commands::PrefixedRegistry& cmd_register)
-		: logger(logger),
-		  cmd_register(cmd_register),
-		  start_time(std::chrono::steady_clock::now()) {}
+	Service(log::Logger& logger, commands::PrefixedRegistry& cmd_register);
 
 	~Service() {
 		stop();
