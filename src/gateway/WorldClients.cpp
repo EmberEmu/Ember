@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2024 Ember
+ * Copyright (c) 2016 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -10,19 +10,19 @@
 
 namespace ember::gateway {
 
-void WorldClients::add(boost::uuids::uuid uuid, const std::shared_ptr<ClientConnection>& client) {
-
+void WorldClients::insert(boost::uuids::uuid uuid, ClientConnection* connection) {
+	connections_.insert_or_assign(uuid, connection);
 }
 
-void WorldClients::remove(boost::uuids::uuid uuid) {
-
+void WorldClients::erase(boost::uuids::uuid uuid) {
+	connections_.erase(uuid);
 }
 
-void WorldClients::remove(const std::shared_ptr<ClientConnection>& client) {
+ClientConnection* WorldClients::find(boost::uuids::uuid uuid) const {
+	if(auto it = connections_.find(uuid); it != connections_.end()) {
+		return it->second;
+	}
 
-}
-
-std::shared_ptr<ClientConnection> WorldClients::locate(boost::uuids::uuid uuid) const {
 	return nullptr;
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2024 Ember
+ * Copyright (c) 2016 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,28 +8,22 @@
 
 #pragma once
 
+#include "ClientConnection.h"
 #include <boost/uuid/uuid.hpp>
+#include <boost/unordered/unordered_flat_map.hpp>
 #include <memory>
-#include <map>
 
 namespace ember::gateway {
 
 class ClientConnection;
 
 class WorldClients final {
-	struct Client {
-		unsigned map_id;
-		std::shared_ptr<ClientConnection> connection;
-	};
-
-	std::map<boost::uuids::uuid, Client> clients_; // todo, use a concurrent map
+	static inline thread_local boost::unordered_flat_map<boost::uuids::uuid, ClientConnection*> connections_;
 
 public:
-	void add(boost::uuids::uuid uuid, const std::shared_ptr<ClientConnection>& client);
-	void remove(boost::uuids::uuid uuid);
-	void remove(const std::shared_ptr<ClientConnection>& client);
-	std::shared_ptr<ClientConnection> locate(boost::uuids::uuid uuid) const;
-
+	void insert(boost::uuids::uuid uuid, ClientConnection* connection);
+	void erase(boost::uuids::uuid uuid);
+	ClientConnection* find(boost::uuids::uuid uuid) const;
 };
 
 } // gateway, ember
