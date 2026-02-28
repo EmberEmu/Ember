@@ -40,8 +40,8 @@ int run(const opts::variables_map& args, log::Logger& logger, commands::Prefixed
  * from them.
  */
 int main(int argc, const char* argv[]) try {
-	print_banner(account::APP_NAME);
-	utility::set_window_title(account::APP_NAME);
+	print_banner(account::app_name);
+	utility::set_window_title(account::app_name);
 
 	const auto args = parse_arguments(argc, argv);
 
@@ -57,7 +57,7 @@ int main(int argc, const char* argv[]) try {
 	utility::register_shared_commands(registry, logger);
 
 	const auto ret = run(args, logger, cmd_register);
-	LOG_INFO_SYNC(logger, "{} terminated (returned '{}')", account::APP_NAME, ret);
+	LOG_INFO_SYNC(logger, "{} terminated (returned '{}')", account::app_name, ret);
 	return ret;
 } catch(const std::exception& e) {
 	std::cerr << e.what();

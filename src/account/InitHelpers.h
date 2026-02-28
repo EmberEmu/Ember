@@ -10,7 +10,8 @@
 
 #include "LoggingCallbacks.h"
 #include <conpool/ConnectionPool.h>
-#include <conpool/Drivers/AutoSelect.h>
+#include <conpool/Policies.h>
+#include <conpool/drivers/AutoSelect.h>
 #include <logger/Logger.h>
 #include <boost/program_options/variables_map.hpp>
 

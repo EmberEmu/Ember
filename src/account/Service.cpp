@@ -12,12 +12,8 @@
 #include "AccountHandler.h"
 #include "FilterTypes.h"
 #include "InitHelpers.h"
-#include "LoggingCallbacks.h"
 #include "Sessions.h"
 #include <logger/Logger.h>
-#include <conpool/ConnectionPool.h>
-#include <conpool/Policies.h>
-#include <conpool/drivers/AutoSelect.h>
 #include <shared/database/daos/UserDAO.h>
 #include <shared/metrics/MetricsImpl.h>
 #include <shared/metrics/Monitor.h>
@@ -44,7 +40,7 @@ int Service::run(const opts::variables_map& args) try {
 	initialise(args, service);
 	service.run();
 
-	LOG_INFO_SYNC(logger, "{} shutting down...", APP_NAME);
+	LOG_INFO_SYNC(logger, "{} shutting down...", app_name);
 	return EXIT_SUCCESS;
 } catch(const std::exception& e) {
 	LOG_INFO_SYNC(logger, "{}", e.what());
@@ -90,7 +86,7 @@ void Service::initialise(const opts::variables_map& args, boost::asio::io_contex
 
 	// All done setting up
 	boost::asio::dispatch(service, [&]() {
-		LOG_INFO_SYNC(logger, "{} started successfully in {}", APP_NAME,
+		LOG_INFO_SYNC(logger, "{} started successfully in {}", app_name,
 			utility::start_time_format(start_time));
 	});
 }
@@ -102,8 +98,9 @@ void Service::shutdown() {
 }
 
 void Service::stop() {
+	LOG_TRACE_SYNC(logger, "Service termination requested");
+
 	boost::asio::post(service, [&] {
-		LOG_TRACE_SYNC(logger, "Service termination requested");
 		shutdown();
 	});
 }

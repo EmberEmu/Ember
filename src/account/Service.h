@@ -9,17 +9,17 @@
 #pragma once
 
 #include "ServiceContext.h"
-#include <logger/LoggerFwd.h>
 #include <commands/PrefixedRegistry.h>
+#include <logger/LoggerFwd.h>
 #include <shared/utility/cstring_view.hpp>
 #include <boost/asio/io_context.hpp>
-#include <boost/program_options/variables_map.hpp>
 #include <boost/program_options/options_description.hpp>
+#include <boost/program_options/variables_map.hpp>
 #include <chrono>
 
 namespace ember::account {
 
-constexpr cstring_view APP_NAME { "Account Daemon" };
+constexpr cstring_view app_name { "Account Daemon" };
 
 class Service {
 	log::Logger& logger;
