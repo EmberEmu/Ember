@@ -9,9 +9,11 @@
 #include "Service.h"
 #include "MapRunner.h"
 #include "utilities/Utility.h"
+#include "WorldRPCServer.h"
 #include <logger/Logger.h>
 #include <dbcreader/Reader.h>
 #include <shared/utility/Utility.h>
+#include <spark/Server.h>
 #include <boost/program_options.hpp>
 #include <vector>
 #include <cstdint>
@@ -51,6 +53,14 @@ int Service::run(const boost::program_options::variables_map& args) {
 	// All done setting up
 	LOG_INFO_SYNC(logger, "{} started successfully in {}", APP_NAME,
 		utility::start_time_format(start_time));
+
+	// temporary bits
+	boost::asio::io_context context;
+	const auto interface = args["spark.address"].as<std::string>();
+	const auto port = args["spark.port"].as<std::uint16_t>();
+
+	spark::Server spark(context, APP_NAME, interface, port, logger);
+	WorldRPCServer rpc_server(spark, logger);
 
 	map::run(logger);
 

@@ -11,6 +11,7 @@ set(LIBRARY_HDR
     Service.h
     MapRunner.h
     Watchdog.h
+    WorldRPCServer.h
     utilities/DeltaTimer.h
     utilities/Utility.h
 )
@@ -19,6 +20,7 @@ set(LIBRARY_SRC
     Service.cpp
     MapRunner.cpp
     Watchdog.cpp
+    WorldRPCServer.cpp
     utilities/DeltaTimer.cpp
     utilities/Utility.cpp
 )
