@@ -1,0 +1,66 @@
+/*
+ * Copyright (c) 2026 Ember
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
+
+namespace ember.rpc.World;
+
+table RequestStatus {}
+
+enum ErrorCode : short {
+	success
+}
+
+table Result {
+	result:ErrorCode;
+}
+
+table Status {
+	population:uint;
+}
+
+table RegisterWorld {
+	uuid:uint; // temp
+	realm_id:uint;
+	map_id:uint;
+	instance_id:uint;
+}
+
+table RemoveWorld {
+	uuid:uint; // temp
+}
+
+table PlayerEnter {
+	character_id:uint;
+}
+
+table PlayerLeave {
+	character_id:uint;
+}
+
+union Message {
+	RequestStatus,
+	Status,
+	RegisterWorld,
+	RemoveWorld,
+	Result,
+	PlayerEnter,
+	PlayerLeave
+}
+
+table Envelope {
+	message: Message;
+}
+
+root_type Envelope;
+
+rpc_service World {
+	get_status(RequestStatus):Status;
+	register_world(RegisterWorld):Result;
+	remove_world(RemoveWorld):Result;
+	player_enter(PlayerEnter):Result;
+	player_leave(PlayerLeave):Result;
+}

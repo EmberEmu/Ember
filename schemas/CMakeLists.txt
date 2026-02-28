@@ -1,4 +1,4 @@
-# Copyright (c) 2016 - 2024 Ember
+# Copyright (c) 2016 - 2026 Ember
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,6 +11,7 @@ set(SERVICE_SCHEMAS
     ${CMAKE_CURRENT_SOURCE_DIR}/spark/services/Character.fbs
     ${CMAKE_CURRENT_SOURCE_DIR}/spark/services/Realm.fbs
     ${CMAKE_CURRENT_SOURCE_DIR}/spark/services/Discovery.fbs
+    ${CMAKE_CURRENT_SOURCE_DIR}/spark/services/World.fbs
 )
 
 set(FB_SCHEMAS
