@@ -11,15 +11,15 @@
 namespace ember::gateway {
 
 void WorldClients::insert(boost::uuids::uuid uuid, ClientConnection* connection) {
-	connections_.insert_or_assign(uuid, connection);
+	connections.insert_or_assign(uuid, connection);
 }
 
 void WorldClients::erase(boost::uuids::uuid uuid) {
-	connections_.erase(uuid);
+	connections.erase(uuid);
 }
 
-ClientConnection* WorldClients::find(boost::uuids::uuid uuid) const {
-	if(auto it = connections_.find(uuid); it != connections_.end()) {
+ClientConnection* WorldClients::find(boost::uuids::uuid uuid) {
+	if(auto it = connections.find(uuid); it != connections.end()) {
 		return it->second;
 	}
 

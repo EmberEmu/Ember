@@ -8,16 +8,30 @@
 
 #pragma once
 
+#include "WorldClients.h"
+#include <boost/asio/awaitable.hpp>
+#include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/tcp.hpp>
-#include <memory>
+#include <string_view>
+#include <cstdint>
 
 namespace ember::gateway {
 
-class WorldConnection final : std::enable_shared_from_this<WorldConnection> {
+class WorldConnection final {
+	bool stopped_;
+
 	boost::asio::ip::tcp::socket socket_;
 
+	boost::asio::awaitable<void> resolve(boost::asio::io_context& service, std::string host, std::string port);
+	boost::asio::awaitable<void> connect(const boost::asio::ip::tcp::resolver::results_type& results);
+	boost::asio::awaitable<void> receive();
+	boost::asio::awaitable<void> send();
+
 public:
-	explicit WorldConnection(boost::asio::io_context& service) : socket_(service) { }
+	WorldConnection(boost::asio::io_context& service, std::string host, std::string port);
+	~WorldConnection();
+
+	void shutdown();
 };
 
 } // gateway, ember

@@ -51,7 +51,6 @@ void run(log::Logger& log) {
 	 */
 	if(!timer_guard.success()) {
 		const auto src = std::source_location::current();
-
 		LOG_ERROR_ASYNC(log, "{}:{} - failed to set time period", src.file_name(), src.line());
 	}
 
