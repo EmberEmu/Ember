@@ -96,6 +96,7 @@ void Service::initialise(const opts::variables_map& args, boost::asio::io_contex
 
 void Service::shutdown() {
 	auto ctx = context.get();
+	ctx->thread_pool->shutdown();
 	ctx->spark->shutdown();
 	ctx->conn_pool->get().close();
 }
