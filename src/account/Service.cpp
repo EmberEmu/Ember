@@ -50,15 +50,6 @@ int Service::run(const opts::variables_map& args) try {
 void Service::initialise(const opts::variables_map& args, boost::asio::io_context& service) {
 	auto ctx = context.get();
 	
-	const auto concurrency = thread::hardware_concurrency([&](auto msg) {
-		LOG_ERROR_SYNC(logger, "{}", msg);
-	});
-
-	LOG_INFO_SYNC(logger, "Starting thread pool with {} threads...", concurrency);
-	ctx->thread_pool = std::make_unique<thread::ThreadPool>(
-		concurrency
-	);
-
 	LOG_INFO_SYNC(logger, "Initialising database driver...");
 	ctx->conn_pool = std::make_unique<connection_pool::Pool<drivers::DriverType>>(
 		init_database(args, logger)
@@ -67,6 +58,15 @@ void Service::initialise(const opts::variables_map& args, boost::asio::io_contex
 	LOG_INFO_SYNC(logger,"Initialising DAOs...");
 	auto user_dao = dal::user_dao(ctx->conn_pool->get());
 	ctx->user_dao = std::make_unique<decltype(user_dao)>(std::move(user_dao));
+
+	const auto concurrency = thread::hardware_concurrency([&](auto msg) {
+		LOG_ERROR_SYNC(logger, "{}", msg);
+	});
+
+	LOG_INFO_SYNC(logger, "Starting thread pool with {} threads...", concurrency);
+	ctx->thread_pool = std::make_unique<thread::ThreadPool>(
+		concurrency
+	);
 
 	LOG_INFO_SYNC(logger, "Initialising account handler..."); 
 	ctx->account_handler = std::make_unique<AccountHandler>(
