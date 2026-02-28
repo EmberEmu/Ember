@@ -31,7 +31,9 @@ class MySQLUserDAO final : public UserDAO {
 	drivers::MySQL* driver_;
 
 public:
-	MySQLUserDAO(T& pool) : pool_(pool), driver_(pool.get_driver()) { }
+	MySQLUserDAO(T& pool)
+		: pool_(pool)
+		, driver_(pool.get_driver()) { }
 
 	std::optional<User> user(const std::string& username) const override try {
 		std::string_view query = "SELECT u.username, u.id, u.s, u.v, u.pin_method, u.pin, "

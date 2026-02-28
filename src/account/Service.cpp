@@ -7,15 +7,13 @@
  */
 
 #include "Service.h"
+#include "ServiceContextImpl.h"
 #include "AccountService.h"
 #include "AccountHandler.h"
 #include "FilterTypes.h"
+#include "InitHelpers.h"
 #include "Sessions.h"
-#include "LoggingCallbacks.h"
 #include <logger/Logger.h>
-#include <conpool/ConnectionPool.h>
-#include <conpool/Policies.h>
-#include <conpool/drivers/AutoSelect.h>
 #include <shared/database/daos/UserDAO.h>
 #include <shared/metrics/MetricsImpl.h>
 #include <shared/metrics/Monitor.h>
@@ -24,9 +22,6 @@
 #include <shared/utility/Utility.h>
 #include <spark/Server.h>
 #include <boost/asio/dispatch.hpp>
-#include <boost/asio/executor_work_guard.hpp>
-#include <string_view>
-#include <thread>
 #include <cstddef>
 #include <cstdlib>
 #include <cstdint>
@@ -35,91 +30,83 @@ namespace opts = boost::program_options;
 
 namespace ember::account {
 
-/*
- * Starts Asio worker threads, blocking until the launch thread exits
- * upon error or signal handling.
- * 
- * io_context is only stopped after the thread joins to ensure that all
- * services can cleanly shut down upon destruction without requiring
- * explicit shutdown() calls in a signal handler.
- */
+Service::Service(log::Logger& logger, commands::PrefixedRegistry& cmd_register)
+	: logger(logger)
+	, cmd_register(cmd_register)
+	, start_time(std::chrono::steady_clock::now())
+	, service(BOOST_ASIO_CONCURRENCY_HINT_UNSAFE_IO) {}
+
 int Service::run(const opts::variables_map& args) try {
-	boost::asio::io_context service(BOOST_ASIO_CONCURRENCY_HINT_UNSAFE_IO);
-	auto work = boost::asio::make_work_guard(service);
+	initialise(args, service);
+	service.run();
 
-	std::thread thread([&]() {
-		thread::set_name("Launcher");
-		launch(args, service);
-	});
-
-	std::jthread worker(static_cast<std::size_t(boost::asio::io_context::*)()>
-		(&boost::asio::io_context::run), &service);
-	thread::set_name(worker, "Asio Worker");
-
-	thread.join();
-	service.stop();
-
-	if(eptr) {
-		std::rethrow_exception(eptr);
-	}
-
+	LOG_INFO_SYNC(logger, "{} shutting down...", app_name);
 	return EXIT_SUCCESS;
 } catch(const std::exception& e) {
-	LOG_FATAL(logger) << e.what() << LOG_SYNC;
+	LOG_FATAL_SYNC(logger, "{}", e.what());
 	return EXIT_FAILURE;
 }
 
-void Service::launch(const opts::variables_map& args, boost::asio::io_context& service) try {
-	constexpr auto concurrency = 1u; // temp
-	LOG_INFO_SYNC(logger, "Starting thread pool with {} threads...", concurrency);
-	thread::ThreadPool thread_pool(concurrency);
-
+void Service::initialise(const opts::variables_map& args, boost::asio::io_context& service) {
+	auto ctx = context.get();
+	
 	LOG_INFO_SYNC(logger, "Initialising database driver...");
-	const auto& db_config_path = args["database.config_path"].as<std::string>();
-	auto driver(drivers::init_db_driver(db_config_path, "login"));
-	auto min_conns = args["database.min_connections"].as<unsigned short>();
-	auto max_conns = args["database.max_connections"].as<unsigned short>();
-
-	LOG_INFO_SYNC(logger, "Initialising database connection pool...");
-
-	connection_pool::Pool<decltype(driver), connection_pool::CheckinClean, connection_pool::ExponentialGrowth> pool(
-		driver, min_conns, max_conns, 30s
+	ctx->conn_pool = std::make_unique<connection_pool::Pool<drivers::DriverType>>(
+		init_database(args, logger)
 	);
 
-	pool.logging_callback([&](auto severity, auto message) {
-		pool_log_callback(severity, message, logger);
+	LOG_INFO_SYNC(logger,"Initialising DAOs...");
+	auto user_dao = dal::user_dao(ctx->conn_pool->get());
+	ctx->user_dao = std::make_unique<decltype(user_dao)>(std::move(user_dao));
+
+	const auto concurrency = thread::hardware_concurrency([&](auto msg) {
+		LOG_ERROR_SYNC(logger, "{}", msg);
 	});
 
-	LOG_INFO_SYNC(logger,"Initialising DAOs...");
-	auto user_dao = dal::user_dao(pool);
+	LOG_INFO_SYNC(logger, "Starting thread pool with {} threads...", concurrency);
+	ctx->thread_pool = std::make_unique<thread::ThreadPool>(
+		concurrency
+	);
 
 	LOG_INFO_SYNC(logger, "Initialising account handler..."); 
-	AccountHandler handler(user_dao, thread_pool);
+	ctx->account_handler = std::make_unique<AccountHandler>(
+		*ctx->user_dao, *ctx->thread_pool
+	);
 
 	LOG_INFO_SYNC(logger, "Starting RPC services...");
+	ctx->sessions = std::make_unique<Sessions>(true);
+
 	const auto& s_address = args["spark.address"].as<std::string>();
 	auto s_port = args["spark.port"].as<std::uint16_t>();
 
-	Sessions sessions(true);
+	ctx->spark = std::make_unique<spark::Server>(
+		service, "account", s_address, s_port, logger
+	);
 
-	spark::Server spark(service, "account", s_address, s_port, logger);
-	AccountService acct_service(spark, handler, sessions, logger);
+	ctx->account_service = std::make_unique<AccountService>(
+		*ctx->spark, *ctx->account_handler, *ctx->sessions, logger
+	);
 
 	// All done setting up
 	boost::asio::dispatch(service, [&]() {
-		LOG_INFO_SYNC(logger, "{} started successfully in {}", APP_NAME,
+		LOG_INFO_SYNC(logger, "{} started successfully in {}", app_name,
 			utility::start_time_format(start_time));
 	});
+}
 
-	stop_flag.acquire();
-
-	LOG_INFO_SYNC(logger, "{} shutting down...", APP_NAME);
-} catch(...) {
-	eptr = std::current_exception();
+void Service::shutdown() {
+	auto ctx = context.get();
+	ctx->thread_pool->shutdown();
+	ctx->spark->shutdown();
+	ctx->conn_pool->get().close();
 }
 
 void Service::stop() {
-	stop_flag.release();
+	LOG_TRACE_SYNC(logger, "Service termination requested");
+
+	boost::asio::post(service, [&] {
+		shutdown();
+	});
 }
 
 opts::options_description Service::options() {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 - 2026 Ember
+ * Copyright (c) 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,339 +8,120 @@
 
 #pragma once
 
-#include "Connection.h"
-#include "PoolManager.h"
-#include "Policies.h"
-#include "Exception.h"
-#include "LogSeverity.h"
-#include <thread/Semaphore.h>
-#include <thread/Spinlock.h>
-#include <boost/assert.hpp>
-#include <boost/container/small_vector.hpp>
-#include <optional>
+#include <conpool/PoolImpl.h>
+#include <memory>
 #include <utility>
-#include <functional>
-#include <future>
-#include <list>
-#include <exception>
-#include <string>
-#include <mutex>
-#include <chrono>
-#include <atomic>
-#include <vector>
-#include <cstddef>
-
-#define POOL_LOG(sev, msg)        \
-if(log_cb_) {                     \
-	log_cb_(sev, std::move(msg)); \
-}
 
 namespace ember::connection_pool {
 
-namespace sc = std::chrono;
-using namespace std::chrono_literals;
-using namespace std::string_literals;
+template<typename Driver>
+struct PoolInterface {
+	using ConType = typename Driver::ConnectionType;
 
-template<typename ConType, typename Driver, typename ReusePolicy, typename GrowthPolicy, unsigned int> class PoolManager;
+	virtual ~PoolInterface () = default;
+
+	virtual void logging_callback(LoggingCallback&& callback) = 0;
+	virtual void close() = 0;
+	virtual std::optional<Connection<ConType>> try_acquire() = 0;
+	virtual Connection<ConType> acquire() = 0;
+	virtual Connection<ConType> try_acquire_for(std::chrono::milliseconds duration) = 0;
+	virtual void return_connection(Connection<ConType>& connection) = 0;
+	virtual std::size_t size() const = 0;
+	virtual bool dirty() const = 0;
+	virtual bool checked_out() const = 0;
+	virtual Driver* get_driver() = 0;
+	virtual const Driver* get_driver() const = 0;
+};
 
 template<typename Driver, typename ReusePolicy, typename GrowthPolicy, unsigned int size_hint = 32>
-class Pool final : private ReusePolicy, private GrowthPolicy {
-	template<typename, typename, typename, typename, unsigned int>
-	friend class PoolManager;
+class PoolProxy final : public PoolInterface<Driver> {
+	PoolImpl<Driver, ReusePolicy, GrowthPolicy, size_hint> impl;
 
-	using ConType = typename Driver::ConnectionType;
-	using ReusePolicy::return_clean;
-	using GrowthPolicy::grow;
-
-	PoolManager<ConType, Driver, ReusePolicy, GrowthPolicy, size_hint> manager_;
-	Driver& driver_;
-	const std::size_t min_, max_;
-	std::atomic<std::size_t> size_;
-	thread::Spinlock lock_;
-	boost::container::small_vector<ConnDetail<ConType>, size_hint> pool_;
-	boost::container::small_vector<std::atomic<bool>, size_hint> pool_guards_;
-
-	thread::Semaphore<std::mutex> semaphore_;
-	std::function<void(Severity, std::string)> log_cb_;
-	std::atomic_bool closed_;
-
-	void set_connection_ids() {
-		unsigned int connection_id = 0;
-
-		for(auto& connection : pool_) {
-			connection.id = connection_id;
-			++connection_id;
-		}
-	}
-
-	void open_connections(std::size_t num)  {
-		boost::container::small_vector<std::future<ConType>, size_hint> futures;
-		futures.reserve(num);
-
-		for(std::size_t i = 0; i < num; ++i) {
-			auto f = std::async(std::launch::async, [](Driver* driver) {
-				return driver->open();
-			}, &driver_);
-
-			futures.emplace_back(std::move(f));
-		}
-
-		auto pool_it = pool_.begin();
-
-		for(auto& f : futures) {
-			while(!pool_it->empty_slot) {
-				++pool_it;
-				BOOST_ASSERT_MSG(pool_it != pool_.end(), "Exceeded maximum database connection count.");
-			}
-
-			*pool_it = std::move(ConnDetail<ConType>(f.get(), pool_it->id));
-			++size_;
-			semaphore_.release();
-		}
-	}
-
-	bool find_free_connection(ConnDetail<ConType>& cd) {
-		bool checked_out = pool_guards_[cd.id].load(std::memory_order_relaxed);
-
-		if(checked_out) {
-			return false;
-		}
-
-		std::atomic_thread_fence(std::memory_order_acquire);
-
-		if(!cd.error && !cd.sweep && !cd.empty_slot) {
-			if(cd.dirty && !return_clean()) {
-				try {
-					if(driver_.clean(cd.conn)) {
-						cd.dirty = false;
-					} else {
-						cd.sweep = true;
-						return false;
-					}
-				} catch(const std::exception& e) {
-					POOL_LOG(Severity::debug, "On connection clean: "s + e.what());
-					return false;
-				}
-			}
-
-			cd.checked_out = true;
-			cd.idle = 0s;
-			pool_guards_[cd.id].store(true, std::memory_order_relaxed);
-			return true;
-		}
-
-		return false;
-	}
-	
-	std::optional<Connection<ConType>> get_connection() {
-		driver_.thread_enter();
-
-#ifdef DEBUG_NO_THREADS
-		manager_.run();
-#endif
-		manager_.check_exceptions();
-
-		std::unique_lock guard(lock_);
-
-		auto res = std::ranges::find_if(pool_, [&](auto& arg) {
-			return find_free_connection(arg);
-		});
-
-		if(res == pool_.end()) {
-			open_connections(grow(size(), max_));
-
-			res = std::ranges::find_if(pool_, [&](auto& arg) {
-				return find_free_connection(arg);
-			});
-			
-			if(res == pool_.end()) {
-				return std::nullopt;
-			}
-		}
-
-		guard.unlock();
-
-		return Connection<ConType>([this](Connection<ConType>& arg) {
-			this->return_connection(arg);
-		}, *res);
-	}
-	
 public:
-	Pool(Driver& driver, std::size_t min_size, std::size_t max_size,
-	     sc::seconds max_idle, sc::seconds interval = 15s)
-		: driver_(driver),
-		  min_(min_size),
-	      max_(max_size),
-		  manager_(this, interval, max_idle),
-		  pool_(max_size),
-		  pool_guards_(max_size),
-		  size_(0),
-		  closed_(false) {
-		driver_.thread_enter();
+	using ConType = typename Driver::ConnectionType;
 
-		if(!max_size) {
-			throw exception("Max. database connections cannot be zero");
-		}
+	PoolProxy(Driver&& driver, auto&&... args)
+		: impl(std::forward<Driver>(driver), std::forward<decltype(args)>(args)...) {}
 
-		if(min_size > max_size) {
-			throw exception("Min. database connections must be <= max.");
-		}
-
-		set_connection_ids();
-		open_connections(min_);
-		manager_.start();
+	void logging_callback(LoggingCallback&& callback) override {
+		impl.logging_callback(std::move(callback));
 	}
 
-	~Pool() {
-		if(closed_) {
-			return;
-		}
-
-		manager_.stop();
-
-		for(auto& c : pool_) {
-			if(c.empty_slot) {
-				continue;
-			}
-
-			BOOST_ASSERT_MSG(!c.checked_out, "Closed connection pool without returning all connections.");
-
-			try {
-				driver_.close(c.conn);
-			} catch(const std::exception& e) { 
-				POOL_LOG(Severity::error, "Closing pool, driver threw: "s + e.what());
-			}
-		}
-
-		driver_.thread_exit();
+	void close() override {
+		impl.close();
 	}
 
-	void close() {
-		if(closed_) {
-			throw exception("Closed the same connection pool twice!");
-		}
-
-		closed_ = true;
-		int active = 0;
-
-		manager_.stop();
-
-		for(auto& c : pool_) {
-			if(c.empty_slot) {
-				continue;
-			}
-
-			if(c.checked_out) {
-				++active;
-				continue;
-			}
-
-			driver_.close(c.conn);
-		}
-
-		if(active) {
-			throw active_connections(active);
-		}
+	std::optional<Connection<ConType>> try_acquire() override {
+		return impl.try_acquire();
 	}
 
-	std::optional<Connection<ConType>> try_acquire() {
-		std::optional<Connection<ConType>> conn(get_connection());
-
-		if(!conn) {
-			return std::nullopt;
-		}
-
-		return conn;
+	Connection<ConType> acquire() override {
+		return impl.acquire();
 	}
 
-	/*
-	 * This function checks for a connection in a loop because being woken up
-	 * from acquire doesn't guarantee that a connection will be available for the
-	 * thread, only that a connection has been added to the pool/made available
-	 * for reuse.
-	 */
-	Connection<ConType> acquire() {
-		std::optional<Connection<ConType>> conn;
-		
-		while(!(conn = get_connection())) {
-			semaphore_.acquire();
-		}
-
-		return std::move(conn.value());
+	Connection<ConType> try_acquire_for(std::chrono::milliseconds duration) override {
+		return impl.try_acquire_for(duration);
 	}
 
-	/*
-	 * This function handles its own timing because being woken up from try_acquire_for
-	 * doesn't guarantee that a connection will be available for the thread,
-	 * only that a connection has been added to the pool/made available for reuse.
-	 * Therefore, if the thread is woken up, it will check for a connection. If none
-	 * are available, it will wait for the next notification and keep trying until
-	 * either the time has elapsed or it manages to get a connection.
-	 */
-	Connection<ConType> try_acquire_for(std::chrono::milliseconds duration) {
-		auto start = sc::high_resolution_clock::now();
-		std::optional<Connection<ConType>> conn;
-
-		while(!(conn = get_connection())) {
-			sc::milliseconds elapsed = sc::duration_cast<sc::milliseconds>
-				(sc::high_resolution_clock::now() - start);
-			
-			if(elapsed >= duration) {
-				throw no_free_connections();
-			}
-
-			// If no connections are added while we're waiting, give up
-			if(!semaphore_.try_acquire_for(duration - elapsed)) {
-				throw no_free_connections();
-			}
-		}
-
-		return std::move(conn.value());
+	void return_connection(Connection<ConType>& connection) override {
+		return impl.return_connection(connection);
 	}
 
-	void return_connection(Connection<ConType>& connection) {
-		auto& detail = connection.detail_.get();
-
-		if(return_clean()) {
-			if(!driver_.clean(detail.conn)) {
-				detail.dirty = true;
-				detail.sweep = true;
-			}
-		} else {
-			detail.dirty = true;
-		}
-
-		connection.released_ = true;
-		detail.checked_out = false;
-		std::atomic_thread_fence(std::memory_order_release);
-		pool_guards_[detail.id].store(false, std::memory_order_relaxed);
-
-		driver_.thread_exit();
-		manager_.check_exceptions();
-		semaphore_.release();
+	std::size_t size() const override {
+		return impl.size();
 	}
 
-	std::size_t size() const {
-		return size_;
+	bool dirty() const override {
+		return impl.dirty();
 	}
 
-	void logging_callback(std::function<void(Severity, std::string)> callback) {
-		log_cb_ = callback;
+	bool checked_out() const override {
+		return impl.checked_out();
 	}
 
-	auto dirty() const {
-		return std::ranges::count_if(pool_, [](const auto& c) { return c.dirty; });
+	Driver* get_driver() override {
+		return impl.get_driver();
 	}
 
-	auto checked_out() const {
-		return std::ranges::count_if(pool_, [](const auto& c) { return c.checked_out; });
-	}
-
-	Driver* get_driver() const {
-		return &driver_;
+	const Driver* get_driver() const override {
+		return impl.get_driver();
 	}
 };
 
-} // connection_pool, ember
+template<typename Driver>
+struct Pool {
+	std::unique_ptr<PoolInterface<Driver>> base;
 
-#undef POOL_LOG
+public:
+	Pool() = default;
+
+	Pool(std::unique_ptr<PoolInterface<Driver>> base)
+		: base(std::move(base)) {}
+
+	PoolInterface<Driver>& get() {
+		return *(base.get());
+	}
+
+	const PoolInterface<Driver>& get() const {
+		return *(base.get());
+	}
+
+	const auto operator->() const {
+		return base.get();
+	}
+
+	PoolInterface<Driver>& operator*() {
+		return *base;
+	}
+};
+
+template<typename Driver, typename ReusePolicy, typename GrowthPolicy, unsigned int size_hint = 32>
+static inline auto create(Driver driver, auto&& ...args) {
+	return Pool<Driver> {
+		std::make_unique<PoolProxy<Driver, ReusePolicy, GrowthPolicy, size_hint>>(
+			std::forward<Driver>(driver), std::forward<decltype(args)>(args)...
+		)
+	};
+}
+
+} // connection_pool, ember

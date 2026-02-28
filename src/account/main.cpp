@@ -40,8 +40,8 @@ int run(const opts::variables_map& args, log::Logger& logger, commands::Prefixed
  * from them.
  */
 int main(int argc, const char* argv[]) try {
-	print_banner(account::APP_NAME);
-	utility::set_window_title(account::APP_NAME);
+	print_banner(account::app_name);
+	utility::set_window_title(account::app_name);
 
 	const auto args = parse_arguments(argc, argv);
 
@@ -57,14 +57,14 @@ int main(int argc, const char* argv[]) try {
 	utility::register_shared_commands(registry, logger);
 
 	const auto ret = run(args, logger, cmd_register);
-	LOG_INFO_SYNC(logger, "{} terminated (returned '{}')", account::APP_NAME, ret);
+	LOG_INFO_SYNC(logger, "{} terminated (returned '{}')", account::app_name, ret);
 	return ret;
 } catch(const std::exception& e) {
 	std::cerr << e.what();
 	return EXIT_FAILURE;
 }
 
-int run(const opts::variables_map& args, log::Logger& logger, commands::PrefixedRegistry& cmd_register) try {
+int run(const opts::variables_map& args, log::Logger& logger, commands::PrefixedRegistry& cmd_register) {
 	boost::asio::io_context io_ctx;
 	boost::asio::signal_set signals(io_ctx, SIGINT, SIGTERM);
 
@@ -76,21 +76,19 @@ int run(const opts::variables_map& args, log::Logger& logger, commands::Prefixed
 		}
 
 		LOG_DEBUG_SYNC(logger, "Received signal {}({})", utility::sig_str(signal), signal);
-		signals.clear();
 		service.stop();
 	});
 
 	std::jthread worker([&]() {
 		thread::set_name("Signal handler");
-		io_ctx.run_one();
+		io_ctx.run();
 	});
 
-	const auto ret = service.run(args);
+	thread::set_name("Service runner");
+	const auto result = service.run(args);
+
 	signals.cancel();
-	return ret;
-} catch(const std::exception& e) {
-	LOG_FATAL(logger) << e.what() << LOG_SYNC;
-	return EXIT_FAILURE;
+	return result;
 }
 
 opts::variables_map parse_arguments(const int argc, const char* argv[]) {

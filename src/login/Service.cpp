@@ -184,8 +184,8 @@ void Service::launch(const opts::variables_map& args, boost::asio::io_context& s
 	}
 
 	LOG_INFO_SYNC(logger, "Initialising database connection pool...");
-	ep::Pool<decltype(driver), ep::CheckinClean, ep::ExponentialGrowth> pool(
-		driver, min_conns, max_conns, 30s
+	ep::PoolImpl<decltype(driver), ep::CheckinClean, ep::ExponentialGrowth> pool(
+		std::move(driver), min_conns, max_conns, 30s
 	);
 
 	pool.logging_callback([&](auto severity, auto message) {
