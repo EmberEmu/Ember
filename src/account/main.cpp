@@ -85,9 +85,8 @@ int run(const opts::variables_map& args, log::Logger& logger, commands::Prefixed
 		io_ctx.run_one();
 	});
 
-	const auto ret = service.run(args);
-	signals.cancel();
-	return ret;
+	thread::set_name("Service runner");
+	return service.run(args);
 } catch(const std::exception& e) {
 	LOG_FATAL(logger) << e.what() << LOG_SYNC;
 	return EXIT_FAILURE;
