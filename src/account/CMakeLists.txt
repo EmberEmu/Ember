@@ -15,6 +15,7 @@ set(LIBRARY_HDR
     Service.h
     LoggingCallbacks.h
     ServiceContext.h
+    ServiceContextImpl.h
 )
 
 set(LIBRARY_SRC
