@@ -43,7 +43,7 @@ struct StreamResult {
 	StreamResult(decltype(val_) value) : val_(value) {}
 
 	explicit operator bool() {
-		return val_ != StreamResult::success;
+		return val_ == StreamResult::success;
 	}
 
 	friend std::ostream& operator<< (std::ostream& os, const StreamResult& ec) {
