@@ -87,17 +87,6 @@ void handle_authentication(ClientContext& ctx) {
 		return version.build == auth_ctx.packet->build;
 	});
 
-	if(auth_ctx.packet->server_id != Locator::config()->realm_id) {
-		CLIENT_DEBUG(ctx.logger, ctx)
-			<< "Incorrect realm ID for "
-			<< auth_ctx.packet->username
-			<< LOG_ASYNC;
-
-		auth_state(ctx, State::failed);
-		ctx.handler.close();
-		return;
-	}
-
 	if(!build_res) {
 		CLIENT_DEBUG(ctx.logger, ctx)
 			<< "Build validation failed for "
@@ -200,7 +189,7 @@ void prove_session(ClientContext& ctx, const Botan::BigInt& key) {
 	BOOST_ASSERT_MSG(hash.size() == hasher->output_length(), "Bad hash length");
 	hasher->update(packet->username);
 	hasher->update_be(protocol_id);
-	hasher->update(packet->seed);
+	hasher->update(packet->seed.data(), sizeof(packet->seed));
 	hasher->update_be(boost::endian::native_to_big(auth_ctx.seed));
 	hasher->update(k_bytes);
 	hasher->final(hash.data());
