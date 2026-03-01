@@ -16,18 +16,18 @@ namespace ember::world {
 class WorldRPCServer final : public services::WorldService {
 	log::Logger& logger_;
 
-	std::optional<ember::rpc::World::StatusT> handle_get_status(
-		const ember::rpc::World::RequestStatus& msg,
+	std::optional<rpc::World::StatusT> handle_get_status(
+		const rpc::World::RequestStatus& msg,
 		const spark::Link& link,
 		const spark::Token& token) override;
 
-	std::optional<ember::rpc::World::PlayerEnterResultT> handle_player_enter(
-		const ember::rpc::World::PlayerEnter& msg,
+	std::optional<rpc::World::PlayerEnterResultT> handle_player_enter(
+		const rpc::World::PlayerEnter& msg,
 		const spark::Link& link,
 		const spark::Token& token) override;
 
-	std::optional<ember::rpc::World::PlayerLeaveResultT> handle_player_leave(
-		const ember::rpc::World::PlayerLeave& msg,
+	std::optional<rpc::World::PlayerLeaveResultT> handle_player_leave(
+		const rpc::World::PlayerLeave& msg,
 		const spark::Link& link,
 		const spark::Token& token) override;
 

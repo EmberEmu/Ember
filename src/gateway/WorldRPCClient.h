@@ -18,23 +18,23 @@ class WorldRPCClient final : public services::WorldClient {
 
 	void handle_get_status_response(
 		const spark::Link& link,
-		const ember::rpc::World::Status& msg) override;
+		const rpc::World::Status& msg) override;
 
 	void handle_register_world_response(
 		const spark::Link& link,
-		const ember::rpc::World::RegisterResult& msg) override;
+		const rpc::World::RegisterResult& msg) override;
 
 	void handle_remove_world_response(
 		const spark::Link& link,
-		const ember::rpc::World::RemoveResult& msg) override;
+		const rpc::World::RemoveResult& msg) override;
 
 	void handle_player_enter_response(
 		const spark::Link& link,
-		const ember::rpc::World::PlayerEnterResult& msg) override;
+		const rpc::World::PlayerEnterResult& msg) override;
 
 	void handle_player_leave_response(
 		const spark::Link& link,
-		const ember::rpc::World::PlayerLeaveResult& msg) override;
+		const rpc::World::PlayerLeaveResult& msg) override;
 
 	void on_link_up(const spark::Link& link) override;
 	void on_link_down(const spark::Link& link) override;
