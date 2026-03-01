@@ -149,8 +149,6 @@ void character_delete(ClientContext& ctx) {
 void player_login(ClientContext& ctx) {
 	LOG_TRACE(ctx.logger) << log_func << LOG_ASYNC;
 
-	ctx.handler.state_update(ClientState::cs_world_enter);
-
 	protocol::cmsg_player_login packet;
 
 	if(!ctx.handler.deserialise(packet, *ctx.stream)) {
