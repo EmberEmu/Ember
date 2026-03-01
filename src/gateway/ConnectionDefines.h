@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Ember
+ * Copyright (c) 2024 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -15,8 +15,8 @@
 
 namespace ember::gateway {
 
-static constexpr auto INBOUND_SIZE  { 1024 };
-static constexpr auto OUTBOUND_SIZE { 2048 };
+static constexpr auto inbound_size  { 8192 };
+static constexpr auto outbound_size { 8192 };
 
 #if defined TARGET_PLAYER_COUNT && defined TARGET_WORKER_COUNT
 static constexpr std::size_t PREALLOC_NODES {  TARGET_PLAYER_COUNT / TARGET_WORKER_COUNT };
@@ -24,11 +24,11 @@ static constexpr std::size_t PREALLOC_NODES {  TARGET_PLAYER_COUNT / TARGET_WORK
 static constexpr std::size_t PREALLOC_NODES {  16 };
 #endif
 
-using StaticBuffer  = spark::io::StaticBuffer<std::uint8_t, INBOUND_SIZE>;
+using StaticBuffer  = spark::io::StaticBuffer<std::uint8_t, inbound_size>;
 using BinaryStream = spark::io::BinaryStream<StaticBuffer>;
 
 using DynamicTLSBuffer = spark::io::DynamicTLSBuffer<
-	OUTBOUND_SIZE, PREALLOC_NODES, spark::io::NoRefCounting, spark::io::UnsafeEntrant
+	outbound_size, PREALLOC_NODES, spark::io::NoRefCounting, spark::io::UnsafeEntrant
 >;
 
 } // gateway, ember
