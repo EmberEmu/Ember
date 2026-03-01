@@ -15,6 +15,7 @@
 #include <shared/utility/Utility.h>
 #include <spark/Server.h>
 #include <boost/program_options.hpp>
+#include <thread>
 #include <vector>
 #include <cstdint>
 #include <cstdlib>

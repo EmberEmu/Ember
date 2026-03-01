@@ -70,7 +70,7 @@ asio::awaitable<void> WorldConnection::receive() {
 }
 
 asio::awaitable<void> WorldConnection::send() {
-
+	co_return;
 }
 
 } // gateway, ember
