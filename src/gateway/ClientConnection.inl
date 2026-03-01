@@ -43,6 +43,7 @@ void ClientConnection::send(const protocol::is_packet auto& packet) {
 
 	// we're in a bad state if writing fails, we can't recover
 	if(!write_packet_stream(packet)) {
+		LOG_WARN_ASYNC(logger_, "Failed to write packet to stream");
 		close_session();
 		return;
 	}
