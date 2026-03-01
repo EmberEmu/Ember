@@ -60,8 +60,7 @@ void ServicePool::run() {
 	const auto core_count = std::thread::hardware_concurrency();
 
 	for(std::size_t i = 0; i < pool_size_; ++i) {
-		threads_.emplace_back(static_cast<std::size_t(boost::asio::io_context::*)()>
-			(&boost::asio::io_context::run), services_[i].get());
+		threads_.emplace_back(&boost::asio::io_context::run, services_[i].get());
 		thread::set_affinity(threads_[i], i % core_count);
 		thread::set_name(threads_[i], "Service Pool");
 	}

@@ -105,8 +105,7 @@ int Service::run(const opts::variables_map& args) try {
 	workers.reserve(concurrency);
 
 	for(unsigned int i = 0; i < concurrency; ++i) {
-		workers.emplace_back(static_cast<std::size_t(boost::asio::io_context::*)()>
-							 (&boost::asio::io_context::run), &service);
+		workers.emplace_back(&boost::asio::io_context::run, &service);
 		thread::set_name(workers[i], "Asio Worker");
 	}
 

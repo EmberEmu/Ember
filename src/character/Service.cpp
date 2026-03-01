@@ -50,8 +50,7 @@ int Service::run(const opts::variables_map& args) try {
 		launch(args, service);
 	});
 
-	std::jthread worker(static_cast<std::size_t(boost::asio::io_context::*)()>
-		(&boost::asio::io_context::run), &service);
+	std::jthread worker(&boost::asio::io_context::run, &service);
 	thread::set_name(worker, "Asio Worker");
 
 	thread.join();

@@ -36,8 +36,7 @@ Client::Client(const std::string& bind, std::string host, const std::uint16_t po
 	  mode_(mode),
 	  host_(std::move(host)),
 	  port_(port) {
-	worker_ = std::jthread(static_cast<size_t(boost::asio::io_context::*)()>
-						   (&boost::asio::io_context::run), &ctx_);
+	worker_ = std::jthread(&boost::asio::io_context::run, &ctx_);
 	thread::set_name(worker_, "STUN Worker");
 
 	switch(proto) {

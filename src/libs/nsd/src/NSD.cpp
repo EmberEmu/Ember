@@ -23,8 +23,7 @@ NetworkServiceDiscovery::NetworkServiceDiscovery(spark::Server& spark, std::stri
 	  timer_(ctx_),
 	  logger_(logger),
       retry_interval_(RETRY_INTERVAL_MIN) {
-	worker_ = std::jthread(static_cast<std::size_t(boost::asio::io_context::*)()>
-	                       (&boost::asio::io_context::run), &ctx_);
+	worker_ = std::jthread(&boost::asio::io_context::run, &ctx_);
 	thread::set_name(worker_, "NSD");
 	connect();
 }
