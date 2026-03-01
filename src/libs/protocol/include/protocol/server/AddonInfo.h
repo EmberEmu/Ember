@@ -74,7 +74,7 @@ struct AddonInfo final {
 				stream << addon.key_version; // any value other than zero is stored in the file and must be followed by the public key
 
 				if(addon.key_version) {
-					stream.put(public_key_);
+					stream << public_key_;
 				}
 
 				stream << addon.update_available_flag;

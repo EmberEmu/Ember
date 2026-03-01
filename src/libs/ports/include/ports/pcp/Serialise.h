@@ -23,11 +23,11 @@ void serialise(const pcp::RequestHeader& message, auto& stream) {
 	stream << opcode;
 	stream << message.reserved_0;
 	stream << be::native_to_big(message.lifetime);
-	stream.put(message.client_ip);
+	stream << message.client_ip;
 }
 
 void serialise(const pcp::MapRequest& message, auto& stream) {
-	stream.put(message.nonce);
+	stream << message.nonce;
 	stream << message.protocol;
 	stream << message.reserved_0;
 	stream << be::native_to_big(message.internal_port);

@@ -43,9 +43,9 @@ public:
 		}
 
 		stream >> opcode;
-		stream.get(salt);
-		stream.get(proof);
-		stream.get(client_checksum);
+		stream >> salt;
+		stream >> proof;
+		stream >> client_checksum;
 		stream >> key_count;
 		// todo, read key data here
 
@@ -54,16 +54,16 @@ public:
 
 	void write_to_stream(spark::io::pmr::BinaryStream& stream) const override {
 		stream << opcode;
-		stream.put(salt);
-		stream.put(proof);
-		stream.put(client_checksum);
+		stream << salt;
+		stream << proof;
+		stream << client_checksum;
 		stream << key_count;
 
 		for (auto& key : keys) {
 			stream << key.len;
 			stream << key.pub_value;
-			stream.put(key.product);
-			stream.put(key.hash);
+			stream << key.product;
+			stream << key.hash;
 		}
 	}
 };

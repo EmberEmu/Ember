@@ -29,7 +29,7 @@ auto Parser::extract_ip_pair(spark::io::pmr::BinaryStreamReader& stream) {
 				"IPV6 is not valid in this mode");
 		}
 
-		stream.get(attr.ipv6);
+		stream >> attr.ipv6;
 		
 		for(auto& bytes : attr.ipv6) {
 			be::big_to_native_inplace(bytes);

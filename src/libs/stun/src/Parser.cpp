@@ -52,7 +52,7 @@ Parser::xor_mapped_address(spark::io::pmr::BinaryStreamReader& stream, const TxI
 		be::big_to_native_inplace(attr.ipv4);
 		attr.ipv4 ^= MAGIC_COOKIE;
 	} else if(attr.family == AddressFamily::ipv6 && mode_ != rfc3489) {
-		stream.get(attr.ipv6);
+		stream >> attr.ipv6;
 		const std::uint32_t cookie[1]{ be::native_to_big(MAGIC_COOKIE) };
 		const auto cookie_bytes = std::as_bytes(std::span(cookie));
 		const auto tx_bytes = std::as_bytes(std::span(id.id_5389));
@@ -103,7 +103,7 @@ Header Parser::read_header() try {
 attributes::MessageIntegrity
 Parser::message_integrity(spark::io::pmr::BinaryStreamReader& stream) {
 	attributes::MessageIntegrity attr{};
-	stream.get(attr.hmac_sha1);
+	stream >> attr.hmac_sha1;
 	return attr;
 }
 

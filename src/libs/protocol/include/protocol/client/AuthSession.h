@@ -52,7 +52,7 @@ struct AuthSession final {
 		stream >> server_id;
 		stream >> spark::io::null_terminated(username);
 		stream >> seed;
-		stream.get(digest);
+		stream >> digest;
 		
 		// handle compressed addon data
 		be::little_uint32_t decompressed_size;
@@ -109,7 +109,7 @@ struct AuthSession final {
 		stream << server_id;
 		stream << spark::io::null_terminated(username);
 		stream << seed;
-		stream.put(digest);
+		stream << digest;
 		return stream? StreamResult::success : StreamResult::stream_error;
 	} catch(const std::exception&) {
 		return StreamResult::caught_exception;

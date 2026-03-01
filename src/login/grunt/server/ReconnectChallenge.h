@@ -41,8 +41,8 @@ public:
 		
 		stream >> opcode;
 		stream >> result;
-		stream.get(salt);
-		stream.get(checksum_salt);
+		stream >> salt;
+		stream >> checksum_salt;
 
 		return (state_ = State::done);
 	}
@@ -50,8 +50,8 @@ public:
 	void write_to_stream(spark::io::pmr::BinaryStream& stream) const override {
 		stream << opcode;
 		stream << result;
-		stream.put(salt);
-		stream.put(checksum_salt);
+		stream << salt;
+		stream << checksum_salt;
 	}
 };
 

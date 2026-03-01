@@ -464,7 +464,7 @@ std::size_t write_rdata(const ResourceRecord& rr, spark::io::pmr::BinaryStream& 
 		stream << be::native_to_big(data.ip);
 	} else if(std::holds_alternative<Record_AAAA>(rr.rdata)) {
 		const auto& data = std::get<Record_AAAA>(rr.rdata);
-		stream.put(data.ip);
+		stream << data.ip;
 	} else {
 		throw std::runtime_error("Don't know how to serialise this record data");
 	}
@@ -545,7 +545,7 @@ void write_label_notation(const std::string_view name, spark::io::pmr::BinaryStr
 		if(index == std::string::npos && segment.size()) {
 			segment = segment.substr(1);
 			stream << std::uint8_t(segment.size());
-			stream.put(segment);
+			stream << segment;
 			break;
 		} else if(index == std::string::npos) {
 			break;
@@ -553,7 +553,7 @@ void write_label_notation(const std::string_view name, spark::io::pmr::BinaryStr
 			std::string_view print_segment = segment.substr(0, index);
 			segment = segment.substr(last? index : index + 1);
 			stream << std::uint8_t(print_segment.size());
-			stream.put(print_segment);
+			stream << print_segment;
 		}
 
 		last = index;

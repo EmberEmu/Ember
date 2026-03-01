@@ -38,7 +38,7 @@ class LoginChallenge final : public Packet {
 		}
 
 		std::array<std::uint8_t, PUB_KEY_LENGTH> b_buff;
-		stream.get(b_buff);
+		stream >> b_buff;
 		std::ranges::reverse(b_buff);
 		B = Botan::BigInt(b_buff);
 
@@ -52,16 +52,16 @@ class LoginChallenge final : public Packet {
 		stream >> n_len;
 
 		std::array<std::uint8_t, PRIME_LENGTH> n_buff;
-		stream.get(n_buff);
+		stream >> n_buff;
 		std::ranges::reverse(n_buff);
 		N = Botan::BigInt(n_buff);
 
 		std::array<std::uint8_t, SALT_LENGTH> s_buff;
-		stream.get(s_buff);
+		stream >> s_buff;
 		std::ranges::reverse(s_buff);
 		s = Botan::BigInt(s_buff);
 
-		stream.get(checksum_salt);
+		stream >> checksum_salt;
 		stream >> two_factor_auth;
 	}
 
@@ -73,7 +73,7 @@ class LoginChallenge final : public Packet {
 		// does the stream hold enough bytes to complete the PIN data?
 		if(stream.size() >= (pin_salt.size() + sizeof(pin_grid_seed))) {
 			stream >> pin_grid_seed;
-			stream.get(pin_salt);
+			stream >> pin_salt;
 			state_ = State::done;
 		} else {
 			state_ = State::call_again;
@@ -158,12 +158,12 @@ public:
 		s.serialize_to(bytes);
 		stream.put(bytes.rbegin(), bytes.rend());
 
-		stream.put(checksum_salt);
+		stream << checksum_salt;
 		stream << two_factor_auth;
 
 		if(two_factor_auth) {
 			stream << pin_grid_seed;
-			stream.put(pin_salt);
+			stream << pin_salt;
 		}
 	}
 };
