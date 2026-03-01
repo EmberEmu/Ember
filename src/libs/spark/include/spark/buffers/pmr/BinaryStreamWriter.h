@@ -107,7 +107,7 @@ public:
 	}
 
 	template<pod T>
-	requires (!has_shl_override<T, BinaryStreamWriter>)
+	requires (!has_shl_override<T, BinaryStreamWriter> && !is_iterable<T>)
 	BinaryStreamWriter& operator<<(const T& data) {
 		write(&data, sizeof(data));
 		return *this;
