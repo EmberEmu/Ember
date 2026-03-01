@@ -51,7 +51,7 @@ struct AddonInfo final {
 
 		Type type;
 		be::little_uint8_t info_block_present;
-		be::little_uint8_t key_version;
+		std::uint8_t key_version;
 		be::little_uint32_t update_available_flag;
 		std::string update_url;
 	};

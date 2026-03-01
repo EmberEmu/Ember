@@ -14,6 +14,20 @@ set(CLIENT_MESSAGES
     include/protocol/client/CharacterRename.h
     include/protocol/client/Ping.h
     include/protocol/client/PlayerLogin.h
+    include/protocol/client/NameQuery.h
+    include/protocol/client/SetActiveMover.h
+    include/protocol/client/QueryTime.h
+    include/protocol/client/ItemQuerySingle.h
+    include/protocol/client/QueryNextMailTime.h
+    include/protocol/client/BattlefieldStatus.h
+    include/protocol/client/MeetingStoneInfo.h
+    include/protocol/client/MoveTimeSkipped.h
+    include/protocol/client/MoveFallLand.h
+    include/protocol/client/ZoneUpdate.h
+    include/protocol/client/UpdateAccountData.h
+    include/protocol/client/JoinChannel.h
+    include/protocol/client/GenericMove.h
+    include/protocol/client/MessageChat.h
 )
 
 set(SERVER_MESSAGES
@@ -27,6 +41,26 @@ set(SERVER_MESSAGES
     include/protocol/server/AddonInfo.h
     include/protocol/server/LogoutComplete.h
     include/protocol/server/CharacterLoginFailed.h
+    include/protocol/server/LoginVerifyWorld.h
+    include/protocol/server/TutorialFlags.h
+    include/protocol/server/UpdateObject.h
+    include/protocol/server/NameQueryResponse.h
+    include/protocol/server/SplineMoveSetWalkMode.h
+    include/protocol/server/QueryTimeResponse.h
+    include/protocol/server/SetLoginTimeSpeed.h
+    include/protocol/server/RaidInstanceInfo.h
+    include/protocol/server/ItemQuerySingleResponse.h
+    include/protocol/server/QueryNextMailTime.h
+    include/protocol/server/BattlefieldStatus.h
+    include/protocol/server/MeetingStoneSetQueue.h
+    include/protocol/server/Motd.h
+    include/protocol/server/MoveTimeSkipped.h
+    include/protocol/server/MoveFallLand.h
+    include/protocol/server/Weather.h
+    include/protocol/server/AccountDataTimes.h
+    include/protocol/server/GenericMove.h
+    include/protocol/server/MessageChat.h
+    include/protocol/server/TriggerCinematic.h
 )
 
 set(CORE_HEADERS
@@ -38,6 +72,7 @@ set(CORE_HEADERS
     include/protocol/SmartMessage.h
     include/protocol/Concepts.h
     include/protocol/StreamResult.h
+    include/protocol/MovementInfo.h
 )
 
 set(HEADERS
