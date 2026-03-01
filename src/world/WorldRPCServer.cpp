@@ -20,11 +20,11 @@ WorldRPCServer::WorldRPCServer(spark::Server& spark, log::Logger& logger)
 }
 
 void WorldRPCServer::on_link_up(const spark::Link& link) {
-	LOG_INFO_ASYNC(logger_, "RPC connection from {}", link.peer_banner);
+	LOG_DEBUG_ASYNC(logger_, "Link up: {}", link.peer_banner);
 }
 
 void WorldRPCServer::on_link_down(const spark::Link& link) {
-
+	LOG_DEBUG_ASYNC(logger_, "Link down: {}", link.peer_banner);
 }
 
 std::optional<StatusT>

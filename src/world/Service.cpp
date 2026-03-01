@@ -58,12 +58,12 @@ int Service::run(const boost::program_options::variables_map& args) {
 	boost::asio::io_context context;
 	const auto interface = args["spark.address"].as<std::string>();
 	const auto port = args["spark.port"].as<std::uint16_t>();
-
 	spark::Server spark(context, APP_NAME, interface, port, logger);
 	WorldRPCServer rpc_server(spark, logger);
+	std::jthread thread(&boost::asio::io_context::run, &context);
+	// end of temporary bits
 
 	map::run(logger);
-
 	return EXIT_SUCCESS;
 }
 

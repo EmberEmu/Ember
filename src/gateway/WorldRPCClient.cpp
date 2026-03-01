@@ -18,7 +18,13 @@ using namespace rpc::World;
 
 WorldRPCClient::WorldRPCClient(spark::Server& spark, log::Logger& logger)
 	: WorldClient(spark)
-	, logger_(logger) {}
+	, logger_(logger) {
+	connect("127.0.0.1", 6005);
+}
+
+void WorldRPCClient::connect_failed(const std::string_view ip, std::uint16_t port) {
+	LOG_INFO_ASYNC(logger_, "Failed to connect to world service on {}:{}", ip, port);
+}
 
 void WorldRPCClient::handle_get_status_response(const Link& link, const Status& msg) {
 
@@ -41,11 +47,11 @@ void WorldRPCClient::handle_player_leave_response(const Link& link, const Player
 }
 
 void WorldRPCClient::on_link_up(const Link& link) {
-
+	LOG_DEBUG_ASYNC(logger_, "Link up: {}", link.peer_banner);
 }
 
 void WorldRPCClient::on_link_down(const Link& link) {
-
+	LOG_DEBUG_ASYNC(logger_, "Link down: {}", link.peer_banner);
 }
 
 } // gateway, ember

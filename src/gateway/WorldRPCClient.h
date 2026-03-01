@@ -38,6 +38,7 @@ class WorldRPCClient final : public services::WorldClient {
 
 	void on_link_up(const spark::Link& link) override;
 	void on_link_down(const spark::Link& link) override;
+	void connect_failed(const std::string_view ip, std::uint16_t port) override;
 
 public:
 	WorldRPCClient(spark::Server& spark, log::Logger& logger);
