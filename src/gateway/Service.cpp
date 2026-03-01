@@ -17,6 +17,7 @@
 #include "NetworkListener.h"
 #include "RealmQueue.h"
 #include "RealmService.h"
+#include "WorldRPCClient.h"
 #include <conpool/ConnectionPool.h>
 #include <conpool/Policies.h>
 #include <conpool/drivers/AutoSelect.h>
@@ -248,6 +249,7 @@ void Service::launch(const opts::variables_map& args, thread::ServicePool& servi
 	RealmService realm_svc(spark, *realm, logger);
 	AccountClient acct_svc(spark, logger);
 	CharacterClient char_svc(spark, config, logger);
+	WorldRPCClient world_svc(spark, logger);
 
 	const auto& nsd_host = args["nsd.host"].as<std::string>();
 	const auto nsd_port = args["nsd.port"].as<std::uint16_t>();

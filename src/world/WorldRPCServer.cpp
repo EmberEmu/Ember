@@ -32,12 +32,12 @@ WorldRPCServer::handle_get_status(const RequestStatus& msg, const Link& link, co
 	return std::nullopt;
 }
 
-std::optional<ResultT>
+std::optional<PlayerEnterResultT>
 WorldRPCServer::handle_player_enter(const PlayerEnter& msg, const Link& link, const Token& token) {
 	return std::nullopt;
 }
 
-std::optional<ResultT>
+std::optional<PlayerLeaveResultT>
 WorldRPCServer::handle_player_leave(const PlayerLeave& msg, const Link& link, const Token& token) {
 	return std::nullopt;
 }

@@ -8,10 +8,28 @@
 
 namespace ember.rpc.World;
 
-table RequestStatus {}
-
 enum ErrorCode : short {
 	success
+}
+
+table RequestStatus {
+	result:ErrorCode;
+}
+
+table PlayerEnterResult {
+	result:ErrorCode;
+}
+
+table PlayerLeaveResult {
+	result:ErrorCode;
+}
+
+table RegisterResult {
+	result:ErrorCode;
+}
+
+table RemoveResult {
+	result:ErrorCode;
 }
 
 table Result {
@@ -48,7 +66,11 @@ union Message {
 	RemoveWorld,
 	Result,
 	PlayerEnter,
-	PlayerLeave
+	PlayerLeave,
+	RegisterResult,
+	RemoveResult,
+	PlayerEnterResult,
+	PlayerLeaveResult
 }
 
 table Envelope {
@@ -59,8 +81,8 @@ root_type Envelope;
 
 rpc_service World {
 	get_status(RequestStatus):Status;
-	register_world(RegisterWorld):Result;
-	remove_world(RemoveWorld):Result;
-	player_enter(PlayerEnter):Result;
-	player_leave(PlayerLeave):Result;
+	register_world(RegisterWorld):RegisterResult;
+	remove_world(RemoveWorld):RemoveResult;
+	player_enter(PlayerEnter):PlayerEnterResult;
+	player_leave(PlayerLeave):PlayerLeaveResult;
 }

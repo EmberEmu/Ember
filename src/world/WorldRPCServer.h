@@ -21,12 +21,12 @@ class WorldRPCServer final : public services::WorldService {
 		const spark::Link& link,
 		const spark::Token& token) override;
 
-	std::optional<ember::rpc::World::ResultT> handle_player_enter(
+	std::optional<ember::rpc::World::PlayerEnterResultT> handle_player_enter(
 		const ember::rpc::World::PlayerEnter& msg,
 		const spark::Link& link,
 		const spark::Token& token) override;
 
-	std::optional<ember::rpc::World::ResultT> handle_player_leave(
+	std::optional<ember::rpc::World::PlayerLeaveResultT> handle_player_leave(
 		const ember::rpc::World::PlayerLeave& msg,
 		const spark::Link& link,
 		const spark::Token& token) override;
