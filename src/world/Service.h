@@ -17,7 +17,7 @@
 
 namespace ember::world {
 
-constexpr cstring_view APP_NAME { "World Server" };
+constexpr cstring_view app_name { "World Server" };
 
 class Service {
 	log::Logger& logger;

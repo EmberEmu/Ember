@@ -25,7 +25,7 @@
 
 namespace ember::login {
 
-constexpr cstring_view APP_NAME { "Login Daemon" };
+constexpr cstring_view app_name { "Login Daemon" };
 
 class Service {
 	boost::asio::io_context service;

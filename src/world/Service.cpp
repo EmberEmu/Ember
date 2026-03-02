@@ -52,14 +52,14 @@ int Service::run(const boost::program_options::variables_map& args) {
 	print_maps(maps, dbc_store.map, logger);
 
 	// All done setting up
-	LOG_INFO_SYNC(logger, "{} started successfully in {}", APP_NAME,
+	LOG_INFO_SYNC(logger, "{} started successfully in {}", app_name,
 		utility::start_time_format(start_time));
 
 	// temporary bits
 	boost::asio::io_context context;
 	const auto interface = args["spark.address"].as<std::string>();
 	const auto port = args["spark.port"].as<std::uint16_t>();
-	spark::Server spark(context, APP_NAME, interface, port, logger);
+	spark::Server spark(context, app_name, interface, port, logger);
 	WorldRPCServer rpc_server(spark, logger);
 	std::jthread thread(&boost::asio::io_context::run, &context);
 	// end of temporary bits

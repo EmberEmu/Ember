@@ -79,17 +79,17 @@ void Service::launch(const opts::variables_map& args, boost::asio::io_context& s
 	const auto spark_port = args["spark.port"].as<std::uint16_t>();
 
 	// start RPC services
-	spark::Server spark(service, APP_NAME, spark_iface, spark_port, logger);
+	spark::Server spark(service, app_name, spark_iface, spark_port, logger);
 	NSDService nsd(spark, logger);
 
 	// All done setting up
 	boost::asio::dispatch(service, [&]() {
-		LOG_INFO_SYNC(logger, "{} started successfully in {}", APP_NAME,
+		LOG_INFO_SYNC(logger, "{} started successfully in {}", app_name,
 			utility::start_time_format(start_time));
 	});
 
 	stop_flag.acquire();
-	LOG_INFO_SYNC(logger, "{} shutting down...", APP_NAME);
+	LOG_INFO_SYNC(logger, "{} shutting down...", app_name);
 } catch(...) {
 	eptr = std::current_exception();
 }

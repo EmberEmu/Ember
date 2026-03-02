@@ -38,8 +38,8 @@ int run(const opts::variables_map& args, log::Logger& logger, commands::Prefixed
  * from them.
  */
 int main(int argc, const char* argv[]) try {
-	print_banner(dns::APP_NAME);
-	utility::set_window_title(dns::APP_NAME);
+	print_banner(dns::app_name);
+	utility::set_window_title(dns::app_name);
 
 	const auto args = parse_arguments(argc, argv);
 
@@ -55,7 +55,7 @@ int main(int argc, const char* argv[]) try {
 	utility::register_shared_commands(registry, logger);
 
 	const auto ret = run(args, logger, cmd_register);
-	LOG_INFO_SYNC(logger, "{} terminated (returned '{}')", dns::APP_NAME, ret);
+	LOG_INFO_SYNC(logger, "{} terminated (returned '{}')", dns::app_name, ret);
 	return ret;
 } catch(const std::exception& e) {
 	std::cerr << e.what();

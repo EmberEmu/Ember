@@ -38,8 +38,8 @@ opts::variables_map parse_arguments(int argc, const char* argv[]);
  */
 int main(int argc, const char* argv[]) try {
 	thread::set_name("Main");
-	print_banner(world::APP_NAME);
-	utility::set_window_title(world::APP_NAME);
+	print_banner(world::app_name);
+	utility::set_window_title(world::app_name);
 
 	const auto args = parse_arguments(argc, argv);
 
@@ -56,7 +56,7 @@ int main(int argc, const char* argv[]) try {
 	utility::register_shared_commands(registry, logger);
 
 	const auto ret = launch(args, logger, cmd_register);
-	LOG_INFO_SYNC(logger, "{} terminated (returned '{}')", world::APP_NAME, ret);
+	LOG_INFO_SYNC(logger, "{} terminated (returned '{}')", world::app_name, ret);
 	return ret;
 } catch(const std::exception& e) {
 	std::cerr << e.what();

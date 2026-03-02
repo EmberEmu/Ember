@@ -20,7 +20,7 @@
 
 namespace ember::dns {
 
-static constexpr cstring_view APP_NAME { "MDNS-SD" };
+static constexpr cstring_view app_name { "MDNS-SD" };
 
 class Service {
 	std::exception_ptr eptr;

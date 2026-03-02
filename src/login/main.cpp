@@ -51,8 +51,8 @@ void install_shutdown_callbacks(commands::PrefixedRegistry& registry,
  * from them.
  */
 int main(int argc, const char* argv[]) try {
-	print_banner(login::APP_NAME);
-	utility::set_window_title(login::APP_NAME);
+	print_banner(login::app_name);
+	utility::set_window_title(login::app_name);
 
 	const auto args = parse_arguments(argc, argv);
 
@@ -68,7 +68,7 @@ int main(int argc, const char* argv[]) try {
 	utility::register_shared_commands(registry, logger);
 
 	const auto ret = run(args, logger, cmd_register);
-	LOG_INFO_SYNC(logger, "{} terminated (returned '{}')", login::APP_NAME, ret);
+	LOG_INFO_SYNC(logger, "{} terminated (returned '{}')", login::app_name, ret);
 	return ret;
 } catch(const std::exception& e) {
 	std::cerr << e.what();

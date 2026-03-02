@@ -31,7 +31,7 @@
 #include <thread>
 #include <vector>
 
-constexpr ember::cstring_view APP_NAME { "Fusion" };
+constexpr ember::cstring_view app_name { "Fusion" };
 
 namespace opts = boost::program_options;
 
@@ -53,8 +53,8 @@ std::atomic_bool shutting_down = false;
 
 int main(int argc, const char* argv[]) try {
 	thread::set_name("Main");
-	print_banner(APP_NAME);
-	utility::set_window_title(APP_NAME);
+	print_banner(app_name);
+	utility::set_window_title(app_name);
 
 	auto args = parse_arguments(argc, argv);
 	const bool share_logger = args["console_log.enable_input"].as<bool>();
@@ -73,7 +73,7 @@ int main(int argc, const char* argv[]) try {
 	utility::register_shared_commands(registry, logger);
 
 	const auto ret = launch(args, registry, share_logger, logger);
-	LOG_INFO_SYNC(logger, "{} terminated", APP_NAME);
+	LOG_INFO_SYNC(logger, "{} terminated", app_name);
 	return ret;
 } catch(const std::exception& e) {
 	std::cerr << e.what();

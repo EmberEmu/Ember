@@ -160,7 +160,7 @@ void Service::launch(const opts::variables_map& args, thread::ServicePool& servi
 		);
 	}
 	
-	const auto& title = std::format("{} - {}", APP_NAME, realm->name);
+	const auto& title = std::format("{} - {}", app_name, realm->name);
 	utility::set_window_title(title);
 
 	// Validate category & region
@@ -245,7 +245,7 @@ void Service::launch(const opts::variables_map& args, thread::ServicePool& servi
 	RealmQueue realm_queue(service_pool.get());
 	
 	LOG_INFO_SYNC(logger, "Starting RPC services...");
-	spark::Server spark(service_pool.get(), "realm", s_address, s_port, logger);
+	spark::Server spark(service_pool.get(), app_name, s_address, s_port, logger);
 	RealmService realm_svc(spark, *realm, logger);
 	AccountClient acct_svc(spark, logger);
 	CharacterClient char_svc(spark, config, logger);
@@ -280,12 +280,12 @@ void Service::launch(const opts::variables_map& args, thread::ServicePool& servi
 	boost::asio::dispatch(service, [&]() {
 		realm_svc.set_online();
 
-		LOG_INFO_SYNC(logger, "{} started successfully in {}", APP_NAME,
+		LOG_INFO_SYNC(logger, "{} started successfully in {}", app_name,
 			utility::start_time_format(start_time));
 	});
 
 	stop_flag.acquire();
-	LOG_INFO_SYNC(logger, "{} shutting down...", APP_NAME);
+	LOG_INFO_SYNC(logger, "{} shutting down...", app_name);
 } catch(...) {
 	eptr = std::current_exception();
 }

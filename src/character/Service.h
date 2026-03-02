@@ -20,7 +20,7 @@
 
 namespace ember::character {
 
-constexpr cstring_view APP_NAME { "Character Daemon" };
+constexpr cstring_view app_name { "Character Daemon" };
 
 class Service {
 	std::exception_ptr eptr;

@@ -151,17 +151,17 @@ void Service::launch(const opts::variables_map& args, boost::asio::io_context& s
 	auto s_port = args["spark.port"].as<std::uint16_t>();
 
 	LOG_INFO_SYNC(logger, "Starting RPC services...");
-	spark::Server spark(service, "character", s_address, s_port, logger);
+	spark::Server spark(service, app_name, s_address, s_port, logger);
 	CharacterService char_service(spark, handler, logger);
 	
 	// All done setting up
 	boost::asio::dispatch(service, [&]() {
-		LOG_INFO_SYNC(logger, "{} started successfully in {}", APP_NAME,
+		LOG_INFO_SYNC(logger, "{} started successfully in {}", app_name,
 			utility::start_time_format(start_time));
 	});
 
 	stop_flag.acquire();
-	LOG_INFO_SYNC(logger, "{} shutting down...", APP_NAME);
+	LOG_INFO_SYNC(logger, "{} shutting down...", app_name);
 } catch(...) {
 	eptr = std::current_exception();
 }

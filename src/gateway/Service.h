@@ -23,7 +23,7 @@ namespace ember::thread {
 
 namespace ember::gateway {
 
-static inline constexpr cstring_view APP_NAME { "Realm Gateway" };
+static inline constexpr cstring_view app_name { "Realm Gateway" };
 
 class Service {
 	std::exception_ptr eptr;
