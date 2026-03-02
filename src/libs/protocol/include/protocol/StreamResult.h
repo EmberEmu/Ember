@@ -34,9 +34,9 @@ struct StreamResult {
 		"unspecified failure",
 		"encountered an exception",
 		"bad data size",
-		"data size too large",
 		"decompression failed",
 		"compression failed",
+		"data size too large",
 		"underlying stream error"
 	};
 
