@@ -243,7 +243,6 @@ public:
 	template<typename T>
 	requires std::is_same_v<std::decay_t<T>, std::string_view>
 	BinaryStream& operator<<(null_terminated<T> adaptor) requires writeable<buf_type> {
-		assert(adaptor->find_first_of('\0') == adaptor->npos);
 		write(adaptor->data(), adaptor->size());
 		write('\0');
 		return *this;
@@ -252,8 +251,32 @@ public:
 	template<typename T>
 	requires std::is_same_v<std::decay_t<T>, std::string>
 	BinaryStream& operator<<(null_terminated<T> adaptor) requires writeable<buf_type> {
-		assert(adaptor->find_first_of('\0') == adaptor->npos);
 		write(adaptor->data(), adaptor->size() + 1); // yes, the standard allows this
+		return *this;
+	}
+
+	template<is_iterable type, std::integral prefix_type, typename endian_tag>
+	requires std::is_same_v<std::decay_t<type>, std::string_view>
+	BinaryStream& operator<<(prefixed_null_terminated<type, prefix_type, endian_tag> adaptor) requires writeable<buf_type> {
+		const auto count = endian::storage_in(
+			static_cast<prefix_type>(adaptor->size() + 1), adaptor.byte_order
+		); // account for the null terminator
+
+		write(count);
+		write(adaptor->data(), adaptor->size());
+		write('\0'); // allows for safely writing a terminated string_view even if the given view itself is not terminated
+		return *this;
+	}
+
+	template<is_iterable type, std::integral prefix_type, typename endian_tag>
+	requires std::is_same_v<std::decay_t<type>, std::string>
+	BinaryStream& operator<<(prefixed_null_terminated<type, prefix_type, endian_tag> adaptor) requires writeable<buf_type> {
+		const auto count = endian::storage_in(
+			static_cast<prefix_type>(adaptor->size() + 1), adaptor.byte_order
+		); // account for the null terminator
+
+		write(count);
+		write(adaptor.str.data(), adaptor.str.size() + 1); // safe
 		return *this;
 	}
 
@@ -430,10 +453,49 @@ public:
 		return *this;
 	}
 
+	template<std::integral prefix_type, typename endian_tag>
+	BinaryStream& operator>>(prefixed_null_terminated<std::string, prefix_type, endian_tag> adaptor) {
+		prefix_type size = 0;
+		*this >> size;
+		endian::storage_out(size, adaptor.byte_order);
+
+		if(state_ != StreamState::ok) {
+			return *this;
+		}
+
+		STREAM_READ_BOUNDS_ENFORCE(size, *this);
+
+		adaptor->resize_and_overwrite(size, [&](char* strbuf, std::size_t size) {
+			// std::string is guaranteed to be null terminated, so we don't want to read the
+			// null terminator from the buffer (double null bytes)
+			buffer_.read(strbuf, size - 1);
+			return size;
+		});
+
+		buffer_.skip(1); // skip null terminator
+		return *this;
+	}
+
+	template<std::integral prefix_type, typename endian_tag>
+	BinaryStream& operator>>(prefixed_null_terminated<std::string_view, prefix_type, endian_tag> adaptor) {
+		prefix_type size = 0;
+		*this >> size;
+		endian::storage_out(size, adaptor.byte_order);
+
+		if(state_ != StreamState::ok) {
+			return *this;
+		}
+
+		++size; // add the null terminator to the view
+		adaptor.str = std::string_view { span<char>(size) };
+		return *this;
+	}
+
 	BinaryStream& operator>>(null_terminated<std::string_view> adaptor) {
 		adaptor.str = view();
 		return *this;
 	}
+
 
 	BinaryStream& operator>>(std::string_view& data) {
 		return (*this >> prefixed(data));

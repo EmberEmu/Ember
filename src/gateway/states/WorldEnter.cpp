@@ -269,9 +269,16 @@ void handle_join_channel(ClientContext& ctx) {
 	}
 
 	protocol::smsg_channel_notify response;
-	response->name = packet->name;
 	response->type = response->YOU_JOINED_NOTICE;
+	response->name = packet->name;
 	ctx.connection.send(response);
+
+	LOG_DEBUG_ASYNC(ctx.logger, "{}", response->name);
+
+	protocol::smsg_channel_notify response2;
+	response2->type = response->LEFT_NOTICE;
+	response2->name = "LocalDefense - Elwynn Forest";
+	ctx.connection.send(response2);
 }
 
 void handle_tutorial_flag(ClientContext& ctx) {

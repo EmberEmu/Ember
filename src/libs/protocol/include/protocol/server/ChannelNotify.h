@@ -94,8 +94,18 @@ struct ChannelNotify final {
 	}
 
 	StreamResult write_to_stream(auto& stream) const try {
+		static int foo = 0xdeadbeef;
 		stream << type;
 		stream << spark::io::null_terminated(name);
+
+		if(type != YOU_JOINED_NOTICE) {
+			stream << std::uint32_t(7);
+			std::string test("Player");
+			stream << spark::io::null_terminated(test);
+			stream << std::uint32_t(0);
+		} else {
+			stream << std::uint32_t(0);
+		}
 		return stream? StreamResult::success : StreamResult::failed;
 	} catch(const std::exception&) {
 		return StreamResult::caught_exception;

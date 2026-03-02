@@ -34,5 +34,6 @@ STRING_ADAPTOR(raw)
 STRING_ADAPTOR(prefixed)
 STRING_ADAPTOR(prefixed_varint)
 STRING_ADAPTOR(null_terminated)
+STRING_ADAPTOR(prefixed_null_terminated)
 
 } // io, spark, ember

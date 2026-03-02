@@ -79,12 +79,12 @@ struct MessageChat final {
 			stream >> speech_bubble_attr;
 			stream >> chat_name_attr;
 		} else if(type == CHANNEL) {
-			stream >> spark::io::prefixed<const std::string, std::uint32_t>(channel_name);
+			stream >> spark::io::prefixed_null_terminated<std::string, std::uint32_t>(channel_name);
 			stream >> player_rank;
 			stream >> player_guid;
 		}
 
-		stream >> spark::io::prefixed<std::string, std::uint32_t>(message);
+		stream >> spark::io::prefixed_null_terminated<std::string, std::uint32_t>(message);
 		stream >> player_tag;
 		return stream? StreamResult::success : StreamResult::failed;
 	} catch(const std::exception&) {
@@ -108,7 +108,7 @@ struct MessageChat final {
 			stream << player_guid;
 		}
 
-		stream << spark::io::prefixed<const std::string, std::uint32_t>(message);
+		stream << spark::io::prefixed_null_terminated<const std::string>(message);
 		stream << player_tag;
 		return stream? StreamResult::success : StreamResult::failed;
 	} catch(const std::exception&) {

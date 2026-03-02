@@ -168,6 +168,32 @@ public:
 		return *this;
 	}
 
+	template<is_iterable type, std::integral prefix_type, typename endian_tag>
+	requires std::is_same_v<std::decay_t<type>, std::string>
+	BinaryStreamWriter& operator<<(prefixed_null_terminated<const type, prefix_type, endian_tag> adaptor) {
+		const auto count = endian::storage_in(
+			static_cast<prefix_type>(adaptor->size()), adaptor.byte_order
+		);
+
+		write(&count, sizeof(count));
+		write(adaptor.str.data(), adaptor.str.size() + 1); // it's safe
+		return *this;
+	}
+
+	template<is_iterable type, std::integral prefix_type, typename endian_tag>
+	requires std::is_same_v<std::decay_t<type>, std::string_view>
+	BinaryStreamWriter& operator<<(prefixed_null_terminated<type, prefix_type, endian_tag> adaptor) {
+		const auto count = endian::storage_in(
+			static_cast<prefix_type>(adaptor->size() + 1), adaptor.byte_order
+		); // + 1 for the terminator
+
+		write(&count, sizeof(count));
+		write_container(adaptor.str);
+		const char null_term = '\n';
+		write(&null_term, 1); // write null terminator
+		return *this;
+	}
+
 	template<is_iterable T>
 	BinaryStreamWriter& operator<<(prefixed_varint<T> adaptor) {
 		varint_encode(*this, adaptor->size());

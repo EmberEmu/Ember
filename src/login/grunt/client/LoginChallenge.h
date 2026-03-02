@@ -62,13 +62,9 @@ class LoginChallenge final : public Packet {
 		stream >> timezone_bias;
 		stream >> ip;
 
-		if(stream.size() < username_len_) {
-			throw bad_packet("Invalid username length supplied!");
-		}
-
 		stream >> spark::io::prefixed<std::string, std::uint8_t>(username);
 
-		if(username_len_ > max_username_len) {
+		if(username.size() > max_username_len) {
 			throw bad_packet("Username length was too long!");
 		}
 
@@ -144,7 +140,6 @@ public:
 		stream << be::native_to_little(gsl::narrow<std::uint16_t>(size));
 		stream.write_seek(spark::io::StreamSeek::sk_forward, size);
 	}
-
 };
 
 using ReconnectChallenge = LoginChallenge;

@@ -160,6 +160,27 @@ public:
 
 		return *this;
 	}
+
+	template<std::integral prefix_type, typename endian_tag>
+	BinaryStreamReader& operator>>(prefixed_null_terminated<std::string, prefix_type, endian_tag> adaptor) {
+		prefix_type size = 0;
+		*this >> size;
+		endian::storage_out(size, adaptor.byte_order);
+
+		if(state() != StreamState::ok) {
+			return *this;
+		}
+		
+		++size; // include the null terminator
+		STREAM_READ_BOUNDS_ENFORCE(size, *this); // include null terminator
+
+		adaptor->resize_and_overwrite(size, [&](char* strbuf, std::size_t size) {
+			buffer_.read(strbuf, size - 1); // don't read the null terminator into the string
+			return size;
+		});
+
+		return *this;
+	}
 	
 	BinaryStreamReader& operator>>(prefixed_varint<std::string> adaptor) {
 		const auto size = varint_decode<std::size_t>(*this);
