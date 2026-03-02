@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 - 2025 Ember
+ * Copyright (c) 2018 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -33,16 +33,16 @@ bool ClientHandler::deserialise(protocol::is_packet auto& packet, BinaryStream& 
 	}
 
 	/*
-	 * READ_LIMIT_ERR:
+	 * read_limit_error:
 	 * Deserialisation failed due to an attempt to read beyond the
 	 * message boundary. This could be caused by an error in the message
 	 * definition or a malicious client spoofing the size in the
 	 * header. We can recover from this.
 	 * 
-	 * BUFF_LIMIT_ERR:
-	 * Deserialisation failed due to a buffer underrun - this should never
-	 * happen and message framing has likely been lost if this ever
-	 * occurs. Don't try to recover.
+	 * buffer_limit_error:
+	 * Deserialisation failed due to a buffer underrun (tried to read more data
+	 * than the buffer currently holds) - this should never happen and message
+	 * framing has likely been lost if this ever occurs. Don't try to recover.
 	 */
 	switch(stream.state()) {
 		case spark::io::StreamState::read_limit_error:
