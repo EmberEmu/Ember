@@ -18,7 +18,7 @@
 #include <array>
 #include <format>
 
-namespace bai = boost::asio::ip;
+namespace asio = boost::asio;
 
 #undef ERROR
 
@@ -36,8 +36,8 @@ class SyslogSink::impl final : public Sink {
 		syslog_debug
 	};
 
-	boost::asio::io_context service_;
-	bai::udp::socket socket_;
+	asio::io_context service_;
+	asio::ip::udp::socket socket_;
 	std::string host_;
 	std::string tag_; 
 	Facility facility_;
@@ -56,7 +56,7 @@ SyslogSink::impl::impl(Severity severity, Filter filter, const std::string& host
                        Facility facility, std::string tag) try
     : Sink(severity, filter, "SyslogSink"),
 	  socket_(service_),
-	  host_(bai::host_name()),
+	  host_(asio::ip::host_name()),
       tag_(std::move(tag)) {
 	facility_ = facility;
 
@@ -64,9 +64,9 @@ SyslogSink::impl::impl(Severity severity, Filter filter, const std::string& host
 		throw exception("Syslog tag size must be 32 characters or less");
 	}
 
-	bai::udp::resolver resolver(service_);
+	asio::ip::udp::resolver resolver(service_);
 	const auto results = resolver.resolve(host, std::to_string(port));
-	boost::asio::connect(socket_, results);
+	asio::connect(socket_, results);
 } catch(const std::exception& e) {
 	throw exception(e.what());
 }
@@ -126,7 +126,7 @@ void SyslogSink::impl::write(Severity severity, Filter type, std::span<const cha
 		<< time.tm_sec << " " << host_ << " ";
 
 	const auto header = stream.view();
-	const std::array<boost::asio::const_buffer, 5> segments {{
+	const std::array<asio::const_buffer, 5> segments {{
 		{ priority.data(), priority.size() },
 		{ header.data(), header.size() },
 		{ tag_.data(), tag_.size() },

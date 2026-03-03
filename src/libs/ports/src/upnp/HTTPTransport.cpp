@@ -17,11 +17,11 @@
 
 namespace ember::ports::upnp {
 
-HTTPTransport::HTTPTransport(ba::io_context& ctx, std::string_view bind)
-	: socket_(ctx, ba::ip::tcp::endpoint(ba::ip::make_address(bind), 0)),
+HTTPTransport::HTTPTransport(asio::io_context& ctx, std::string_view bind)
+	: socket_(ctx, asio::ip::tcp::endpoint(asio::ip::make_address(bind), 0)),
 	  resolver_(ctx),
 	  timeout_(ctx) {
-	socket_.set_option(ba::ip::tcp::no_delay(true));
+	socket_.set_option(asio::ip::tcp::no_delay(true));
 	buffer_.resize(INITIAL_BUFFER_SIZE);
 }
 
@@ -30,22 +30,22 @@ HTTPTransport::~HTTPTransport() {
 	socket_.close(ec);
 }
 
-ba::awaitable<void> HTTPTransport::connect(const std::string_view host, const std::uint16_t port) {
+asio::awaitable<void> HTTPTransport::connect(const std::string_view host, const std::uint16_t port) {
 	auto results = co_await resolver_.async_resolve(host, std::to_string(port));
-	co_await ba::async_connect(socket_, results);
+	co_await asio::async_connect(socket_, results);
 }
 
-ba::awaitable<void> HTTPTransport::send(std::shared_ptr<std::vector<std::uint8_t>> message) {
-	auto buffer = ba::buffer(*message);
-	co_await ba::async_write(socket_, buffer, ba::as_tuple);
+asio::awaitable<void> HTTPTransport::send(std::shared_ptr<std::vector<std::uint8_t>> message) {
+	auto buffer = asio::buffer(*message);
+	co_await asio::async_write(socket_, buffer, asio::as_tuple);
 }
 
-ba::awaitable<void> HTTPTransport::send(std::vector<std::uint8_t> message) {
+asio::awaitable<void> HTTPTransport::send(std::vector<std::uint8_t> message) {
 	auto data = std::make_shared<std::vector<std::uint8_t>>(std::move(message));
-	co_await ba::async_write(socket_, ba::buffer(*data), ba::as_tuple);
+	co_await asio::async_write(socket_, asio::buffer(*data), asio::as_tuple);
 }
 
-auto HTTPTransport::receive_http_response() -> ba::awaitable<Response> {
+auto HTTPTransport::receive_http_response() -> asio::awaitable<Response> {
 	start_timer();
 
 	std::size_t total_read = 0;
@@ -128,12 +128,12 @@ bool HTTPTransport::buffer_resize(const std::size_t offset) {
 	return true;
 }
 
-ba::awaitable<std::size_t> HTTPTransport::read(const std::size_t offset) {
+asio::awaitable<std::size_t> HTTPTransport::read(const std::size_t offset) {
 	if(!buffer_resize(offset)) {
 		throw std::length_error("Unable to resize HTTP response buffer");
 	}
 
-	const auto buffer = ba::buffer(buffer_.data() + offset, buffer_.size() - offset);
+	const auto buffer = asio::buffer(buffer_.data() + offset, buffer_.size() - offset);
 	auto size = co_await socket_.async_receive(buffer);
 	co_return size;
 }
@@ -159,7 +159,7 @@ void HTTPTransport::close() {
 	socket_.close();
 }
 
-ba::ip::tcp::endpoint HTTPTransport::local_endpoint() const {
+asio::ip::tcp::endpoint HTTPTransport::local_endpoint() const {
 	return socket_.local_endpoint();
 }
 

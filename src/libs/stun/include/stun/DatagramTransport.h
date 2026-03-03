@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 - 2025 Ember
+ * Copyright (c) 2023 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -19,31 +19,33 @@
 
 namespace ember::stun {
 
-namespace ba = boost::asio;
 using namespace std::chrono_literals;
 
 class DatagramTransport final : public Transport {
 	static const std::size_t INITIAL_RECV_BUFFER_SIZE = 2048;
 
-	ba::io_context& ctx_;
-	ba::ip::udp::socket socket_;
-	ba::ip::udp::endpoint ep_;
-	ba::ip::udp::endpoint remote_ep_;
+	boost::asio::io_context& ctx_;
+	boost::asio::ip::udp::socket socket_;
+	boost::asio::ip::udp::endpoint ep_;
+	boost::asio::ip::udp::endpoint remote_ep_;
 
 	const std::chrono::milliseconds timeout_;
 	const unsigned int retries_;
 
 	std::queue<std::shared_ptr<std::vector<std::uint8_t>>> queue_;
 	std::vector<std::uint8_t> buffer_;
-	ba::ip::udp::resolver resolver_;
+	boost::asio::ip::udp::resolver resolver_;
 
 	void receive();
 	void do_write();
 
 public:
-	DatagramTransport(ba::io_context& ctx, std::string_view bind, std::chrono::milliseconds timeout = 500ms,
+	DatagramTransport(boost::asio::io_context& ctx,
+	                  std::string_view bind,
+	                  std::chrono::milliseconds timeout = 500ms,
 	                  unsigned int retries = 7);
-	~DatagramTransport() override;
+
+	~DatagramTransport();
 
 	void connect(const std::string_view host, std::uint16_t port, OnConnect&& cb) override;
 	void send(std::shared_ptr<std::vector<std::uint8_t>> message) override;

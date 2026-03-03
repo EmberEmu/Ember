@@ -20,10 +20,10 @@ SSDP::SSDP(const std::string& bind, boost::asio::io_context& ctx)
 	: ctx_(ctx),
 	  strand_(ctx),
 	  transport_(ctx, bind, MULTICAST_IPV4_ADDR, DEST_PORT) {
-	ba::co_spawn(ctx_, read_broadcasts(), ba::detached);
+	asio::co_spawn(ctx_, read_broadcasts(), asio::detached);
 }
 
-ba::awaitable<void> SSDP::read_broadcasts() {
+asio::awaitable<void> SSDP::read_broadcasts() {
 	while(true) {
 		auto result = co_await transport_.receive();
 
@@ -120,7 +120,7 @@ std::vector<std::uint8_t> SSDP::build_ssdp_request(const std::string_view type,
 	return buffer;
 }
 
-ba::awaitable<void> SSDP::start_ssdp_search(const std::string_view type,
+asio::awaitable<void> SSDP::start_ssdp_search(const std::string_view type,
                                             std::string_view subtype,
                                             const int version) {
 	auto buffer = build_ssdp_request(type, subtype, version);
@@ -131,7 +131,7 @@ ba::awaitable<void> SSDP::start_ssdp_search(const std::string_view type,
 	}
 }
 
-ba::awaitable<LocateResult> SSDP::locate_gateways(use_awaitable_t) {
+asio::awaitable<LocateResult> SSDP::locate_gateways(use_awaitable_t) {
 	// this isn't great but it'd need a design rethink
 	auto buffer = build_ssdp_request("service", "WANIPConnection", 1);
 	auto result = co_await transport_.send(std::move(buffer));
@@ -150,7 +150,7 @@ ba::awaitable<LocateResult> SSDP::locate_gateways(use_awaitable_t) {
 	auto recv_res = co_await transport_.receive();
 
 	if(!recv_res) {
-		if(recv_res.error() == ba::error::operation_aborted) {
+		if(recv_res.error() == asio::error::operation_aborted) {
 			co_return std::unexpected(ErrorCode::operation_aborted);
 		} else {
 			co_return std::unexpected(ErrorCode::network_failure);
@@ -181,9 +181,9 @@ std::future<LocateResult> SSDP::locate_gateways(use_future_t) {
 void SSDP::locate_gateways(LocateHandler&& handler) {
 	handler_ = handler;
 
-	ba::post(strand_, [&]() {
-		ba::co_spawn(ctx_, start_ssdp_search("service", "WANIPConnection", 1), ba::detached);
-		ba::co_spawn(ctx_, start_ssdp_search("service", "WANIPConnection", 2), ba::detached);
+	asio::post(strand_, [&]() {
+		asio::co_spawn(ctx_, start_ssdp_search("service", "WANIPConnection", 1), asio::detached);
+		asio::co_spawn(ctx_, start_ssdp_search("service", "WANIPConnection", 2), asio::detached);
 	});
 }
 
@@ -191,8 +191,8 @@ void SSDP::search(const std::string_view type, std::string_view subtype,
                   const int version, LocateHandler&& handler) {
 	handler_ = handler;
 
-	ba::post(strand_, [&]() {
-		ba::co_spawn(ctx_, start_ssdp_search(type, subtype, version), ba::detached);
+	asio::post(strand_, [&]() {
+		asio::co_spawn(ctx_, start_ssdp_search(type, subtype, version), asio::detached);
 	});
 }
 

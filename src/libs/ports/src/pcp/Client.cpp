@@ -19,10 +19,10 @@
 
 namespace ember::ports {
 
-namespace bai = boost::asio::ip;
+namespace asio = boost::asio;
 
-Client::Client(std::string interface, std::string gateway, boost::asio::io_context& ctx)
-	: timer_(boost::asio::make_strand(ctx))
+Client::Client(std::string interface, std::string gateway, asio::io_context& ctx)
+	: timer_(asio::make_strand(ctx))
 	, transport_(interface, PORT_IN, ctx)
 	, gateway_(std::move(gateway))
 	, interface_(std::move(interface))
@@ -31,13 +31,13 @@ Client::Client(std::string interface, std::string gateway, boost::asio::io_conte
 	auto& executor = timer_.get_executor();
 
 	transport_.set_callbacks(
-		[&](std::span<std::uint8_t> buffer, const bai::udp::endpoint& ep) {
-			boost::asio::dispatch(executor, [&, buffer = std::move(buffer), ep]() {
+		[&](std::span<std::uint8_t> buffer, const asio::ip::udp::endpoint& ep) {
+			asio::dispatch(executor, [&, buffer = std::move(buffer), ep]() {
 				handle_message(buffer, ep);
 			});
 		},
 		[&](const boost::system::error_code&) { 
-			boost::asio::dispatch(executor, [&]() {
+			asio::dispatch(executor, [&]() {
 				handle_connection_error(); 
 			});
 		}
@@ -47,7 +47,7 @@ Client::Client(std::string interface, std::string gateway, boost::asio::io_conte
 
 	transport_.resolve(gateway_, PORT_OUT,
 		[&](const boost::system::error_code& ec,
-	        const ba::ip::udp::endpoint& ep) {
+	        const asio::ip::udp::endpoint& ep) {
 		if(!ec) {
 			gateway_ = ep.address().to_string();		
 		}
@@ -229,8 +229,8 @@ void Client::handle_external_address_pmp(std::span<const std::uint8_t> buffer) {
 	}
 
 	if(message.result_code == natpmp::Result::success) {
-		const auto v4 = bai::address_v4(message.external_ip);
-		const auto v6 = bai::make_address_v6(bai::v4_mapped, v4);
+		const auto v4 = asio::ip::address_v4(message.external_ip);
+		const auto v6 = asio::ip::make_address_v6(asio::ip::v4_mapped, v4);
 
 		MapRequest res {
 			.external_ip = v6.to_bytes()
@@ -300,7 +300,7 @@ bool Client::handle_announce(std::span<const std::uint8_t> buffer) try {
 	return false;
 }
 
-void Client::handle_message(std::span<const std::uint8_t> buffer, const bai::udp::endpoint& ep) {
+void Client::handle_message(std::span<const std::uint8_t> buffer, const asio::ip::udp::endpoint& ep) {
 	/*
 	 * Upon receiving a response packet, the client MUST check the source IP
      * address, and silently discard the packet if the address is not the
@@ -432,13 +432,13 @@ ErrorCode Client::announce_pcp() {
 		.lifetime = 0
 	};
 
-	const auto address = bai::make_address(interface_);
-	bai::address_v6 v6{};
+	const auto address = asio::ip::make_address(interface_);
+	asio::ip::address_v6 v6{};
 
 	if(address.is_v6()) {
 		v6 = address.to_v6();
 	} else {
-		v6 = bai::make_address_v6(bai::v4_mapped, address.to_v4());
+		v6 = asio::ip::make_address_v6(asio::ip::v4_mapped, address.to_v4());
 	}
 
 	const auto& bytes = v6.to_bytes();
@@ -465,13 +465,13 @@ ErrorCode Client::add_mapping_pcp(const MapRequest& request, bool strict) {
 		.lifetime = request.lifetime
 	};
 
-	const auto address = bai::make_address(interface_);
-	bai::address_v6 v6{};
+	const auto address = asio::ip::make_address(interface_);
+	asio::ip::address_v6 v6{};
 
 	if(address.is_v6()) {
 		v6 = address.to_v6();
 	} else {
-		v6 = bai::make_address_v6(bai::v4_mapped, address.to_v4());
+		v6 = asio::ip::make_address_v6(asio::ip::v4_mapped, address.to_v4());
 	}
 
 	const auto& bytes = v6.to_bytes();

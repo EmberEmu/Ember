@@ -17,8 +17,6 @@
 
 namespace ember {
 
-namespace bai = boost::asio::ip;
-
 class LoginHandlerBuilder;
 class SessionManager;
 

@@ -50,7 +50,7 @@ private:
 		errored
 	};
 
-	ba::steady_timer timer_;
+	boost::asio::steady_timer timer_;
 	DatagramTransport transport_;
 	std::string gateway_;
 	const std::string interface_;

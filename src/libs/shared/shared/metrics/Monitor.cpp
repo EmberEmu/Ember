@@ -13,23 +13,23 @@
 
 namespace ember {
 
+namespace asio = boost::asio;
 using namespace std::chrono_literals;
-namespace bai = boost::asio::ip;
 
-Monitor::Monitor(boost::asio::io_context& service,
+Monitor::Monitor(asio::io_context& service,
                  std::string_view interface,
                  std::uint16_t port,
                  std::chrono::seconds frequency)
 	: timer_(service)
 	, timer_frequency(frequency)
-	, socket_(boost::asio::make_strand(service), bai::udp::endpoint(bai::make_address(interface), port)) {
+	, socket_(asio::make_strand(service), asio::ip::udp::endpoint(asio::ip::make_address(interface), port)) {
 	set_timer();
 	receive();
 }
 
 void Monitor::shutdown() {
 	boost::system::error_code ec; // we don't care about any errors
-	socket_.shutdown(boost::asio::ip::udp::socket::shutdown_both, ec);
+	socket_.shutdown(asio::ip::udp::socket::shutdown_both, ec);
 	socket_.close(ec);
 
 	try {
@@ -40,7 +40,7 @@ void Monitor::shutdown() {
 }
 
 void Monitor::receive() {
-	socket_.async_wait(boost::asio::ip::udp::socket::wait_read,
+	socket_.async_wait(asio::ip::udp::socket::wait_read,
 		[&](const boost::system::error_code& ec) {
 			if(ec) {
 				return;
@@ -48,9 +48,9 @@ void Monitor::receive() {
 
 			// ignore all of the data
 			std::vector<char> buffer(socket_.available());
-			socket_.receive_from(boost::asio::buffer(buffer), endpoint_);
+			socket_.receive_from(asio::buffer(buffer), endpoint_);
 
-			if(!ec || ec == boost::asio::error::message_size) {
+			if(!ec || ec == asio::error::message_size) {
 				send_health_status();
 				receive();
 			}
@@ -61,7 +61,7 @@ void Monitor::receive() {
 void Monitor::send_health_status() {
 	auto message = std::make_shared<std::string>(generate_message());
 
-	socket_.async_send_to(boost::asio::buffer(*message), endpoint_, 
+	socket_.async_send_to(asio::buffer(*message), endpoint_, 
 		[message](const boost::system::error_code&, std::size_t) { });
 }
 

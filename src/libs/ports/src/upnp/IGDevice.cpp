@@ -157,7 +157,7 @@ BufType IGDevice::build_http_post_request(std::string&& body, const std::string&
 	return build_http_request<BufType>(request);
 }
 
-ba::awaitable<void> IGDevice::request_igdd(HTTPTransport& transport) {
+asio::awaitable<void> IGDevice::request_igdd(HTTPTransport& transport) {
 	HTTPRequest http_req{
 		.method = "GET",
 		.url = dev_desc_uri_,
@@ -172,7 +172,7 @@ ba::awaitable<void> IGDevice::request_igdd(HTTPTransport& transport) {
 	co_await transport.send(std::move(buffer));
 }
 
-ba::awaitable<void> IGDevice::request_scpd(HTTPTransport& transport) {
+asio::awaitable<void> IGDevice::request_scpd(HTTPTransport& transport) {
 	auto scpd_uri = igdd_xml_->get_node_value(service_, "SCPDURL");
 
 	if(!scpd_uri) {
@@ -193,7 +193,7 @@ ba::awaitable<void> IGDevice::request_scpd(HTTPTransport& transport) {
 	co_await transport.send(std::move(buffer));
 }
 
-ba::awaitable<void> IGDevice::refresh_scpd(HTTPTransport& transport) {
+asio::awaitable<void> IGDevice::refresh_scpd(HTTPTransport& transport) {
 	co_await request_scpd(transport);
 	const auto& [header, buffer] = co_await transport.receive_http_response();
 	const auto body = http_body_view(header, buffer);
@@ -223,7 +223,7 @@ std::string_view IGDevice::http_body_view(const HTTPHeader& header, std::span<co
 	return body;
 }
 
-ba::awaitable<void> IGDevice::refresh_igdd(HTTPTransport& transport) {
+asio::awaitable<void> IGDevice::refresh_igdd(HTTPTransport& transport) {
 	co_await request_igdd(transport);
 	const auto& [header, buffer] = co_await transport.receive_http_response();
 	const auto body = http_body_view(header, buffer);
@@ -242,7 +242,7 @@ ba::awaitable<void> IGDevice::refresh_igdd(HTTPTransport& transport) {
 	igdd_xml_ = std::make_unique<XMLParser>(body);
 }
 
-ba::awaitable<void> IGDevice::refresh_xml_cache(HTTPTransport& transport) {
+asio::awaitable<void> IGDevice::refresh_xml_cache(HTTPTransport& transport) {
 	const auto time = std::chrono::steady_clock::now();
 
 	if(time > igdd_cc_) {
@@ -254,7 +254,7 @@ ba::awaitable<void> IGDevice::refresh_xml_cache(HTTPTransport& transport) {
 	}
 }
 
-ba::awaitable<ErrorCode> IGDevice::process_request(HTTPTransport& transport, use_awaitable_t) try {
+asio::awaitable<ErrorCode> IGDevice::process_request(HTTPTransport& transport, use_awaitable_t) try {
 	co_await transport.connect(hostname_, port_);
 	co_await refresh_xml_cache(transport);	
 	co_return ErrorCode::success;
@@ -264,7 +264,7 @@ ba::awaitable<ErrorCode> IGDevice::process_request(HTTPTransport& transport, use
 	co_return  ErrorCode::http_bad_response;
 }
 
-ba::awaitable<void> IGDevice::process_request(std::shared_ptr<UPnPRequest> request) {
+asio::awaitable<void> IGDevice::process_request(std::shared_ptr<UPnPRequest> request) {
 	ErrorCode ec { ErrorCode::success };
 
 	try {
@@ -280,7 +280,7 @@ ba::awaitable<void> IGDevice::process_request(std::shared_ptr<UPnPRequest> reque
 }
 
 
-ba::awaitable<ErrorCode> IGDevice::do_delete_port_mapping(const Mapping& mapping,
+asio::awaitable<ErrorCode> IGDevice::do_delete_port_mapping(const Mapping& mapping,
                                                           HTTPTransport& transport) {
 	const auto post_uri = igdd_xml_->get_node_value(service_, "controlURL");
 
@@ -338,7 +338,7 @@ ErrorCode IGDevice::validate_soap_arguments(const UPnPActionArgs& args) {
 	return ErrorCode::success;
 }
 
-ba::awaitable<ErrorCode> IGDevice::do_add_port_mapping(Mapping mapping, HTTPTransport& transport) {
+asio::awaitable<ErrorCode> IGDevice::do_add_port_mapping(Mapping mapping, HTTPTransport& transport) {
 	const auto post_uri = igdd_xml_->get_node_value(service_, "controlURL");
 
 	if(!post_uri) {
@@ -384,12 +384,12 @@ void IGDevice::launch_request(UPnPRequest::Handler&& handler) {
 	};
 
 	auto request_ptr = std::make_shared<UPnPRequest>(std::move(request));
-	ba::co_spawn(ctx_, process_request(std::move(request_ptr)), ba::detached);
+	asio::co_spawn(ctx_, process_request(std::move(request_ptr)), asio::detached);
 }
 
 void IGDevice::add_port_mapping(Mapping mapping, Result cb) {
 	auto handler = [&, mapping, cb = std::move(cb)](HTTPTransport& transport,
-	                                                ErrorCode ec) -> ba::awaitable<void> {
+	                                                ErrorCode ec) -> asio::awaitable<void> {
 		if(!ec) {
 			auto result = co_await do_add_port_mapping(mapping, transport);
 			cb(result);
@@ -403,7 +403,7 @@ void IGDevice::add_port_mapping(Mapping mapping, Result cb) {
 
 void IGDevice::delete_port_mapping(Mapping mapping, Result cb) {
 	auto handler = [&, mapping, cb = std::move(cb)](HTTPTransport& transport,
-	                                                ErrorCode ec) -> ba::awaitable<void> {
+	                                                ErrorCode ec) -> asio::awaitable<void> {
 		if(!ec) {
 			auto result = co_await do_delete_port_mapping(mapping, transport);
 			cb(result);
@@ -415,7 +415,7 @@ void IGDevice::delete_port_mapping(Mapping mapping, Result cb) {
 	launch_request(std::move(handler));
 }
 
-ba::awaitable<ErrorCode> IGDevice::add_port_mapping(const Mapping& mapping, use_awaitable_t) {
+asio::awaitable<ErrorCode> IGDevice::add_port_mapping(const Mapping& mapping, use_awaitable_t) {
 	HTTPTransport transport(ctx_, bind_);
 
 	auto res = co_await process_request(transport, use_awaitable);
@@ -438,7 +438,7 @@ std::future<ErrorCode> IGDevice::add_port_mapping(const Mapping& mapping, use_fu
 	return future;
 }
 
-ba::awaitable<ErrorCode> IGDevice::delete_port_mapping(Mapping mapping, use_awaitable_t) {
+asio::awaitable<ErrorCode> IGDevice::delete_port_mapping(Mapping mapping, use_awaitable_t) {
 	HTTPTransport transport(ctx_, bind_);
 	auto res = co_await process_request(transport, use_awaitable);
 

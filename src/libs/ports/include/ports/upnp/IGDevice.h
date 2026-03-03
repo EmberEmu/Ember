@@ -46,7 +46,7 @@ using Result = std::function<void(ErrorCode)>;
 class IGDevice;
 
 struct UPnPRequest {
-	using Handler = std::function<ba::awaitable<void>(HTTPTransport&, ErrorCode)>;
+	using Handler = std::function<asio::awaitable<void>(HTTPTransport&, ErrorCode)>;
 
 	std::unique_ptr<HTTPTransport> transport;
 	Handler handler;
@@ -72,19 +72,19 @@ private:
 	std::unique_ptr<SCPDXMLParser> scpd_xml_;
 
 	void parse_location(const std::string& location);
-	ba::awaitable<void> refresh_xml_cache(HTTPTransport& transport);
-	ba::awaitable<void> refresh_scpd(HTTPTransport& transport);
-	ba::awaitable<void> refresh_igdd(HTTPTransport& transport);
-	ba::awaitable<void> request_scpd(HTTPTransport& transport);
-	ba::awaitable<void> request_igdd(HTTPTransport& transport);
-	ba::awaitable<ErrorCode> do_add_port_mapping(Mapping mapping, HTTPTransport& transport);
-	ba::awaitable<ErrorCode> do_delete_port_mapping(const Mapping& mapping, HTTPTransport& transport);
+	asio::awaitable<void> refresh_xml_cache(HTTPTransport& transport);
+	asio::awaitable<void> refresh_scpd(HTTPTransport& transport);
+	asio::awaitable<void> refresh_igdd(HTTPTransport& transport);
+	asio::awaitable<void> request_scpd(HTTPTransport& transport);
+	asio::awaitable<void> request_igdd(HTTPTransport& transport);
+	asio::awaitable<ErrorCode> do_add_port_mapping(Mapping mapping, HTTPTransport& transport);
+	asio::awaitable<ErrorCode> do_delete_port_mapping(const Mapping& mapping, HTTPTransport& transport);
 	ErrorCode validate_soap_arguments(const UPnPActionArgs& args);
 	std::string protocol_to_string(const Protocol protocol);
 
 	void launch_request(UPnPRequest::Handler&& handler);
-	ba::awaitable<void> process_request(std::shared_ptr<UPnPRequest> request);
-	ba::awaitable<ErrorCode> process_request(HTTPTransport& transport, use_awaitable_t);
+	asio::awaitable<void> process_request(std::shared_ptr<UPnPRequest> request);
+	asio::awaitable<ErrorCode> process_request(HTTPTransport& transport, use_awaitable_t);
 
 	template<typename BufType>
 	BufType build_http_post_request(std::string&& body, const std::string& action,
@@ -108,11 +108,11 @@ public:
 
 	void add_port_mapping(Mapping mapping, Result cb);
 	std::future<ErrorCode> add_port_mapping(const Mapping& mapping, use_future_t);
-	ba::awaitable<ErrorCode> add_port_mapping(const Mapping& mapping, use_awaitable_t);
+	asio::awaitable<ErrorCode> add_port_mapping(const Mapping& mapping, use_awaitable_t);
 
 	void delete_port_mapping(Mapping mapping, Result cb);
 	std::future<ErrorCode> delete_port_mapping(Mapping mapping, use_future_t);
-	ba::awaitable<ErrorCode> delete_port_mapping(Mapping mapping, use_awaitable_t);
+	asio::awaitable<ErrorCode> delete_port_mapping(Mapping mapping, use_awaitable_t);
 
 	const std::string& host() const;
 };
