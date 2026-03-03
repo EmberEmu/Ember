@@ -16,16 +16,18 @@
 
 namespace ember::stun {
 
-DatagramTransport::DatagramTransport(ba::io_context& ctx,
+namespace asio = boost::asio;
+
+DatagramTransport::DatagramTransport(asio::io_context& ctx,
                                      std::string_view bind,
                                      std::chrono::milliseconds timeout,
                                      unsigned int retries)
-	: ctx_(ctx),
-	  socket_(ctx_, ba::ip::udp::endpoint(ba::ip::make_address(bind), 0)),
-	  timeout_(timeout),
-	  retries_(retries),
-	  resolver_(ctx_) {	
-	ba::post(ctx_, [&]() {
+	: ctx_(ctx)
+	, socket_(ctx_, asio::ip::udp::endpoint(asio::ip::make_address(bind), 0))
+	, timeout_(timeout)
+	, retries_(retries)
+	, resolver_(ctx_) {	
+	asio::post(ctx_, [&]() {
 		receive();
 	});
 }
@@ -38,7 +40,7 @@ DatagramTransport::~DatagramTransport() {
 void DatagramTransport::connect(const std::string_view host, const std::uint16_t port, OnConnect&& cb) {
 	resolver_.async_resolve(host, std::to_string(port),
 		[&, cb = std::move(cb)](const boost::system::error_code& ec,
-		                        ba::ip::udp::resolver::results_type results) {
+		                        asio::ip::udp::resolver::results_type results) {
 			if(!ec) {
 				remote_ep_ = results.begin()->endpoint();
 
@@ -53,9 +55,9 @@ void DatagramTransport::do_write() {
 	auto datagram = std::move(queue_.front());
 	queue_.pop();
 
-	socket_.async_send_to(ba::buffer(*datagram), remote_ep_,
+	socket_.async_send_to(asio::buffer(*datagram), remote_ep_,
 		[this, dg = datagram](boost::system::error_code ec, std::size_t /*bytes_sent*/) {
-			if(ec == ba::error::operation_aborted) {
+			if(ec == asio::error::operation_aborted) {
 				return;
 			} else if(ec) {
 				ecb_(ec);
@@ -70,7 +72,7 @@ void DatagramTransport::do_write() {
 }
 
 void DatagramTransport::send(std::shared_ptr<std::vector<std::uint8_t>> message) {
-	ba::post(ctx_, [this, datagram = std::move(message)]() mutable {
+	asio::post(ctx_, [this, datagram = std::move(message)]() mutable {
 		queue_.emplace(std::move(datagram));
 
 		if(queue_.size() == 1) {
@@ -85,9 +87,9 @@ void DatagramTransport::send(std::vector<std::uint8_t> message) {
 }
 
 void DatagramTransport::receive() {
-	socket_.async_wait(ba::ip::tcp::socket::wait_read,
+	socket_.async_wait(asio::ip::tcp::socket::wait_read,
 		[this](boost::system::error_code ec) {
-			if(ec == ba::error::operation_aborted) {
+			if(ec == asio::error::operation_aborted) {
 				return;
 			} else if(ec) {
 				ecb_(ec);
@@ -95,8 +97,8 @@ void DatagramTransport::receive() {
 			}
 
 			boost::container::small_vector<std::uint8_t, INITIAL_RECV_BUFFER_SIZE> buffer(socket_.available());
-			ba::socket_base::message_flags flags(0);
-			const std::size_t recv = socket_.receive_from(ba::buffer(buffer), ep_, flags, ec);
+			asio::socket_base::message_flags flags(0);
+			const std::size_t recv = socket_.receive_from(asio::buffer(buffer), ep_, flags, ec);
 			buffer.resize(recv);
 
 			if(!ec) {
@@ -134,8 +136,8 @@ std::string DatagramTransport::local_ip() const {
 	 * encourage the user to explicitly bind to an interface (supported)
 	 */
 	if(local_ip == "0.0.0.0" || local_ip == "::") {
-		ba::ip::tcp::resolver resolver(ctx_);
-		const auto results = resolver.resolve(ba::ip::host_name(), "");
+		asio::ip::tcp::resolver resolver(ctx_);
+		const auto results = resolver.resolve(asio::ip::host_name(), "");
 
 		for(const auto& entry : results) {
 			if((entry.endpoint().address().is_v4()

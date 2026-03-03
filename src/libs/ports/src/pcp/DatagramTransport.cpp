@@ -14,12 +14,14 @@
 
 namespace ember::ports {
 
-DatagramTransport::DatagramTransport(const std::string_view bind, std::uint16_t port, ba::io_context& ctx)
-	: socket_(boost::asio::make_strand(ctx), ba::ip::udp::endpoint(ba::ip::make_address(bind), port))
-	, resolver_(socket_.get_executor()) {
-	socket_.set_option(ba::ip::udp::socket::reuse_address(true));
+namespace asio = boost::asio;
 
-	ba::post(socket_.get_executor(), [&]() {
+DatagramTransport::DatagramTransport(const std::string_view bind, std::uint16_t port, asio::io_context& ctx)
+	: socket_(asio::make_strand(ctx), asio::ip::udp::endpoint(asio::ip::make_address(bind), port))
+	, resolver_(socket_.get_executor()) {
+	socket_.set_option(asio::ip::udp::socket::reuse_address(true));
+
+	asio::post(socket_.get_executor(), [&]() {
 		receive();
 	});
 }
@@ -29,13 +31,13 @@ DatagramTransport::~DatagramTransport() {
 }
 
 void DatagramTransport::join_group(const std::string_view address) {
-	const auto group_ip = ba::ip::make_address(address);
+	const auto group_ip = asio::ip::make_address(address);
 	const auto mcast_iface = socket_.local_endpoint().address();
-	ba::ip::multicast::join_group join_opt{};
+	asio::ip::multicast::join_group join_opt{};
 
 	// Asio is doing something weird on Windows, this is a hack
 	if(mcast_iface.is_v4()) {
-		join_opt = ba::ip::multicast::join_group(group_ip.to_v4(), mcast_iface.to_v4());
+		join_opt = asio::ip::multicast::join_group(group_ip.to_v4(), mcast_iface.to_v4());
 	}
 
 	socket_.set_option(join_opt);
@@ -43,7 +45,7 @@ void DatagramTransport::join_group(const std::string_view address) {
 
 void DatagramTransport::resolve(const std::string_view host, const std::uint16_t port, OnResolve&& cb) {
 	resolver_.async_resolve(host, std::to_string(port),
-		[&, cb = std::move(cb)](const auto& ec, ba::ip::udp::resolver::results_type results) {
+		[&, cb = std::move(cb)](const auto& ec, asio::ip::udp::resolver::results_type results) {
 			if(!ec) {
 				remote_ep_ = results.begin()->endpoint();
 			}
@@ -55,12 +57,12 @@ void DatagramTransport::resolve(const std::string_view host, const std::uint16_t
 
 void DatagramTransport::do_write() {
 	auto datagram = std::move(queue_.front());
-	auto buffer = ba::buffer(*datagram);
+	auto buffer = asio::buffer(*datagram);
 	queue_.pop();
 
 	socket_.async_send_to(buffer, remote_ep_,
 		[this, dg = std::move(datagram)](auto ec, std::size_t /*bytes_sent*/) {
-			if(ec == ba::error::operation_aborted) {
+			if(ec == asio::error::operation_aborted) {
 				return;
 			} else if(ec) {
 				ecb_(ec);
@@ -75,7 +77,7 @@ void DatagramTransport::do_write() {
 }
 
 void DatagramTransport::send(std::shared_ptr<std::vector<std::uint8_t>> message) {
-	ba::post(socket_.get_executor(), [&, datagram = std::move(message)]() mutable {
+	asio::post(socket_.get_executor(), [&, datagram = std::move(message)]() mutable {
 		queue_.emplace(std::move(datagram));
 
 		if(queue_.size() == 1) {
@@ -90,9 +92,9 @@ void DatagramTransport::send(std::vector<std::uint8_t> message) {
 }
 
 void DatagramTransport::receive() {
-	socket_.async_wait(ba::ip::udp::socket::wait_read,
+	socket_.async_wait(asio::ip::udp::socket::wait_read,
 		[this](boost::system::error_code ec) {
-			if(ec == ba::error::operation_aborted) {
+			if(ec == asio::error::operation_aborted) {
 				return;
 			} else if(ec) {
 				ecb_(ec);
@@ -100,8 +102,8 @@ void DatagramTransport::receive() {
 			}
 
 			boost::container::small_vector<std::uint8_t, INITIAL_RECV_BUFFER_SIZE> buffer(socket_.available());
-			ba::socket_base::message_flags flags(0);
-			const std::size_t recv = socket_.receive_from(ba::buffer(buffer), ep_, flags, ec);
+			asio::socket_base::message_flags flags(0);
+			const std::size_t recv = socket_.receive_from(asio::buffer(buffer), ep_, flags, ec);
 			buffer.resize(recv);
 
 			if(!ec) {

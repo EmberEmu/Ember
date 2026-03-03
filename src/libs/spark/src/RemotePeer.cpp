@@ -17,7 +17,7 @@
 #include <shared/FilterTypes.h>
 #include <gsl/narrow>
 
-namespace ba = boost::asio;
+namespace asio = boost::asio;
 
 namespace ember::spark {
 

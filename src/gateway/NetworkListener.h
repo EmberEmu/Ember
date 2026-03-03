@@ -22,7 +22,7 @@
 
 namespace ember::gateway {
 
-namespace bai = boost::asio::ip;
+namespace asio = boost::asio;
 
 class NetworkListener final {
 	SessionManager sessions_;
@@ -40,14 +40,14 @@ public:
 	                bool tcp_no_delay, log::Logger& logger)
 		: acceptor_(
 			pool.get(), 
-			bai::tcp::endpoint(bai::make_address(interface), port)
+			asio::ip::tcp::endpoint(asio::ip::make_address(interface), port)
 		  ),
 		  pool_(pool),
 		  index_(0),
 		  socket_(pool.get(0)),
 		  logger_(logger) {
-		acceptor_.set_option(bai::tcp::no_delay(tcp_no_delay));
-		acceptor_.set_option(bai::tcp::acceptor::reuse_address(true));
+		acceptor_.set_option(asio::ip::tcp::no_delay(tcp_no_delay));
+		acceptor_.set_option(asio::ip::tcp::acceptor::reuse_address(true));
 		accept_connection();
 	}
 

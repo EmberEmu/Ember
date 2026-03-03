@@ -25,25 +25,25 @@
 
 namespace ember::spark {
 
-namespace ba = boost::asio;
+namespace asio = boost::asio;
 
 Server::Server(boost::asio::io_context& context, std::string_view name,
                std::string_view iface, const std::uint16_t port, log::Logger& logger)
 	: ctx_(context),
-	  acceptor_(context, ba::ip::tcp::endpoint(ba::ip::make_address(iface), port)),
+	  acceptor_(context, asio::ip::tcp::endpoint(asio::ip::make_address(iface), port)),
 	  resolver_(context),
 	  logger_(logger),
 	  stopped_(false) {
-	acceptor_.set_option(ba::ip::tcp::no_delay(true));
-	acceptor_.set_option(ba::ip::tcp::acceptor::reuse_address(true));
+	acceptor_.set_option(asio::ip::tcp::no_delay(true));
+	acceptor_.set_option(asio::ip::tcp::acceptor::reuse_address(true));
 
 	// generate random unique name for this service
 	const auto uuid = boost::uuids::random_generator()();
 	name_ = std::format("{}:{}", name, boost::uuids::to_string(uuid));
-	ba::co_spawn(ctx_, listen(), ba::detached);
+	asio::co_spawn(ctx_, listen(), asio::detached);
 }
 
-ba::awaitable<void> Server::listen() {
+asio::awaitable<void> Server::listen() {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	while(acceptor_.is_open()) {
@@ -51,10 +51,10 @@ ba::awaitable<void> Server::listen() {
 	}
 }
 
-ba::awaitable<void> Server::accept_connection() {
+asio::awaitable<void> Server::accept_connection() {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
-	ba::ip::tcp::socket socket(ctx_);
+	asio::ip::tcp::socket socket(ctx_);
 	auto [ec] = co_await acceptor_.async_accept(socket, boost::asio::as_tuple);
 
 	if(ec) {
@@ -72,7 +72,7 @@ ba::awaitable<void> Server::accept_connection() {
 	co_await accept(std::move(socket));
 }
 
-ba::awaitable<void> Server::accept(boost::asio::ip::tcp::socket socket) try {
+asio::awaitable<void> Server::accept(boost::asio::ip::tcp::socket socket) try {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	auto ep = socket.remote_endpoint();
@@ -110,14 +110,14 @@ void Server::deregister_handler(gsl::not_null<Handler*> handler) {
 	LOG_TRACE_ASYNC(logger_, "[spark] Removed handler for {}", handler->type());
 }
 
-ba::awaitable<std::shared_ptr<RemotePeer>>
+asio::awaitable<std::shared_ptr<RemotePeer>>
 Server::connect(const std::string_view host, const std::uint16_t port) try {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	auto results = co_await resolver_.async_resolve(host, std::to_string(port));
 
-	ba::ip::tcp::socket socket(ctx_);
-	co_await ba::async_connect(socket, results.begin(), results.end());
+	asio::ip::tcp::socket socket(ctx_);
+	co_await asio::async_connect(socket, results.begin(), results.end());
 
 	const auto key = std::format("{}:{}", host, port);
 
@@ -140,7 +140,7 @@ Server::connect(const std::string_view host, const std::uint16_t port) try {
 	co_return nullptr;
 }
 
-ba::awaitable<void> Server::try_open(std::string host, std::uint16_t port,
+asio::awaitable<void> Server::try_open(std::string host, std::uint16_t port,
                                      std::string service, gsl::not_null<Handler*> handler) {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
@@ -174,12 +174,12 @@ void Server::connect(std::string host, const std::uint16_t port,
                      std::string service, gsl::not_null<Handler*> handler) {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
-	ba::co_spawn(ctx_, try_open(
-		std::move(host), port, std::move(service), handler), ba::detached
+	asio::co_spawn(ctx_, try_open(
+		std::move(host), port, std::move(service), handler), asio::detached
 	);
 }
 
-ba::awaitable<void> Server::send_banner(Connection& conn, const std::string& banner) {
+asio::awaitable<void> Server::send_banner(Connection& conn, const std::string& banner) {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	core::HelloT hello {
@@ -193,7 +193,7 @@ ba::awaitable<void> Server::send_banner(Connection& conn, const std::string& ban
 }
 
 
-ba::awaitable<std::string> Server::receive_banner(Connection& conn) {
+asio::awaitable<std::string> Server::receive_banner(Connection& conn) {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	auto msg = co_await conn.receive_msg();

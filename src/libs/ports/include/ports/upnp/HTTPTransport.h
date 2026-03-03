@@ -24,7 +24,7 @@
 
 namespace ember::ports::upnp {
 
-namespace ba = boost::asio;
+namespace asio = boost::asio;
 using namespace std::chrono_literals;
 
 class HTTPTransport final {
@@ -36,30 +36,30 @@ private:
 	static constexpr std::size_t MAX_BUFFER_SIZE = 1024u * 1024u;
 	static constexpr auto READ_TIMEOUT = 60s;
 
-	ba::ip::tcp::socket socket_;
-	ba::ip::tcp::endpoint ep_;
-	ba::ip::tcp::resolver resolver_;
-	ba::steady_timer timeout_;
+	asio::ip::tcp::socket socket_;
+	asio::ip::tcp::endpoint ep_;
+	asio::ip::tcp::resolver resolver_;
+	asio::steady_timer timeout_;
 	std::vector<char> buffer_;
 
 	bool buffer_resize(const std::size_t offset);
 	void start_timer();
 	void stop_timer();
-	ba::awaitable<std::size_t> read(std::size_t offset);
+	asio::awaitable<std::size_t> read(std::size_t offset);
 	bool http_headers_completion(std::size_t read);
 	std::size_t http_body_completion(const HTTPHeader& header, std::size_t read);
 
 public:
-	HTTPTransport(ba::io_context& ctx, std::string_view bind);
+	HTTPTransport(asio::io_context& ctx, std::string_view bind);
 	~HTTPTransport();
 
-	ba::awaitable<Response> receive_http_response();
-	ba::awaitable<void> connect(const std::string_view host, std::uint16_t port);
-	ba::awaitable<void> send(std::shared_ptr<std::vector<std::uint8_t>> message);
-	ba::awaitable<void> send(std::vector<std::uint8_t> message);
+	asio::awaitable<Response> receive_http_response();
+	asio::awaitable<void> connect(const std::string_view host, std::uint16_t port);
+	asio::awaitable<void> send(std::shared_ptr<std::vector<std::uint8_t>> message);
+	asio::awaitable<void> send(std::vector<std::uint8_t> message);
 	void close();
 	bool is_open() const;
-	ba::ip::tcp::endpoint local_endpoint() const;
+	asio::ip::tcp::endpoint local_endpoint() const;
 };
 
 } // upnp, ports, ember

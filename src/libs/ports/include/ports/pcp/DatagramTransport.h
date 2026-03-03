@@ -20,34 +20,33 @@
 
 namespace ember::ports {
 
-namespace ba = boost::asio;
 using namespace std::chrono_literals;
 
 class DatagramTransport final {
 	static const std::size_t INITIAL_RECV_BUFFER_SIZE = 2048;
 
-	using OnReceive = std::function<void(std::span<std::uint8_t>, const ba::ip::udp::endpoint&)>;
+	using OnReceive = std::function<void(std::span<std::uint8_t>, const boost::asio::ip::udp::endpoint&)>;
 	using OnConnectionError = std::function<void(const boost::system::error_code&)>;
 	using OnResolve = std::function<void(const boost::system::error_code&,
-	                                     const ba::ip::udp::endpoint& ep)>;
+	                                     const boost::asio::ip::udp::endpoint& ep)>;
 
 	OnReceive rcb_;
 	OnConnectionError ecb_;
 	OnResolve ocb_;
 
-	ba::ip::udp::socket socket_;
-	ba::ip::udp::endpoint ep_;
-	ba::ip::udp::endpoint remote_ep_;
+	boost::asio::ip::udp::socket socket_;
+	boost::asio::ip::udp::endpoint ep_;
+	boost::asio::ip::udp::endpoint remote_ep_;
 
 	std::queue<std::shared_ptr<std::vector<std::uint8_t>>> queue_;
 	std::vector<std::uint8_t> buffer_;
-	ba::ip::udp::resolver resolver_;
+	boost::asio::ip::udp::resolver resolver_;
 
 	void receive();
 	void do_write();
 
 public:
-	DatagramTransport(const std::string_view bind, std::uint16_t port, ba::io_context& ctx_);
+	DatagramTransport(const std::string_view bind, std::uint16_t port, boost::asio::io_context& ctx_);
 	~DatagramTransport();
 
 	void set_callbacks(OnReceive rcb, OnConnectionError ecb);

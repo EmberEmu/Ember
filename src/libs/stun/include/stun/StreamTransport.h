@@ -21,7 +21,7 @@
 
 namespace ember::stun {
 
-namespace ba = boost::asio;
+namespace asio = boost::asio;
 using namespace std::chrono_literals;
 
 class StreamTransport final : public Transport {
@@ -29,9 +29,9 @@ class StreamTransport final : public Transport {
 		READ_HEADER, READ_BODY, READ_DONE
 	} state_ = ReadState::READ_HEADER;
 
-	ba::io_context& ctx_;
-	ba::ip::tcp::socket socket_;
-	ba::ip::tcp::resolver resolver_;
+	asio::io_context& ctx_;
+	asio::ip::tcp::socket socket_;
+	asio::ip::tcp::resolver resolver_;
 	boost::asio::executor_work_guard<boost::asio::io_context::executor_type> work_;
 
 	std::vector<std::uint8_t> buffer_;
@@ -42,10 +42,10 @@ class StreamTransport final : public Transport {
 	void read(std::size_t size, std::size_t offset);
 	void receive();
 	void do_write();
-	void do_connect(ba::ip::tcp::resolver::results_type results, OnConnect&& cb);
+	void do_connect(asio::ip::tcp::resolver::results_type results, OnConnect&& cb);
 
 public:
-	StreamTransport(ba::io_context& ctx, std::string_view bind, std::chrono::milliseconds timeout = 39500ms);
+	StreamTransport(asio::io_context& ctx, std::string_view bind, std::chrono::milliseconds timeout = 39500ms);
 	~StreamTransport();
 
 	void connect(const std::string_view host, std::uint16_t port, OnConnect&& cb) override;

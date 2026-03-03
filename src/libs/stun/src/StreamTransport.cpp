@@ -18,10 +18,10 @@
 
 namespace ember::stun {
 
-StreamTransport::StreamTransport(ba::io_context& ctx, std::string_view bind, std::chrono::milliseconds timeout)
+StreamTransport::StreamTransport(asio::io_context& ctx, std::string_view bind, std::chrono::milliseconds timeout)
 	: ctx_(ctx),
 	  timeout_(timeout), 
-	  socket_(ctx_, ba::ip::tcp::endpoint(ba::ip::make_address(bind), 0)),
+	  socket_(ctx_, asio::ip::tcp::endpoint(asio::ip::make_address(bind), 0)),
 	  resolver_(ctx_), 
 	  work_(boost::asio::make_work_guard(ctx_)) {
 	socket_.set_option(boost::asio::ip::tcp::no_delay(true));
@@ -36,7 +36,7 @@ StreamTransport::~StreamTransport() {
 void StreamTransport::connect(const std::string_view host, const std::uint16_t port, OnConnect&& cb) {
 	resolver_.async_resolve(host, std::to_string(port),
 		[&, cb = std::move(cb)](const boost::system::error_code& ec,
-		         ba::ip::tcp::resolver::results_type endpoints) mutable {
+		         asio::ip::tcp::resolver::results_type endpoints) mutable {
 			if(!ec) {
 				do_connect(std::move(endpoints), std::move(cb));
 			} else {
@@ -46,9 +46,9 @@ void StreamTransport::connect(const std::string_view host, const std::uint16_t p
 	);
 }
 
-void StreamTransport::do_connect(ba::ip::tcp::resolver::results_type endpoints, OnConnect&& cb) {
+void StreamTransport::do_connect(asio::ip::tcp::resolver::results_type endpoints, OnConnect&& cb) {
 	boost::asio::async_connect(socket_, endpoints,
-		[&, cb = std::move(cb)](const boost::system::error_code& ec, ba::ip::tcp::endpoint) {
+		[&, cb = std::move(cb)](const boost::system::error_code& ec, asio::ip::tcp::endpoint) {
 			if(!ec) {
 				state_ = ReadState::READ_HEADER;
 				receive();
@@ -63,7 +63,7 @@ void StreamTransport::do_write() {
 	auto data = std::move(queue_.front());
 	queue_.pop();
 
-	ba::async_write(socket_, boost::asio::buffer(*data),
+	asio::async_write(socket_, boost::asio::buffer(*data),
 		[this, d = data](boost::system::error_code ec, std::size_t /*sent*/) {
 			if(ec == boost::asio::error::operation_aborted) {
 				return;
