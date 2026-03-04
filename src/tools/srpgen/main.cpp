@@ -13,9 +13,9 @@
 #include <algorithm>
 #include <exception>
 #include <format>
+#include <fstream>
 #include <iomanip>
 #include <iostream>
-#include <fstream>
 #include <string>
 #include <string_view>
 #include <cctype>
@@ -93,14 +93,12 @@ void plaintext_output(const std::string_view username, const Botan::BigInt& veri
 }
 
 void json_output(const std::string_view username, const Botan::BigInt& verifier, std::span<std::uint8_t> salt) {
-	const auto vstr = std::format("0x{}", verifier.to_hex_string());
-	const auto saltdec = Botan::BigInt::from_bytes(salt);
-	const auto sstr = std::format("0x{}",  saltdec.to_hex_string());
+	const auto salt_enc = Botan::BigInt::from_bytes(salt);
 
 	json data;
 	data["username"] = username;
-	data["verifier"] = vstr;
-	data["salt"] = sstr;
+	data["verifier"] = verifier.to_hex_string();
+	data["salt"] = salt_enc.to_hex_string();
 	std::cout << data.dump(4);
 }
 
@@ -122,6 +120,5 @@ opts::variables_map parse_arguments(const int argc, const char* argv[]) {
 	}
 
 	opts::notify(options);
-
 	return options;
 }
