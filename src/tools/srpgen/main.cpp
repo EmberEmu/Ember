@@ -47,12 +47,14 @@ void launch(const opts::variables_map& args) {
 		return std::toupper(c);
 	};
 
+	// the game client uppercase cases input, so we need to do the same
 	std::ranges::transform(username, username.begin(), upper);
 	std::ranges::transform(password, password.begin(), upper);
 
-	auto gen = srp6::Generator(srp6::Generator::Group::g_256_bit);
 	std::array<std::uint8_t, 32> salt;
 	srp6::generate_salt(salt);
+	auto gen = srp6::Generator(srp6::Generator::Group::g_256_bit);
+
 	auto verifier = srp6::generate_verifier(username, password, gen, salt, srp6::Compliance::game);
 
 	if(args["json"].as<bool>()) {
