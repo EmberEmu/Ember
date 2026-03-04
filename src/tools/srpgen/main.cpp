@@ -12,7 +12,6 @@
 #include <boost/program_options.hpp>
 #include <algorithm>
 #include <exception>
-#include <format>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
