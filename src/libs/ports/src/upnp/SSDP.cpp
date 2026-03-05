@@ -187,11 +187,11 @@ void SSDP::locate_gateways(LocateHandler&& handler) {
 	});
 }
 
-void SSDP::search(const std::string_view type, std::string_view subtype,
+void SSDP::search(const std::string& type, const std::string& subtype,
                   const int version, LocateHandler&& handler) {
 	handler_ = handler;
 
-	asio::post(strand_, [&]() {
+	asio::post(strand_, [&, type, subtype, version]() {
 		asio::co_spawn(ctx_, start_ssdp_search(type, subtype, version), asio::detached);
 	});
 }
