@@ -94,15 +94,34 @@ struct ChannelNotify final {
 	}
 
 	StreamResult write_to_stream(auto& stream) const try {
-		static int foo = 0xdeadbeef;
 		stream << type;
 		stream << spark::io::null_terminated(name);
 
-		if(type != YOU_JOINED_NOTICE) {
-			stream << std::uint32_t(7);
-			std::string test("Player");
-			stream << spark::io::null_terminated(test);
-			stream << std::uint32_t(0);
+		if(type == YOU_JOINED_NOTICE) {
+			stream << std::int32_t(0); // unused
+			stream << std::int32_t(0); // channel instance display
+
+			/*
+			 * One of the following strings can be sent as an optional additional message.
+			 * Technically, any message can be sent but it'll trigger a Lua error if there
+			 * isn't a matching CHAT_*_NOTICE formatter string. Additionally, the formatter
+			 * must take the same number of arguments as CHAT_JOIN_NOTIFY_NOTICE.
+			 * SUSPENDED
+             * WRONG_FACTION
+             * WRONG_PASSWORD
+             * YOU_JOINED
+             * YOU_LEFT
+             * BANNED
+             * INVALID_NAME
+             * INVITE_WRONG_FACTION
+             * MUTED
+             * NOT_MEMBER
+             * NOT_MODERATED
+             * NOT_MODERATOR
+             * NOT_OWNER
+			 */ 
+			std::string_view message("MUTED");
+			stream << spark::io::null_terminated(message);
 		} else {
 			stream << std::uint32_t(0);
 		}

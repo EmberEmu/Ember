@@ -57,7 +57,7 @@ void initiate_player_login(ClientContext& ctx, const PlayerLogin* event) {
 	ctx.connection.send(update_object);
 
 	protocol::smsg_login_settimespeed time_speed;
-	time_speed->speed = 0.f;
+	time_speed->speed = 0.01666667f;
 	time_speed->time = get_time();
 	ctx.connection.send(time_speed);
 
@@ -78,7 +78,7 @@ void initiate_player_login(ClientContext& ctx, const PlayerLogin* event) {
 	protocol::smsg_messagechat motd;
 	motd->language = 0;
 	motd->type = protocol::server::SYSTEM;
-	motd->message = "Welcome to a hacked together Ember test. Does this spell the end of the 'world wen' memes?";
+	motd->message = "Welcome to a hacked together Ember test.";
 	motd->player_guid = 0;
 	motd->player_tag = protocol::server::TAG_NONE;
 	ctx.connection.send(motd);
@@ -107,10 +107,6 @@ void handle_active_mover(ClientContext& ctx) {
 	if(!ctx.handler.deserialise(packet, *ctx.stream)) {
 		return;
 	}
-
-	/*protocol::smsg_spline_move_set_walk_mode response;
-	response->guid = packet->guid;*/
-	//ctx.connection.send(response);
 }
 
 void handle_query_time(ClientContext& ctx) {
@@ -274,11 +270,6 @@ void handle_join_channel(ClientContext& ctx) {
 	ctx.connection.send(response);
 
 	LOG_DEBUG_ASYNC(ctx.logger, "{}", response->name);
-
-	protocol::smsg_channel_notify response2;
-	response2->type = response->LEFT_NOTICE;
-	response2->name = "LocalDefense - Elwynn Forest";
-	ctx.connection.send(response2);
 }
 
 void handle_tutorial_flag(ClientContext& ctx) {
@@ -296,7 +287,7 @@ void handle_messagechat(ClientContext& ctx) {
 		return;
 	}
 
-	LOG_DEBUG_ASYNC(ctx.logger, "{}", packet->message);
+	LOG_DEBUG_ASYNC(ctx.logger, "{}: {}", packet->destination, packet->message);
 
 	protocol::smsg_messagechat response;
 	response->type = (decltype(response->type))packet->type; // kek
