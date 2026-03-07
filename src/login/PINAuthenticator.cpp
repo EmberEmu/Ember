@@ -10,6 +10,7 @@
 #include <shared/utility/xoroshiro128plus.h>
 #include <shared/utility/base32.h>
 #include <boost/assert.hpp>
+#include <boost/container/static_vector.hpp>
 #include <boost/endian/conversion.hpp>
 #include <botan/hash.h>
 #include <botan/mac.h>
@@ -128,7 +129,8 @@ bool PINAuthenticator::validate_pin(const SaltBytes& server_salt,
 std::uint32_t PINAuthenticator::generate_totp_pin(const std::string& secret,
                                                   const int interval,
                                                   const utility::ClockBase& clock) {
-	std::inplace_vector<std::uint8_t, KEY_LENGTH> decoded_key((secret.size() + 7) / 8 * 5);
+	boost::container::static_vector<std::uint8_t, KEY_LENGTH> decoded_key((secret.size() + 7) / 8 * 5);
+
 	const int key_size = base32_decode(secret.data(), decoded_key.data(), decoded_key.size());
 
 	if(key_size == -1) {
@@ -143,7 +145,7 @@ std::uint32_t PINAuthenticator::generate_totp_pin(const std::string& secret,
 	HashBytes hmac_result;
 	auto hmac = Botan::MessageAuthenticationCode::create_or_throw("HMAC(SHA-1)");
 	BOOST_ASSERT_MSG(hmac->output_length() == hmac_result.size(), "Bad hash size");
-	hmac->set_key(decoded_key.data(), key_size);
+	hmac->set_key(decoded_key);
 	hmac->update_be(step);
 	hmac->final(hmac_result.data());
 
