@@ -9,7 +9,6 @@
 #pragma once
 
 #include <shared/utility/Utility.h>
-#include <shared/utility/polyfill/start_lifetime_as>
 #include <array>
 #include <memory>
 #include <new>
@@ -99,7 +98,7 @@ class BlockAllocator {
 		auto storage = storage_.data();
 
 		for(std::size_t i = 0; i < _elements; ++i) {
-			auto block = std::start_lifetime_as<Block>(storage + (block_size * i));
+			auto block = reinterpret_cast<Block*>(storage + (block_size * i));
 			push(block);
 		}
 	}
