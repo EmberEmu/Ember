@@ -137,7 +137,7 @@ std::unique_ptr<MemoryArchive> open_archive(const std::filesystem::path& path,
 
 	stream.close();
 
-	const auto header_v0 = std::start_lifetime_as<const v0::Header>(h_buf.data());
+	const auto header_v0 = std::start_lifetime_as<v0::Header>(h_buf.data());
 
 	if(!validate_header(*header_v0)) {
 		throw exception("cannot open archive: bad header encountered");
@@ -159,7 +159,7 @@ std::unique_ptr<MemoryArchive> open_archive(const std::filesystem::path& path,
 
 std::unique_ptr<MemoryArchive> open_archive(std::span<std::byte> data,
                                             const std::uintptr_t offset) {
-	const auto header_v0 = std::start_lifetime_as<const v0::Header>(data.data() + offset);
+	const auto header_v0 = std::start_lifetime_as<v0::Header>(data.data() + offset);
 	const auto adjusted = std::span(data.data() + offset, data.size_bytes() - offset);
 
 	if(header_v0->format_version == 0) {
