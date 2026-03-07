@@ -34,7 +34,7 @@ class Service {
 public:
 	static boost::program_options::options_description options();
 
-	Service(log::Logger& logger, commands::Registry& cmd_register);
+	Service(log::Logger& logger, commands::Registry& registry);
 
 	~Service() {
 		stop();

@@ -30,7 +30,7 @@ namespace opts = boost::program_options;
 
 namespace ember::account {
 
-Service::Service(log::Logger& logger, commands::Registry& cmd_register)
+Service::Service(log::Logger& logger, commands::Registry& registry)
 	: logger(logger)
 	, registry(registry)
 	, start_time(std::chrono::steady_clock::now())
