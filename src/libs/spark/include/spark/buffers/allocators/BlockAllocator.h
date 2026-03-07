@@ -169,7 +169,7 @@ public:
 
 	inline void deallocate(_ty* t) {
 		assert(t);
-		auto block = std::start_lifetime_as<Block>(t);
+		auto block = reinterpret_cast<Block*>(t);
 
 		if constexpr(std::is_same_v<ValidatePolicy, ValidateDealloc>) {
 			assert(block->meta.thread_id == thread_id_
