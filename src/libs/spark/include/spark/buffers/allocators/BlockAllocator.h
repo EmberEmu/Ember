@@ -62,7 +62,7 @@ class BlockAllocator {
 
 	struct Block {
 		Block() {};
-		~Block() = delete;
+		~Block() {};
 
 		// this is fine because we're always reading from the member that was last assigned to
 		union {
@@ -80,7 +80,7 @@ class BlockAllocator {
 
 	Block* head_ = nullptr;
 	[[no_unique_address]] tid_type thread_id_;
-	std::array<char, block_size * _elements> storage_;
+	std::array<Block, _elements> storage_;
 
 	void page_lock_conditional() {
 		if constexpr(std::is_same_v<PageLockPolicy, PageLock>) {
@@ -95,11 +95,8 @@ class BlockAllocator {
 	}
 
 	void initialise_free_list() {
-		auto storage = storage_.data();
-
-		for(std::size_t i = 0; i < _elements; ++i) {
-			auto block = reinterpret_cast<Block*>(storage + (block_size * i));
-			push(block);
+		for(auto& element : storage_) {
+			push(&element);
 		}
 	}
 
