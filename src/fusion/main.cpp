@@ -99,23 +99,23 @@ int launch(const opts::variables_map& args, Registries& registry, bool share_log
 	// Start services
 	std::vector<std::jthread> services;
 
-	//if(args["dns.active"].as<bool>()) {
-	//	services.emplace_back(std::jthread([&]() {
-	//		launch_dns(args, registry, share_logger, logger);
-	//	}));
-	//}
+	if(args["dns.active"].as<bool>()) {
+		services.emplace_back(std::jthread([&]() {
+			launch_dns(args, registry["dns"], share_logger, logger);
+		}));
+	}
 
-	//if(args["account.active"].as<bool>()) {
-	//	services.emplace_back(std::jthread([&]() {
-	//		launch_account(args, registry, share_logger, logger);
-	//	}));
-	//}
+	if(args["account.active"].as<bool>()) {
+		services.emplace_back(std::jthread([&]() {
+			launch_account(args, registry["account"], share_logger, logger);
+		}));
+	}
 
-	//if(args["character.active"].as<bool>()) {
-	//	services.emplace_back(std::jthread([&]() {
-	//		launch_character(args, registry, share_logger, logger);
-	//	}));
-	//}
+	if(args["character.active"].as<bool>()) {
+		services.emplace_back(std::jthread([&]() {
+			launch_character(args, registry["character"], share_logger, logger);
+		}));
+	}
 
 	if(args["login.active"].as<bool>()) {
 		services.emplace_back(std::jthread([&]() {
@@ -123,17 +123,17 @@ int launch(const opts::variables_map& args, Registries& registry, bool share_log
 		}));
 	}
 
-	//if(args["gateway.active"].as<bool>()) {
-	//	services.emplace_back(std::jthread([&]() {
-	//		launch_gateway(args, registry, share_logger, logger);
-	//	}));
-	//}
+	if(args["gateway.active"].as<bool>()) {
+		services.emplace_back(std::jthread([&]() {
+			launch_gateway(args, registry["realm"], share_logger, logger);
+		}));
+	}
 
-	//if(args["world.active"].as<bool>()) {
-	//	services.emplace_back(std::jthread([&]() {
-	//		launch_world(args, registry, share_logger, logger);
-	//	}));
-	//}
+	if(args["world.active"].as<bool>()) {
+		services.emplace_back(std::jthread([&]() {
+			launch_world(args, registry["world"], share_logger, logger);
+		}));
+	}
 
 	if(services.empty()) {
 		LOG_INFO_SYNC(logger, "No services specified? Nothing to do, farewell.");

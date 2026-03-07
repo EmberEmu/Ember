@@ -12,6 +12,7 @@
 #include <commands/Registry.h>
 #include <commands/Utility.h>
 #include <shared/utility/CommandHelpers.h>
+#include <boost/lexical_cast/bad_lexical_cast.hpp>
 #include <format>
 #include <ranges>
 #include <span>
