@@ -182,7 +182,6 @@ void launch_dns(const opts::variables_map& args, commands::Registry& registry, b
 		active_logger = &logger;
 	}
 
-	commands::Registry registry;
 	dns::Service service(*active_logger, registry);
 
 	stop_handlers.emplace_back([&] {
@@ -263,7 +262,6 @@ void launch_gateway(const opts::variables_map& args, commands::Registry& registr
 		active_logger = &logger;
 	}
 
-	commands::Registry registry;
 	gateway::Service service(*active_logger, registry);
 
 	stop_handlers.emplace_back([&] {
@@ -304,7 +302,6 @@ void launch_account(const opts::variables_map& args, commands::Registry& registr
 		active_logger = &logger;
 	}
 
-	commands::Registry registry;
 	account::Service service(*active_logger, registry);
 
 	stop_handlers.emplace_back([&] {
@@ -345,7 +342,6 @@ void launch_character(const opts::variables_map& args, commands::Registry& regis
 		active_logger = &logger;
 	}
 
-	commands::Registry registry;
 	character::Service service(*active_logger, registry);
 
 	stop_handlers.emplace_back([&] {
@@ -386,7 +382,6 @@ void launch_world(const opts::variables_map& args, commands::Registry& registry,
 		active_logger = &logger;
 	}
 
-	commands::Registry registry;
 	world::Service service(*active_logger, registry);
 
 	stop_handlers.emplace_back([&] {
