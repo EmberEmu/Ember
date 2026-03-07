@@ -12,6 +12,8 @@ endif()
 
 add_executable(${EXECUTABLE_NAME}
     main.cpp
+    CommandHelpers.h
+    CommandHelpers.cpp
     ${ICON_RESOURCE}
 )
 

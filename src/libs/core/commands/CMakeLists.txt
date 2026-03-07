@@ -21,7 +21,6 @@ add_library(${LIBRARY_NAME} STATIC
     include/commands/ArgumentMap.h
     include/commands/ArgumentType.h
     include/commands/ArgumentValue.h
-    include/commands/PrefixedRegistry.h
     include/commands/ScopedCommand.h
     include/commands/UserData.h
     include/commands/Flags.h

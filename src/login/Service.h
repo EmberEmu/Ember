@@ -9,7 +9,7 @@
 #pragma once
 
 #include <logger/LoggerFwd.h>
-#include <commands/PrefixedRegistry.h>
+#include <commands/Registry.h>
 #include <shared/metrics/Metrics.h>
 #include <thread/Utility.h>
 #include <shared/utility/cstring_view.hpp>
@@ -35,7 +35,7 @@ class Service {
 	std::atomic_bool stopping_;
 
 	log::Logger& logger;
-	commands::PrefixedRegistry& cmd_register;
+	commands::Registry& registry;
 	std::chrono::steady_clock::time_point start_time;
 
 	std::unique_ptr<Metrics> start_metrics(
@@ -48,13 +48,13 @@ class Service {
 public:
 	static boost::program_options::options_description options();
 
-	explicit Service(log::Logger& logger, commands::PrefixedRegistry& cmd_register)
-		: service(thread::hardware_concurrency()),
-		  serialise(service),
-		  logger(logger),
-		  cmd_register(cmd_register),
-		  start_time(std::chrono::steady_clock::now()),
-		  stopping_(false) {}
+	explicit Service(log::Logger& logger, commands::Registry& registry)
+		: service(thread::hardware_concurrency())
+		, serialise(service)
+		, logger(logger)
+		, registry(registry)
+		, start_time(std::chrono::steady_clock::now())
+		, stopping_(false) {}
 
 	~Service() {
 		stop();

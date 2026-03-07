@@ -30,9 +30,9 @@ namespace opts = boost::program_options;
 
 namespace ember::account {
 
-Service::Service(log::Logger& logger, commands::PrefixedRegistry& cmd_register)
+Service::Service(log::Logger& logger, commands::Registry& cmd_register)
 	: logger(logger)
-	, cmd_register(cmd_register)
+	, registry(registry)
 	, start_time(std::chrono::steady_clock::now())
 	, service(BOOST_ASIO_CONCURRENCY_HINT_UNSAFE_IO) {}
 
