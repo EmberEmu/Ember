@@ -312,7 +312,7 @@ std::optional<Realm> load_realm(const opts::variables_map& args, log::Logger& lo
 
 	LOG_INFO_SYNC(logger, "Initialising database connection pool...");
 
-	connection_pool::PoolImpl<decltype(driver), connection_pool::CheckinClean, connection_pool::ExponentialGrowth> pool(
+	connection_pool::PoolImpl<drivers::AutoSelect, connection_pool::CheckinClean, connection_pool::ExponentialGrowth> pool(
 		std::move(driver), 1, 1, 30s
 	);
 	

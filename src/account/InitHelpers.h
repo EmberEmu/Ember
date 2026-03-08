@@ -28,7 +28,7 @@ auto init_database(const boost::program_options::variables_map& args,
 
 	LOG_INFO_SYNC(logger, "Initialising database connection pool...");
 
-	auto pool = create<decltype(driver), CheckinClean, ExponentialGrowth>(
+	auto pool = create<drivers::AutoSelect, CheckinClean, ExponentialGrowth>(
 		std::move(driver), min_conns, max_conns, 30s
 	);
 
