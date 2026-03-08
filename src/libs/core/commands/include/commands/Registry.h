@@ -35,14 +35,11 @@ public:
 private:
 	std::shared_ptr<Command> root_;
 
-	static std::string longest_prefix(std::span<const Suggestions::Record> matches);
-
 	Suggestions autocomplete_recurse(const CommandMap& commands, std::span<const std::string> tokens) const;
 
+	static std::string longest_prefix(std::span<const Suggestions::Record> matches);
 public:
 	Registry();
-
-	static std::vector<std::string> parse_input(const std::string_view input);
 
 	std::shared_ptr<Command> insert(std::string name);
 	void insert(std::shared_ptr<Command> command);
@@ -55,6 +52,8 @@ public:
 	SearchResult find(const std::string_view query) const;
 	SearchResult find(std::span<const std::string> tokens) const;
 	std::shared_ptr<Command> root() const;
+
+	static std::vector<std::string> parse_input(const std::string_view input);
 };
 
 } // commands, ember
