@@ -223,13 +223,13 @@ void Command::clear_arguments() {
 auto Command::erase(const std::string_view name) -> std::optional<std::shared_ptr<Command>> {
 	std::lock_guard guard(mutex_);
 
-	auto result = commands_.extract(name);
-	
-	if(result.empty()) {
-		return std::nullopt;
+	// using an iterator to appease libstdc++ missing C++23 overloads
+	if(auto it = commands_.find(name); it != commands_.end()) {
+		auto result = commands_.extract(it);
+		return result.mapped();
 	}
 
-	return result.mapped();
+	return std::nullopt;
 }
 
 bool Command::erase(const std::shared_ptr<const Command>& command) {
