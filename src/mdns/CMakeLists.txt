@@ -19,6 +19,7 @@ set(LIBRARY_HDR
     detail/Parser.h
     NSDService.h
     Service.h
+    StreamType.h
 )
 
 set(LIBRARY_SRC
