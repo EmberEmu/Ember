@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Ember
+ * Copyright (c) 2024 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,33 +11,29 @@
 #include <ports/pcp/Protocol.h>
 #include <spark/buffers/BinaryStream.h>
 #include <spark/buffers/BufferAdaptor.h>
-#include <boost/endian.hpp>
 #include <span>
 #include <cstdint>
 
 namespace ember::ports {
-
-namespace be = boost::endian;
 
 template<typename T> T deserialise(std::span<const std::uint8_t> buffer){};
 
 template<>
 pcp::OptionHeader deserialise(std::span<const std::uint8_t> buffer) {
 	spark::io::BufferAdaptor adaptor(buffer);
-	spark::io::BinaryStream stream(adaptor);
+	spark::io::BinaryStream stream(adaptor, spark::io::endian::big);
 
 	pcp::OptionHeader message{};
 	stream >> message.code;
 	stream >> message.reserved;
 	stream >> message.length;
-	be::big_to_native_inplace(message.length);
 	return message;
 }
 
 template<>
 pcp::MapRequest deserialise(std::span<const std::uint8_t> buffer) {
 	spark::io::BufferAdaptor adaptor(buffer);
-	spark::io::BinaryStream stream(adaptor);
+	spark::io::BinaryStream stream(adaptor, spark::io::endian::big);
 
 	pcp::MapRequest message{};
 	stream >> message.nonce;
@@ -46,15 +42,13 @@ pcp::MapRequest deserialise(std::span<const std::uint8_t> buffer) {
 	stream >> message.internal_port;
 	stream >> message.suggested_external_port;
 	stream >> message.suggested_external_ip;
-	be::big_to_native_inplace(message.internal_port);
-	be::big_to_native_inplace(message.suggested_external_port);
 	return message;
 }
 
 template<>
 pcp::RequestHeader deserialise(std::span<const std::uint8_t> buffer) {
 	spark::io::BufferAdaptor adaptor(buffer);
-	spark::io::BinaryStream stream(adaptor);
+	spark::io::BinaryStream stream(adaptor, spark::io::endian::big);
 
 	pcp::RequestHeader message{};
 	stream >> message.version;
@@ -65,14 +59,13 @@ pcp::RequestHeader deserialise(std::span<const std::uint8_t> buffer) {
 	stream >> message.reserved_0;
 	stream >> message.lifetime;
 	stream >> message.client_ip;
-	be::big_to_native_inplace(message.lifetime);
 	return message;
 }
 
 template<>
 pcp::ResponseHeader deserialise(std::span<const std::uint8_t> buffer) {
 	spark::io::BufferAdaptor adaptor(buffer);
-	spark::io::BinaryStream stream(adaptor);
+	spark::io::BinaryStream stream(adaptor, spark::io::endian::big);
 
 	pcp::ResponseHeader message{};
 	stream >> message.version;
@@ -85,15 +78,13 @@ pcp::ResponseHeader deserialise(std::span<const std::uint8_t> buffer) {
 	stream >> message.lifetime;
 	stream >> message.epoch_time;
 	stream >> message.reserved_1;
-	be::big_to_native_inplace(message.lifetime);
-	be::big_to_native_inplace(message.epoch_time);
 	return message;
 }
 
 template<>
 pcp::MapResponse deserialise(std::span<const std::uint8_t> buffer) {
 	spark::io::BufferAdaptor adaptor(buffer);
-	spark::io::BinaryStream stream(adaptor);
+	spark::io::BinaryStream stream(adaptor, spark::io::endian::big);
 
 	pcp::MapResponse message{};
 	stream >> message.nonce;
@@ -102,15 +93,13 @@ pcp::MapResponse deserialise(std::span<const std::uint8_t> buffer) {
 	stream >> message.internal_port;
 	stream >> message.assigned_external_port;
 	stream >> message.assigned_external_ip;
-	be::big_to_native_inplace(message.internal_port);
-	be::big_to_native_inplace(message.assigned_external_port);
 	return message;
 }
 
 template<>
 natpmp::MapRequest deserialise(std::span<const std::uint8_t> buffer) {
 	spark::io::BufferAdaptor adaptor(buffer);
-	spark::io::BinaryStream stream(adaptor);
+	spark::io::BinaryStream stream(adaptor, spark::io::endian::big);
 
 	natpmp::MapRequest message{};
 	stream >> message.version;
@@ -119,16 +108,13 @@ natpmp::MapRequest deserialise(std::span<const std::uint8_t> buffer) {
 	stream >> message.internal_port;
 	stream >> message.external_port;
 	stream >> message.lifetime;
-	be::big_to_native_inplace(message.internal_port);
-	be::big_to_native_inplace(message.external_port);
-	be::big_to_native_inplace(message.lifetime);
 	return message;
 }
 
 template<>
 natpmp::MapResponse deserialise(std::span<const std::uint8_t> buffer) {
 	spark::io::BufferAdaptor adaptor(buffer);
-	spark::io::BinaryStream stream(adaptor);
+	spark::io::BinaryStream stream(adaptor, spark::io::endian::big);
 
 	natpmp::MapResponse message{};
 	stream >> message.version;
@@ -138,17 +124,13 @@ natpmp::MapResponse deserialise(std::span<const std::uint8_t> buffer) {
 	stream >> message.internal_port;
 	stream >> message.external_port;
 	stream >> message.lifetime;
-	be::big_to_native_inplace(message.secs_since_epoch);
-	be::big_to_native_inplace(message.internal_port);
-	be::big_to_native_inplace(message.external_port);
-	be::big_to_native_inplace(message.lifetime);
 	return message;
 }
 
 template<>
 natpmp::ExtAddressRequest deserialise(std::span<const std::uint8_t> buffer) {
 	spark::io::BufferAdaptor adaptor(buffer);
-	spark::io::BinaryStream stream(adaptor);
+	spark::io::BinaryStream stream(adaptor, spark::io::endian::big);
 
 	natpmp::ExtAddressRequest message{};
 	stream >> message.version;
@@ -159,7 +141,7 @@ natpmp::ExtAddressRequest deserialise(std::span<const std::uint8_t> buffer) {
 template<>
 natpmp::ExtAddressResponse deserialise(std::span<const std::uint8_t> buffer) {
 	spark::io::BufferAdaptor adaptor(buffer);
-	spark::io::BinaryStream stream(adaptor);
+	spark::io::BinaryStream stream(adaptor, spark::io::endian::big);
 
 	natpmp::ExtAddressResponse message{};
 	stream >> message.version;
@@ -167,23 +149,19 @@ natpmp::ExtAddressResponse deserialise(std::span<const std::uint8_t> buffer) {
 	stream >> message.result_code;
 	stream >> message.secs_since_epoch;
 	stream >> message.external_ip;
-	be::big_to_native_inplace(message.result_code);
-	be::big_to_native_inplace(message.secs_since_epoch);
 	return message;
 }
 
 template<>
 natpmp::UnsupportedErrorResponse deserialise(std::span<const std::uint8_t> buffer) {
 	spark::io::BufferAdaptor adaptor(buffer);
-	spark::io::BinaryStream stream(adaptor);
+	spark::io::BinaryStream stream(adaptor, spark::io::endian::big);
 
 	natpmp::UnsupportedErrorResponse message{};
 	stream >> message.version;
 	stream >> message.opcode;
 	stream >> message.result_code;
 	stream >> message.secs_since_epoch;
-	be::big_to_native_inplace(message.result_code);
-	be::big_to_native_inplace(message.secs_since_epoch);
 	return message;
 }
 

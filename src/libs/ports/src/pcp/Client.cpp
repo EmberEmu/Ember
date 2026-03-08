@@ -88,7 +88,7 @@ ErrorCode Client::handle_pmp_to_pcp_error(std::span<const std::uint8_t> buffer) 
 
 std::expected<MapRequest, Error> Client::parse_mapping_pcp(std::span<const std::uint8_t> buffer) {
 	spark::io::BufferAdaptor adaptor(buffer);
-	spark::io::BinaryStream stream(adaptor);
+	spark::io::BinaryStream stream(adaptor, spark::io::endian::big);
 	std::uint8_t protocol_version{};
 	stream >> protocol_version;
 
@@ -158,7 +158,7 @@ void Client::handle_mapping_pcp(std::span<const std::uint8_t> buffer) {
 
 void Client::handle_mapping_pmp(std::span<const std::uint8_t> buffer) {
 	spark::io::BufferAdaptor adaptor(buffer);
-	spark::io::BinaryStream stream(adaptor);
+	spark::io::BinaryStream stream(adaptor, spark::io::endian::big);
 	std::uint8_t protocol_version{};
 	stream >> protocol_version;
 
@@ -203,7 +203,7 @@ void Client::handle_mapping_pmp(std::span<const std::uint8_t> buffer) {
 
 void Client::handle_external_address_pmp(std::span<const std::uint8_t> buffer) {
 	spark::io::BufferAdaptor adaptor(buffer);
-	spark::io::BinaryStream stream(adaptor);
+	spark::io::BinaryStream stream(adaptor, spark::io::endian::big);
 	std::uint8_t protocol_version{};
 	stream >> protocol_version;
 
@@ -268,7 +268,7 @@ void Client::finagle_state() {
 
 bool Client::handle_announce(std::span<const std::uint8_t> buffer) try {
 	spark::io::BufferAdaptor adaptor(buffer);
-	spark::io::BinaryStream stream(adaptor);
+	spark::io::BinaryStream stream(adaptor, spark::io::endian::big);
 
 	std::uint8_t version = 0;
 	stream >> version;
