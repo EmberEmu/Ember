@@ -51,12 +51,12 @@ std::uint16_t encode_flags(const Flags& flags) {
 	return encoded;
 }
 
-std::string parse_label_notation(std::span<const std::uint8_t> buffer) try {
+std::string_view parse_label_notation(std::span<std::uint8_t> buffer) try {
 	spark::io::BufferAdaptor adaptor(buffer);
 	spark::io::BinaryStream stream(adaptor);
 
-	std::string segment;
-	stream >> spark::io::prefixed<std::string, std::uint8_t>(segment);
+	std::string_view segment;
+	stream >> spark::io::prefixed<std::string_view, std::uint8_t>(segment);
 	return segment;
 } catch(const spark::exception&) {
 	throw Result::label_parse_error;

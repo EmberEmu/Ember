@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - 2024 Ember
+ * Copyright (c) 2021 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -48,7 +48,7 @@ struct ParseContext {
 };
 
 // deserialisation
-std::string parse_label_notation(std::span<const std::uint8_t> buffer);
+std::string_view parse_label_notation(std::span<std::uint8_t> buffer);
 void parse_header(Query& query, spark::io::pmr::BinaryStreamReader& stream);
 Question parse_question(ParseContext& ctx);
 std::vector<std::string_view> parse_labels(ParseContext& ctx);
