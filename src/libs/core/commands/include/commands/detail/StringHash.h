@@ -12,6 +12,8 @@
 #include <string_view>
 #include <cstddef>
 
+namespace ember::commands {
+
 struct StringHash {
 	using hash_type = std::hash<std::string_view>;
 	using is_transparent = void;
@@ -24,7 +26,9 @@ struct StringHash {
 		return hash_type{}(str);
 	}
 
-	std::size_t operator()(const std::string &str) const {
+	std::size_t operator()(const std::string& str) const {
 		return hash_type{}(str);
 	}
 };
+
+} // commands, ember

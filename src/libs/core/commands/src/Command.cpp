@@ -220,7 +220,7 @@ void Command::clear_arguments() {
 	args_.clear();
 }
 
-auto Command::erase(const std::string& name) -> std::optional<std::shared_ptr<Command>> {
+auto Command::erase(const std::string_view name) -> std::optional<std::shared_ptr<Command>> {
 	std::lock_guard guard(mutex_);
 
 	auto result = commands_.extract(name);

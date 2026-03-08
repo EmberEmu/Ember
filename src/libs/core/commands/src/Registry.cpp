@@ -158,7 +158,7 @@ Suggestions Registry::autocomplete(const std::string_view query) const {
 	return results;
 }
 
-std::optional<std::shared_ptr<Command>> Registry::erase(const std::string& name) {
+std::optional<std::shared_ptr<Command>> Registry::erase(const std::string_view name) {
 	return root_->erase(name);
 }
 
