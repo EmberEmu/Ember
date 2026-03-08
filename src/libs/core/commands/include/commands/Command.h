@@ -50,7 +50,6 @@ class Command : public std::enable_shared_from_this<Command> {
 	std::size_t optional_arg_count() const;
 	Result can_execute_handler() const;
 	const std::type_info& arg_type(const args::Value& v) const;
-	void prefix_name(std::string prefix);
 
 	explicit Command(std::string name);
 
