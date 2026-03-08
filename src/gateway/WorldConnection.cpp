@@ -10,6 +10,7 @@
 #include <boost/asio/as_tuple.hpp>
 #include <boost/asio/connect.hpp>
 #include <boost/asio/co_spawn.hpp>
+#include <boost/asio/detached.hpp>
 #include <utility>
 #include <vector>
 
@@ -20,7 +21,7 @@ namespace asio = boost::asio;
 WorldConnection::WorldConnection(asio::io_context& service, std::string host, std::string port)
 	: socket_(service)
 	, stopped_(false) {
-	asio::co_spawn(service, resolve(service, std::move(host), std::move(port)));
+	asio::co_spawn(service, resolve(service, std::move(host), std::move(port)), asio::detached);
 }
 
 WorldConnection::~WorldConnection() {
