@@ -15,6 +15,7 @@
 #include <commands/Flags.h>
 #include <commands/Result.h>
 #include <commands/ScopedCommand.h>
+#include <commands/detail/StringHash.h>
 #include <functional>
 #include <memory>
 #include <mutex>
@@ -31,7 +32,7 @@ namespace ember::commands {
 class Command;
 
 using CommandHandler = std::function<void(const args::Map&)>;
-using CommandMap = std::unordered_map<std::string, std::shared_ptr<Command>>;
+using CommandMap = std::unordered_map<std::string, std::shared_ptr<Command>, StringHash, std::equal_to<>>;
 
 class Command : public std::enable_shared_from_this<Command> {
 	mutable std::mutex mutex_;
@@ -75,7 +76,7 @@ public:
 	ScopedCommand scoped_insert(std::shared_ptr<Command> command);
 	bool erase_argument(const std::string& argument);
 	void clear_arguments();
-	std::optional<std::shared_ptr<Command>> erase(const std::string& name);
+	std::optional<std::shared_ptr<Command>> erase(const std::string_view name);
 	bool erase(const std::shared_ptr<const Command>& command);
 	void clear_commands();
 
