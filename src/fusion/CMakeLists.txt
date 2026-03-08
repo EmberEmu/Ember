@@ -20,7 +20,7 @@ add_executable(${EXECUTABLE_NAME}
 set(SERVICE_LIBRARIES
     libworld
     liblogin
-    libgateway
+    librealm
     libaccount
     libmdns 
     libcharacter
