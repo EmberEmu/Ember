@@ -7,15 +7,9 @@
  */
 
 #include "Parser.h"
-#include <spark/buffers/pmr/BufferAdaptor.h>
-#include <spark/buffers/BinaryStream.h>
-#include <spark/buffers/BufferAdaptor.h>
 #include <logger/Logger.h>
 #include <gsl/narrow>
-#include <boost/endian.hpp>
 #include <sstream>
-
-namespace be = boost::endian;
 
 namespace ember::dns::parser {
 
@@ -62,7 +56,7 @@ std::string_view parse_label_notation(std::span<std::uint8_t> buffer) try {
 	throw Result::label_parse_error;
 }
 
-void parse_header(Query& query, spark::io::pmr::BinaryStreamReader& stream) try {
+void parse_header(Query& query, StreamReadBigEndian& stream) try {
 	stream >> query.header.id;
 	std::uint16_t flags;
 	stream >> flags;
@@ -70,14 +64,7 @@ void parse_header(Query& query, spark::io::pmr::BinaryStreamReader& stream) try 
 	stream >> query.header.answers;
 	stream >> query.header.authority_rrs;
 	stream >> query.header.additional_rrs;
-
-	be::big_to_native_inplace(query.header.id);
-	be::big_to_native_inplace(flags);
 	query.header.flags = decode_flags(flags);
-	be::big_to_native_inplace(query.header.questions);
-	be::big_to_native_inplace(query.header.answers);
-	be::big_to_native_inplace(query.header.authority_rrs);
-	be::big_to_native_inplace(query.header.additional_rrs);
 } catch(const spark::exception&) {
 	throw Result::header_parse_error;
 }
@@ -89,8 +76,6 @@ Question parse_question(ParseContext& ctx) try {
 	std::uint16_t type = 0, cc = 0;
 	ctx.stream >> type;
 	ctx.stream >> cc;
-	be::big_to_native_inplace(type);
-	be::big_to_native_inplace(cc);
 
 	// handle unicast response flag
 	if(cc & UNICAST_RESP_MASK) {
@@ -177,7 +162,7 @@ std::vector<std::string_view> extract_labels(std::span<const std::uint8_t> buffe
 	return labels;
 }
 
-void skip_stream_labels(spark::io::pmr::BinaryStreamReader& stream) {
+void skip_stream_labels(StreamReadBigEndian& stream) {
 	while(true) {
 		std::uint8_t notation = 0;
 		stream.buffer()->copy(&notation, 1);
@@ -223,11 +208,6 @@ ResourceRecord parse_resource_record(ParseContext& ctx) try {
 	ctx.stream >> rc;
 	ctx.stream >> record.ttl;
 	ctx.stream >> record.rdata_len;
-
-	be::big_to_native_inplace(type);
-	be::big_to_native_inplace(rc);
-	be::big_to_native_inplace(record.ttl);
-	be::big_to_native_inplace(record.rdata_len);
 
 	// handle unicast response flag
 	if(rc & UNICAST_RESP_MASK) {
@@ -290,7 +270,6 @@ void parse_rdata_nsec(ResourceRecord& rr, ParseContext& ctx) {
 	rdata.next_domain = labels_to_name(labels);
 	std::uint16_t bitmap_len = 0;
 	ctx.stream >> bitmap_len;
-	be::big_to_native_inplace(bitmap_len);
 	ctx.stream.skip(bitmap_len); // don't care about this for now
 }
 
@@ -341,9 +320,6 @@ void parse_rdata_srv(ResourceRecord& rr, ParseContext& ctx) {
 	ctx.stream >> rdata.port;
 	auto labels = parse_labels(ctx);
 	rdata.target = labels_to_name(labels);
-	be::big_to_native_inplace(rdata.priority);
-	be::big_to_native_inplace(rdata.weight);
-	be::big_to_native_inplace(rdata.port);
 	rr.rdata = rdata;
 }
 
@@ -353,8 +329,6 @@ void parse_rdata_uri(ResourceRecord& rr, ParseContext& ctx) {
 	ctx.stream >> rdata.weight;
 	auto labels = parse_labels(ctx);
 	rdata.target = labels_to_name(labels);
-	be::big_to_native_inplace(rdata.priority);
-	be::big_to_native_inplace(rdata.weight);
 	rr.rdata = rdata;
 }
 
@@ -389,7 +363,6 @@ void parse_rdata_txt(ResourceRecord& rr, ParseContext& ctx) {
 void parse_rdata_mx(ResourceRecord& rr, ParseContext& ctx) {
 	Record_MX rdata;
 	ctx.stream >> rdata.preference;
-	be::big_to_native_inplace(rdata.preference);
 	auto labels = parse_labels(ctx);
 	rdata.exchange = labels_to_name(labels);
 	rr.rdata = rdata;
@@ -406,13 +379,6 @@ void parse_rdata_soa(ResourceRecord& rr, ParseContext& ctx) {
 	ctx.stream >> rdata.retry;
 	ctx.stream >> rdata.expire;
 	ctx.stream >> rdata.minimum;
-
-	be::big_to_native_inplace(rdata.serial);
-	be::big_to_native_inplace(rdata.refresh);
-	be::big_to_native_inplace(rdata.retry);
-	be::big_to_native_inplace(rdata.expire);
-	be::big_to_native_inplace(rdata.minimum);
-
 	rr.rdata = std::move(rdata);
 }
 
@@ -434,34 +400,34 @@ void parse_records(Query& query, ParseContext& ctx) {
 	}
 }
 
-void write_header(const Query& query, spark::io::pmr::BinaryStream& stream) {
-	stream << be::native_to_big(query.header.id);
-	stream << be::native_to_big(encode_flags(query.header.flags));
-	stream << be::native_to_big(query.header.questions);
-	stream << be::native_to_big(query.header.answers);
-	stream << be::native_to_big(query.header.authority_rrs);
-	stream << be::native_to_big(query.header.additional_rrs);
+void write_header(const Query& query, StreamWriteBigEndian& stream) {
+	stream << query.header.id;
+	stream << encode_flags(query.header.flags);
+	stream << query.header.questions;
+	stream << query.header.answers;
+	stream << query.header.authority_rrs;
+	stream << query.header.additional_rrs;
 }
 
-Pointers write_questions(const Query& query, spark::io::pmr::BinaryStream& stream) {
+Pointers write_questions(const Query& query, StreamWriteBigEndian& stream) {
 	Pointers pointers;
 
 	for(auto& question : query.questions) {
 		pointers[question.name] = gsl::narrow<std::uint16_t>(stream.total_write());
 		write_label_notation(question.name, stream);
-		stream << be::native_to_big(static_cast<std::uint16_t>(question.type));
-		stream << be::native_to_big(static_cast<std::uint16_t>(question.cc));
+		stream << static_cast<std::uint16_t>(question.type);
+		stream << static_cast<std::uint16_t>(question.cc);
 	}
 
 	return pointers;
 }
 
-std::size_t write_rdata(const ResourceRecord& rr, spark::io::pmr::BinaryStream& stream) {
+std::size_t write_rdata(const ResourceRecord& rr, StreamWriteBigEndian& stream) {
 	const auto write = stream.total_write();
 
 	if(std::holds_alternative<Record_A>(rr.rdata)) {
 		const auto& data = std::get<Record_A>(rr.rdata);
-		stream << be::native_to_big(data.ip);
+		stream << data.ip;
 	} else if(std::holds_alternative<Record_AAAA>(rr.rdata)) {
 		const auto& data = std::get<Record_AAAA>(rr.rdata);
 		stream << data.ip;
@@ -472,8 +438,7 @@ std::size_t write_rdata(const ResourceRecord& rr, spark::io::pmr::BinaryStream& 
 	return stream.total_write() - write;
 }
 
-void write_resource_record(const ResourceRecord& rr, const Pointers& ptrs,
-						   spark::io::pmr::BinaryStream& stream) {
+void write_resource_record(const ResourceRecord& rr, const Pointers& ptrs, StreamWriteBigEndian& stream) {
 	auto it = ptrs.find(rr.name);
 
 	/*
@@ -499,12 +464,12 @@ void write_resource_record(const ResourceRecord& rr, const Pointers& ptrs,
 	} else {
 		std::uint16_t ptr = it->second; // should make sure this fits within 30 bits
 		ptr ^= (3 << 14);               // set two LSBs to signal pointer encoding
-		stream << be::native_to_big(ptr);
+		stream << ptr;
 	}
 
-	stream << be::native_to_big(static_cast<std::uint16_t>(rr.type));
-	stream << be::native_to_big(static_cast<std::uint16_t>(rr.resource_class));
-	stream << be::native_to_big(rr.ttl);
+	stream << static_cast<std::uint16_t>(rr.type);
+	stream << static_cast<std::uint16_t>(rr.resource_class);
+	stream << rr.ttl;
 
 	if(!stream.can_write_seek()) {
 		throw Result::stream_cannot_seek;
@@ -515,12 +480,11 @@ void write_resource_record(const ResourceRecord& rr, const Pointers& ptrs,
 	const auto rdata_len = write_rdata(rr, stream);
 	const auto new_seek = stream.total_write();
 	stream.write_seek(spark::io::StreamSeek::sk_buffer_absolute, seek);
-	stream << be::native_to_big(gsl::narrow<std::uint16_t>(rdata_len));
+	stream << gsl::narrow<std::uint16_t>(rdata_len);
 	stream.write_seek(spark::io::StreamSeek::sk_buffer_absolute, new_seek);
 }
 
-void write_resource_records(const Query& query, const Pointers& ptrs,
-							spark::io::pmr::BinaryStream& stream) {
+void write_resource_records(const Query& query, const Pointers& ptrs, StreamWriteBigEndian& stream) {
 	for(auto& rr : query.answers) {
 		write_resource_record(rr, ptrs, stream);
 	}
@@ -535,7 +499,7 @@ void write_resource_records(const Query& query, const Pointers& ptrs,
 }
 
 // todo: replace this monstrosity with a regex
-void write_label_notation(const std::string_view name, spark::io::pmr::BinaryStream& stream) {
+void write_label_notation(const std::string_view name, StreamWriteBigEndian& stream) {
 	std::string_view segment(name);
 	auto last = 0;
 

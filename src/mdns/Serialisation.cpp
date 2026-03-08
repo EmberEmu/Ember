@@ -7,12 +7,8 @@
  */
 
 #include "Serialisation.h"
-#include <spark/buffers/pmr/BufferAdaptor.h>
 #include <logger/Logger.h>
 #include <gsl/narrow>
-#include <boost/endian.hpp>
-
-namespace be = boost::endian;
 
 namespace ember::dns {
 
@@ -21,8 +17,8 @@ std::expected<Query, parser::Result> deserialise(std::span<const std::uint8_t> b
 		return std::unexpected(parser::Result::payload_too_large);
 	}
 
-	spark::io::pmr::BufferReadAdaptor adaptor(buffer);
-	spark::io::pmr::BinaryStreamReader stream(adaptor);
+	ConstBufferAdaptor adaptor(buffer);
+	StreamReadBigEndian stream(adaptor);
 
 	Query query;
 
@@ -43,7 +39,7 @@ std::expected<Query, parser::Result> deserialise(std::span<const std::uint8_t> b
 	return std::unexpected(r);
 }
 
-void serialise(const Query& query, spark::io::pmr::BinaryStream& stream) {
+void serialise(const Query& query, StreamWriteBigEndian& stream) {
 	parser::write_header(query, stream);
 	const auto ptrs = parser::write_questions(query, stream);
 	parser::write_resource_records(query, ptrs, stream);

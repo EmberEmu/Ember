@@ -9,7 +9,7 @@
 #pragma once
 
 #include "../DNSDefines.h"
-#include <spark/buffers/pmr/BinaryStream.h>
+#include "../StreamType.h"
 #include <shared/smartenum.hpp>
 #include <expected>
 #include <vector>
@@ -44,12 +44,12 @@ using Pointers = std::unordered_map<std::string_view, std::uint16_t>;
 
 struct ParseContext {
 	std::span<const std::uint8_t> buffer;
-	spark::io::pmr::BinaryStreamReader& stream;
+	StreamReadBigEndian& stream;
 };
 
 // deserialisation
 std::string_view parse_label_notation(std::span<std::uint8_t> buffer);
-void parse_header(Query& query, spark::io::pmr::BinaryStreamReader& stream);
+void parse_header(Query& query, StreamReadBigEndian& stream);
 Question parse_question(ParseContext& ctx);
 std::vector<std::string_view> parse_labels(ParseContext& ctx);
 ResourceRecord parse_resource_record(ParseContext& ctx);
@@ -71,12 +71,12 @@ void parse_rdata_cname(ResourceRecord& rr, ParseContext& ctx);
 void parse_rdata_nsec(ResourceRecord& rr, ParseContext& ctx);
 
 // serialisation
-void write_header(const Query& query, spark::io::pmr::BinaryStream& stream);
-Pointers write_questions(const Query& query, spark::io::pmr::BinaryStream& stream);
-std::size_t write_rdata(const ResourceRecord& rr, spark::io::pmr::BinaryStream& stream);
-void write_resource_record(const ResourceRecord& rr, const Pointers& ptrs, spark::io::pmr::BinaryStream& stream);
-void write_resource_records(const Query& query, const Pointers& ptrs, spark::io::pmr::BinaryStream& stream);
-void write_label_notation(const std::string_view name, spark::io::pmr::BinaryStream& stream);
+void write_header(const Query& query, StreamWriteBigEndian& stream);
+Pointers write_questions(const Query& query, StreamWriteBigEndian& stream);
+std::size_t write_rdata(const ResourceRecord& rr, StreamWriteBigEndian& stream);
+void write_resource_record(const ResourceRecord& rr, const Pointers& ptrs, StreamWriteBigEndian& stream);
+void write_resource_records(const Query& query, const Pointers& ptrs, StreamWriteBigEndian& stream);
+void write_label_notation(const std::string_view name, StreamWriteBigEndian& stream);
 std::uint16_t encode_flags(const Flags& flags);
 
 } // parser, dns, ember
