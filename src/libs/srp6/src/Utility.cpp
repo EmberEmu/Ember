@@ -121,9 +121,8 @@ Botan::BigInt compute_x(const std::string_view identifier, std::string_view pass
 	if(mode == Compliance::rfc5054) {
 		hasher->update(salt);
 	} else {
-		// change if Botan adds iterator overloads
-		for(auto i = salt.rbegin(); i != salt.rend(); ++i) {
-			hasher->update(*i);
+		for(auto byte : salt | std::views::reverse) {
+			hasher->update(byte);
 		}
 	}
 
