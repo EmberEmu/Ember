@@ -99,8 +99,8 @@ void PINAuthenticator::pin_to_ascii() {
 }
 
 auto PINAuthenticator::calculate_hash(const SaltBytes& server_salt,
-									  const SaltBytes& client_salt,
-									  const std::uint32_t pin) -> HashBytes {
+                                      const SaltBytes& client_salt,
+                                      const std::uint32_t pin) -> HashBytes {
 	pin_to_bytes(pin); // convert to byte array
 	remap_pin();       // calculate the expected input sequence
 	pin_to_ascii();
