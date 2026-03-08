@@ -4,8 +4,13 @@ FROM ubuntu:resolute AS builder
 LABEL description="Development build environment"
 
 # Update the distro and install our tools
-RUN apt-get -y update && apt-get -y upgrade \
- && apt-get -y install software-properties-common \
+RUN apt-get -y update
+
+RUN if [ -z "SKIP_UPGRADE" ]; then
+        apt-get -y upgrade
+    fi
+
+RUN apt-get -y install software-properties-common \
  && apt-get -y install wget \
  # GCC stuff
  && apt-get -y install build-essential gcc-15 g++-15 \
