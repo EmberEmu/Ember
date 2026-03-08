@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2024 Ember
+ * Copyright (c) 2016 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -12,7 +12,7 @@
 #include <shared/utility/polyfill/inplace_vector>
 #include <array>
 #include <span>
-#include <string>
+#include <string_view>
 #include <cstdint>
 
 namespace ember {
@@ -52,7 +52,7 @@ public:
 
 	static SaltBytes generate_salt();
 	static std::uint32_t generate_seed();
-	static std::uint32_t generate_totp_pin(const std::string& secret,
+	static std::uint32_t generate_totp_pin(const std::string_view secret,
 	                                       int interval,
 	                                       const utility::ClockBase& clock = utility::Clock());
 };

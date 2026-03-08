@@ -17,6 +17,7 @@
 #include <gsl/narrow>
 #include <algorithm>
 #include <bit>
+#include <format>
 #include <memory>
 #include <utility>
 #include <cstddef>
@@ -126,7 +127,7 @@ bool PINAuthenticator::validate_pin(const SaltBytes& server_salt,
 	return std::ranges::equal(hash, client_hash);
 }
 
-std::uint32_t PINAuthenticator::generate_totp_pin(const std::string& secret,
+std::uint32_t PINAuthenticator::generate_totp_pin(const std::string_view secret,
                                                   const int interval,
                                                   const utility::ClockBase& clock) {
 	boost::container::static_vector<std::uint8_t, KEY_LENGTH> decoded_key((secret.size() + 7) / 8 * 5);
@@ -134,7 +135,7 @@ std::uint32_t PINAuthenticator::generate_totp_pin(const std::string& secret,
 	const int key_size = base32_decode(secret.data(), decoded_key.data(), decoded_key.size());
 
 	if(key_size == -1) {
-		throw std::invalid_argument("Unable to base32 decode TOTP key, " + secret);
+		throw std::invalid_argument(std::format("Unable to base32 decode TOTP key, {}", secret));
 	}
 
 	// not guaranteed by the standard to be the UNIX epoch but it is on all supported platforms
