@@ -37,7 +37,7 @@ std::vector<std::string> Registry::parse_input(const std::string_view input) {
 		boost::tokenizer<boost::escaped_list_separator<char>> tok(str, sep);
 
 		for(auto& t : tok) {
-			tokens.emplace_back(t);
+			tokens.emplace_back(std::move(t));
 		}
 	} catch(boost::escaped_list_error& e) {
 		throw parse_error(e.what());
