@@ -15,8 +15,8 @@
 namespace ember::commands {
 
 Command::Command(std::string name)
-	: name_(std::move(name)),
-	  flags_{} {
+	: name_(std::move(name))
+	, flags_{} {
 	if(name_.empty()) {
 		throw exception("Command name cannot be empty");
 	}

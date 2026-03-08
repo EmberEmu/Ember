@@ -13,8 +13,14 @@
 namespace ember::commands {
 
 ScopedCommand::ScopedCommand(std::shared_ptr<Command> command, std::weak_ptr<Command> parent)
-	: command_(std::move(command)),
-	  parent_(std::move(parent)) {}
+	: command_(std::move(command))
+	, parent_(std::move(parent)) {}
+
+ScopedCommand::ScopedCommand(ScopedCommand&& other) noexcept
+	: command_(std::move(other.command_))
+	, parent_(std::move(other.parent_)) {
+	other.reset();
+}
 
 ScopedCommand::~ScopedCommand() {
 	auto locked = parent_.lock();
@@ -25,12 +31,6 @@ ScopedCommand::~ScopedCommand() {
 	}
 
 	locked->erase(command_);
-}
-
-ScopedCommand::ScopedCommand(ScopedCommand&& other) noexcept
-	: command_(std::move(other.command_)),
-      parent_(std::move(other.parent_)) {
-	other.reset();
 }
 
 ScopedCommand& ScopedCommand::operator=(ScopedCommand&& rhs) noexcept {
