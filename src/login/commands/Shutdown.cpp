@@ -46,13 +46,13 @@ void handle_cancel_command(boost::asio::steady_timer& timer,
 	pending_flag = false;
 }
 
-void register_shutdown_command(commands::PrefixedRegistry& cmd_register,
+void register_shutdown_command(commands::Registry& registry,
                                boost::asio::steady_timer& timer,
                                bool& pending_flag,
                                shutdown::OnInitiate on_initiate,
                                shutdown::OnCancel on_cancel,
                                shutdown::OnExpire on_expire) {
-	cmd_register("shutdown")
+	registry.insert("shutdown")
 		->description("Shuts the service down")
 		->argument("seconds", commands::args::Type::at_uint32)
 		->handler([&, on_initiate, on_expire](auto arguments) {

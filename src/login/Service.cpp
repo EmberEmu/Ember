@@ -323,7 +323,7 @@ void Service::launch(const opts::variables_map& args, boost::asio::io_context& s
 
 	std::inplace_vector<commands::ScopedCommand, 2> commands;
 	
-	auto handle = cmd_register.scoped_insert(commands::Command::create("connections")
+	auto handle = registry.scoped_insert(commands::Command::create("connections")
 		->description("Display open connection count")
 		->handler(executor([&](auto& command) {
 			LOG_CONSOLE_ASYNC(logger, "{} active connection(s), {} peak",
@@ -333,7 +333,7 @@ void Service::launch(const opts::variables_map& args, boost::asio::io_context& s
 
 	commands.emplace_back(std::move(handle));
 
-	handle = cmd_register.scoped_insert(commands::Command::create("uptime")
+	handle = registry.scoped_insert(commands::Command::create("uptime")
 		->description("Display service uptime")
 		->handler(executor([&](auto& command) {
 			const auto uptime = std::chrono::steady_clock::now() - start_time;

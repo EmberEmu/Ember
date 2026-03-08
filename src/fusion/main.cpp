@@ -6,6 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+#include "CommandHelpers.h"
 #include <account/Service.h>
 #include <banner/Banner.h>
 #include <character/Service.h>
@@ -14,8 +15,6 @@
 #include <mdns/Service.h>
 #include <world/Service.h>
 #include <logger/Logger.h>
-#include <commands/PrefixedRegistry.h>
-#include <shared/utility/CommandHelpers.h>
 #include <shared/utility/cstring_view.hpp>
 #include <thread/Utility.h>
 #include <shared/utility/LogConfig.h>
@@ -36,10 +35,11 @@ constexpr ember::cstring_view app_name { "Fusion" };
 namespace opts = boost::program_options;
 
 using namespace ember;
+using Registries = std::unordered_map<std::string, commands::Registry>;
 
 opts::variables_map parse_arguments(int, const char*[]);
 opts::variables_map load_options(const std::string&, const opts::options_description&);
-int launch(const opts::variables_map&, commands::Registry&, bool, log::Logger&);
+int launch(const opts::variables_map&, Registries&, bool, log::Logger&);
 void launch_dns(const opts::variables_map&, commands::Registry&, bool, log::Logger&);
 void launch_login(const opts::variables_map&, commands::Registry&, bool, log::Logger&);
 void launch_gateway(const opts::variables_map&, commands::Registry&, bool, log::Logger&);
@@ -50,6 +50,7 @@ void stop_services();
 
 std::vector<std::function<void()>> stop_handlers;
 std::atomic_bool shutting_down = false;
+
 
 int main(int argc, const char* argv[]) try {
 	thread::set_name("Main");
@@ -68,11 +69,11 @@ int main(int argc, const char* argv[]) try {
 	utility::configure_logger(logger, args);
 	log::global_logger(logger);
 
-	commands::Registry registry;
-	utility::register_command_handlers(registry, logger);
-	utility::register_shared_commands(registry, logger);
+	Registries registries;
+	fusion::register_command_handlers(registries, logger);
+	fusion::register_shared_commands(registries, logger);
 
-	const auto ret = launch(args, registry, share_logger, logger);
+	const auto ret = launch(args, registries, share_logger, logger);
 	LOG_INFO_SYNC(logger, "{} terminated", app_name);
 	return ret;
 } catch(const std::exception& e) {
@@ -80,7 +81,7 @@ int main(int argc, const char* argv[]) try {
 	return EXIT_FAILURE;
 }
 
-int launch(const opts::variables_map& args, commands::Registry& registry, bool share_logger, log::Logger& logger) try {
+int launch(const opts::variables_map& args, Registries& registry, bool share_logger, log::Logger& logger) try {
 	boost::asio::io_context service;
 	boost::asio::signal_set signals(service, SIGINT, SIGTERM);
 
@@ -100,37 +101,37 @@ int launch(const opts::variables_map& args, commands::Registry& registry, bool s
 
 	if(args["dns.active"].as<bool>()) {
 		services.emplace_back(std::jthread([&]() {
-			launch_dns(args, registry, share_logger, logger);
+			launch_dns(args, registry["dns"], share_logger, logger);
 		}));
 	}
 
 	if(args["account.active"].as<bool>()) {
 		services.emplace_back(std::jthread([&]() {
-			launch_account(args, registry, share_logger, logger);
+			launch_account(args, registry["account"], share_logger, logger);
 		}));
 	}
 
 	if(args["character.active"].as<bool>()) {
 		services.emplace_back(std::jthread([&]() {
-			launch_character(args, registry, share_logger, logger);
+			launch_character(args, registry["character"], share_logger, logger);
 		}));
 	}
 
 	if(args["login.active"].as<bool>()) {
 		services.emplace_back(std::jthread([&]() {
-			launch_login(args, registry, share_logger, logger);
+			launch_login(args, registry["login"], share_logger, logger);
 		}));
 	}
 
 	if(args["gateway.active"].as<bool>()) {
 		services.emplace_back(std::jthread([&]() {
-			launch_gateway(args, registry, share_logger, logger);
+			launch_gateway(args, registry["realm"], share_logger, logger);
 		}));
 	}
 
 	if(args["world.active"].as<bool>()) {
 		services.emplace_back(std::jthread([&]() {
-			launch_world(args, registry, share_logger, logger);
+			launch_world(args, registry["world"], share_logger, logger);
 		}));
 	}
 
@@ -181,8 +182,7 @@ void launch_dns(const opts::variables_map& args, commands::Registry& registry, b
 		active_logger = &logger;
 	}
 
-	commands::PrefixedRegistry cmd_register(registry, "mdns_");
-	dns::Service service(*active_logger, cmd_register);
+	dns::Service service(*active_logger, registry);
 
 	stop_handlers.emplace_back([&] {
 		service.stop();
@@ -222,8 +222,7 @@ void launch_login(const opts::variables_map& args, commands::Registry& registry,
 		active_logger = &logger;
 	}
 
-	commands::PrefixedRegistry cmd_register(registry, "login_");
-	login::Service service(*active_logger, cmd_register);
+	login::Service service(*active_logger, registry);
 
 	stop_handlers.emplace_back([&] {
 		service.stop();
@@ -263,8 +262,7 @@ void launch_gateway(const opts::variables_map& args, commands::Registry& registr
 		active_logger = &logger;
 	}
 
-	commands::PrefixedRegistry cmd_register(registry, "realm_");
-	gateway::Service service(*active_logger, cmd_register);
+	gateway::Service service(*active_logger, registry);
 
 	stop_handlers.emplace_back([&] {
 		service.stop();
@@ -304,8 +302,7 @@ void launch_account(const opts::variables_map& args, commands::Registry& registr
 		active_logger = &logger;
 	}
 
-	commands::PrefixedRegistry cmd_register(registry, "account_");
-	account::Service service(*active_logger, cmd_register);
+	account::Service service(*active_logger, registry);
 
 	stop_handlers.emplace_back([&] {
 		service.stop();
@@ -345,8 +342,7 @@ void launch_character(const opts::variables_map& args, commands::Registry& regis
 		active_logger = &logger;
 	}
 
-	commands::PrefixedRegistry cmd_register(registry, "character_");
-	character::Service service(*active_logger, cmd_register);
+	character::Service service(*active_logger, registry);
 
 	stop_handlers.emplace_back([&] {
 		service.stop();
@@ -386,8 +382,7 @@ void launch_world(const opts::variables_map& args, commands::Registry& registry,
 		active_logger = &logger;
 	}
 
-	commands::PrefixedRegistry cmd_register(registry, "world_");
-	world::Service service(*active_logger, cmd_register);
+	world::Service service(*active_logger, registry);
 
 	stop_handlers.emplace_back([&] {
 		service.stop();

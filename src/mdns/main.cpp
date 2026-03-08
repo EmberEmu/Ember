@@ -10,7 +10,6 @@
 #include <logger/Logger.h>
 #include <banner/Banner.h>
 #include <banner/Banner.h>
-#include <commands/PrefixedRegistry.h>
 #include <commands/Registry.h>
 #include <thread/Utility.h>
 #include <shared/utility/CommandHelpers.h>
@@ -27,7 +26,7 @@ using namespace ember;
 namespace opts = boost::program_options;
 
 opts::variables_map parse_arguments(int argc, const char* argv[]);
-int run(const opts::variables_map& args, log::Logger& logger, commands::PrefixedRegistry& cmd_register);
+int run(const opts::variables_map& args, log::Logger& logger, commands::Registry& registry);
 
 /*
  * We want to do the minimum amount of work required to get 
@@ -50,11 +49,10 @@ int main(int argc, const char* argv[]) try {
 
 	LOG_DEBUG_SYNC(logger, "Registering command handlers...");
 	commands::Registry registry;
-	commands::PrefixedRegistry cmd_register(registry);
 	utility::register_command_handlers(registry, logger);
 	utility::register_shared_commands(registry, logger);
 
-	const auto ret = run(args, logger, cmd_register);
+	const auto ret = run(args, logger, registry);
 	LOG_INFO_SYNC(logger, "{} terminated (returned '{}')", dns::app_name, ret);
 	return ret;
 } catch(const std::exception& e) {
@@ -62,11 +60,11 @@ int main(int argc, const char* argv[]) try {
 	return EXIT_FAILURE;
 }
 
-int run(const opts::variables_map& args, log::Logger& logger, commands::PrefixedRegistry& cmd_register) try {
+int run(const opts::variables_map& args, log::Logger& logger, commands::Registry& registry) try {
 	boost::asio::io_context io_ctx;
 	boost::asio::signal_set signals(io_ctx, SIGINT, SIGTERM);
 
-	dns::Service service(logger, cmd_register);
+	dns::Service service(logger, registry);
 
 	signals.async_wait([&](auto ec, auto signal) {
 		if(ec) {

@@ -9,7 +9,7 @@
 #pragma once
 
 #include "ServiceContext.h"
-#include <commands/PrefixedRegistry.h>
+#include <commands/Registry.h>
 #include <logger/LoggerFwd.h>
 #include <shared/utility/cstring_view.hpp>
 #include <boost/asio/io_context.hpp>
@@ -23,7 +23,7 @@ constexpr cstring_view app_name { "Account Daemon" };
 
 class Service {
 	log::Logger& logger;
-	commands::PrefixedRegistry& cmd_register;
+	commands::Registry& registry;
 	std::chrono::steady_clock::time_point start_time;
 	boost::asio::io_context service;
 	ServiceContext context;
@@ -34,7 +34,7 @@ class Service {
 public:
 	static boost::program_options::options_description options();
 
-	Service(log::Logger& logger, commands::PrefixedRegistry& cmd_register);
+	Service(log::Logger& logger, commands::Registry& registry);
 
 	~Service() {
 		stop();

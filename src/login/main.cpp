@@ -12,7 +12,6 @@
 #include <logger/Logger.h>
 #include <banner/Banner.h>
 #include <banner/Banner.h>
-#include <commands/PrefixedRegistry.h>
 #include <commands/Registry.h>
 #include <commands/Utility.h>
 #include <thread/Utility.h>
@@ -36,9 +35,9 @@ using namespace ember;
 namespace opts = boost::program_options;
 
 opts::variables_map parse_arguments(int argc, const char* argv[]);
-int run(const opts::variables_map& args, log::Logger& logger, commands::PrefixedRegistry& cmd_register);
+int run(const opts::variables_map& args, log::Logger& logger, commands::Registry& registry);
 
-void install_shutdown_callbacks(commands::PrefixedRegistry& registry,
+void install_shutdown_callbacks(commands::Registry& registry,
                                 boost::asio::steady_timer& timer,
                                 log::Logger& logger);
 
@@ -63,22 +62,21 @@ int main(int argc, const char* argv[]) try {
 
 	LOG_DEBUG_SYNC(logger, "Registering command handlers...");
 	commands::Registry registry;
-	commands::PrefixedRegistry cmd_register(registry);
 	utility::register_command_handlers(registry, logger);
 	utility::register_shared_commands(registry, logger);
 
-	const auto ret = run(args, logger, cmd_register);
+	const auto ret = run(args, logger, registry);
 	LOG_INFO_SYNC(logger, "{} terminated (returned '{}')", login::app_name, ret);
 	return ret;
 } catch(const std::exception& e) {
 	std::cerr << e.what();
 }
 
-int run(const opts::variables_map& args, log::Logger& logger, commands::PrefixedRegistry& cmd_register) try {
+int run(const opts::variables_map& args, log::Logger& logger, commands::Registry& registry) try {
 	boost::asio::io_context io_ctx;
 	boost::asio::signal_set signals(io_ctx, SIGINT, SIGTERM);
 
-	login::Service service(logger, cmd_register);
+	login::Service service(logger, registry);
 
 	signals.async_wait([&](auto ec, auto signal) {
 		if(ec) {
@@ -96,7 +94,7 @@ int run(const opts::variables_map& args, log::Logger& logger, commands::Prefixed
 	});
 
 	boost::asio::steady_timer timer(io_ctx);
-	install_shutdown_callbacks(cmd_register, timer, logger);
+	install_shutdown_callbacks(registry, timer, logger);
 
 	const auto ret = service.run(args);
 	signals.cancel();
@@ -106,7 +104,7 @@ int run(const opts::variables_map& args, log::Logger& logger, commands::Prefixed
 	return EXIT_FAILURE;
 }
 
-void install_shutdown_callbacks(commands::PrefixedRegistry& registry,
+void install_shutdown_callbacks(commands::Registry& registry,
                                 boost::asio::steady_timer& timer,
                                 log::Logger& logger) {
 	static bool pending_flag = false;

@@ -8,15 +8,19 @@
 
 #pragma once
 
+#include <commands/Registry.h>
+
 namespace ember {
 
-namespace log { class Logger; }
-namespace commands { class Registry; class Command;  }
+namespace log { 
+	class Logger;
+}
 
 } // ember
 
 namespace ember::utility {
 
+commands::args::Value convert_type(commands::args::Type type, std::string_view token);
 void register_shared_commands(commands::Registry& registry, log::Logger& logger);
 void register_command_handlers(commands::Registry& registry, log::Logger& logger);
 

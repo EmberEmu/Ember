@@ -130,7 +130,7 @@ std::span<BlockTableEntry> MemoryArchive::fetch_block_table() const {
 }
 
 const Header* MemoryArchive::header() const {
-	return std::start_lifetime_as<const Header>(buffer_.data());
+	return std::start_lifetime_as<Header>(buffer_.data());
 }
 
 std::size_t MemoryArchive::size() const {
