@@ -91,7 +91,7 @@ std::uint32_t fingerprint(std::span<const std::uint8_t> buffer, bool complete) {
 	auto crc_func = Botan::HashFunction::create_or_throw("CRC32");
 	BOOST_ASSERT_MSG(crc_func->output_length() == res.size(), "Bad checksum size");
 	crc_func->update(buffer.data(), offset);
-	crc_func->final(res.data());
+	crc_func->final(res);
 	const auto crc32 = make_uint32(res[0], res[1], res[2], res[3]);
 	return crc32 ^ 0x5354554e;
 }
@@ -121,12 +121,12 @@ std::array<std::uint8_t, hash_sizes::sha160> msg_integrity(std::span<const std::
 	BOOST_ASSERT_MSG(hasher->output_length() == md5_res.size(), "Bad hash size");
 	hasher->update(username);
 	hasher->update(concat);
-	hasher->final(md5_res.data());
+	hasher->final(md5_res);
 
 	std::array<std::uint8_t, hash_sizes::sha160> sha1_res;
 	auto hmac = Botan::MessageAuthenticationCode::create_or_throw("HMAC(SHA-1)");
 	BOOST_ASSERT_MSG(hmac->output_length() == sha1_res.size(), "Bad hash size");
-	hmac->set_key(md5_res.data(), md5_res.size());
+	hmac->set_key(md5_res);
 
 	if(fp_offset) {
 		hmac_helper(buffer, hmac.get(), msgi_offset);
@@ -134,7 +134,7 @@ std::array<std::uint8_t, hash_sizes::sha160> msg_integrity(std::span<const std::
 		hmac->update(buffer.data(), msgi_offset);
 	}
 
-	hmac->final(sha1_res.data());
+	hmac->final(sha1_res);
 	return sha1_res;
 }
 
@@ -166,7 +166,7 @@ std::array<std::uint8_t, hash_sizes::sha160> msg_integrity(std::span<const std::
 		hmac->update(buffer.data(), msgi_offset);
 	}
 
-	hmac->final(res.data());
+	hmac->final(res);
 	return res;
 }
 

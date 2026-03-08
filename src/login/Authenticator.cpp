@@ -65,7 +65,7 @@ bool ReconnectAuthenticator::proof_check(std::span<const std::uint8_t> salt,
 	hasher->update(salt);
 	hasher->update(salt_);
 	hasher->update(sess_key_.t);
-	hasher->final(res.data());
+	hasher->final(res);
 	return std::ranges::equal(res, proof);
 }
 

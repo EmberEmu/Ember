@@ -52,9 +52,9 @@ KeyType interleaved_hash(SmallVector key) {
 
 	std::array<std::uint8_t, sha1_len> g, h;
 	hasher->update(begin.get_ptr(), std::distance(begin, bound));
-	hasher->final(g.data());
+	hasher->final(g);
 	hasher->update(bound.get_ptr(), std::distance(bound, key.end()));
-	hasher->final(h.data());
+	hasher->final(h);
 
 	KeyType final(interleave_length, boost::container::default_init);
 
@@ -80,14 +80,14 @@ Botan::BigInt scrambler(const Botan::BigInt& A, const Botan::BigInt& B, std::siz
 		hasher->update(vec);
 		B.serialize_to(vec);
 		hasher->update(vec);
-		hasher->final(hash_out.data());
+		hasher->final(hash_out);
 		return Botan::BigInt::from_bytes(hash_out);
 	} else {
 		const auto& a_enc = encode_flip_1363(A, padding);
 		const auto& b_enc = encode_flip_1363(B, padding);
 		hasher->update(a_enc);
 		hasher->update(b_enc);
-		hasher->final(hash_out.data());
+		hasher->final(hash_out);
 		return decode_flip(hash_out);
 	}
 }
@@ -101,7 +101,7 @@ Botan::BigInt compute_k(const Botan::BigInt& g, const Botan::BigInt& N) {
 
 	hasher->update(N.serialize());
 	hasher->update(g.serialize(N.bytes()));
-	hasher->final(hash.data());
+	hasher->final(hash);
 	return Botan::BigInt::from_bytes(hash);
 }
 
@@ -116,7 +116,7 @@ Botan::BigInt compute_x(const std::string_view identifier, std::string_view pass
 	hasher->update(identifier);
 	hasher->update(':');
 	hasher->update(password);
-	hasher->final(hash.data());
+	hasher->final(hash);
 
 	if(mode == Compliance::rfc5054) {
 		hasher->update(salt);
@@ -128,7 +128,7 @@ Botan::BigInt compute_x(const std::string_view identifier, std::string_view pass
 	}
 
 	hasher->update(hash);
-	hasher->final(hash.data());
+	hasher->final(hash);
 
 	if(mode == Compliance::rfc5054) {
 		return Botan::BigInt::from_bytes(hash);
@@ -151,12 +151,12 @@ Botan::BigInt generate_client_proof(const std::string_view identifier, const Ses
 
 	const auto& n_enc = detail::encode_flip(N);
 	hasher->update(n_enc);
-	hasher->final(n_hash.data());
+	hasher->final(n_hash);
 	const auto& g_enc = detail::encode_flip(g);
 	hasher->update(g_enc);
-	hasher->final(g_hash.data());
-	hasher->update(identifier.data());
-	hasher->final(i_hash.data());
+	hasher->final(g_hash);
+	hasher->update(identifier);
+	hasher->final(i_hash);
 	
 	for(auto [n_byte, g_byte] : std::views::zip(n_hash, g_hash)) {
 		n_byte ^= g_byte;
@@ -167,15 +167,14 @@ Botan::BigInt generate_client_proof(const std::string_view identifier, const Ses
 	const auto& a_enc = detail::encode_flip_1363(A, N.bytes());
 	const auto& b_enc = detail::encode_flip_1363(B, N.bytes());
 
-	// change if Botan adds iterator overloads
-	for(auto i = salt.rbegin(); i != salt.rend(); ++i) {
-		hasher->update(*i);
+	for(auto byte : salt | std::views::reverse) {
+		hasher->update(byte);
 	}
 
 	hasher->update(a_enc);
 	hasher->update(b_enc);
 	hasher->update(key.t);
-	hasher->final(out.data());
+	hasher->final(out);
 	return detail::decode_flip(out);
 }
 
@@ -192,7 +191,7 @@ Botan::BigInt generate_server_proof(const Botan::BigInt& A, const Botan::BigInt&
 	hasher->update(a_enc);
 	hasher->update(proof_enc);
 	hasher->update(key.t);
-	hasher->final(hash_out.data());
+	hasher->final(hash_out);
 	return detail::decode_flip(hash_out);
 }
 

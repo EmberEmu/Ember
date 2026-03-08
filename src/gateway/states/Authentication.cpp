@@ -192,7 +192,7 @@ void prove_session(ClientContext& ctx, const Botan::BigInt& key) {
 	hasher->update(packet->seed.data(), sizeof(packet->seed));
 	hasher->update_be(boost::endian::native_to_big(auth_ctx.seed));
 	hasher->update(k_bytes);
-	hasher->final(hash.data());
+	hasher->final(hash);
 
 	if(hash != packet->digest) {
 		CLIENT_DEBUG(ctx.logger, ctx) << "Received bad digest for " << packet->username << LOG_ASYNC;

@@ -110,11 +110,11 @@ auto PINAuthenticator::calculate_hash(const SaltBytes& server_salt,
 	BOOST_ASSERT_MSG(hasher->output_length() == hash.size(), "Bad hash size");
 	hasher->update(server_salt);
 	hasher->update(pin_bytes_);
-	hasher->final(hash.data());
+	hasher->final(hash);
 
 	hasher->update(client_salt);
 	hasher->update(hash);
-	hasher->final(hash.data());
+	hasher->final(hash);
 	return hash;
 }
 
@@ -144,9 +144,9 @@ std::uint32_t PINAuthenticator::generate_totp_pin(const std::string_view secret,
 	HashBytes hmac_result;
 	auto hmac = Botan::MessageAuthenticationCode::create_or_throw("HMAC(SHA-1)");
 	BOOST_ASSERT_MSG(hmac->output_length() == hmac_result.size(), "Bad hash size");
-	hmac->set_key(decoded_key.data(), key_size);
+	hmac->set_key(decoded_key);
 	hmac->update_be(step);
-	hmac->final(hmac_result.data());
+	hmac->final(hmac_result);
 
 	const unsigned int offset = hmac_result[19] & 0xF;
 	std::uint32_t pin =

@@ -19,7 +19,7 @@ std::array<std::uint8_t, hash_sizes::md5> generate_md5(std::span<const std::byte
 	auto hasher = Botan::HashFunction::create_or_throw("MD5");
 	BOOST_ASSERT_MSG(hasher->output_length() == res.size(), "Bad hash size");
 	hasher->update(reinterpret_cast<const std::uint8_t*>(buffer.data()), buffer.size_bytes());
-	hasher->final(res.data());
+	hasher->final(res);
 	return res;
 }
 
@@ -47,7 +47,7 @@ std::array<std::uint8_t, hash_sizes::md5> generate_md5(const std::filesystem::pa
 		}
 	}
 
-	hasher->final(res.data());
+	hasher->final(res);
 	return res;
 }
 

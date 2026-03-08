@@ -20,7 +20,7 @@ std::array<std::uint8_t, hash_sizes::sha160> checksum(std::span<const std::uint8
 	BOOST_ASSERT_MSG(hmac->output_length() == res.size(), "Bad hash size");
 	hmac->set_key(seed);
 	hmac->update(reinterpret_cast<const std::uint8_t*>(buffer.data()), buffer.size_bytes());
-	hmac->final(res.data());
+	hmac->final(res);
 	return res;
 }
 
@@ -31,7 +31,7 @@ std::array<std::uint8_t, hash_sizes::sha160> finalise(std::span<const std::uint8
 	BOOST_ASSERT_MSG(hasher->output_length() == res.size(), "Bad hash size");
 	hasher->update(client_seed);
 	hasher->update(checksum);
-	hasher->final(res.data());
+	hasher->final(res);
 	return res;
 }
 
