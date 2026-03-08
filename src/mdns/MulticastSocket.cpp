@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - 2025 Ember
+ * Copyright (c) 2021 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -79,11 +79,10 @@ void MulticastSocket::handle_datagram(const std::span<const std::uint8_t> datagr
 	} else if(ep.protocol() == boost::asio::ip::udp::v6()) {
 		max_size = MAX_DGRAM_PAYLOAD_IPV6;
 	} else {
-		LOG_ERROR(logger_)
-			<< "Apparently this isn't IPv4 or IPv6, so congratulations on the"
-			<< " interplanetary IoT network or bug in the library."
-			<< LOG_ASYNC;
-		max_size = MAX_DGRAM_PAYLOAD_IPV6;
+		throw std::runtime_error(
+			"Apparently this isn't IPv4 or IPv6, so congratulations on the "
+			"interplanetary IoT network or bug in the library."
+		);
 	}
 
 	if(datagram.size() > max_size) {
