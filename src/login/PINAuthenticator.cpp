@@ -9,6 +9,7 @@
 #include "PINAuthenticator.h"
 #include <shared/utility/xoroshiro128plus.h>
 #include <shared/utility/base32.h>
+#include <shared/utility/polyfill/inplace_vector>
 #include <boost/assert.hpp>
 #include <boost/endian/conversion.hpp>
 #include <botan/hash.h>
