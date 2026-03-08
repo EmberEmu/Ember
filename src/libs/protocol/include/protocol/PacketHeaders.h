@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2018 Ember
+ * Copyright (c) 2016 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,15 +9,15 @@
 #pragma once
 
 #include <protocol/Opcodes.h>
-#include <boost/endian/arithmetic.hpp>
+#include <cstdint>
 
 namespace ember::protocol {
 
-using SizeType = boost::endian::big_uint16_at;
+using SizeType = std::uint16_t;
 
 struct ServerHeader {
 	using OpcodeType = ServerOpcode;
-	using SizeType = boost::endian::big_uint16_at;
+	using SizeType = SizeType;
 
 	static constexpr std::size_t WIRE_SIZE =
 		sizeof(SizeType) + sizeof(OpcodeType);
@@ -25,7 +25,7 @@ struct ServerHeader {
 
 struct ClientHeader {
 	using OpcodeType = ClientOpcode;
-	using SizeType = boost::endian::big_uint16_at;
+	using SizeType = SizeType;
 
 	static constexpr std::size_t WIRE_SIZE =
 		sizeof(SizeType) + sizeof(OpcodeType);

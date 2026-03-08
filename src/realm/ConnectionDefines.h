@@ -25,7 +25,12 @@ static constexpr std::size_t PREALLOC_NODES {  16 };
 #endif
 
 using StaticBuffer  = spark::io::StaticBuffer<std::uint8_t, inbound_size>;
-using BinaryStream = spark::io::BinaryStream<StaticBuffer>;
+
+using BinaryStream = spark::io::BinaryStream<
+	StaticBuffer,
+	spark::io::allow_throw_t,
+	spark::io::endian::as_little_t
+>;
 
 using DynamicTLSBuffer = spark::io::DynamicTLSBuffer<
 	outbound_size, PREALLOC_NODES, spark::io::NoRefCounting, spark::io::UnsafeEntrant
