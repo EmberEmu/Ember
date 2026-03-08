@@ -307,10 +307,10 @@ void Service::launch(const opts::variables_map& args, boost::asio::io_context& s
 
 	if(forward_enabled) {
 		const auto mode = args["forward.method"].as<ports::Forward::Method>();
-		const auto gateway = args["forward.gateway"].as<std::string>();
+		const auto realm = args["forward.realm"].as<std::string>();
 
 		forward = std::make_unique<ports::Forward>(
-			service, mode, interface, gateway, port, [&](auto severity, auto message) {
+			service, mode, interface, realm, port, [&](auto severity, auto message) {
 				forward_log_callback(severity, message, logger);
 			}
 		);
@@ -390,7 +390,7 @@ opts::options_description Service::options() {
 		("stun.protocol", opts::value<stun::Protocol>()->required())
 		("forward.enabled", opts::value<bool>()->required())
 		("forward.method", opts::value<ports::Forward::Method>()->required())
-		("forward.gateway", opts::value<std::string>()->required())
+		("forward.realm", opts::value<std::string>()->required())
 		("network.interface", opts::value<std::string>()->required())
 		("network.port", opts::value<std::uint16_t>()->required())
 		("network.tcp_no_delay", opts::value<bool>()->default_value(true))

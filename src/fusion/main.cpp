@@ -10,7 +10,7 @@
 #include <account/Service.h>
 #include <banner/Banner.h>
 #include <character/Service.h>
-#include <gateway/Service.h>
+#include <realm/Service.h>
 #include <login/Service.h>
 #include <mdns/Service.h>
 #include <world/Service.h>
@@ -42,7 +42,7 @@ opts::variables_map load_options(const std::string&, const opts::options_descrip
 int launch(const opts::variables_map&, Registries&, bool, log::Logger&);
 void launch_dns(const opts::variables_map&, commands::Registry&, bool, log::Logger&);
 void launch_login(const opts::variables_map&, commands::Registry&, bool, log::Logger&);
-void launch_gateway(const opts::variables_map&, commands::Registry&, bool, log::Logger&);
+void launch_realm(const opts::variables_map&, commands::Registry&, bool, log::Logger&);
 void launch_account(const opts::variables_map&, commands::Registry&, bool, log::Logger&);
 void launch_character(const opts::variables_map&, commands::Registry&, bool, log::Logger&);
 void launch_world(const opts::variables_map&, commands::Registry&, bool, log::Logger&);
@@ -123,9 +123,9 @@ int launch(const opts::variables_map& args, Registries& registry, bool share_log
 		}));
 	}
 
-	if(args["gateway.active"].as<bool>()) {
+	if(args["realm.active"].as<bool>()) {
 		services.emplace_back(std::jthread([&]() {
-			launch_gateway(args, registry["realm"], share_logger, logger);
+			launch_realm(args, registry["realm"], share_logger, logger);
 		}));
 	}
 
@@ -239,14 +239,14 @@ void launch_login(const opts::variables_map& args, commands::Registry& registry,
 	std::exit(EXIT_FAILURE);
 }
 
-void launch_gateway(const opts::variables_map& args, commands::Registry& registry, bool share_logger, log::Logger& logger) try {
-	LOG_INFO_SYNC(logger, "Starting gateway service...");
+void launch_realm(const opts::variables_map& args, commands::Registry& registry, bool share_logger, log::Logger& logger) try {
+	LOG_INFO_SYNC(logger, "Starting realm service...");
 
-	const auto& conf_path = args["gateway.config"].as<std::string>();
-	auto opts = load_options(conf_path, gateway::Service::options());
+	const auto& conf_path = args["realm.config"].as<std::string>();
+	auto opts = load_options(conf_path, realm::Service::options());
 
 	if(!opts.contains("console_log.prefix")) {
-		boost::any prefix = std::string("[gateway]");
+		boost::any prefix = std::string("[realm]");
 		opts.try_emplace("console_log.prefix", opts::variable_value(prefix, false));
 	}
 
@@ -262,7 +262,7 @@ void launch_gateway(const opts::variables_map& args, commands::Registry& registr
 		active_logger = &logger;
 	}
 
-	gateway::Service service(*active_logger, registry);
+	realm::Service service(*active_logger, registry);
 
 	stop_handlers.emplace_back([&] {
 		service.stop();
@@ -271,11 +271,11 @@ void launch_gateway(const opts::variables_map& args, commands::Registry& registr
 	const auto res = service.run(opts);
 
 	if(res != EXIT_SUCCESS || !shutting_down) {
-		LOG_FATAL_SYNC(logger, "Gateway terminated abnormally or unexpectedly, aborting");
+		LOG_FATAL_SYNC(logger, "Realm terminated abnormally or unexpectedly, aborting");
 		std::exit(res);
 	}
 } catch(const std::exception& e) {
-	LOG_FATAL_SYNC(logger, "Gateway error: {}", e.what());
+	LOG_FATAL_SYNC(logger, "Realm error: {}", e.what());
 	std::exit(EXIT_FAILURE);
 }
 
@@ -433,8 +433,8 @@ opts::variables_map parse_arguments(const int argc, const char* argv[]) {
 		("account.config", opts::value<std::string>()->required())
 		("character.active", opts::value<bool>()->required())
 		("character.config", opts::value<std::string>()->required())
-		("gateway.active", opts::value<bool>()->required())
-		("gateway.config", opts::value<std::string>()->required())
+		("realm.active", opts::value<bool>()->required())
+		("realm.config", opts::value<std::string>()->required())
 		("world.active", opts::value<bool>()->required())
 		("world.config", opts::value<std::string>()->required())
 		("login.active", opts::value<bool>()->required())
