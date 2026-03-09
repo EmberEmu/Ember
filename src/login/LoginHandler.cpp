@@ -37,7 +37,7 @@ bool LoginHandler::update_state(const grunt::Packet& packet) try {
 
 	switch(prev_state) {
 		case LoginState::challenge:
-			initiate_login(packet);
+			handle_login_challenge(packet);
 			break;
 		case LoginState::spoof:
 			handle_login_spoof(packet);
@@ -118,7 +118,7 @@ bool LoginHandler::update_state(const Action& action) try {
 	return false;
 }
 
-void LoginHandler::initiate_login(const grunt::Packet& packet) {
+void LoginHandler::handle_login_challenge(const grunt::Packet& packet) {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	auto& challenge = dynamic_cast<const grunt::client::LoginChallenge&>(packet);

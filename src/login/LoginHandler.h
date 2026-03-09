@@ -77,9 +77,9 @@ private:
 	TransferState transfer_state_;
 	const Options opts_;
 
-	void initiate_login(const grunt::Packet& packet);
 	void initiate_file_transfer(const FileMeta& meta);
 
+	void handle_login_challenge(const grunt::Packet& packet);
 	void handle_login_proof(const grunt::Packet& packet);
 	void handle_login_spoof(const grunt::Packet& packet);
 	void handle_reconnect_proof(const grunt::Packet& packet);
