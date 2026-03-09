@@ -21,7 +21,7 @@ struct Packet final {
 	using packet_tag = packet_tag_t;
 
 	using OpcodeType = typename HeaderType::OpcodeType;
-	using SizeType = typename SizeType;
+	using SizeType = protocol::SizeType;
 
 	static constexpr OpcodeType opcode = op_;
 	static constexpr std::size_t HEADER_wire_size = HeaderType::wire_size;
