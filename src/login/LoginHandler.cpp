@@ -20,6 +20,7 @@
 #include <shared/game/GameVersion.h>
 #include <shared/metrics/Metrics.h>
 #include <shared/utility/EnumHelper.h>
+#include <shared/utility/HashDefines.h>
 #include <shared/utility/Utility.h>
 #include <boost/container/small_vector.hpp>
 #include <gsl/narrow>
@@ -383,12 +384,11 @@ bool LoginHandler::validate_client_integrity(std::span<const std::uint8_t> clien
 		return false;
 	}
 
-	constexpr static int SHA1_LENGTH{ 20 }; // it's finally somewhere else
-	std::array<std::uint8_t, SHA1_LENGTH> hash{};
+	std::array<std::uint8_t, hash_sizes::sha160> hash;
 
 	// client doesn't bother to checksum the binaries on reconnect, it just hashes the salt (=])
 	if(reconnect) {
-		constexpr std::array<std::uint8_t, SHA1_LENGTH> checksum{}; // all-zero hash
+		constexpr std::array<std::uint8_t, hash_sizes::sha160> checksum{}; // all-zero hash
 		hash = client_integrity::finalise(checksum, salt);
 	} else {
 		const auto& checksum = client_integrity::checksum(checksum_salt_, *data);
