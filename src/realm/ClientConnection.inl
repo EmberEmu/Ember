@@ -28,8 +28,7 @@ bool ClientConnection::write_packet_stream(const PacketType& packet) {
 	auto opcode = packet.opcode;
 
 	spark::io::endian::conditional_reverse_inplace<
-		std::endian::native,
-		std::endian::big
+		std::endian::native, std::endian::big
 	>(size);
 
 	if(crypt_) [[likely]] {
