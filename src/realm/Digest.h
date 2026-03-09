@@ -16,10 +16,15 @@
 
 namespace ember::realm::digest {
 
-std::array<std::uint8_t, hash_sizes::sha160> calculate(std::span<const std::uint8_t> key,
-                                                       const std::string_view username,
-                                                       std::uint32_t protocol_id,
-                                                       std::uint32_t client_seed,
-                                                       std::uint32_t server_seed);
+struct Context {
+	std::span<const std::uint8_t> key;
+	const std::string_view username;
+	std::uint32_t protocol_id;
+	std::uint32_t client_seed;
+	std::uint32_t server_seed;
+};
+
+bool validate(const Context& ctx, std::span<const std::uint8_t, hash_sizes::sha160> client_digest);
+std::array<std::uint8_t, hash_sizes::sha160> calculate(const Context& ctx);
 
 } // digest, realm, ember

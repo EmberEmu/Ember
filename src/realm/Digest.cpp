@@ -7,25 +7,27 @@
  */
 
 #include "Digest.h"
+#include <algorithm>
 #include <boost/assert.hpp>
 #include <botan/bigint.h>
 #include <botan/hash.h>
 
 namespace ember::realm::digest {
 
-std::array<std::uint8_t, hash_sizes::sha160> calculate(std::span<const std::uint8_t> key,
-                                                       const std::string_view username,
-                                                       std::uint32_t protocol_id,
-                                                       std::uint32_t client_seed,
-                                                       std::uint32_t server_seed) {
+bool validate(const Context& ctx, std::span<const std::uint8_t, hash_sizes::sha160> client_digest) {
+	const auto result = calculate(ctx);
+	return std::ranges::equal(result, client_digest);
+}
+
+std::array<std::uint8_t, hash_sizes::sha160> calculate(const Context& ctx) {
 	auto hasher = Botan::HashFunction::create_or_throw("SHA-1");
 	std::array<std::uint8_t, hash_sizes::sha160> hash;
 	BOOST_ASSERT_MSG(hash.size() == hasher->output_length(), "Bad hash length");
-	hasher->update(username);
-	hasher->update_le(protocol_id);
-	hasher->update_le(client_seed);
-	hasher->update_le(server_seed);
-	hasher->update(key);
+	hasher->update(ctx.username);
+	hasher->update_le(ctx.protocol_id);
+	hasher->update_le(ctx.client_seed);
+	hasher->update_le(ctx.server_seed);
+	hasher->update(ctx.key);
 	hasher->final(hash);
 	return hash;
 }
