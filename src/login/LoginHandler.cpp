@@ -249,9 +249,10 @@ void LoginHandler::send_login_challenge(const FetchUserAction& action) {
 				metrics_.increment("login_failure");
 				LOG_DEBUG_ASYNC(logger_, "Account not verified: {}", user_->username());
 			} else {
-				state_data_.emplace<LoginAuthenticator>(user_->username(),
-				                                        user_->verifier(),
-														user_->salt());
+				state_data_.emplace<LoginAuthenticator>(
+					user_->username(), user_->verifier(), user_->salt()
+				);
+
 				response = build_login_challenge();
 				response.result = grunt::Result::success;
 				update_state(LoginState::proof);
