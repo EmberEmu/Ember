@@ -17,17 +17,15 @@ using SizeType = std::uint16_t;
 
 struct ServerHeader {
 	using OpcodeType = ServerOpcode;
-	using SizeType = SizeType;
 
-	static constexpr std::size_t WIRE_SIZE =
+	static constexpr std::size_t wire_size =
 		sizeof(SizeType) + sizeof(OpcodeType);
 };
 
 struct ClientHeader {
 	using OpcodeType = ClientOpcode;
-	using SizeType = SizeType;
 
-	static constexpr std::size_t WIRE_SIZE =
+	static constexpr std::size_t wire_size =
 		sizeof(SizeType) + sizeof(OpcodeType);
 };
 
