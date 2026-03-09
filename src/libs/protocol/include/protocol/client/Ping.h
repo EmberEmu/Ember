@@ -9,18 +9,15 @@
 #pragma once
 
 #include <protocol/StreamResult.h>
-#include <boost/endian/arithmetic.hpp>
 #include <stdexcept>
 #include <cstdint>
 #include <cstddef>
 
 namespace ember::protocol::client {
 
-namespace be = boost::endian;
-
 struct Ping final {
-	be::little_uint32_t sequence_id;
-	be::little_uint32_t latency;
+	std::uint32_t sequence_id;
+	std::uint32_t latency;
 
 	StreamResult read_from_stream(auto& stream) try {
 		stream >> sequence_id;

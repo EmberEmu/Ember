@@ -10,17 +10,14 @@
 
 #include <protocol/StreamResult.h>
 #include <shared/utility/UTF8String.h>
-#include <boost/endian/arithmetic.hpp>
 #include <stdexcept>
 #include <cstdint>
 #include <cstddef>
 
 namespace ember::protocol::client {
 
-namespace be = boost::endian;
-
 struct CharacterRename final {
-	be::little_uint64_t id;
+	std::uint64_t id;
 	utf8_string name;
 
 	StreamResult read_from_stream(auto& stream) try {

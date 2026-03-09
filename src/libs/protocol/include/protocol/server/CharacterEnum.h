@@ -12,15 +12,11 @@
 #include <spark/buffers/Shared.h>
 #include <spark/buffers/StringAdaptors.h>
 #include <shared/database/objects/Character.h>
-#include <boost/endian/conversion.hpp>
-#include <boost/endian/buffers.hpp>
 #include <stdexcept>
 #include <vector>
 #include <cstdint>
 
 namespace ember::protocol::server {
-
-namespace be = boost::endian;
 
 struct CharacterEnum final {
 	std::vector<Character> characters;
@@ -54,28 +50,6 @@ struct CharacterEnum final {
 			stream >> c.pet_level;
 			stream >> c.pet_family;
 
-			be::little_to_native_inplace(c.id);
-			be::little_to_native_inplace(c.zone);
-			be::little_to_native_inplace(c.map);
-
-			be::little_float32_buf_t wire { c.position.x };
-			be::little_to_native_inplace(wire);
-			c.position.x = wire.value();
-
-			wire = c.position.y;
-			be::little_to_native_inplace(wire);
-			c.position.y = wire.value();
-
-			wire = c.position.z;
-			be::little_to_native_inplace(wire);
-			c.position.z = wire.value();
-		
-			be::little_to_native_inplace(c.guild_id);
-			be::little_to_native_inplace(c.flags);
-			be::little_to_native_inplace(c.pet_display);
-			be::little_to_native_inplace(c.pet_level);
-			be::little_to_native_inplace(c.pet_family);
-
 			stream.skip(100); // temp, obviously
 
 			characters.emplace_back(std::move(c));
@@ -90,7 +64,7 @@ struct CharacterEnum final {
 		stream << std::uint8_t(characters.size());
 
 		for(auto& c : characters) {
-			stream << be::native_to_little(c.id);
+			stream << c.id;
 			stream << spark::io::null_terminated(c.name);
 			stream << c.race;
 			stream << c.class_;
@@ -101,17 +75,17 @@ struct CharacterEnum final {
 			stream << c.haircolour;
 			stream << c.facialhair;
 			stream << c.level;
-			stream << be::native_to_little(c.zone);
-			stream << be::native_to_little(c.map);
-			stream << be::native_to_little(be::native_float32_buf_t(c.position.x));
-			stream << be::native_to_little(be::native_float32_buf_t(c.position.y));
-			stream << be::native_to_little(be::native_float32_buf_t(c.position.z));
-			stream << be::native_to_little(c.guild_id);
-			stream << be::native_to_little(c.flags);
+			stream << c.zone;
+			stream << c.map;
+			stream << c.position.x;
+			stream << c.position.y;
+			stream << c.position.z;
+			stream << c.guild_id;
+			stream << c.flags;
 			stream << static_cast<std::uint8_t>(c.first_login);
-			stream << be::native_to_little(c.pet_display);
-			stream << be::native_to_little(c.pet_level);
-			stream << be::native_to_little(c.pet_family);
+			stream << c.pet_display;
+			stream << c.pet_level;
+			stream << c.pet_family;
 
 			unsigned char arr[] = { 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0xb, 0x27, 0x0, 0x0,
 			                        0x4, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x4, 0x27, 0x0, 0x0, 0x7, 0x0, 0x0, 0x0,

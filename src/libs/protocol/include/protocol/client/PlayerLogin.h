@@ -10,17 +10,14 @@
 
 #include <protocol/StreamResult.h>
 #include <boost/assert.hpp>
-#include <boost/endian/arithmetic.hpp>
 #include <stdexcept>
 #include <cstdint>
 #include <cstddef>
 
 namespace ember::protocol::client {
 
-namespace be = boost::endian;
-
 struct PlayerLogin final {
-	be::little_uint64_t character_id;
+	std::uint64_t character_id;
 
 	StreamResult read_from_stream(auto& stream) try {
 		stream >> character_id;

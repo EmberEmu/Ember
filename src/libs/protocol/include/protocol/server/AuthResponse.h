@@ -10,19 +10,16 @@
 
 #include <protocol/StreamResult.h>
 #include <protocol/ResultCodes.h>
-#include <boost/endian/arithmetic.hpp>
 #include <stdexcept>
 
 namespace ember::protocol::server {
 
-namespace be = boost::endian;
-
 struct AuthResponse final {
 	Result result;
-	be::little_uint32_t queue_position = 0;
-	be::little_uint32_t billing_time = 0;
-	be::little_uint8_t billing_flags = 0;
-	be::little_uint32_t billing_rested = 0;
+	std::uint32_t queue_position = 0;
+	std::uint32_t billing_time = 0;
+	std::uint8_t billing_flags = 0;
+	std::uint32_t billing_rested = 0;
 
 	StreamResult read_from_stream(auto& stream) try {
 		stream >> result;

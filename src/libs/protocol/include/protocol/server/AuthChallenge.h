@@ -9,15 +9,12 @@
 #pragma once
 
 #include <protocol/StreamResult.h>
-#include <boost/endian/arithmetic.hpp>
 #include <stdexcept>
 
 namespace ember::protocol::server {
 
-namespace be = boost::endian;
-
 struct AuthChallenge final {
-	be::little_uint32_t seed;
+	std::uint32_t seed;
 
 	StreamResult read_from_stream(auto& stream) try {
 		stream >> seed;

@@ -188,9 +188,9 @@ void prove_session(ClientContext& ctx, const Botan::BigInt& key) {
 	std::array<std::uint8_t, hash_sizes::sha160> hash;
 	BOOST_ASSERT_MSG(hash.size() == hasher->output_length(), "Bad hash length");
 	hasher->update(packet->username);
-	hasher->update_be(protocol_id);
-	hasher->update(packet->seed.data(), sizeof(packet->seed));
-	hasher->update_be(boost::endian::native_to_big(auth_ctx.seed));
+	hasher->update_le(protocol_id);
+	hasher->update_le(packet->seed);
+	hasher->update_le(auth_ctx.seed);
 	hasher->update(k_bytes);
 	hasher->final(hash);
 

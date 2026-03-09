@@ -12,7 +12,6 @@
 #include <spark/buffers/BinaryStream.h>
 #include <spark/buffers/BufferAdaptor.h>
 #include <shared/utility/UTF8String.h>
-#include <boost/endian/arithmetic.hpp>
 #include <boost/container/small_vector.hpp>
 #include <gsl/narrow>
 #include <array>
@@ -23,25 +22,23 @@
 
 namespace ember::protocol::client {
 
-namespace be = boost::endian;
-
 struct AuthSession final {
 	static const std::size_t DIGEST_LENGTH = 20;
 
 	struct AddonData {
 		std::string name;
-		be::little_uint8_t key_version;
-		be::little_uint32_t crc;
-		be::little_uint32_t update_url_crc;
+		std::uint8_t key_version;
+		std::uint32_t crc;
+		std::uint32_t update_url_crc;
 	};
 
 	std::array<std::uint8_t, DIGEST_LENGTH> digest;
-	be::little_uint32_t seed;
-	be::little_uint32_t id;
-	be::little_uint32_t security;
-	be::little_uint32_t server_id;
-	be::little_uint32_t build;
-	be::little_uint8_t locale;
+	std::uint32_t seed;
+	std::uint32_t id;
+	std::uint32_t security;
+	std::uint32_t server_id;
+	std::uint32_t build;
+	std::uint8_t locale;
 	utf8_string username;
 	boost::container::small_vector<AddonData, 64> addons;
 
@@ -55,7 +52,7 @@ struct AuthSession final {
 		stream >> digest;
 		
 		// handle compressed addon data
-		be::little_uint32_t decompressed_size;
+		std::uint32_t decompressed_size;
 		stream >> decompressed_size;
 
 		if(!stream.read_limit()) {
