@@ -33,8 +33,11 @@ class LoginSession final : public NetworkSession<LoginSession> {
 	void execute_async(std::unique_ptr<Action> action);
 
 public:
-	LoginSession(SessionManager& sessions, tcp_strand_socket socket, log::Logger& logger,
-	             thread::ThreadPool& pool, const LoginHandlerBuilder& builder);
+	LoginSession(SessionManager& sessions,
+	             tcp_strand_socket socket,
+	             log::Logger& logger,
+	             thread::ThreadPool& pool,
+	             const LoginHandlerBuilder& builder);
 
 	bool handle_packet(spark::io::pmr::Buffer& buffer);
 };

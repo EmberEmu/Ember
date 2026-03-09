@@ -19,18 +19,21 @@
 
 namespace ember {
 
-LoginSession::LoginSession(SessionManager& sessions, tcp_strand_socket socket, log::Logger& logger,
-                           thread::ThreadPool& pool, const LoginHandlerBuilder& builder)
-		: NetworkSession(sessions, std::move(socket), logger),
-		  handler_(builder.create(remote_address())),
-		  logger_(logger),
-		  pool_(pool),
-		  grunt_handler_(logger) {
+LoginSession::LoginSession(SessionManager& sessions,
+                           tcp_strand_socket socket,
+                           log::Logger& logger,
+                           thread::ThreadPool& pool,
+                           const LoginHandlerBuilder& builder)
+		: NetworkSession(sessions, std::move(socket), logger)
+		, handler_(builder.create(remote_address()))
+		, logger_(logger)
+		, pool_(pool)
+		, grunt_handler_(logger) {
 	handler_.send = [&](auto& packet) {
 		write_packet(packet, nullptr);
 	};
 
-	handler_.send_cb = [&](auto& packet, auto cb) mutable {
+	handler_.send_notify = [&](auto& packet, auto cb) mutable {
 		write_packet(packet, std::move(cb));
 	};
 

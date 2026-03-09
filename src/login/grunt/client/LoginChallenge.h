@@ -81,8 +81,8 @@ public:
 	LoginChallenge()
 		: Packet(Opcode::cmd_auth_logon_challenge) {}
 
-	const static int CHALLENGE_VER = 3;
-	const static int RECONNECT_CHALLENGE_VER = 2;
+	const static int challenge_version = 3;
+	const static int reconnect_challenge_version = 2;
 
 	std::uint8_t protocol_ver = 0;
 	std::uint16_t body_size = 0;

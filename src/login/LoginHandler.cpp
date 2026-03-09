@@ -159,12 +159,12 @@ bool LoginHandler::validate_protocol_version(const grunt::client::LoginChallenge
 	const auto version = challenge.protocol_ver;
 
 	if(challenge.opcode == grunt::Opcode::cmd_auth_logon_challenge
-		&& version == grunt::client::LoginChallenge::CHALLENGE_VER) {
+		&& version == grunt::client::LoginChallenge::challenge_version) {
 		return true;
 	}
 
 	if(challenge.opcode == grunt::Opcode::cmd_auth_reconnect_challenge
-		&& version == grunt::client::ReconnectChallenge::RECONNECT_CHALLENGE_VER) {
+		&& version == grunt::client::ReconnectChallenge::reconnect_challenge_version) {
 		return true;
 	}
 
@@ -724,7 +724,7 @@ void LoginHandler::transfer_chunk() {
 
 	transfer_state_.offset += read_size;
 
-	send_cb(response, [&]() {
+	send_notify(response, [this]() {
 		on_chunk_complete();
 	});
 }

@@ -116,7 +116,7 @@ class LoginHandler final {
 public:
 	std::function<void(std::unique_ptr<Action> action)> execute_async;
 	std::function<void(const grunt::Packet&)> send;
-	std::function<void(const grunt::Packet&, std::function<void()>)> send_cb;
+	std::function<void(const grunt::Packet&, std::function<void()>)> send_notify;
 
 	bool update_state(const Action& action);
 	bool update_state(const grunt::Packet& packet);
@@ -126,20 +126,20 @@ public:
 	             const IntegrityData& bin_data, const Survey& survey, log::Logger& logger,
 	             const RealmList& realm_list, std::string source, Metrics& metrics,
 	             bool locale_enforce, bool integrity_enforce, bool verified_email)
-		: user_src_(users),
-		  patcher_(patcher),
-		  logger_(logger),
-		  acct_svc_(acct_svc),
-		  realm_list_(realm_list),
-		  source_ip_(std::move(source)),
-		  metrics_(metrics),
-		  bin_data_(bin_data),
-		  survey_(survey),
-		  transfer_state_{},
-		  locale_enforce_(locale_enforce),
-		  integrity_enforce_(integrity_enforce),
-		  require_verified_email_(verified_email),
-		  pin_grid_seed_(0) { }
+		: user_src_(users)
+		, patcher_(patcher)
+		, logger_(logger)
+		, acct_svc_(acct_svc)
+		, realm_list_(realm_list)
+		, source_ip_(std::move(source))
+		, metrics_(metrics)
+		, bin_data_(bin_data)
+		, survey_(survey)
+		, transfer_state_{}
+		, locale_enforce_(locale_enforce)
+		, integrity_enforce_(integrity_enforce)
+		, require_verified_email_(verified_email)
+		, pin_grid_seed_(0) { }
 };
 
 } // ember

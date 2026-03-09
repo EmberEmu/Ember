@@ -37,7 +37,7 @@ public:
 private:
 	using Buffer = spark::io::DynamicBuffer<1024>;
 
-	const std::chrono::seconds SOCKET_ACTIVITY_TIMEOUT { 60 };
+	const std::chrono::seconds socket_activity_timeout { 60 };
 	AsioAllocator<thread_safe> allocator_;
 
 	SessionManager& sessions_;
@@ -142,7 +142,7 @@ private:
 		auto self(this->shared_from_this());
 		set_is_active(false);
 
-		timer_.expires_after(SOCKET_ACTIVITY_TIMEOUT);
+		timer_.expires_after(socket_activity_timeout);
 		timer_.async_wait([this, self](const boost::system::error_code& ec) {
 			if(ec == boost::asio::error::operation_aborted) {
 				return;
@@ -175,16 +175,16 @@ private:
 
 public:
 	NetworkSession(SessionManager& sessions, tcp_strand_socket socket, log::Logger& logger)
-		: sessions_(sessions),
-		  socket_(std::move(socket)),
-		  timer_(socket_.get_executor()),
-		  outbound_front_(&outbound_buffers_.front()),
-		  outbound_back_(&outbound_buffers_.back()),
-		  write_in_progress_(false),
-		  is_active_(false),
-		  logger_(logger),
-		  stopped_(false),
-		  address_(socket_.remote_endpoint().address()) {}
+		: sessions_(sessions)
+		, socket_(std::move(socket))
+		, timer_(socket_.get_executor())
+		, outbound_front_(&outbound_buffers_.front())
+		, outbound_back_(&outbound_buffers_.back())
+		, write_in_progress_(false)
+		, is_active_(false)
+		, logger_(logger)
+		, stopped_(false)
+		, address_(socket_.remote_endpoint().address()) {}
 
 	void start() {
 		read();

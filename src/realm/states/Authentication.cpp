@@ -177,7 +177,8 @@ void prove_session(ClientContext& ctx, const Botan::BigInt& key) {
 
 	key.serialize_to(k_bytes);
 
-	const std::uint32_t protocol_id = 0; // best guess, this is hardcoded to zero in the client
+	// hardcoded to zero in the client, either proto ID or challenge version
+	const std::uint32_t protocol_id = 0;
 	auto& auth_ctx = std::get<Context>(ctx.state_ctx);
 
 	const digest::Context params {
