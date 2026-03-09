@@ -212,10 +212,9 @@ void LoginHandler::reject_client(const GameVersion& version) {
 	send(response);
 }
 
-grunt::server::LoginChallenge LoginHandler::build_login_challenge() {	
+void LoginHandler::build_login_challenge(grunt::server::LoginChallenge& packet) {	
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
-	grunt::server::LoginChallenge packet;
 	const auto& authenticator = std::get<LoginAuthenticator>(state_data_);
 	const auto& values = authenticator.challenge_reply();
 	packet.B = values.B;
@@ -234,45 +233,48 @@ grunt::server::LoginChallenge LoginHandler::build_login_challenge() {
 
 	Botan::AutoSeeded_RNG().randomize(checksum_salt_);
 	packet.checksum_salt = checksum_salt_;
-	return packet;
+}
+
+grunt::Result LoginHandler::process_fetch_user_action(const FetchUserAction& action) try {
+	if((user_ = action.get_result())) {
+		if(user_->verified() || !opts_.verified_email) {
+			state_data_.emplace<LoginAuthenticator>(
+				user_->username(), user_->verifier(), user_->salt()
+			);
+
+			return grunt::Result::success;
+		} else {
+			metrics_.increment("login_failure");
+			LOG_DEBUG_ASYNC(logger_, "Account not verified: {}", user_->username());
+			return grunt::Result::fail_unknown_account;
+		}
+	} else {
+		// leaks information on whether the account exists (could send challenge anyway?)
+		metrics_.increment("login_failure");
+		LOG_DEBUG_ASYNC(logger_, "Account not found: {}", action.username());
+		return grunt::Result::fail_unknown_account;
+	}
+} catch(const dal::exception& e) {
+	metrics_.increment("login_internal_failure");
+	LOG_ERROR_ASYNC(logger_, "DAL failure for {}: {}", action.username(), e.what());
+	return grunt::Result::fail_db_busy;
+} catch(const Botan::Exception& e) {
+	metrics_.increment("login_internal_failure");
+	LOG_ERROR_ASYNC(logger_, "Encoding failure for {}: {}", action.username(), e.what());
+	return grunt::Result::fail_db_busy;
 }
 
 void LoginHandler::send_login_challenge(const FetchUserAction& action) {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	grunt::server::LoginChallenge response;
+	response.result = process_fetch_user_action(action);
 
-	try {
-		if((user_ = action.get_result())) {
-			if(opts_.verified_email && !user_->verified()) {
-				response.result = grunt::Result::fail_unknown_account;
-				metrics_.increment("login_failure");
-				LOG_DEBUG_ASYNC(logger_, "Account not verified: {}", user_->username());
-			} else {
-				state_data_.emplace<LoginAuthenticator>(
-					user_->username(), user_->verifier(), user_->salt()
-				);
-
-				response = build_login_challenge();
-				response.result = grunt::Result::success;
-				update_state(LoginState::proof);
-			}
-		} else {
-			// leaks information on whether the account exists (could send challenge anyway?)
-			response.result = grunt::Result::fail_unknown_account;
-			metrics_.increment("login_failure");
-			LOG_DEBUG_ASYNC(logger_, "Account not found: {}", action.username());
-		}
-	} catch(const dal::exception& e) {
-		response.result = grunt::Result::fail_db_busy;
-		metrics_.increment("login_internal_failure");
-		LOG_ERROR_ASYNC(logger_, "DAL failure for {}: {}", action.username(), e.what());
-	} catch(const Botan::Exception& e) {
-		response.result = grunt::Result::fail_db_busy;
-		metrics_.increment("login_internal_failure");
-		LOG_ERROR_ASYNC(logger_, "Encoding failure for {}: {}", action.username(), e.what());
+	if(response.result == grunt::Result::success) {
+		build_login_challenge(response);
+		update_state(LoginState::proof);
 	}
-	
+
 	send(response);
 }
 

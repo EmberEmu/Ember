@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2024 Ember
+ * Copyright (c) 2015 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -85,13 +85,14 @@ private:
 	void handle_survey_result(const grunt::Packet& packet);
 	void handle_transfer_ack(const grunt::Packet& packet, bool survey);
 	void handle_transfer_abort();
+	grunt::Result process_fetch_user_action(const FetchUserAction& action);
 
 	void send_login_challenge(const FetchUserAction& action);
 	void send_login_proof(grunt::Result result, bool survey = false);
 	void send_reconnect_challenge(const FetchSessionKeyAction& action);
 	void send_reconnect_proof(grunt::Result result);
 	void send_realm_list(const grunt::Packet& packet);
-	grunt::server::LoginChallenge build_login_challenge();
+	void build_login_challenge(grunt::server::LoginChallenge& packet);
 
 	void on_character_data(const FetchCharacterCounts& action);
 	void on_session_write(const RegisterSessionAction& action);
