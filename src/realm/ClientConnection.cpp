@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2025 Ember
+ * Copyright (c) 2016 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -134,7 +134,7 @@ void ClientConnection::read() {
 
 	// If there's partially processed data in the buffer, we may be
 	// able to free space by defragmenting it.
-	if(inbound_buffer_.free() < min_transfer && !inbound_buffer_.defragment()) {
+	if(inbound_buffer_.free() < min_transfer && !inbound_buffer_.defragment()) [[unlikely]] {
 		LOG_DEBUG_ASYNC(logger_, "Inbound buffer full, closing {}", remote_address());
 		close_session();
 		return;
