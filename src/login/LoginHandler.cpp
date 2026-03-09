@@ -365,17 +365,15 @@ bool LoginHandler::validate_client_integrity(std::span<const std::uint8_t> hash,
 
 	salt.serialize_to(bytes);
 	std::ranges::reverse(bytes);
-	return validate_client_integrity(hash, bytes, reconnect);
+
+	return integrity_enforce_?
+		validate_client_integrity(hash, bytes, reconnect) : true;
 }
 
 bool LoginHandler::validate_client_integrity(std::span<const std::uint8_t> client_hash,
                                              std::span<const uint8_t> salt,
                                              const bool reconnect) const {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
-
-	if(!integrity_enforce_) {
-		return true;
-	}
 
 	const auto data = bin_data_.lookup(challenge_.version, challenge_.platform, challenge_.os);
 
