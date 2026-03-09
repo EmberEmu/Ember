@@ -248,7 +248,7 @@ void Service::launch(const opts::variables_map& args, boost::asio::io_context& s
 
 	const LoginHandler::Options config {
 		.locale_enforce = args["misc.locale_enforce"].as<bool>(),
-		.integrity_enforce = args["integrity.enabled"].as<bool>(),
+		.integrity_check = args["integrity.enabled"].as<bool>(),
 		.verified_email = args["misc.verified_emails"].as<bool>()
 	};
 

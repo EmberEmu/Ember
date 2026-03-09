@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2025 Ember
+ * Copyright (c) 2015 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -13,7 +13,7 @@
 #include <shared/utility/UTF8String.h>
 #include <array>
 #include <span>
-#include <string>
+#include <string_view>
 #include <vector>
 
 namespace ember {
@@ -51,7 +51,11 @@ class LoginAuthenticator final {
 
 public:
 	LoginAuthenticator(utf8_string username,
-	                   std::string verifier,
+	                   const std::string_view verifier,
+	                   std::span<const std::uint8_t> salt);
+
+	LoginAuthenticator(utf8_string username,
+	                   Botan::BigInt verifier,
 	                   std::span<const std::uint8_t> salt);
 
 	ChallengeResponse challenge_reply() const;

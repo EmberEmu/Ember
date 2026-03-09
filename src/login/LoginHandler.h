@@ -42,7 +42,7 @@ class LoginHandler final {
 public:
 	struct Options {
 		bool locale_enforce;
-		bool integrity_enforce;
+		bool integrity_check;
 		bool verified_email;
 	};
 
@@ -81,6 +81,7 @@ private:
 	void initiate_file_transfer(const FileMeta& meta);
 
 	void handle_login_proof(const grunt::Packet& packet);
+	void handle_login_spoof(const grunt::Packet& packet);
 	void handle_reconnect_proof(const grunt::Packet& packet);
 	void handle_survey_result(const grunt::Packet& packet);
 	void handle_transfer_ack(const grunt::Packet& packet, bool survey);
@@ -93,6 +94,7 @@ private:
 	void send_reconnect_proof(grunt::Result result);
 	void send_realm_list(const grunt::Packet& packet);
 	void build_login_challenge(grunt::server::LoginChallenge& packet);
+	void build_login_challenge_decoy(grunt::server::LoginChallenge& packet);
 
 	void on_character_data(const FetchCharacterCounts& action);
 	void on_session_write(const RegisterSessionAction& action);

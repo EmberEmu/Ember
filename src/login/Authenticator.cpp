@@ -17,11 +17,18 @@
 namespace ember {
 
 LoginAuthenticator::LoginAuthenticator(utf8_string username,
-                                       std::string verifier,
+                                       const std::string_view verifier,
 									   std::span<const std::uint8_t> salt)
-	: srp_(gen_, Botan::BigInt(verifier)),
-	  username_(std::move(username)),
-	  salt_(salt.begin(), salt.end()) {}
+	: srp_(gen_, Botan::BigInt(verifier))
+	, username_(std::move(username))
+	, salt_(salt.begin(), salt.end()) {}
+
+LoginAuthenticator::LoginAuthenticator(utf8_string username,
+                                       Botan::BigInt verifier,
+									   std::span<const std::uint8_t> salt)
+	: srp_(gen_, verifier)
+	, username_(std::move(username))
+	, salt_(salt.begin(), salt.end()) {}
 
 auto LoginAuthenticator::challenge_reply() const -> ChallengeResponse {
 	Botan::BigInt salt { salt_ };

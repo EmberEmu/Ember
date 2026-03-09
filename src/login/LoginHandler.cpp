@@ -39,6 +39,9 @@ bool LoginHandler::update_state(const grunt::Packet& packet) try {
 		case LoginState::challenge:
 			initiate_login(packet);
 			break;
+		case LoginState::spoof:
+			handle_login_spoof(packet);
+			break;
 		case LoginState::proof:
 			handle_login_proof(packet);
 			break;
@@ -54,6 +57,7 @@ bool LoginHandler::update_state(const grunt::Packet& packet) try {
 		case LoginState::patch_initiate:
 			handle_transfer_ack(packet, false);
 			break;
+			[[fallthrough]];
 		case LoginState::survey_transfer:
 		case LoginState::patch_transfer:
 			handle_transfer_abort();
@@ -119,13 +123,13 @@ void LoginHandler::initiate_login(const grunt::Packet& packet) {
 
 	auto& challenge = dynamic_cast<const grunt::client::LoginChallenge&>(packet);
 
-	/* 
+	/*
 	 * Older clients are likely to be using an older protocol version
 	 * but they're close enough that patch transfers will still work
 	 */
 	if(!validate_protocol_version(challenge)) {
 		LOG_DEBUG_ASYNC(logger_, "Unsupported protocol version {} ({})",
-		                challenge.protocol_ver, identifier_);
+						challenge.protocol_ver, identifier_);
 	}
 
 	if(challenge.game != grunt::Game::WoW) {
@@ -135,7 +139,7 @@ void LoginHandler::initiate_login(const grunt::Packet& packet) {
 	}
 
 	LOG_DEBUG_ASYNC(logger_, "Challenge: {}, {} ({})", challenge.username,
-	                 to_string(challenge.version), identifier_);
+					to_string(challenge.version), identifier_);
 
 	const Patcher::PatchLevel level = patcher_.check_version(challenge.version);
 
@@ -160,12 +164,12 @@ bool LoginHandler::validate_protocol_version(const grunt::client::LoginChallenge
 	const auto version = challenge.protocol_ver;
 
 	if(challenge.opcode == grunt::Opcode::cmd_auth_logon_challenge
-		&& version == grunt::client::LoginChallenge::challenge_version) {
+	   && version == grunt::client::LoginChallenge::challenge_version) {
 		return true;
 	}
 
 	if(challenge.opcode == grunt::Opcode::cmd_auth_reconnect_challenge
-		&& version == grunt::client::ReconnectChallenge::reconnect_challenge_version) {
+	   && version == grunt::client::ReconnectChallenge::reconnect_challenge_version) {
 		return true;
 	}
 
@@ -208,11 +212,11 @@ void LoginHandler::reject_client(const GameVersion& version) {
 	LOG_DEBUG_ASYNC(logger_, "Rejecting client version {}", to_string(version));
 
 	grunt::server::LoginChallenge response;
-	response.result = grunt::Result::fail_version_invalid;
+	response.result = grunt::Result::fail_version_update;
 	send(response);
 }
 
-void LoginHandler::build_login_challenge(grunt::server::LoginChallenge& packet) {	
+void LoginHandler::build_login_challenge(grunt::server::LoginChallenge& packet) {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	const auto& authenticator = std::get<LoginAuthenticator>(state_data_);
@@ -225,7 +229,7 @@ void LoginHandler::build_login_challenge(grunt::server::LoginChallenge& packet) 
 	packet.s = values.salt;
 	packet.two_factor_auth = false;
 
-	if(user_->pin_method() != PINMethod::none) {
+	if(user_ && user_->pin_method() != PINMethod::none) {
 		packet.two_factor_auth = true;
 		packet.pin_grid_seed = pin_grid_seed_ = PINAuthenticator::generate_seed();
 		packet.pin_salt = pin_salt_ = PINAuthenticator::generate_salt();
@@ -233,6 +237,19 @@ void LoginHandler::build_login_challenge(grunt::server::LoginChallenge& packet) 
 
 	Botan::AutoSeeded_RNG().randomize(checksum_salt_);
 	packet.checksum_salt = checksum_salt_;
+}
+
+void LoginHandler::build_login_challenge_decoy(grunt::server::LoginChallenge& packet) {
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+
+	auto salt = Botan::AutoSeeded_RNG().random_array<32>();
+
+	const std::string_view verifier {
+		"0x399CF53C149F220F4AA88F7F2F6CA9CB6E4C44EA5240AC0F65601F392F32A16A"
+	};
+
+	state_data_.emplace<LoginAuthenticator>("dummy", verifier, salt);
+	build_login_challenge(packet);
 }
 
 grunt::Result LoginHandler::process_fetch_user_action(const FetchUserAction& action) try {
@@ -244,16 +261,13 @@ grunt::Result LoginHandler::process_fetch_user_action(const FetchUserAction& act
 
 			return grunt::Result::success;
 		} else {
-			metrics_.increment("login_failure");
 			LOG_DEBUG_ASYNC(logger_, "Account not verified: {}", user_->username());
-			return grunt::Result::fail_unknown_account;
 		}
 	} else {
-		// leaks information on whether the account exists (could send challenge anyway?)
-		metrics_.increment("login_failure");
 		LOG_DEBUG_ASYNC(logger_, "Account not found: {}", action.username());
-		return grunt::Result::fail_unknown_account;
 	}
+
+	return grunt::Result::fail_unknown_account;
 } catch(const dal::exception& e) {
 	metrics_.increment("login_internal_failure");
 	LOG_ERROR_ASYNC(logger_, "DAL failure for {}: {}", action.username(), e.what());
@@ -273,6 +287,10 @@ void LoginHandler::send_login_challenge(const FetchUserAction& action) {
 	if(response.result == grunt::Result::success) {
 		build_login_challenge(response);
 		update_state(LoginState::proof);
+	} else if(response.result == grunt::Result::fail_unknown_account) {
+		build_login_challenge_decoy(response);
+		update_state(LoginState::spoof);
+		response.result = grunt::Result::success;
 	}
 
 	send(response);
@@ -316,9 +334,9 @@ void LoginHandler::send_reconnect_challenge(const FetchSessionKeyAction& action)
 		metrics_.increment("login_internal_failure");
 		response.result = grunt::Result::fail_db_busy;
 		LOG_ERROR_ASYNC(logger_, "{} from peer during reconnect challenge",
-		                utility::fb_status(status, rpc::Account::EnumNamesStatus()));
+						utility::fb_status(status, rpc::Account::EnumNamesStatus()));
 	}
-	
+
 	send(response);
 }
 
@@ -339,7 +357,7 @@ bool LoginHandler::validate_pin(const grunt::client::LoginProof& packet) const {
 	bool result = false;
 
 	if(user_->pin_method() == PINMethod::totp) {
-		for(const auto interval : {0, -1, 1}) { // try time intervals -1 to +1
+		for(const auto interval : { 0, -1, 1 }) { // try time intervals -1 to +1
 			const auto pin = PINAuthenticator::generate_totp_pin(user_->totp_token(), interval);
 
 			if(pin_auth.validate_pin(pin_salt_, packet.pin_salt, packet.pin_hash, pin)) {
@@ -358,8 +376,8 @@ bool LoginHandler::validate_pin(const grunt::client::LoginProof& packet) const {
 }
 
 bool LoginHandler::validate_client_integrity(std::span<const std::uint8_t> hash,
-                                             const Botan::BigInt& salt,
-                                             bool reconnect) const {
+											 const Botan::BigInt& salt,
+											 bool reconnect) const {
 	constexpr auto expected_len = 32u;
 
 	boost::container::small_vector<std::uint8_t, expected_len> bytes(
@@ -369,13 +387,12 @@ bool LoginHandler::validate_client_integrity(std::span<const std::uint8_t> hash,
 	salt.serialize_to(bytes);
 	std::ranges::reverse(bytes);
 
-	return opts_.integrity_enforce?
-		validate_client_integrity(hash, bytes, reconnect) : true;
+	return validate_client_integrity(hash, bytes, reconnect);
 }
 
 bool LoginHandler::validate_client_integrity(std::span<const std::uint8_t> client_hash,
-                                             std::span<const uint8_t> salt,
-                                             const bool reconnect) const {
+											 std::span<const uint8_t> salt,
+											 const bool reconnect) const {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	// client doesn't bother to checksum the binaries on reconnect, it just hashes the salt (=])
@@ -388,7 +405,7 @@ bool LoginHandler::validate_client_integrity(std::span<const std::uint8_t> clien
 		if(!data) {
 			return false;
 		}
-		
+
 		checksum = client_integrity::checksum(checksum_salt_, *data);
 	}
 
@@ -399,24 +416,25 @@ bool LoginHandler::validate_client_integrity(std::span<const std::uint8_t> clien
 void LoginHandler::handle_login_proof(const grunt::Packet& packet) {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
-	auto& proof_packet = dynamic_cast<const grunt::client::LoginProof&>(packet);
+	auto& proofs = dynamic_cast<const grunt::client::LoginProof&>(packet);
 
-	if(!validate_client_integrity(proof_packet.client_checksum, proof_packet.A, false)) {
+	if(opts_.integrity_check
+	   && !validate_client_integrity(proofs.client_checksum, proofs.A, false)) {
 		send_login_proof(grunt::Result::fail_version_invalid);
 		return;
 	}
 
-	if(!validate_pin(proof_packet)) {
+	if(!validate_pin(proofs)) {
 		send_login_proof(grunt::Result::fail_incorrect_password);
 		return;
 	}
 
 	const auto& authenticator = std::get<LoginAuthenticator>(state_data_);
-	const auto key = authenticator.session_key(proof_packet.A);
-	auto proof = authenticator.expected_proof(key, proof_packet.A);
+	const auto key = authenticator.session_key(proofs.A);
+	const auto expected = authenticator.expected_proof(key, proofs.A);
 	auto result = grunt::Result::fail_incorrect_password;
 	
-	if(proof_packet.M1 == proof) {
+	if(proofs.M1 == expected) {
 		if(user_->banned()) {
 			result = grunt::Result::fail_banned;
 		} else if(user_->suspended()) {
@@ -432,17 +450,31 @@ void LoginHandler::handle_login_proof(const grunt::Packet& packet) {
 
 	if(result == grunt::Result::success) {
 		update_state(LoginState::writing_session);
-		server_proof_ = authenticator.server_proof(key, proof_packet.A, proof_packet.M1);
+		server_proof_ = authenticator.server_proof(key, proofs.A, proofs.M1);
 
 		auto action = std::make_unique<RegisterSessionAction>(
 			acct_svc_, user_->id(),
-			authenticator.session_key(proof_packet.A)
+			authenticator.session_key(proofs.A)
 		);
 
 		execute_async(std::move(action));
 	} else {
 		send_login_proof(result);
 	}
+}
+
+void LoginHandler::handle_login_spoof(const grunt::Packet& packet) {
+	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+
+	auto& proof_packet = dynamic_cast<const grunt::client::LoginProof&>(packet);
+
+	if(opts_.integrity_check
+	   && !validate_client_integrity(proof_packet.client_checksum, proof_packet.A, false)) {
+		send_login_proof(grunt::Result::fail_version_invalid);
+		return;
+	}
+
+	send_login_proof(grunt::Result::fail_incorrect_password);
 }
 
 void LoginHandler::send_login_proof(grunt::Result result, bool survey) {
@@ -459,7 +491,10 @@ void LoginHandler::send_login_proof(grunt::Result result, bool survey) {
 		metrics_.increment("login_failure");
 	}
 
-	LOG_DEBUG_ASYNC(logger_, "Login result for {}: {}", user_->username(), grunt::to_string(result));
+	if(user_) {
+		LOG_DEBUG_ASYNC(logger_, "Login result for {}: {}", user_->username(), grunt::to_string(result));
+	}
+
 	send(response);
 }
 
@@ -526,7 +561,8 @@ void LoginHandler::handle_reconnect_proof(const grunt::Packet& packet) {
 
 	auto& reconn_proof = dynamic_cast<const grunt::client::ReconnectProof&>(packet);
 
-	if(!validate_client_integrity(reconn_proof.client_checksum, reconn_proof.salt, true)) {
+	if(opts_.integrity_check
+	   && !validate_client_integrity(reconn_proof.client_checksum, reconn_proof.salt, true)) {
 		send_reconnect_proof(grunt::Result::fail_version_invalid);
 		return;
 	}
