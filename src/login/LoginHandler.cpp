@@ -375,17 +375,17 @@ bool LoginHandler::validate_client_integrity(std::span<const std::uint8_t> clien
                                              const bool reconnect) const {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
-	const auto data = bin_data_.lookup(challenge_.version, challenge_.platform, challenge_.os);
-
-	// ensure we have binaries for the platform/version the client is using
-	if(!data) {
-		return false;
-	}
-
 	// client doesn't bother to checksum the binaries on reconnect, it just hashes the salt (=])
 	std::array<std::uint8_t, hash_sizes::sha160> checksum{}; // all-zero hash
 
 	if(!reconnect) {
+		const auto data = bin_data_.lookup(challenge_.version, challenge_.platform, challenge_.os);
+
+		// ensure we have binaries for the platform/version the client is using
+		if(!data) {
+			return false;
+		}
+		
 		checksum = client_integrity::checksum(checksum_salt_, *data);
 	}
 
