@@ -56,6 +56,7 @@ set(LIBRARY_HDR
     Service.h
     LoggingCallbacks.h
     WorldRPCClient.h
+    Digest.h
 )
 
 set(LIBRARY_SRC
@@ -83,6 +84,7 @@ set(LIBRARY_SRC
     packet_log/LogSink.cpp
     Service.cpp
     WorldRPCClient.cpp
+    Digest.cpp
 )
 
 add_library(${LIBRARY_NAME} STATIC ${LIBRARY_HDR} ${LIBRARY_SRC})
