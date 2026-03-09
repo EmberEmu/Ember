@@ -9,15 +9,12 @@
 #pragma once
 
 #include <protocol/StreamResult.h>
-#include <boost/endian/arithmetic.hpp>
 #include <stdexcept>
 
 namespace ember::protocol::server {
 
-namespace be = boost::endian;
-
 struct Pong final {
-	be::little_uint32_t sequence_id;
+	std::uint32_t sequence_id;
 
 	StreamResult read_from_stream(auto& stream) try {
 		stream >> sequence_id;

@@ -23,15 +23,19 @@ namespace ember::realm {
 void ClientConnection::parse_header() {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
-	if(inbound_buffer_.size() < protocol::ClientHeader::WIRE_SIZE) {
+	if(inbound_buffer_.size() < protocol::ClientHeader::wire_size) {
 		return;
 	}
 
 	if(crypt_) [[likely]] {
-		crypt_->decrypt(inbound_buffer_.read_ptr(), protocol::ClientHeader::WIRE_SIZE);
+		crypt_->decrypt(inbound_buffer_.read_ptr(), protocol::ClientHeader::wire_size);
 	}
 
 	inbound_buffer_.read(&msg_size_);
+
+	spark::io::endian::conditional_reverse_inplace<
+		std::endian::big, std::endian::native
+	>(msg_size_);
 
 	if(msg_size_ < sizeof(protocol::ClientHeader::OpcodeType)) {
 		LOG_DEBUG_ASYNC(logger_, "Invalid message size from {}", remote_address());
@@ -277,7 +281,7 @@ void ClientConnection::log_packets(bool enable) {
 
 inline std::size_t ClientConnection::minimum_transfer() const {
 	if(read_state_ == ReadState::header) {
-		return protocol::ClientHeader::WIRE_SIZE;
+		return protocol::ClientHeader::wire_size;
 	} else {
 		return msg_size_ - inbound_buffer_.size();
 	}

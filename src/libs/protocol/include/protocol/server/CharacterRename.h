@@ -12,17 +12,14 @@
 #include <protocol/ResultCodes.h>
 #include <spark/buffers/Shared.h>
 #include <shared/utility/UTF8String.h>
-#include <boost/endian/arithmetic.hpp>
 #include <stdexcept>
 
 
 namespace ember::protocol::server {
 
-namespace be = boost::endian;
-
 struct CharacterRename final {
 	Result result;
-	be::little_uint64_t id;
+	std::uint64_t id;
 	utf8_string name;
 	
 	StreamResult read_from_stream(auto& stream) try {

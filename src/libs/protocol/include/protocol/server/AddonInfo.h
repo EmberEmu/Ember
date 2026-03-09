@@ -10,7 +10,6 @@
 
 #include <protocol/StreamResult.h>
 #include <protocol/ResultCodes.h>
-#include <boost/endian/arithmetic.hpp>
 #include <spark/buffers/Shared.h>
 #include <gsl/narrow>
 #include <array>
@@ -19,8 +18,6 @@
 #include <cstdint>
 
 namespace ember::protocol::server {
-
-namespace be = boost::endian;
 
 struct AddonInfo final {
 	const std::array<std::uint8_t, 256> public_key_ = {
@@ -50,9 +47,9 @@ struct AddonInfo final {
 		};
 
 		Type type;
-		be::little_uint8_t info_block_present;
+		std::uint8_t info_block_present;
 		std::uint8_t key_version;
-		be::little_uint32_t update_available_flag;
+		std::uint32_t update_available_flag;
 		std::string update_url;
 	};
 

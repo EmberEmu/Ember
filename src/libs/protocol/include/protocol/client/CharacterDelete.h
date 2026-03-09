@@ -9,17 +9,14 @@
 #pragma once
 
 #include <protocol/StreamResult.h>
-#include <boost/endian/arithmetic.hpp>
 #include <stdexcept>
 #include <cstdint>
 #include <cstddef>
 
 namespace ember::protocol::client {
 
-namespace be = boost::endian;
-
 struct CharacterDelete final {
-	be::little_uint64_t id;
+	std::uint64_t id;
 
 	StreamResult read_from_stream(auto& stream) try {
 		stream >> id;

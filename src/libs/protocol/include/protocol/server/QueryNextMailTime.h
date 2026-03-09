@@ -9,12 +9,9 @@
 #pragma once
 
 #include <protocol/StreamResult.h>
-#include <boost/endian/arithmetic.hpp>
 #include <stdexcept>
 
 namespace ember::protocol::server {
-
-namespace be = boost::endian;
 
 struct QueryNextMailTime final {
 	float next_time;
