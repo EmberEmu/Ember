@@ -129,7 +129,7 @@ void LoginHandler::handle_login_challenge(const grunt::Packet& packet) {
 	 */
 	if(!validate_protocol_version(challenge)) {
 		LOG_DEBUG_ASYNC(logger_, "Unsupported protocol version {} ({})",
-						challenge.protocol_ver, identifier_);
+		                challenge.protocol_ver, identifier_);
 	}
 
 	if(challenge.game != grunt::Game::WoW) {
@@ -139,7 +139,7 @@ void LoginHandler::handle_login_challenge(const grunt::Packet& packet) {
 	}
 
 	LOG_DEBUG_ASYNC(logger_, "Challenge: {}, {} ({})", challenge.username,
-					to_string(challenge.version), identifier_);
+	                to_string(challenge.version), identifier_);
 
 	const Patcher::PatchLevel level = patcher_.check_version(challenge.version);
 
@@ -164,12 +164,12 @@ bool LoginHandler::validate_protocol_version(const grunt::client::LoginChallenge
 	const auto version = challenge.protocol_ver;
 
 	if(challenge.opcode == grunt::Opcode::cmd_auth_logon_challenge
-	   && version == grunt::client::LoginChallenge::challenge_version) {
+		&& version == grunt::client::LoginChallenge::challenge_version) {
 		return true;
 	}
 
 	if(challenge.opcode == grunt::Opcode::cmd_auth_reconnect_challenge
-	   && version == grunt::client::ReconnectChallenge::reconnect_challenge_version) {
+		&& version == grunt::client::ReconnectChallenge::reconnect_challenge_version) {
 		return true;
 	}
 
@@ -334,7 +334,7 @@ void LoginHandler::send_reconnect_challenge(const FetchSessionKeyAction& action)
 		metrics_.increment("login_internal_failure");
 		response.result = grunt::Result::fail_db_busy;
 		LOG_ERROR_ASYNC(logger_, "{} from peer during reconnect challenge",
-						utility::fb_status(status, rpc::Account::EnumNamesStatus()));
+		                utility::fb_status(status, rpc::Account::EnumNamesStatus()));
 	}
 
 	send(response);
@@ -376,8 +376,8 @@ bool LoginHandler::validate_pin(const grunt::client::LoginProof& packet) const {
 }
 
 bool LoginHandler::validate_client_integrity(std::span<const std::uint8_t> hash,
-											 const Botan::BigInt& salt,
-											 bool reconnect) const {
+                                             const Botan::BigInt& salt,
+                                             bool reconnect) const {
 	constexpr auto expected_len = 32u;
 
 	boost::container::small_vector<std::uint8_t, expected_len> bytes(
@@ -391,8 +391,8 @@ bool LoginHandler::validate_client_integrity(std::span<const std::uint8_t> hash,
 }
 
 bool LoginHandler::validate_client_integrity(std::span<const std::uint8_t> client_hash,
-											 std::span<const uint8_t> salt,
-											 const bool reconnect) const {
+                                             std::span<const uint8_t> salt,
+                                             const bool reconnect) const {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
 	// client doesn't bother to checksum the binaries on reconnect, it just hashes the salt (=])
@@ -418,8 +418,7 @@ void LoginHandler::handle_login_proof(const grunt::Packet& packet) {
 
 	auto& proofs = dynamic_cast<const grunt::client::LoginProof&>(packet);
 
-	if(opts_.integrity_check
-	   && !validate_client_integrity(proofs.client_checksum, proofs.A, false)) {
+	if(opts_.integrity_check && !validate_client_integrity(proofs.client_checksum, proofs.A, false)) {
 		send_login_proof(grunt::Result::fail_version_invalid);
 		return;
 	}
@@ -468,8 +467,7 @@ void LoginHandler::handle_login_spoof(const grunt::Packet& packet) {
 
 	auto& proof_packet = dynamic_cast<const grunt::client::LoginProof&>(packet);
 
-	if(opts_.integrity_check
-	   && !validate_client_integrity(proof_packet.client_checksum, proof_packet.A, false)) {
+	if(opts_.integrity_check && !validate_client_integrity(proof_packet.client_checksum, proof_packet.A, false)) {
 		send_login_proof(grunt::Result::fail_version_invalid);
 		return;
 	}
@@ -561,8 +559,7 @@ void LoginHandler::handle_reconnect_proof(const grunt::Packet& packet) {
 
 	auto& reconn_proof = dynamic_cast<const grunt::client::ReconnectProof&>(packet);
 
-	if(opts_.integrity_check
-	   && !validate_client_integrity(reconn_proof.client_checksum, reconn_proof.salt, true)) {
+	if(opts_.integrity_check && !validate_client_integrity(reconn_proof.client_checksum, reconn_proof.salt, true)) {
 		send_reconnect_proof(grunt::Result::fail_version_invalid);
 		return;
 	}
