@@ -179,25 +179,24 @@ void prove_session(ClientContext& ctx, const Botan::BigInt& key) {
 
 	const std::uint32_t protocol_id = 0; // best guess, this is hardcoded to zero in the client
 	auto& auth_ctx = std::get<Context>(ctx.state_ctx);
-	const auto& packet = auth_ctx.packet;
 
 	const digest::Context params {
 		.key = k_bytes,
-		.username = packet->username,
+		.username = auth_ctx.packet->username,
 		.protocol_id = protocol_id,
-		.client_seed = packet->seed,
+		.client_seed = auth_ctx.packet->seed,
 		.server_seed = auth_ctx.seed,
 	};
 
-	if(!digest::validate(params, packet->digest)) {
-		CLIENT_DEBUG(ctx.logger, ctx) << "Received bad digest for " << packet->username << LOG_ASYNC;
+	if(!digest::validate(params, auth_ctx.packet->digest)) {
+		CLIENT_DEBUG(ctx.logger, ctx) << "Received bad digest for " << auth_ctx.packet->username << LOG_ASYNC;
 		auth_state(ctx, State::failed);
 		ctx.handler.close(); // key mismatch, client can't decrypt response
 		return;
 	}
 
 	ctx.connection.set_key(k_bytes);
-	ctx.client_id = { auth_ctx.account_id, packet->username };
+	ctx.client_id = { auth_ctx.account_id, auth_ctx.packet->username };
 
 	 // todo, allowing for multiple realms to connect to a single world server
 	 // will require an external service to keep track of available slots
