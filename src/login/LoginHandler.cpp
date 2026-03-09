@@ -384,17 +384,14 @@ bool LoginHandler::validate_client_integrity(std::span<const std::uint8_t> clien
 		return false;
 	}
 
-	std::array<std::uint8_t, hash_sizes::sha160> hash;
-
 	// client doesn't bother to checksum the binaries on reconnect, it just hashes the salt (=])
-	if(reconnect) {
-		constexpr std::array<std::uint8_t, hash_sizes::sha160> checksum{}; // all-zero hash
-		hash = client_integrity::finalise(checksum, salt);
-	} else {
-		const auto& checksum = client_integrity::checksum(checksum_salt_, *data);
-		hash = client_integrity::finalise(checksum, salt);
+	std::array<std::uint8_t, hash_sizes::sha160> checksum{}; // all-zero hash
+
+	if(!reconnect) {
+		checksum = client_integrity::checksum(checksum_salt_, *data);
 	}
 
+	const auto hash = client_integrity::finalise(checksum, salt);
 	return std::ranges::equal(hash, client_hash);
 }
 
