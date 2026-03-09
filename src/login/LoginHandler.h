@@ -39,6 +39,14 @@ struct TransferState {
 };
 
 class LoginHandler final {
+public:
+	struct Options {
+		bool locale_enforce;
+		bool integrity_enforce;
+		bool verified_email;
+	};
+
+private:
 	using CharacterCount = std::unordered_map<std::uint32_t, std::uint32_t>;
 
 	using StateContainer = std::variant<
@@ -54,10 +62,10 @@ class LoginHandler final {
 	const Patcher& patcher_;
 	const RealmList& realm_list_;
 	const dal::UserDAO& user_src_;
-	const std::string source_ip_;
 	const AccountClient& acct_svc_;
 	const IntegrityData& bin_data_;
 	const Survey& survey_;
+	const std::string identifier_;
 
 	StateContainer state_data_;
 	std::optional<User> user_;
@@ -67,9 +75,7 @@ class LoginHandler final {
 	std::uint32_t pin_grid_seed_;
 	grunt::client::LoginChallenge challenge_;
 	TransferState transfer_state_;
-	const bool locale_enforce_;
-	const bool integrity_enforce_;
-	const bool require_verified_email_;
+	const Options opts_;
 
 	void initiate_login(const grunt::Packet& packet);
 	void initiate_file_transfer(const FileMeta& meta);
@@ -124,21 +130,18 @@ public:
 
 	LoginHandler(const dal::UserDAO& users, const AccountClient& acct_svc, const Patcher& patcher,
 	             const IntegrityData& bin_data, const Survey& survey, log::Logger& logger,
-	             const RealmList& realm_list, std::string source, Metrics& metrics,
-	             bool locale_enforce, bool integrity_enforce, bool verified_email)
+	             const RealmList& realm_list, Metrics& metrics, std::string identifier, Options opts)
 		: user_src_(users)
 		, patcher_(patcher)
 		, logger_(logger)
 		, acct_svc_(acct_svc)
 		, realm_list_(realm_list)
-		, source_ip_(std::move(source))
 		, metrics_(metrics)
 		, bin_data_(bin_data)
 		, survey_(survey)
 		, transfer_state_{}
-		, locale_enforce_(locale_enforce)
-		, integrity_enforce_(integrity_enforce)
-		, require_verified_email_(verified_email)
+		, identifier_(std::move(identifier))
+		, opts_(std::move(opts))
 		, pin_grid_seed_(0) { }
 };
 

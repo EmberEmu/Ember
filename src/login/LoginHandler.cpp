@@ -125,17 +125,17 @@ void LoginHandler::initiate_login(const grunt::Packet& packet) {
 	 */
 	if(!validate_protocol_version(challenge)) {
 		LOG_DEBUG_ASYNC(logger_, "Unsupported protocol version {} ({})",
-		                challenge.protocol_ver, source_ip_);
+		                challenge.protocol_ver, identifier_);
 	}
 
 	if(challenge.game != grunt::Game::WoW) {
-		LOG_DEBUG_ASYNC(logger_, "Bad game magic ({})", source_ip_);
+		LOG_DEBUG_ASYNC(logger_, "Bad game magic ({})", identifier_);
 		update_state(LoginState::closed);
 		return;
 	}
 
 	LOG_DEBUG_ASYNC(logger_, "Challenge: {}, {} ({})", challenge.username,
-	                 to_string(challenge.version), source_ip_);
+	                 to_string(challenge.version), identifier_);
 
 	const Patcher::PatchLevel level = patcher_.check_version(challenge.version);
 
@@ -244,7 +244,7 @@ void LoginHandler::send_login_challenge(const FetchUserAction& action) {
 
 	try {
 		if((user_ = action.get_result())) {
-			if(require_verified_email_ && !user_->verified()) {
+			if(opts_.verified_email && !user_->verified()) {
 				response.result = grunt::Result::fail_unknown_account;
 				metrics_.increment("login_failure");
 				LOG_DEBUG_ASYNC(logger_, "Account not verified: {}", user_->username());
@@ -366,7 +366,7 @@ bool LoginHandler::validate_client_integrity(std::span<const std::uint8_t> hash,
 	salt.serialize_to(bytes);
 	std::ranges::reverse(bytes);
 
-	return integrity_enforce_?
+	return opts_.integrity_enforce?
 		validate_client_integrity(hash, bytes, reconnect) : true;
 }
 
@@ -559,7 +559,7 @@ void LoginHandler::send_realm_list(const grunt::Packet& packet) {
 	grunt::server::RealmList response;
 
 	for(const auto& realm : *realms | std::views::values) {
-		if(!locale_enforce_ || realm.region == region) {
+		if(!opts_.locale_enforce || realm.region == region) {
 			if(auto count = char_count.find(realm.id); count != char_count.end()) {
 				response.realms.emplace_back(realm, count->second);
 			} else {

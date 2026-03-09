@@ -246,11 +246,17 @@ void Service::launch(const opts::variables_map& args, boost::asio::io_context& s
 	LOG_INFO_SYNC(logger, "Starting thread pool with {} threads...", concurrency);
 	thread::ThreadPool thread_pool(concurrency);
 
-	LoginHandlerBuilder builder(logger, patcher, survey, bin_data, user_dao,
-	                            acct_svc, realm_list, *metrics,
-	                            args["misc.locale_enforce"].as<bool>(),
-	                            args["integrity.enabled"].as<bool>(),
-	                            args["misc.verified_emails"].as<bool>());
+	const LoginHandler::Options config {
+		.locale_enforce = args["misc.locale_enforce"].as<bool>(),
+		.integrity_enforce = args["integrity.enabled"].as<bool>(),
+		.verified_email = args["misc.verified_emails"].as<bool>()
+	};
+
+	LoginHandlerBuilder builder(
+		logger, patcher, survey, bin_data, user_dao,
+	    acct_svc, realm_list, *metrics, config
+	);
+
 	LoginSessionBuilder s_builder(builder, thread_pool);
 
 	const auto& interface = args["network.interface"].as<std::string>();
