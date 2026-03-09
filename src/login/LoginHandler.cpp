@@ -595,7 +595,7 @@ void LoginHandler::send_realm_list(const grunt::Packet& packet) {
 	grunt::server::RealmList response;
 
 	for(const auto& realm : *realms | std::views::values) {
-		if(!opts_.locale_enforce || realm.region == region) {
+		if(!opts_.locales || realm.region == region) {
 			if(auto count = char_count.find(realm.id); count != char_count.end()) {
 				response.realms.emplace_back(realm, count->second);
 			} else {

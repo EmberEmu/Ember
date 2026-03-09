@@ -41,7 +41,7 @@ struct TransferState {
 class LoginHandler final {
 public:
 	struct Options {
-		bool locale_enforce;
+		bool locales;
 		bool integrity_check;
 		bool verified_email;
 	};

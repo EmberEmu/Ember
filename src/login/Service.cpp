@@ -247,7 +247,7 @@ void Service::launch(const opts::variables_map& args, boost::asio::io_context& s
 	thread::ThreadPool thread_pool(concurrency);
 
 	const LoginHandler::Options config {
-		.locale_enforce = args["misc.locale_enforce"].as<bool>(),
+		.locales = args["misc.locales"].as<bool>(),
 		.integrity_check = args["integrity.enabled"].as<bool>(),
 		.verified_email = args["misc.verified_emails"].as<bool>()
 	};
@@ -379,7 +379,7 @@ opts::options_description Service::options() {
 	opts::options_description opts;
 	opts.add_options()
 		("login.builds", opts::value<std::vector<GameVersion>>()->composing()->required())
-		("misc.locale_enforce", opts::value<bool>()->required())
+		("misc.locales", opts::value<bool>()->required())
 		("misc.verified_emails", opts::value<bool>()->required())
 		("patches.bin_path", opts::value<std::string>()->required())
 		("survey.path", opts::value<std::string>()->required())

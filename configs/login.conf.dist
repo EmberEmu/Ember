@@ -4,8 +4,12 @@
 builds = 1, 12, 1, 5875
 builds = 1, 12, 2, 6005
 
+[integrity]
+enabled = 0    # validate the client's integrity
+bin_path = ""  # path to binaries needed for integrity validation
+
 [misc]
-locale_enforce = false # Only allow clients to view realms of matching locale
+locales = false         # Only allow clients to view realms of matching locale
 verified_emails = false # Only allow logins by users with verified emails
 
 [patches]
@@ -14,10 +18,6 @@ bin_path = ""  # path to patch files
 [survey]
 id = 0            # 0 = disabled, should be bumped for each new survey
 path = Survey.mpq # path to survey MPQ file
-
-[integrity]
-enabled = 0    # validate the client's integrity
-bin_path = ""  # path to binaries needed for integrity validation
 
 [network]
 interface = 0.0.0.0  # IPv4 or IPv6 bind interface - use 0.0.0.0 for all IPv4 interfaces
