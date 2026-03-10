@@ -15,12 +15,16 @@ set(LIBRARY_HDR
     Service.h
     Config.h
     LoggingCallbacks.h
+    ServiceContext.h
+    ServiceContextImpl.h
+    InitHelpers.h
 )
 
 set(LIBRARY_SRC
     CharacterHandler.cpp
     CharacterService.cpp
     Service.cpp
+    ServiceContext.cpp
 )
 
 include_directories(${CMAKE_SOURCE_DIR}/deps/utf8cpp)
