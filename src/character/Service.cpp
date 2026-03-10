@@ -59,19 +59,20 @@ void Service::initialise(const opts::variables_map& args, boost::asio::io_contex
 	auto ctx = context.get();
 
 	LOG_INFO_SYNC(logger, "Loading DBC data...");
-
 	dbc::DiskLoader loader(
 		args["dbc.path"].as<std::string>(), [&](auto message) {
 			LOG_DEBUG(logger) << message << LOG_SYNC;
 		}
 	);
 
-	ctx->dbcs = std::make_unique<dbc::Storage>(loader.load(
+	auto dbcs = loader.load(
 		"ChrClasses", "ChrRaces", "CharBaseInfo", "NamesProfanity", "NamesReserved", "CharSections",
 		"CharacterFacialHairStyles", "CharStartBase", "CharStartSpells", "CharStartSkills",
 		"CharStartZones", "CharStartOutfit", "AreaTable", "FactionTemplate", "FactionGroup",
 		"SpamMessages", "CharStartOutfit", "StartItemQuantities"
-	));
+	);
+
+	ctx->dbcs = std::make_unique<dbc::Storage>(std::move(dbcs));
 
 	LOG_INFO_SYNC(logger, "Resolving DBC references...");
 	dbc::link(*ctx->dbcs);
