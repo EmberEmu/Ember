@@ -23,7 +23,6 @@ class SCPDXMLParser final {
 	std::unique_ptr<rapidxml::xml_document<>> parser_;
 
 public:
-	SCPDXMLParser(const std::string_view xml);
 	SCPDXMLParser(std::string xml);
 
 	rapidxml::xml_node<char>* action(const std::string_view action) const;

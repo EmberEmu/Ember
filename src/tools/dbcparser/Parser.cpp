@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 - 2024 Ember
+ * Copyright (c) 2014 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -24,7 +24,8 @@ types::Key Parser::parse_field_key(rxml::xml_node<>* property) {
 	auto attr = property->first_attribute("ignore-type-mismatch");
 
 	if(attr) {
-		if(strcmp(attr->value(), "true") == 0 || strcmp(attr->value(), "1") == 0) {
+		if(std::strncmp(attr->value(), "true", attr->value_size()) == 0
+		   || std::strncmp(attr->value(), "1", attr->value_size()) == 0) {
 			key.ignore_type_mismatch = true;
 		} else {
 			auto msg = std::format(
@@ -36,10 +37,10 @@ types::Key Parser::parse_field_key(rxml::xml_node<>* property) {
 	}
 
 	for(rxml::xml_node<>* node = property->first_node(); node != 0; node = node->next_sibling()) {
-		if(strcmp(node->name(), "type") == 0) {
-			key.type = node->value();
-		} else if(strcmp(node->name(), "parent") == 0) {
-			key.parent = node->value();
+		if(std::strncmp(node->name(), "type", node->name_size()) == 0) {
+			key.type = std::string(node->value(), node->value_size());
+		} else if(std::strncmp(node->name(), "parent", node->name_size()) == 0) {
+			key.parent = std::string(node->value(), node->value_size());
 		} else {
 			throw exception(std::format("Unexpected element in <key>: {}", node->name()));
 		}
@@ -55,15 +56,15 @@ void Parser::parse_enum_options(std::vector<std::pair<std::string, std::string>>
 	for(rxml::xml_node<>* node = property->first_node(); node; node = node->next_sibling()) {
 		std::pair<std::string, std::string> kv;
 
-		if(strcmp(node->name(), "option") != 0) {
+		if(std::strncmp(node->name(), "option", node->name_size()) != 0) {
 			throw exception(std::format("Unexpected node in <options>: {}", node->name()));
 		}
 
 		for(rxml::xml_attribute<>* attr = node->first_attribute(); attr; attr = attr->next_attribute()) {
-			if(strcmp(attr->name(), "name") == 0) {
-				kv.first = attr->value();
-			} else if(strcmp(attr->name(), "value") == 0) {
-				kv.second = attr->value();
+			if(std::strncmp(attr->name(), "name", attr->name_size()) == 0) {
+				kv.first = std::string(attr->value(), attr->value_size());
+			} else if(std::strncmp(attr->name(), "value", attr->name_size()) == 0) {
+				kv.second = std::string(attr->value(), attr->value_size());
 			} else {
 				throw exception(std::format("Unexpected attribute in <enum>: {}", attr->name()));
 			}
@@ -76,16 +77,16 @@ void Parser::parse_enum_options(std::vector<std::pair<std::string, std::string>>
 void Parser::parse_enum_node(types::Enum& type, UniqueCheck& check, rxml::xml_node<>* node) {
 	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
 
-	if(strcmp(node->name(), "name") == 0) {
+	if(std::strncmp(node->name(), "name", node->name_size()) == 0) {
 		assign_unique(type.name, check.name, node);
 		return;
-	} else if(strcmp(node->name(), "type") == 0) {
+	} else if(std::strncmp(node->name(), "type", node->name_size()) == 0) {
 		assign_unique(type.underlying_type, check.type, node);
 		return;
-	} else if(strcmp(node->name(), "alias") == 0) {
+	} else if(std::strncmp(node->name(), "alias", node->name_size()) == 0) {
 		assign_unique(type.alias, check.alias, node);
 		return;
-	} else if(strcmp(node->name(), "options") == 0) {
+	} else if(std::strncmp(node->name(), "options", node->name_size()) == 0) {
 		if(check.options) {
 			throw exception("Multiple definitions of <options> not allowed");
 		}
@@ -101,13 +102,13 @@ void Parser::parse_enum_node(types::Enum& type, UniqueCheck& check, rxml::xml_no
 void Parser::parse_struct_node(types::Struct& type, UniqueCheck& check, rxml::xml_node<>* node) {
 	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
 
-	if(strcmp(node->name(), "name") == 0) {
+	if(std::strncmp(node->name(), "name", node->name_size()) == 0) {
 		assign_unique(type.name, check.name, node);
 		return;
-	} else if(strcmp(node->name(), "alias") == 0) {
+	} else if(std::strncmp(node->name(), "alias", node->name_size()) == 0) {
 		assign_unique(type.alias, check.alias, node);
 		return;
-	} else if(strcmp(node->name(), "field") == 0) {
+	} else if(std::strncmp(node->name(), "field", node->name_size()) == 0) {
 		auto f = parse_field(node, &type);
 		type.fields.emplace_back(f);
 		return;
@@ -124,7 +125,7 @@ void Parser::assign_unique(std::string& type, bool& exists, rxml::xml_node<>* no
 		throw exception(std::format("Multiple definitions of: {}", node->name()));
 	}
 
-	type = node->value();
+	type = std::string(node->value(), node->value_size());
 	exists = true;
 }
 
@@ -132,13 +133,13 @@ void Parser::parse_field_node(types::Field& field, UniqueCheck& check,
                               rxml::xml_node<>* node) {
 	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
 
-	if(strcmp(node->name(), "name") == 0) {
+	if(std::strncmp(node->name(), "name", node->name_size()) == 0) {
 		assign_unique(field.name, check.name, node);
 		return;
-	} else if(strcmp(node->name(), "type") == 0) {
+	} else if(std::strncmp(node->name(), "type", node->name_size()) == 0) {
 		assign_unique(field.underlying_type, check.type, node);
 		return;
-	} else if(strcmp(node->name(), "key") == 0) {
+	} else if(std::strncmp(node->name(), "key", node->name_size()) == 0) {
 		field.keys.emplace_back(parse_field_key(node));
 		return;
 	}
@@ -156,7 +157,7 @@ types::Field Parser::parse_field(rxml::xml_node<>* root, types::Base* parent) {
 	auto attr = root->first_attribute("comment");
 
 	if(attr) {
-		field.comment = attr->value();
+		field.comment = std::string(attr->value(), attr->value_size());
 	}
 
 	for(rxml::xml_node<>* node = root->first_node(); node; node = node->next_sibling()) {
@@ -181,7 +182,7 @@ types::Enum Parser::parse_enum(rxml::xml_node<>* root, types::Base* parent) {
 	auto attr = root->parent()->first_attribute("comment");
 
 	if(attr) {
-		parsed.comment = attr->value();
+		parsed.comment = std::string(attr->value(), attr->value_size());
 	}
 
 	for(rxml::xml_node<>* node = root; node; node = node->next_sibling()) {
@@ -211,13 +212,13 @@ std::unique_ptr<types::Struct> Parser::parse_struct(rxml::xml_node<>* root, bool
 	auto attr = root->parent()->first_attribute("comment");
 	
 	if(attr) {
-		parsed->comment = attr->value();
+		parsed->comment = std::string(attr->value(), attr->value_size());
 	}
 
 	for(rxml::xml_node<>* node = root; node; node = node->next_sibling()) {
-		if(strcmp(node->name(), "struct") == 0) {
+		if(std::strncmp(node->name(), "struct", node->name_size()) == 0) {
 			parsed->children.emplace_back(std::move(parse_struct(node->first_node(), false, depth + 1, parsed.get())));
-		} else if(strcmp(node->name(), "enum") == 0) {
+		} else if(std::strncmp(node->name(), "enum", node->name_size()) == 0) {
 			parsed->children.emplace_back(
 				std::make_unique<types::Enum>(parse_enum(node->first_node(), parsed.get()))
 			);
@@ -239,11 +240,11 @@ types::Definitions Parser::parse_doc_root(rxml::xml_node<>* parent) {
 	types::Definitions definition;
 
 	for(rxml::xml_node<>* node = parent; node; node = node->next_sibling()) {
-		if(strcmp(node->name(), "struct") == 0) {
+		if(std::strncmp(node->name(), "struct", node->name_size()) == 0) {
 			definition.emplace_back(std::move(parse_struct(node->first_node(), false)));
-		} else if(strcmp(node->name(), "dbc") == 0) {
+		} else if(std::strncmp(node->name(), "dbc", node->name_size()) == 0) {
 			definition.emplace_back(std::move(parse_struct(node->first_node(), true)));
-		} else if(strcmp(node->name(), "enum") == 0) {
+		} else if(std::strncmp(node->name(), "enum", node->name_size()) == 0) {
 			definition.emplace_back(
 				std::make_unique<types::Enum>(parse_enum(node->first_node()))
 			);
@@ -261,7 +262,7 @@ types::Definitions Parser::parse_file(const std::string& path) {
 
 	rxml::file<> definition(path.c_str());
 	rxml::xml_document<> doc;
-	doc.parse<0>(definition.data());
+	doc.parse<rapidxml::parse_fastest>(definition.data());
 
 	auto root = doc.first_node();
 
@@ -274,7 +275,6 @@ types::Definitions Parser::parse_file(const std::string& path) {
 
 types::Definitions Parser::parse(const std::string& path) try {
 	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
-
 	return parse_file(path);
 } catch(const std::exception& e) {
 	throw parse_error(path, e.what());

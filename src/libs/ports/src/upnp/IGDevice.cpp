@@ -211,7 +211,7 @@ asio::awaitable<void> IGDevice::refresh_scpd(HTTPTransport& transport) {
 		scpd_cc_ = std::chrono::steady_clock::now();
 	}
 
-	scpd_xml_ = std::make_unique<SCPDXMLParser>(body);
+	scpd_xml_ = std::make_unique<SCPDXMLParser>(std::string(body));
 }
 
 std::string_view IGDevice::http_body_view(const HTTPHeader& header, std::span<const char> buffer) {
