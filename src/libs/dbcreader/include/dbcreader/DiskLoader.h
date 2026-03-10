@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 - 2024 Ember
+ * Copyright (c) 2014 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,12 +8,13 @@
 
 #pragma once
 
-#include <shared/utility/StringHash.h>
 #include <dbcreader/Loader.h>
 #include <dbcreader/Storage.h>
+#include <shared/utility/StringHash.h>
 #include <boost/unordered/unordered_flat_map.hpp>
 #include <concepts>
 #include <functional>
+#include <string_view>
 #include <memory>
 
 namespace ember::dbc {
@@ -32,7 +33,7 @@ public:
 
 	Storage load(std::convertible_to<std::string_view> auto&& ...whitelist) const {
 		std::initializer_list<std::string_view> list { whitelist... };
-		return load({ list.begin(), list.end() });
+		return load(list);
 	}
 
 	Storage load() const override;

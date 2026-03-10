@@ -12,6 +12,7 @@ set(LIBRARY_HDR
     MapRunner.h
     Watchdog.h
     WorldRPCServer.h
+    DBCRequired.h
     utilities/DeltaTimer.h
     utilities/Utility.h
 )

@@ -18,6 +18,7 @@ set(LIBRARY_HDR
     ServiceContext.h
     ServiceContextImpl.h
     InitHelpers.h
+    DBCRequired.h
 )
 
 set(LIBRARY_SRC

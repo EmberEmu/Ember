@@ -8,6 +8,7 @@
 
 #include "Service.h"
 #include "MapRunner.h"
+#include "DBCRequired.h"
 #include "utilities/Utility.h"
 #include "WorldRPCServer.h"
 #include <logger/Logger.h>
@@ -31,7 +32,7 @@ int Service::run(const boost::program_options::variables_map& args) {
 		LOG_DEBUG(logger) << message << LOG_SYNC;
 	});
 
-	auto dbc_store = loader.load("Map", "GameTips");
+	auto dbc_store = loader.load(dbcs_required);
 
 	LOG_INFO_SYNC(logger, "Resolving DBC references...");
 	dbc::link(dbc_store);

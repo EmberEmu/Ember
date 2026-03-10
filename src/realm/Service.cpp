@@ -10,6 +10,7 @@
 #include "AccountClient.h"
 #include "CharacterClient.h"
 #include "Config.h"
+#include "DBCRequired.h"
 #include "EventDispatcher.h"
 #include "FilterTypes.h"
 #include "Locator.h"
@@ -146,7 +147,7 @@ void Service::launch(const opts::variables_map& args, thread::ServicePool& servi
 		LOG_DEBUG(logger) << message << LOG_SYNC;
 	});
 
-	auto dbc_store = loader.load("AddonData", "Cfg_Categories");
+	auto dbc_store = loader.load(dbcs_required);
 
 	LOG_INFO_SYNC(logger, "Resolving DBC references...");
 	dbc::link(dbc_store);

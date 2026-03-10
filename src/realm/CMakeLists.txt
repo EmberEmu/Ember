@@ -57,6 +57,7 @@ set(LIBRARY_HDR
     LoggingCallbacks.h
     WorldRPCClient.h
     Digest.h
+    DBCRequired.h
 )
 
 set(LIBRARY_SRC

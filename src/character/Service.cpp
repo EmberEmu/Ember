@@ -8,6 +8,7 @@
 
 #include "Service.h"
 #include "ServiceContextImpl.h"
+#include "DBCRequired.h"
 #include "FilterTypes.h"
 #include "CharacterHandler.h"
 #include "CharacterService.h"
@@ -65,13 +66,7 @@ void Service::initialise(const opts::variables_map& args, boost::asio::io_contex
 		}
 	);
 
-	auto dbcs = loader.load(
-		"ChrClasses", "ChrRaces", "CharBaseInfo", "NamesProfanity", "NamesReserved", "CharSections",
-		"CharacterFacialHairStyles", "CharStartBase", "CharStartSpells", "CharStartSkills",
-		"CharStartZones", "CharStartOutfit", "AreaTable", "FactionTemplate", "FactionGroup",
-		"SpamMessages", "CharStartOutfit", "StartItemQuantities"
-	);
-
+	auto dbcs = loader.load(dbcs_required);
 	ctx->dbcs = std::make_unique<dbc::Storage>(std::move(dbcs));
 
 	LOG_INFO_SYNC(logger, "Resolving DBC references...");
