@@ -17,9 +17,7 @@
 #include <shared/utility/UTF8.h>
 #include <logger/LoggerFwd.h>
 #include <thread/ThreadPool.h>
-//#include <boost/locale.hpp>
 #include <pcre.h>
-#include <locale>
 #include <functional>
 #include <string>
 #include <optional>
@@ -95,17 +93,15 @@ public:
 	                 const dal::CharacterDAO& dao,
 	                 const Config& config,
                      thread::ThreadPool& pool,
-                     const std::locale& locale,
                      log::Logger& logger)
-		: profane_names_(std::move(profane_names)),
-		  reserved_names_(std::move(reserved_names)),
-		  spam_names_(std::move(spam_names)),
-		  dbc_(dbc),
-		  dao_(dao),
-	      config_(config),
-		  pool_(pool),
-		  locale_(locale),
-		  logger_(logger) {}
+		: profane_names_(std::move(profane_names))
+		, reserved_names_(std::move(reserved_names))
+		, spam_names_(std::move(spam_names))
+		, dbc_(dbc)
+		, dao_(dao)
+	    , config_(config)
+		, pool_(pool)
+		, logger_(logger) {}
 
 	void create(std::uint32_t account_id,
 	            std::uint32_t realm_id,

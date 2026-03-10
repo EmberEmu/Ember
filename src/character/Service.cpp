@@ -7,9 +7,11 @@
  */
 
 #include "Service.h"
+#include "ServiceContextImpl.h"
 #include "FilterTypes.h"
 #include "CharacterHandler.h"
 #include "CharacterService.h"
+#include "InitHelpers.h"
 #include "LoggingCallbacks.h"
 #include <dbcreader/Reader.h>
 #include <conpool/ConnectionPool.h>
@@ -33,75 +35,60 @@ using namespace std::chrono_literals;
 
 namespace ember::character {
 
-/*
- * Starts Asio worker threads, blocking until the launch thread exits
- * upon error or signal handling.
- * 
- * io_context is only stopped after the thread joins to ensure that all
- * services can cleanly shut down upon destruction without requiring
- * explicit shutdown() calls in a signal handler.
- */
+Service::Service(log::Logger& logger, commands::Registry& registry)
+	: logger(logger)
+	, registry(registry)
+	, start_time(std::chrono::steady_clock::now()) {
+#ifdef DEBUG_NO_THREADS
+	LOG_WARN_SYNC(logger, "Compiled with DEBUG_NO_THREADS!");
+#endif
+}
+
 int Service::run(const opts::variables_map& args) try {
-	boost::asio::io_context service(BOOST_ASIO_CONCURRENCY_HINT_UNSAFE_IO);
-	auto work = boost::asio::make_work_guard(service);
+	initialise(args, service);
+	service.run();
 
-	std::thread thread([&]() {
-		thread::set_name("Launcher");
-		launch(args, service);
-	});
-
-	std::jthread worker(&boost::asio::io_context::run, &service);
-	thread::set_name(worker, "Asio Worker");
-
-	thread.join();
-	service.stop();
-
-	if(eptr) {
-		std::rethrow_exception(eptr);
-	}
-
+	LOG_INFO_SYNC(logger, "{} shutting down...", app_name);
 	return EXIT_SUCCESS;
 } catch(const std::exception& e) {
 	LOG_FATAL(logger) << e.what() << LOG_SYNC;
 	return EXIT_FAILURE;
 }
 
-void Service::stop() {
-	stop_flag.release();
-}
-
-void Service::launch(const opts::variables_map& args, boost::asio::io_context& service) try {
-#ifdef DEBUG_NO_THREADS
-	LOG_WARN_SYNC(logger, "Compiled with DEBUG_NO_THREADS!");
-#endif
+void Service::initialise(const opts::variables_map& args, boost::asio::io_context& service) {
+	auto ctx = context.get();
 
 	LOG_INFO_SYNC(logger, "Loading DBC data...");
-	dbc::DiskLoader loader(args["dbc.path"].as<std::string>(), [&](auto message) {
-		LOG_DEBUG(logger) << message << LOG_SYNC;
-	});
 
-	auto dbc_store = loader.load(
+	dbc::DiskLoader loader(
+		args["dbc.path"].as<std::string>(), [&](auto message) {
+			LOG_DEBUG(logger) << message << LOG_SYNC;
+		}
+	);
+
+	ctx->dbcs = std::make_unique<dbc::Storage>(loader.load(
 		"ChrClasses", "ChrRaces", "CharBaseInfo", "NamesProfanity", "NamesReserved", "CharSections",
 		"CharacterFacialHairStyles", "CharStartBase", "CharStartSpells", "CharStartSkills",
 		"CharStartZones", "CharStartOutfit", "AreaTable", "FactionTemplate", "FactionGroup",
 		"SpamMessages", "CharStartOutfit", "StartItemQuantities"
-	);
+	));
 
 	LOG_INFO_SYNC(logger, "Resolving DBC references...");
-	dbc::link(dbc_store);
+	dbc::link(*ctx->dbcs);
 
+	// todo, should probably do this somewhere else
 	LOG_INFO_SYNC(logger, "Compiling DBC regular expressions...");
 	std::vector<utility::pcre::Result> profanity, reserved, spam;
 
-	for(auto& record : dbc_store.names_profanity | std::views::values) {
+	for(auto& record : ctx->dbcs->names_profanity | std::views::values) {
 		profanity.emplace_back(utility::pcre::utf8_jit_compile(record.name));
 	}
 
-	for(auto& record : dbc_store.names_reserved | std::views::values) {
+	for(auto& record : ctx->dbcs->names_reserved | std::views::values) {
 		reserved.emplace_back(utility::pcre::utf8_jit_compile(record.name));
 	}
 
-	for(auto& record : dbc_store.spam_messages | std::views::values) {
+	for(auto& record : ctx->dbcs->spam_messages | std::views::values) {
 		spam.emplace_back(utility::pcre::utf8_jit_compile(record.text));
 	}
 
@@ -126,44 +113,56 @@ void Service::launch(const opts::variables_map& args, boost::asio::io_context& s
 
 	LOG_INFO_SYNC(logger, "Initialising database connection pool...");
 
-	connection_pool::PoolImpl<drivers::AutoSelect, connection_pool::CheckinClean, connection_pool::ExponentialGrowth> pool(
-		std::move(driver), min_conns, max_conns, 30s
+	ctx->conn_pool = std::make_unique<connection_pool::Pool<drivers::DriverType>>(
+		init_database(args, logger)
 	);
-	
-	pool.logging_callback([&](auto severity, auto message) {
-		pool_log_callback(severity, message, logger);
-	});
 
 	LOG_INFO_SYNC(logger, "Initialising DAOs...");
-	auto character_dao = dal::character_dao(pool);
-
-	std::locale temp;
+	auto character_dao = dal::character_dao(ctx->conn_pool->get());
+	ctx->character_dao = std::make_unique<decltype(character_dao)>(std::move(character_dao));
 
 	const Config config {
 		.defer_zone_placement = args["defer_zone_placement"].as<bool>()
 	};
 
-	thread::ThreadPool thread_pool(concurrency);
-	CharacterHandler handler(std::move(profanity), std::move(reserved), std::move(spam),
-	                         dbc_store, character_dao, config, thread_pool, temp, logger);
+	LOG_INFO_SYNC(logger, "Starting thread pool with {} threads...", concurrency);
+	ctx->thread_pool = std::make_unique<thread::ThreadPool>(concurrency);
+
+	LOG_INFO_SYNC(logger, "Starting character handler...");
+	ctx->character_handler = std::make_unique<CharacterHandler>(
+		std::move(profanity), std::move(reserved), std::move(spam),
+	    *ctx->dbcs, *ctx->character_dao, config, *ctx->thread_pool, logger
+	);
 
 	const auto&  s_address = args["spark.address"].as<std::string>();
-	auto s_port = args["spark.port"].as<std::uint16_t>();
+	const auto s_port = args["spark.port"].as<std::uint16_t>();
 
 	LOG_INFO_SYNC(logger, "Starting RPC services...");
-	spark::Server spark(service, app_name, s_address, s_port, logger);
-	CharacterService char_service(spark, handler, logger);
+	ctx->spark = std::make_unique<spark::Server>(
+		service, app_name, s_address, s_port, logger
+	);
+
+	ctx->character_service = std::make_unique<CharacterService>(
+		*ctx->spark, *ctx->character_handler, logger
+	);
 	
 	// All done setting up
 	boost::asio::dispatch(service, [&]() {
 		LOG_INFO_SYNC(logger, "{} started successfully in {}", app_name,
 			utility::start_time_format(start_time));
 	});
+}
 
-	stop_flag.acquire();
-	LOG_INFO_SYNC(logger, "{} shutting down...", app_name);
-} catch(...) {
-	eptr = std::current_exception();
+void Service::shutdown() {
+	auto ctx = context.get();
+	ctx->thread_pool->shutdown();
+	ctx->spark->shutdown();
+	ctx->conn_pool->get().close();
+}
+
+void Service::stop() {
+	LOG_TRACE_SYNC(logger, "Service termination requested");
+	shutdown();
 }
 
 opts::options_description Service::options() {
