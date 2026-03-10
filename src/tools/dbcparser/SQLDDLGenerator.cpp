@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 - 2021 Ember
+ * Copyright (c) 2019 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -36,8 +36,8 @@ public:
 		// we don't care about enums at the moment
 	}
 
-	std::string generate_column(const std::string& name, const std::string& type) {
-		std::string column = "  `" + name + "` ";
+	std::string generate_column(const std::string_view name, const std::string_view type) {
+		std::string column = std::format("  `{}` ", name);
 
 		if(type == "int8") {
 			column +=  "tinyint(1) NOT NULL";
@@ -64,11 +64,11 @@ public:
 			column.clear();
 	
 			for(const auto& loc : string_ref_loc_regions) {
-				column += "  `" + name + "_" + std::string(loc) + "` ";
+				column += std::format("  `{}_{}` ", name, loc);
 				column += "mediumtext NOT NULL,\n";
 			}
 
-			column += "  `" + name + "_flags` ";
+			column += std::format("  `{}_flags` ", name);
 			column += "int NOT NULL";
 		}
 
@@ -76,8 +76,26 @@ public:
 	}
 
 	void visit(const types::Field* field, const types::Base* parent) override {
-		const auto name = suffix_.empty()? field->name : field->name + "_" + suffix_;
-		const auto qualified_name = parent? parent->name + "_" + name : name;
+		std::string_view name;
+		std::string name_buffer;
+
+		if(suffix_.empty()) {
+			name = field->name;
+		} else {
+			name_buffer = std::format("{}_{}", field->name, suffix_);
+			name = name_buffer;
+		}
+
+		std::string_view qualified_name;
+		std::string qn_buffer;
+
+		if(parent) {
+			qn_buffer = std::format("{}_{}", parent->name, name);
+			qualified_name = qn_buffer;
+		} else {
+			qualified_name = name;
+		}
+
 		const auto& type = field->underlying_type;
 		const auto components = extract_components(field->underlying_type);
 
@@ -85,18 +103,19 @@ public:
 		if(type_map.contains(components.first)) {
 			if(components.second) { // array
 				for(auto i = 0u; i < *components.second; ++i) {
-					auto column = std::move(generate_column(qualified_name + "_" + std::to_string(i), components.first));
+					auto column_name = std::format("{}_{}", qualified_name, i);
+					auto column = generate_column(column_name, components.first);
 					columns_.emplace_back(std::move(column));
 				}
 			} else { // scalar
-				auto column = std::move(generate_column(qualified_name, type));
+				auto column = generate_column(qualified_name, type);
 
 				// only scalar primitive types can have keys
 				for(const auto& key : field->keys) {
 					if(key.type == "primary") {
-						column += ", \n  PRIMARY KEY(`" + field->name + "`)";
+						column += std::format(", \n  PRIMARY KEY(`{}`)", field->name);
 					} else if (key.type == "foreign") {
-						column += " COMMENT 'References " + key.parent + "'";
+						column += std::format(" COMMENT 'References {}'", key.parent);
 					}
 				}
 
@@ -123,10 +142,18 @@ public:
 			} else if(found->type == types::Type::t_enum) {
 				const auto type = static_cast<const types::Enum*>(found);
 				auto i = 0u;
+				std::string qns_buffer;
+				std::string_view qns;
 
 				do {
-					const auto& qns = components.second? qualified_name + "_" + std::to_string(i) : qualified_name;
-					auto column = std::move(generate_column(qns, type->underlying_type));
+					if(components.second) {
+						qns_buffer = std::format("{}_{}", qualified_name, i);
+						qns = qns_buffer;
+					} else {
+						qns = qualified_name;
+					}
+
+					auto column = generate_column(qns, type->underlying_type);
 					columns_.emplace_back(std::move(column));
 					++i;
 				} while(components.second && i < *components.second);

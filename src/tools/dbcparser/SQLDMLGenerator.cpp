@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 - 2025 Ember
+ * Copyright (c) 2019 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -67,7 +67,7 @@ public:
 		return string;
 	}
 
-	void generate_column(const std::string& type) {
+	void generate_column(const std::string_view type) {
 		if(type == "int8") {
 			std::int8_t val = 0;
 			stream_ >> val;
@@ -123,7 +123,7 @@ public:
 			stream_ >> flags;
 			values_.emplace_back(std::to_string(flags));
 		} else {
-			throw std::runtime_error("Unhandled type, " + type);
+			throw std::runtime_error(std::format("Unhandled type, {}", type));
 		}
 	}
 
@@ -267,7 +267,7 @@ void generate_sql_dml(const types::Definitions& defs, const std::string& out_pat
 		}
 
 		LOG_DEBUG_GLOB << "Generating SQL DML for " << def->name << LOG_ASYNC;
-		auto data = load_dbc(def->name + ".dbc");
+		auto data = load_dbc(std::format("{}.dbc", def->name));
 		write_dbc_dml(static_cast<const types::Struct&>(*def.get()), file, std::move(data));
 		LOG_DEBUG_GLOB << "Completed SQL DML generation for " << def->name << LOG_ASYNC;
 	}

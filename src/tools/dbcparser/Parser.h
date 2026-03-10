@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 - 2024 Ember
+ * Copyright (c) 2014 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -14,6 +14,7 @@
 #include <memory>
 #include <span>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace ember::dbc {
@@ -25,7 +26,12 @@ class Parser final {
 		bool type, name, alias, options;
 	};
 
- 	types::Definitions parse_file(const std::string& path);
+	template<typename T>
+	const std::string_view value_string_view(const T* node) const;
+
+	template<typename T>
+	const std::string_view name_string_view(const T* node) const;
+
 	types::Definitions parse_doc_root(rapidxml::xml_node<>* node);
 
 	std::unique_ptr<types::Struct> parse_struct(rapidxml::xml_node<>* root, bool dbc, int depth = 0, types::Base* parent = nullptr);
@@ -37,13 +43,12 @@ class Parser final {
 
 	types::Enum parse_enum(rapidxml::xml_node<>* root, types::Base* parent = nullptr);
 	void parse_enum_node(types::Enum& structure, UniqueCheck& check, rapidxml::xml_node<>* node);
-	void parse_enum_options(std::vector<std::pair<std::string, std::string>>& key, rapidxml::xml_node<>* node);
+	void parse_enum_options(std::vector<std::pair<std::string_view, std::string_view>>& key, rapidxml::xml_node<>* node);
 
-	void assign_unique(std::string& type, bool& exists, rapidxml::xml_node<>* node);
+	void assign_unique(std::string_view& type, bool& exists, rapidxml::xml_node<>* node);
 
 public:
-	types::Definitions parse(const std::string& path);
-	types::Definitions parse(std::span<const std::string> paths);
+	types::Definitions parse(std::string& document);
 };
 
 } // dbc, ember

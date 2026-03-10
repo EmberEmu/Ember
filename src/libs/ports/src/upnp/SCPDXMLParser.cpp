@@ -1,24 +1,20 @@
 /*
- * Copyright (c) 2024 Ember
+ * Copyright (c) 2024 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+#include <algorithm>
 #include <ports/upnp/SCPDXMLParser.h>
+#include <cstring>
 
 namespace ember::ports::upnp {
 
-SCPDXMLParser::SCPDXMLParser(const std::string_view xml) : xml_(std::string(xml)) {
-	// rapidxml uses a load of stack space, hence the allocation
-	parser_ = std::make_unique<rapidxml::xml_document<>>();
-	parser_->parse<0>(xml_.data());
-}
-
 SCPDXMLParser::SCPDXMLParser(std::string xml) : xml_(std::move(xml)) {
 	parser_ = std::make_unique<rapidxml::xml_document<>>();
-	parser_->parse<0>(xml_.data());
+	parser_->parse<rapidxml::parse_fastest>(xml_.data());
 }
 
 rapidxml::xml_node<char>* SCPDXMLParser::action(const std::string_view action) const {
@@ -42,7 +38,9 @@ rapidxml::xml_node<char>* SCPDXMLParser::action(const std::string_view action) c
 
 	do {
 		if(auto node = action_node->first_node("name", 0, false)) {
-			if(node->value() == action) {
+			const auto max_count = std::min(action.size(), node->value_size());
+
+			if(std::strncmp(node->value(), action.data(), max_count) == 0) {
 				return action_node;
 			}
 		}
@@ -54,7 +52,7 @@ rapidxml::xml_node<char>* SCPDXMLParser::action(const std::string_view action) c
 }
 
 std::vector<std::string_view> SCPDXMLParser::arguments(const std::string_view action_name,
-                                                       std::string_view direction) const {
+                                                       const std::string_view direction) const {
 	const auto action_node = action(action_name);
 
 	if(!action_node) {
@@ -77,9 +75,12 @@ std::vector<std::string_view> SCPDXMLParser::arguments(const std::string_view ac
 		if(name && name->value()) {
 			auto dir_node = arg_node->first_node("direction", 0, false);
 
-			if(dir_node && dir_node->value() && dir_node->value() == direction) {
-				
-				arguments.emplace_back(name->value());
+			if(dir_node && dir_node->value()) {
+				const auto max_count = std::min(direction.size(), dir_node->value_size());
+
+				if(std::strncmp(dir_node->value(), direction.data(), max_count) == 0) {
+					arguments.emplace_back(name->value());
+				}
 			}
 		}		
 

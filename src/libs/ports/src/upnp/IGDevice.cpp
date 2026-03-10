@@ -137,21 +137,23 @@ UPnPActionArgs IGDevice::build_upnp_del_mapping(const Mapping& mapping) {
 }
 
 template<typename BufType>
-BufType IGDevice::build_http_post_request(std::string&& body, const std::string& action,
-                                          const std::string& control_url) {
-	auto soap_action = std::format("{}#{}", service_, action);
+BufType IGDevice::build_http_post_request(const std::string_view body,
+                                          const std::string_view action,
+                                          const std::string_view control_url) {
+	const auto soap_action = std::format("{}#{}", service_, action);
+	const auto content_length = std::to_string(body.size());
 
-	HTTPRequest request {
+	const HTTPRequest request {
 		.method = "POST",
 		.url = control_url,
 		.fields {
 			{ "Host",           http_host_ },
 			{ "Content-Type",   R"(text/xml; charset="utf-8")" },
-			{ "Content-Length", std::to_string(body.size()) },
+			{ "Content-Length", content_length },
 			{ "Connection",     "keep-alive" },
-			{ "SOAPAction",     std::move(soap_action) },
+			{ "SOAPAction",     soap_action },
 		},
-		.body = std::move(body)
+		.body = body
 	};
 
 	return build_http_request<BufType>(request);
@@ -179,12 +181,12 @@ asio::awaitable<void> IGDevice::request_scpd(HTTPTransport& transport) {
 		throw std::invalid_argument("Missing SCPDURL");
 	}
 
-	HTTPRequest http_req{
+	HTTPRequest http_req {
 		.method = "GET",
 		.url = *scpd_uri,
 		.fields {
 			{ "Host",           http_host_ },
-			{ "Accept",        R"(text/html,application/xhtml+xml,application/xml;)" },
+			{ "Accept",         R"(text/html,application/xhtml+xml,application/xml;)" },
 			{ "Connection",     "keep-alive" },
 		}
 	};
@@ -209,7 +211,7 @@ asio::awaitable<void> IGDevice::refresh_scpd(HTTPTransport& transport) {
 		scpd_cc_ = std::chrono::steady_clock::now();
 	}
 
-	scpd_xml_ = std::make_unique<SCPDXMLParser>(body);
+	scpd_xml_ = std::make_unique<SCPDXMLParser>(std::string(body));
 }
 
 std::string_view IGDevice::http_body_view(const HTTPHeader& header, std::span<const char> buffer) {
@@ -239,7 +241,7 @@ asio::awaitable<void> IGDevice::refresh_igdd(HTTPTransport& transport) {
 		igdd_cc_ = std::chrono::steady_clock::now();
 	}
 	
-	igdd_xml_ = std::make_unique<XMLParser>(body);
+	igdd_xml_ = std::make_unique<XMLParser>(std::string(body));
 }
 
 asio::awaitable<void> IGDevice::refresh_xml_cache(HTTPTransport& transport) {
@@ -298,10 +300,8 @@ asio::awaitable<ErrorCode> IGDevice::do_delete_port_mapping(const Mapping& mappi
 		co_return ec;
 	}
 
-	auto body = build_soap_request(std::move(args));
-	auto request = build_http_post_request<std::vector<std::uint8_t>>(
-		std::move(body), "DeletePortMapping", *post_uri
-	);
+	const auto body = build_soap_request(std::move(args));
+	auto request = build_http_post_request<std::vector<std::uint8_t>>(body, "DeletePortMapping", *post_uri);
 
 	co_await transport.send(std::move(request));
 	const auto& [header, buffer] = co_await transport.receive_http_response();
@@ -360,9 +360,7 @@ asio::awaitable<ErrorCode> IGDevice::do_add_port_mapping(Mapping mapping, HTTPTr
 
 	auto body = build_soap_request(std::move(args));
 
-	auto request = build_http_post_request<std::vector<std::uint8_t>>(
-		std::move(body), "AddPortMapping", *post_uri
-	);
+	auto request = build_http_post_request<std::vector<std::uint8_t>>(body, "AddPortMapping", *post_uri);
 
 	co_await transport.send(std::move(request));
 	const auto& [header, _] = co_await transport.receive_http_response();

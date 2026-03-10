@@ -18,6 +18,7 @@
 #include <logger/FileSink.h>
 #include <boost/program_options.hpp>
 #include <filesystem>
+#include <format>
 #include <fstream>
 #include <iostream>
 #include <memory>
@@ -40,6 +41,8 @@ void print_dbc_table(const dbc::types::Definitions& defs);
 void print_dbc_fields(const dbc::types::Definitions& defs);
 void handle_options(const opts::variables_map& args, const dbc::types::Definitions& defs);
 void configure_logger(log::Logger& logger, const opts::variables_map& args);
+std::vector<std::string> load_documents(std::span<const std::string> paths);
+dbc::types::Definitions run_parser(std::span<std::string> buffers);
 
 int main(int argc, const char* argv[]) try {
 	const auto args = parse_arguments(argc, argv);
@@ -56,14 +59,55 @@ int main(int argc, const char* argv[]) try {
 int launch(const opts::variables_map& args) try {
 	const auto def_paths = args["definitions"].as<std::vector<std::string>>();
 	std::vector<std::string> paths = fetch_definitions(def_paths);
-
-	dbc::Parser parser;
-	auto definitions = parser.parse(paths);
+	std::vector<std::string> buffers = load_documents(paths);
+	const dbc::types::Definitions definitions = run_parser(buffers);
 	handle_options(args, definitions);
 	return EXIT_SUCCESS;
 } catch(const std::exception& e) {
 	LOG_FATAL_GLOB << e.what() << LOG_SYNC;
 	return EXIT_FAILURE;
+}
+
+dbc::types::Definitions run_parser(std::span<std::string> buffers) {
+	dbc::types::Definitions definitions;
+	dbc::Parser parser;
+
+		for(auto& buffer : buffers) {
+		auto definition = parser.parse(buffer);
+
+		definitions.insert(definitions.end(),
+			std::make_move_iterator(definition.begin()),
+			std::make_move_iterator(definition.end())
+		);
+	}
+
+	return definitions;
+}
+
+std::vector<std::string> load_documents(std::span<const std::string> paths) {
+	std::vector<std::string> buffers;
+
+	for(auto& path : paths) {
+		std::string buffer;
+		std::ifstream file(path, std::ios::in | std::ios::binary);
+
+		if(!file) {
+			throw std::runtime_error(std::format("Unable to open {}", path));
+		}
+
+		const auto size = std::filesystem::file_size(path);
+		buffer.resize_and_overwrite(size, [&](char* strbuf, std::size_t size) {
+			if(!file.read(strbuf, size)) {
+				throw std::runtime_error(std::format("Unable to read, {}", path));
+			}
+
+			return size;
+		});
+
+		buffers.emplace_back(std::move(buffer));
+	}
+
+	return buffers;
 }
 
 void configure_logger(log::Logger& logger, const opts::variables_map& args) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Ember
+ * Copyright (c) 2024 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -22,17 +22,17 @@ class XMLParser final {
 	std::unique_ptr<rapidxml::xml_document<>> parser_;
 
 	rapidxml::xml_node<char>* service_search(std::span<rapidxml::xml_node<char>*> devices,
-	                                         const std::string& type) const;
+	                                         const std::string_view service) const;
+
+	rapidxml::xml_node<char>* locate_device(const std::string_view device) const;
+	rapidxml::xml_node<char>* locate_service(const std::string_view service) const;
 
 public:
-	XMLParser(const std::string_view xml);
 	XMLParser(std::string xml);
 
-	rapidxml::xml_node<char>* locate_device(const std::string& type) const;
-	rapidxml::xml_node<char>* locate_service(const std::string& type) const;
-
-	std::optional<std::string> get_node_value(const std::string& service,
-	                                          const std::string& node_name) const;
+	std::optional<const std::string_view> get_node_value(
+		const std::string_view service,
+		const std::string_view node_name) const;
 };
 
 } // upnp, ports, ember

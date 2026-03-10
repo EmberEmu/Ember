@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 - 2025 Ember
+ * Copyright (c) 2014 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -13,6 +13,7 @@
 #include <logger/Logger.h>
 #include <algorithm>
 #include <filesystem>
+#include <format>
 #include <fstream>
 #include <regex>
 #include <span>
@@ -49,7 +50,7 @@ public:
 	}
 };
 
-std::optional<std::string> locate_type(const types::Struct& base, const std::string& type_name) {
+std::optional<std::string_view> locate_type(const types::Struct& base, const std::string& type_name) {
 	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
 
 	for(const auto& f : base.children) {
@@ -65,20 +66,20 @@ std::optional<std::string> locate_type(const types::Struct& base, const std::str
 	return locate_type(static_cast<types::Struct&>(*base.parent), type_name);
 }
 
-std::string parent_alias(const types::Definitions& defs, const std::string& parent) {
+std::string parent_alias(const types::Definitions& defs, const std::string_view parent) {
 	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
 
 	for(const auto& def : defs) {
 		if(def->name == parent) {
 			if(!def->alias.empty()) {
-				return def->alias;
+				return std::string(def->alias);
 			} else {
 				return pascal_to_underscore(parent);
 			}
 		}
 	}
 
-	return parent; // couldn't find parent, will just assume the validator caught the problem, if any
+	return std::string(parent); // couldn't find parent, will just assume the validator caught the problem, if any
 }
 
 void save_output(const std::string& path, const std::string& name, const std::string& output) {
@@ -135,7 +136,7 @@ void generate_linker(const types::Definitions& defs, const std::string& output, 
 			continue;
 		}
 
-		std::string store_name = def->alias.empty()? pascal_to_underscore(dbc->name) : dbc->alias;
+		std::string store_name = def->alias.empty()? pascal_to_underscore(std::string(dbc->name)) : std::string(dbc->alias);
 		std::stringstream call, func;
 		bool write_func = false;
 		bool double_spaced = false;
@@ -157,7 +158,9 @@ void generate_linker(const types::Definitions& defs, const std::string& output, 
 				auto t = locate_type(*dbc, components.first);
 
 				if(!t) {
-					throw std::runtime_error("Could not locate type: " + components.first + " in DBC: " + dbc->name);
+					throw std::runtime_error(
+						std::format("Could not locate type: {} in DBC: {}", components.first, dbc->name)
+					);
 				}
 				
 			}
@@ -232,7 +235,16 @@ void generate_disk_loader(const types::Definitions& defs, const std::string& out
 		TypeMetrics metrics;
 		walk_dbc_fields(metrics, &dbc, dbc.parent);
 
-		std::string store_name = dbc.alias.empty()? pascal_to_underscore(dbc.name) : dbc.alias;
+		std::string_view store_name;
+		std::string store_name_buffer;
+
+		if(dbc.alias.empty()) {
+			store_name_buffer = pascal_to_underscore(dbc.name);
+			store_name = store_name_buffer;
+		} else {
+			store_name = dbc.alias;
+		}
+
 		bool double_spaced = false;
 		std::string primary_key;
 
@@ -309,13 +321,17 @@ void generate_disk_loader(const types::Definitions& defs, const std::string& out
 				auto t = locate_type(dbc, type);
 
 				if(!t) {
-					throw std::runtime_error("Could not locate type: " + components.first + " in DBC: " + dbc.name);
+					throw std::runtime_error(
+						std::format("Could not locate type: {} in DBC: {}", components.first, dbc.name)
+					);
 				}
 
 				auto base = locate_type_base(dbc, type);
 				
 				if(!base) {
-					throw std::runtime_error("Could not locate type: " + components.first + " in DBC: " + dbc.name);
+					throw std::runtime_error(
+						std::format("Could not locate type: {} in DBC: {}", components.first, dbc.name)
+					);
 				}
 
 				if(base->type == types::Type::t_enum) {
@@ -323,7 +339,11 @@ void generate_disk_loader(const types::Definitions& defs, const std::string& out
 				} else if(base->type == types::Type::t_struct) {
 					walk_dbc_fields(enumerator, static_cast<types::Struct*>(base), base->parent);
 				} else {
-					throw std::runtime_error("Unhandled type (not a struct or enum) found: " + components.first + " in DBC: " + dbc.name);
+					throw std::runtime_error(
+						std::format(
+							"Unhandled type (not a struct or enum) found: {} in DBC: {}", components.first, dbc.name
+						)
+					);
 				}
 			}
 
@@ -439,10 +459,10 @@ void generate_disk_struct(const types::Struct& def, std::stringstream& definitio
 			components.first = "float64";
 		}
 
-		std::string field = components.first + " " + f.name;
+		std::string field = std::format("{} {}", components.first, f.name);
 
 		if(components.second) {
-			field += "[" + std::to_string(*components.second) + "]";
+			field += std::format("[{}]", *components.second);
 		}
 
 		definitions << tab << "\t" << field << ";" << '\n';
@@ -497,7 +517,7 @@ void generate_memory_enum(const types::Enum& def, std::stringstream& definitions
 	definitions << '\n';
 
 	for(auto i = def.options.begin(); i != def.options.end(); ++i) {
-		std::string name = i->first;
+		std::string name = std::string(i->first);
 		std::ranges::transform(name, name.begin(), [](const unsigned char c) {
 			return std::toupper(c);
 		});
@@ -630,7 +650,16 @@ void generate_storage(const types::Definitions& defs, const std::string& output,
 			continue;
 		}
 
-		std::string store_name = dbc->alias.empty()? pascal_to_underscore(dbc->name) : dbc->alias;
+		std::string_view store_name;
+		std::string store_name_buffer;
+
+		if(dbc->alias.empty()) {
+			store_name_buffer = pascal_to_underscore(dbc->name);
+			store_name = store_name_buffer;
+		} else {
+			store_name = dbc->alias;
+		}
+
 		declarations << "\tStore<" << dbc->name << "> " << store_name << ";\n";
 	}
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 - 2025 Ember
+ * Copyright (c) 2014 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -24,7 +24,7 @@ namespace ember::dbc {
  * Searches DBC definitions for the given foreign key. 
  * Only child structs of the root node are considered for matches.
  */
-std::optional<std::reference_wrapper<const types::Field>> Validator::locate_fk_parent(const std::string& parent) {
+std::optional<std::reference_wrapper<const types::Field>> Validator::locate_fk_parent(const std::string_view parent) {
 	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
 
 	for(auto& def : *definitions_) {
@@ -59,16 +59,18 @@ void Validator::check_foreign_keys(const types::Field& field) {
 			const auto components = extract_components(field.underlying_type);
 
 			if(!pk) {
-				throw exception(field.name + " references a primary key in "
-				                + key.parent + " that does not exist");
+				throw exception(
+					std::format("{} references a primary key in {} that does not exist", field.name, key.parent)
+				);
 			}
 
 			const auto& pk_ref = pk->get();
-
+			
 			if(!key.ignore_type_mismatch && pk_ref.underlying_type != components.first) {
-				throw exception(":" + field.name + " => "+ key.parent +
-				                " types do not match. Expected " + components.first +
-				                ", found " + pk_ref.underlying_type);
+				throw exception(
+					std::format(":{} => {} types do not match. Expected {}, found {}",
+						field.name, key.parent, components.first, pk_ref.underlying_type)
+				);
 			}
 		}
 	}
@@ -92,7 +94,8 @@ void Validator::check_multiple_definitions(const types::Base* def) {
 			names_.emplace_back(def->alias);
 		}
 	} else {
-		throw exception("Multiple definitions of " + def->name + " or its alias found");
+		throw exception(
+			std::format("Multiple definitions of {} or its alias found", def->name));
 	}
 
 	std::vector<std::string> sym_names;
@@ -104,7 +107,7 @@ void Validator::check_multiple_definitions(const types::Base* def) {
 			if(std::ranges::find(sym_names, symbol->name) == sym_names.end()) {
 				sym_names.emplace_back(symbol->name);
 			} else {
-				throw exception("Multiple definitions of " + symbol->name);
+				throw exception(std::format("Multiple definitions of {}", symbol->name));
 			}
 		}
 	} else if(def->type == types::Type::t_enum) {
@@ -114,7 +117,7 @@ void Validator::check_multiple_definitions(const types::Base* def) {
 			if(std::ranges::find(sym_names, symbol.first) == sym_names.end()) {
 				sym_names.emplace_back(symbol.first);
 			} else {
-				throw exception("Multiple definitions of " + symbol.first);
+				throw exception(std::format("Multiple definitions of {}", symbol.first));
 			}
 		}
 	} else {
@@ -128,14 +131,14 @@ void Validator::check_key_types(const types::Field& field) {
 	for(const auto& key : field.keys) {
 		if(key.type != "primary" && key.type != "foreign") {
 			if(key.type.empty()) {
-				throw exception(field.name + " did not specify a key type");
+				throw exception(std::format("{} did not specify a key type", field.name));
 			}
 
 			throw exception(std::format("{} is not a valid key type for {}", key.type, field.name));
 		} else if(key.type == "foreign" && key.parent.empty()) {
-			throw exception(field.name + " - orphaned foreign key");
+			throw exception(std::format("{} - orphaned foreign key", field.name));
 		} else if(key.type == "primary" && !key.parent.empty()) {
-			throw exception(field.name + " - primary key cannot have a parent");
+			throw exception(std::format("{} - primary key cannot have a parent", field.name));
 		}
 	}
 }
@@ -151,7 +154,9 @@ void Validator::check_dup_key_types(const types::Struct* def) {
 		for(const auto& key : field.keys) {
 			if(key.type == "primary") {
 				if(has_primary) {
-					throw exception(field.name + " - cannot have multiple primary keys");
+					throw exception(
+						std::format("{} - cannot have multiple primary keys", field.name)
+					);
 				}
 
 				has_primary = true;
@@ -159,7 +164,9 @@ void Validator::check_dup_key_types(const types::Struct* def) {
 
 			if(key.type == "foreign") {
 				if(has_foreign) {
-					throw exception(field.name + " - cannot have multiple foreign keys in a single field");
+					throw exception(
+						std::format("{} - cannot have multiple foreign keys in a single field", field.name)
+					);
 				}
 
 				has_foreign = true;
@@ -168,7 +175,7 @@ void Validator::check_dup_key_types(const types::Struct* def) {
 	}
 }
 
-void Validator::add_user_type(TreeNode<std::string>* node, const std::string& type) {
+void Validator::add_user_type(TreeNode<std::string>* node, const std::string_view type) {
 	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
 
 	if(std::ranges::find_if(node->children,
@@ -176,7 +183,7 @@ void Validator::add_user_type(TreeNode<std::string>* node, const std::string& ty
 			return i->t == type;
 		}) != node->children.end()) {
 
-		throw exception("Multiple definitions of user-defined type: " + type); 
+		throw exception(std::format("Multiple definitions of user-defined type: {}", type)); 
 	}
 
 	node->t = type;
@@ -283,7 +290,7 @@ void Validator::check_field_types(const types::Struct* def, const TreeNode<std::
 	}
 }
 
-const TreeNode<std::string>* Validator::locate_type_node(const std::string& name,
+const TreeNode<std::string>* Validator::locate_type_node(const std::string_view name,
                                                          const TreeNode<std::string>* node) {
 	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
 
@@ -293,7 +300,7 @@ const TreeNode<std::string>* Validator::locate_type_node(const std::string& name
 		});
 
 	if(it == node->children.end()) {
-		throw exception("Unable to locate type in hierarchy: " + name);
+		throw exception(std::format("Unable to locate type in hierarchy: {}", name));
 	}
 
 	return it->get();
@@ -354,17 +361,17 @@ void Validator::range_check(long long value) {
 	}
 }
 
-void Validator::validate_enum_option_value(const std::string& type, const std::string& value) {
+void Validator::validate_enum_option_value(const std::string_view type, const std::string_view value) {
 	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
 
 	int base = value.find("0x") == std::string::npos? 10 : 16;
 	std::string set = base == 10? "-0123456789" : "0123456789ABCDEFx";
 
 	if(value.find_first_not_of(set) != std::string::npos) {
-		throw exception(value + " is not a valid enum option value");
+		throw exception(std::format("{} is not a valid enum option value", value));
 	}
 	
-	long long parsed = std::stoll(value, 0, base);
+	long long parsed = std::stoll(std::string(value), 0, base);
 	
 	if(type == "int8") {
 		range_check<std::int8_t>(parsed);
@@ -379,7 +386,7 @@ void Validator::validate_enum_option_value(const std::string& type, const std::s
 	} else if(type == "uint32") {
 		range_check<std::uint32_t>(parsed);
 	} else {
-		throw exception("Unhandled underlying enum type: " + type);
+		throw exception(std::format("Unhandled underlying enum type: {}", type));
 	}
 }
 
@@ -393,15 +400,17 @@ void Validator::validate_enum_options(const types::Enum* def) {
 		validate_enum_option_value(def->underlying_type, option.second);
 
 		if(options.contains(option.first)) {
-			throw exception("Multiple definitions of " + option.first + " in " + def->name);
+			throw exception(std::format("Multiple definitions of {} in {}", option.first, def->name));
 		}
 
 		if(std::ranges::find_if(options,
 			[option](std::pair<std::string_view, std::string_view> i) {
 				return i.second == option.second;
 		}) != options.end()) {
-			LOG_DEBUG_GLOB << "Duplicate index found for " << option.first << " in " << def->name
-			               << ": " << option.second << LOG_ASYNC;
+			LOG_DEBUG_GLOB
+				<< "Duplicate index found for "
+				<< option.first << " in " << def->name
+			    << ": " << option.second << LOG_ASYNC;
 		}
 
 		options.insert_or_assign(option.first, option.second);
@@ -472,7 +481,7 @@ void Validator::validate(const types::Definitions& definitions, const Options op
 	for(auto& def : *definitions_) try {
 		validate_definition(def.get());
 	} catch(const std::exception& e) {
-		throw exception(def->name + ": " + e.what());
+		throw exception(std::format("{}: {}", def->name, e.what()));
 	}
 }
 

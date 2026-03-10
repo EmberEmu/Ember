@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 - 2025 Ember
+ * Copyright (c) 2014 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,6 +11,7 @@
 #include "Exception.h"
 #include <gsl/narrow>
 #include <exception>
+#include <format>
 #include <regex>
 #include <cctype>
 
@@ -70,12 +71,13 @@ const std::array<std::string_view, 8> string_ref_loc_regions {
  * Takes a string such as int[5] and splits it into the type (int)
  * and an optional element count (5).
  */
-TypeComponents extract_components(const std::string& type) {
+TypeComponents extract_components(const std::string_view type) {
 	TypeComponents components;
 	std::regex pattern(R"(([^[]+)(?:\[(.*)\])?)");
 	std::smatch matches;
 
-	if(std::regex_match(type, matches, pattern)) {
+	std::string str(type); // regex can't take a string_view (??)
+	if(std::regex_match(str, matches, pattern)) {
 		components.first = matches[1].str();
 
 		if(!matches[2].str().empty()) {
@@ -83,13 +85,16 @@ TypeComponents extract_components(const std::string& type) {
 				const auto array_size = std::stoi(matches[2].str());
 
 				if(array_size <= 0) {
-					throw exception("Negative or zero array size found in " + type);
+					throw exception(
+						std::format("Negative or zero array size found in {}", type)
+					);
 				}
 
 				components.second = gsl::narrow_cast<unsigned int>(array_size);
 			} catch(const std::exception&) {
-				throw exception(matches[2].str() + " is not a valid array entry count"
-					" for " + components.first);
+				throw exception(
+					std::format("{} is not a valid array entry count for {}", matches[2].str(), components.first)
+				);
 			}
 		}
 	}
@@ -104,35 +109,37 @@ TypeComponents extract_components(const std::string& type) {
  * Example: NPCSounds => npc_sounds (handles acronyms)
  * todo: Should replace this with regex - it doesn't handle names such as AreaPOI correctly
  */
-std::string pascal_to_underscore(std::string name) {
+std::string pascal_to_underscore(const std::string_view name) {
+	std::string adjusted(name);
+
 	const std::string uc_set("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-	std::size_t found = name.find_first_of(uc_set);
+	std::size_t found = adjusted.find_first_of(uc_set);
 	bool first = true;
 	bool next_capitalised = false;
 
 	while(found != std::string::npos) {
-		name[found] = std::tolower(name[found]);
+		adjusted[found] = std::tolower(adjusted[found]);
 
 		/* Bounds check to ensure we don't go over the string length when looking
 		   ahead, although this isn't strictly needed as of C++11 given that
 		   string[string.length()] is guaranteed to hold a terminator and
 		   that the loop will exit after the final match */
-		if(found + 1 < name.length()) {
-			char next = name[found + 1];
-			next_capitalised = next != std::tolower(name[found + 1]);
+		if(found + 1 < adjusted.length()) {
+			char next = adjusted[found + 1];
+			next_capitalised = next != std::tolower(adjusted[found + 1]);
 		} else {
 			next_capitalised = false;
 		}
 
 		if(!next_capitalised && !first) {
-			name.insert(found, 1, '_');
+			adjusted.insert(found, 1, '_');
 		}
 		
-		found = name.find_first_of(uc_set, found + 1);
+		found = adjusted.find_first_of(uc_set, found + 1);
 		first = false;
 	}
 
-	return name;
+	return adjusted;
 }
 
 types::Base* locate_type_base(const types::Struct& base, const std::string& type_name) {
