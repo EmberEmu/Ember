@@ -63,10 +63,14 @@ class LoginChallenge final : public Packet {
 
 		stream >> checksum_salt;
 		stream >> two_factor_auth;
+
+		if(!two_factor_auth) {
+			state_ = State::done;
+		}
 	}
 
 	void read_pin_data(spark::io::pmr::BinaryStream& stream) {
-		if(!two_factor_auth || state_ == State::done) {
+		if(state_ == State::done) {
 			return;
 		}
 
@@ -86,8 +90,7 @@ public:
 	static const std::uint8_t PIN_SALT_LENGTH      = 16;
 	static const std::uint8_t CHECKSUM_SALT_LENGTH = 16;
 
-	LoginChallenge()
-		: Packet(Opcode::cmd_auth_logon_challenge) {}
+	LoginChallenge() : Packet(Opcode::cmd_auth_logon_challenge) {}
 
 	enum class TwoFactorSecurity : std::uint8_t {
 		none,
