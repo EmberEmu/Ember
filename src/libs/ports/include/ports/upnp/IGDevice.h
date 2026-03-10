@@ -87,8 +87,9 @@ private:
 	asio::awaitable<ErrorCode> process_request(HTTPTransport& transport, use_awaitable_t);
 
 	template<typename BufType>
-	BufType build_http_post_request(std::string&& body, const std::string& action,
-	                                const std::string& control_url);
+	BufType build_http_post_request(const std::string_view body,
+	                                const std::string_view action,
+	                                const std::string_view control_url);
 
 	template<typename BufType>
 	BufType build_http_request(const HTTPRequest& request);

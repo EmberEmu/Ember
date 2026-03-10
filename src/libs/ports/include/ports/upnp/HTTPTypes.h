@@ -84,10 +84,10 @@ enum class HTTPStatus {
 };
 
 struct HTTPRequest {
-	std::string method;
-	std::string url;
-	std::vector<std::pair<std::string, std::string>> fields;
-	std::string body;
+	std::string_view method;
+	std::string_view url;
+	std::vector<std::pair<std::string_view, std::string_view>> fields;
+	std::string_view body;
 };
 
 /*

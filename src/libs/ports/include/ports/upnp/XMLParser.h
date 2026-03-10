@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <shared/utility/cstring_view.hpp>
 #include <rapidxml/rapidxml.hpp>
 #include <memory>
 #include <optional>
@@ -22,17 +23,17 @@ class XMLParser final {
 	std::unique_ptr<rapidxml::xml_document<>> parser_;
 
 	rapidxml::xml_node<char>* service_search(std::span<rapidxml::xml_node<char>*> devices,
-	                                         const std::string& type) const;
+	                                         const cstring_view service) const;
+
+	rapidxml::xml_node<char>* locate_device(const cstring_view device) const;
+	rapidxml::xml_node<char>* locate_service(const cstring_view service) const;
 
 public:
-	XMLParser(const std::string_view xml);
 	XMLParser(std::string xml);
 
-	rapidxml::xml_node<char>* locate_device(const std::string& type) const;
-	rapidxml::xml_node<char>* locate_service(const std::string& type) const;
-
-	std::optional<std::string> get_node_value(const std::string& service,
-	                                          const std::string& node_name) const;
+	std::optional<const std::string_view> get_node_value(
+		const cstring_view service,
+	    const cstring_view node_name) const;
 };
 
 } // upnp, ports, ember
