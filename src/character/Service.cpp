@@ -93,11 +93,8 @@ void Service::initialise(const opts::variables_map& args, boost::asio::io_contex
 		spam.emplace_back(utility::pcre::utf8_jit_compile(record.text));
 	}
 
-	LOG_INFO_SYNC(logger, "Initialising database driver...");
-	const auto&  db_config_path = args["database.config_path"].as<std::string>();
-	auto driver(drivers::init_db_driver(db_config_path, "login"));
-
 	LOG_INFO_SYNC(logger, "Initialising database connection pool...");
+
 	const auto concurrency = thread::hardware_concurrency([&](auto msg) {
 		LOG_ERROR_SYNC(logger, "{}", msg);
 	});
@@ -112,9 +109,7 @@ void Service::initialise(const opts::variables_map& args, boost::asio::io_contex
 		                      "(use {} to match logical core count)", concurrency);
 	}
 
-	LOG_INFO_SYNC(logger, "Initialising database connection pool...");
-
-	ctx->conn_pool = std::make_unique<connection_pool::Pool<drivers::DriverType>>(
+	ctx->conn_pool = std::make_unique<connection_pool::Pool<drivers::AutoSelect>>(
 		init_database(args, logger)
 	);
 

@@ -51,7 +51,7 @@ void Service::initialise(const opts::variables_map& args, boost::asio::io_contex
 	auto ctx = context.get();
 	
 	LOG_INFO_SYNC(logger, "Initialising database connection pool...");
-	ctx->conn_pool = std::make_unique<connection_pool::Pool<drivers::DriverType>>(
+	ctx->conn_pool = std::make_unique<connection_pool::Pool<drivers::AutoSelect>>(
 		init_database(args, logger)
 	);
 
