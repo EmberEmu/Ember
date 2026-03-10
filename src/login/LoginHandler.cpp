@@ -212,7 +212,7 @@ void LoginHandler::reject_client(const GameVersion& version) {
 	LOG_DEBUG_ASYNC(logger_, "Rejecting client version {}", to_string(version));
 
 	grunt::server::LoginChallenge response;
-	response.result = grunt::Result::fail_version_update;
+	response.result = grunt::Result::fail_version_invalid;
 	send(response);
 }
 
