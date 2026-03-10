@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2025 Ember
+ * Copyright (c) 2016 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -119,7 +119,7 @@ public:
 void generate_dbc_template(const types::Struct* dbc, const std::string& out_path) {
 	LOG_INFO_GLOB << "Generating template for " << dbc->name << LOG_ASYNC;
 
-	std::ofstream file(out_path + dbc->name + ".dbc", std::ofstream::binary);
+	std::ofstream file(std::format("{}.dbc", out_path, dbc->name), std::ofstream::binary);
 	
 	if(!file) {
 		throw std::runtime_error("Unable to open DBC for template generation");

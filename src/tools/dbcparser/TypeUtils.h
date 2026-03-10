@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 - 2024 Ember
+ * Copyright (c) 2014 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -10,9 +10,11 @@
 
 #include "Types.h"
 #include <array>
+#include <format>
 #include <optional>
 #include <utility>
 #include <string>
+#include <string_view>
 #include <map>
 #include <unordered_map>
 #include <unordered_set>
@@ -22,10 +24,10 @@
 namespace ember::dbc {
 
 using TypeComponents = std::pair<std::string, std::optional<unsigned int>>;
-using ComponentCache = std::unordered_map<std::string, TypeComponents>;
+using ComponentCache = std::unordered_map<std::string_view, TypeComponents>;
 
-TypeComponents extract_components(const std::string& type);
-std::string pascal_to_underscore(std::string name);
+TypeComponents extract_components(const std::string_view type);
+std::string pascal_to_underscore(const std::string_view name);
 types::Base* locate_type_base(const types::Struct& base, const std::string& type_name);
 
 const extern std::unordered_map<std::string_view, std::pair<std::string_view, bool>> type_map;
@@ -56,7 +58,9 @@ void walk_dbc_fields(T& visitor, const types::Struct* dbc, const types::Base* pa
 			const auto found = locate_type_base(*dbc, components.first);
 
 			if(!found) {
-				throw std::runtime_error("Unknown field type encountered, " + f.underlying_type);
+				throw std::runtime_error(
+					std::format("Unknown field type encountered, {}", f.underlying_type)
+				);
 			}
 
 			visitor.visit(&f, parent);

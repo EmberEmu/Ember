@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 - 2024 Ember
+ * Copyright (c) 2014 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,6 +9,7 @@
 #pragma once
 
 #include <string>
+#include <string_view>
 #include <vector>
 #include <memory>
 
@@ -37,8 +38,8 @@ enum class Type {
 using Definitions = std::vector<std::unique_ptr<Base>>;
 
 struct Key {
-	std::string type;
-	std::string parent;
+	std::string_view type;
+	std::string_view parent;
 	bool ignore_type_mismatch = false;
 };
 
@@ -51,15 +52,15 @@ struct Base : IVisitor {
 	virtual ~Base() = default;
 
 	Type type;
-	std::string name;
-	std::string alias;
-	std::string comment;
+	std::string_view name;
+	std::string_view alias;
+	std::string_view comment;
 	Base* parent;
 };
 
 struct Field final : Base {
 	Field() : Base(Type::t_field) {}
-	std::string underlying_type;
+	std::string_view underlying_type;
 	std::vector<Key> keys;
 
 	virtual void accept(TypeVisitor* visitor) override {
@@ -69,8 +70,8 @@ struct Field final : Base {
 
 struct Enum final : Base {
 	Enum() : Base(Type::t_enum) {}
-	std::string underlying_type;
-	std::vector<std::pair<std::string, std::string>> options;
+	std::string_view underlying_type;
+	std::vector<std::pair<std::string_view, std::string_view>> options;
 
 	virtual void accept(TypeVisitor* visitor) override {
 		visitor->visit(this);
