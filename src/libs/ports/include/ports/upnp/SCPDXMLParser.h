@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Ember
+ * Copyright (c) 2024 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -28,7 +28,7 @@ public:
 
 	rapidxml::xml_node<char>* action(const std::string_view action) const;
 	std::vector<std::string_view> arguments(const std::string_view action,
-	                                        std::string_view direction) const;
+	                                        const std::string_view direction) const;
 };
 
 } // upnp, ports, ember

@@ -18,7 +18,7 @@ XMLParser::XMLParser(std::string xml) : xml_(std::move(xml)) {
 }
 
 rapidxml::xml_node<char>* XMLParser::service_search(std::span<rapidxml::xml_node<char>*> devices,
-                                                    const cstring_view type) const {
+                                                    const std::string_view type) const {
 	for(auto device : devices) {
 		const auto slist = device->first_node("serviceList", 0, false);
 
@@ -30,7 +30,9 @@ rapidxml::xml_node<char>* XMLParser::service_search(std::span<rapidxml::xml_node
 
 		while(service) {
 			auto node = service->first_node("serviceType");
-			if(std::strncmp(type.c_str(), node->value(), node->value_size())) {
+			const auto max_count = std::min(type.size(), node->value_size());
+
+			if(std::strncmp(node->value(), type.data(), max_count) == 0) {
 				return service;
 			}
 
@@ -41,7 +43,7 @@ rapidxml::xml_node<char>* XMLParser::service_search(std::span<rapidxml::xml_node
 	return nullptr;
 }
 
-rapidxml::xml_node<char>* XMLParser::locate_device(const cstring_view device) const {
+rapidxml::xml_node<char>* XMLParser::locate_device(const std::string_view device) const {
 	const auto root = parser_->first_node("root");
 
 	if(!root) {
@@ -53,7 +55,9 @@ rapidxml::xml_node<char>* XMLParser::locate_device(const cstring_view device) co
 
 	for(auto& found_device : visitor.devices) {
 		if(auto dtype = found_device->first_node("deviceType")) {
-			if(strncmp(device.c_str(), dtype->value(), dtype->value_size())) {
+			const auto max_count = std::min(device.size(), dtype->value_size());
+
+			if(std::strncmp(dtype->value(), device.data(), max_count) == 0) {
 				return dtype;
 			}
 		}
@@ -62,7 +66,7 @@ rapidxml::xml_node<char>* XMLParser::locate_device(const cstring_view device) co
 	return nullptr;
 }
 
-rapidxml::xml_node<char>* XMLParser::locate_service(const cstring_view service) const {
+rapidxml::xml_node<char>* XMLParser::locate_service(const std::string_view service) const {
 	const auto root = parser_->first_node("root", 0, false);
 
 	if(!root) {
@@ -74,8 +78,8 @@ rapidxml::xml_node<char>* XMLParser::locate_service(const cstring_view service) 
 	return service_search(visitor.devices, service);
 }
 
-std::optional<const std::string_view> XMLParser::get_node_value(const cstring_view service,
-                                                                const cstring_view node_name) const {
+std::optional<const std::string_view> XMLParser::get_node_value(const std::string_view service,
+                                                                const std::string_view node_name) const {
 	auto service_node = locate_service(service);
 
 	if(!service_node) {
