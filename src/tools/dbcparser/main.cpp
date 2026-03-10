@@ -72,7 +72,7 @@ dbc::types::Definitions run_parser(std::span<std::string> buffers) {
 	dbc::types::Definitions definitions;
 	dbc::Parser parser;
 
-		for(auto& buffer : buffers) {
+	for(auto& buffer : buffers) {
 		auto definition = parser.parse(buffer);
 
 		definitions.insert(definitions.end(),
