@@ -120,7 +120,6 @@ target_compile_definitions(${LIBRARY_OBJECTS} PUBLIC EXPORT_SERVICE)
 target_link_libraries(${LIBRARY_NAME} PRIVATE ${LIBRARY_OBJECTS} INTERFACE service logger commands shared ${Boost_LIBRARIES})
 target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 set_target_properties(${LIBRARY_NAME} PROPERTIES OUTPUT_NAME ${LIBRARY_OBJECTS})
-set_property(TARGET ${LIBRARY_OBJECTS} PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 add_executable(${EXECUTABLE_NAME} ${EXECUTABLE_SOURCE})
 target_link_libraries(${EXECUTABLE_NAME} PRIVATE ${LIBRARY_NAME} banner logger commands shared ${Boost_LIBRARIES} Threads::Threads)

@@ -57,7 +57,6 @@ add_dependencies(${LIBRARY_NAME}
 set_property(TARGET ${LIBRARY_OBJECTS} PROPERTY POSITION_INDEPENDENT_CODE ON)
 target_compile_definitions(${LIBRARY_OBJECTS} PUBLIC EXPORT_SERVICE)
 target_link_libraries(${LIBRARY_NAME} PRIVATE ${LIBRARY_OBJECTS} INTERFACE commands logger ${Boost_LIBRARIES} PUBLIC Threads::Threads)
-set_target_properties(${LIBRARY_NAME} PROPERTIES OUTPUT_NAME ${LIBRARY_OBJECTS})
 
 if(WIN32)
     set(ICON_RESOURCE resources.rc)
