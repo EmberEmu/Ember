@@ -147,7 +147,7 @@ int launch(const opts::variables_map& args, Registries& registry, bool share_log
 	signals.cancel();
 	return EXIT_SUCCESS;
 } catch(const std::exception& e) {
-	LOG_FATAL(logger) << e.what() << LOG_SYNC;
+	LOG_FATAL_SYNC(logger, "{}", e.what());
 	return EXIT_FAILURE;
 }
 

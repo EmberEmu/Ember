@@ -118,7 +118,7 @@ int Service::run(const opts::variables_map& args) try {
 
 	return EXIT_SUCCESS;
 } catch(const std::exception& e) {
-	LOG_FATAL(logger) << e.what() << LOG_SYNC;
+	LOG_FATAL_SYNC(logger, "{}", e.what());
 	return EXIT_FAILURE;
 }
 
