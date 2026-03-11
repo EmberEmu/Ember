@@ -8,14 +8,17 @@
 
 #pragma once
 
-#include <array>
-#include <string_view>
+#include "WorldRPCServer.h"
+#include <spark/Server.h>
+#include <dbcreader/Storage.h>
+#include <memory>
 
 namespace ember::world {
 
-inline const std::array<std::string_view, 2> dbcs_required {
-	"Map",
-	"GameTips"
+struct ServiceContext::Impl {
+	std::unique_ptr<dbc::Storage> dbcs;
+	std::unique_ptr<spark::Server> spark;
+	std::unique_ptr<WorldRPCServer> world_rpc_service;
 };
 
-} // world
+} // character, ember

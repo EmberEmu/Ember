@@ -13,6 +13,8 @@ set(LIBRARY_HDR
     Watchdog.h
     WorldRPCServer.h
     DBCRequired.h
+    ServiceContext.h
+    ServiceContextImpl.h
     utilities/DeltaTimer.h
     utilities/Utility.h
 )
@@ -22,6 +24,7 @@ set(LIBRARY_SRC
     MapRunner.cpp
     Watchdog.cpp
     WorldRPCServer.cpp
+    ServiceContext.cpp
     utilities/DeltaTimer.cpp
     utilities/Utility.cpp
 )

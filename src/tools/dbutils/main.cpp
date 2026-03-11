@@ -184,7 +184,7 @@ int launch(const opts::variables_map& args, log::Logger& logger) try {
 
 	return success? EXIT_SUCCESS : EXIT_FAILURE;
 } catch(const std::exception& e) {
-	LOG_FATAL(logger) << e.what() << LOG_SYNC;
+	LOG_FATAL_SYNC(logger, "{}", e.what());
 	return EXIT_FAILURE;
 }
 

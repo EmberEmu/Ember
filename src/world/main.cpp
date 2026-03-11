@@ -14,18 +14,21 @@
 #include <shared/utility/CommandHelpers.h>
 #include <shared/utility/LogConfig.h>
 #include <shared/utility/Utility.h>
-#include <shared/utility/cstring_view.hpp>
+#include <boost/asio/io_context.hpp>
+#include <boost/asio/signal_set.hpp>
 #include <boost/program_options.hpp>
-#include <iostream>
+#include <exception>
 #include <fstream>
-#include <stdexcept>
+#include <iostream>
+#include <string>
+#include <thread>
 #include <cstdlib>
 
 using namespace ember;
 namespace opts = boost::program_options;
 
-int launch(const opts::variables_map& args, log::Logger& logger, commands::Registry& registry);
 opts::variables_map parse_arguments(int argc, const char* argv[]);
+int run(const opts::variables_map& args, log::Logger& logger, commands::Registry& registry);
 
 /*
  * We want to do the minimum amount of work required to get 
@@ -36,7 +39,6 @@ opts::variables_map parse_arguments(int argc, const char* argv[]);
  * from them.
  */
 int main(int argc, const char* argv[]) try {
-	thread::set_name("Main");
 	print_banner(world::app_name);
 	utility::set_window_title(world::app_name);
 
@@ -45,7 +47,6 @@ int main(int argc, const char* argv[]) try {
 	log::Logger logger;
 	utility::configure_logger(logger, args);
 	log::global_logger(logger);
-
 	LOG_INFO_SYNC(logger, "Logger configured successfully");
 
 	LOG_DEBUG_SYNC(logger, "Registering command handlers...");
@@ -53,7 +54,7 @@ int main(int argc, const char* argv[]) try {
 	utility::register_command_handlers(registry, logger);
 	utility::register_shared_commands(registry, logger);
 
-	const auto ret = launch(args, logger, registry);
+	const auto ret = run(args, logger, registry);
 	LOG_INFO_SYNC(logger, "{} terminated (returned '{}')", world::app_name, ret);
 	return ret;
 } catch(const std::exception& e) {
@@ -61,11 +62,32 @@ int main(int argc, const char* argv[]) try {
 	return EXIT_FAILURE;
 }
 
-int launch(const opts::variables_map& args, log::Logger& logger, commands::Registry& registry) try {
-	world::Service service(logger, registry);
-	return service.run(args);
+int run(const opts::variables_map& args, log::Logger& logger, commands::Registry& cmd_register) try {
+	boost::asio::io_context io_ctx;
+	boost::asio::signal_set signals(io_ctx, SIGINT, SIGTERM);
+
+	world::Service service(logger, cmd_register);
+
+	signals.async_wait([&](auto ec, auto signal) {
+		if(ec) {
+			return;
+		}
+
+		LOG_DEBUG_SYNC(logger, "Received signal {}({})", utility::sig_str(signal), signal);
+		signals.clear();
+		service.stop();
+	});
+
+	std::jthread worker([&]() {
+		thread::set_name("Signal handler");
+		io_ctx.run_one();
+	});
+
+	const auto ret = service.run(args);
+	signals.cancel();
+	return ret;
 } catch(const std::exception& e) {
-	LOG_FATAL_SYNC(logger, "{}", e.what());
+	LOG_FATAL(logger) << e.what() << LOG_SYNC;
 	return EXIT_FAILURE;
 }
 

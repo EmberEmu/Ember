@@ -8,14 +8,23 @@
 
 #pragma once
 
-#include <array>
-#include <string_view>
+#include <memory>
 
-namespace ember::realm {
+namespace ember::world {
 
-inline const std::array<std::string_view, 2> dbcs_required {
-	"AddonData",
-	"Cfg_Categories"
+class ServiceContext {
+	class Impl;
+	std::unique_ptr<Impl> impl;
+
+public:
+	ServiceContext();
+	~ServiceContext();
+
+	Impl* get() {
+		return impl.get();
+	}
+
+	void reset();
 };
 
-} // realm
+} // world, ember

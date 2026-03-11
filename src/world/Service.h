@@ -8,9 +8,11 @@
 
 #pragma once
 
+#include "ServiceContext.h"
 #include <logger/LoggerFwd.h>
 #include <commands/Registry.h>
 #include <shared/utility/cstring_view.hpp>
+#include <boost/asio/io_context.hpp>
 #include <boost/program_options/variables_map.hpp>
 #include <boost/program_options/options_description.hpp>
 #include <chrono>
@@ -23,14 +25,13 @@ class Service {
 	log::Logger& logger;
 	commands::Registry& registry;
 	std::chrono::steady_clock::time_point start_time;
+	boost::asio::io_context service;
+	ServiceContext context;
 
 public:
 	static boost::program_options::options_description options();
 
-	explicit Service(log::Logger& logger, commands::Registry& registry)
-		: logger(logger)
-		, registry(registry)
-		, start_time(std::chrono::steady_clock::now()) {}
+	Service(log::Logger& logger, commands::Registry& registry);
 
 	~Service() {
 		stop();

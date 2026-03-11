@@ -6,16 +6,19 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#pragma once
-
-#include <array>
-#include <string_view>
+#include "ServiceContext.h"
+#include "ServiceContextImpl.h"
 
 namespace ember::world {
 
-inline const std::array<std::string_view, 2> dbcs_required {
-	"Map",
-	"GameTips"
-};
+ServiceContext::ServiceContext()
+	: impl(std::make_unique<Impl>()) {
+}
 
-} // world
+void ServiceContext::reset() {
+	impl.reset();
+}
+
+ServiceContext::~ServiceContext() = default;
+
+} // world, ember

@@ -7,6 +7,7 @@
  */
 
 #include "Service.h"
+#include "ServiceContextImpl.h"
 #include "MapRunner.h"
 #include "DBCRequired.h"
 #include "utilities/Utility.h"
@@ -25,19 +26,26 @@ namespace opts = boost::program_options;
 
 namespace ember::world {
 
+Service::Service(log::Logger& logger, commands::Registry& registry)
+	: logger(logger)
+	, registry(registry)
+	, start_time(std::chrono::steady_clock::now()) {}
+
 int Service::run(const boost::program_options::variables_map& args) {
+	auto ctx = context.get();
+
 	LOG_INFO_SYNC(logger, "Loading DBC data...");
 
 	dbc::DiskLoader loader(args["dbc.path"].as<std::string>(), [&](auto message) {
 		LOG_DEBUG(logger) << message << LOG_SYNC;
 	});
 
-	auto dbc_store = loader.load(dbcs_required);
+	ctx->dbcs = std::make_unique<dbc::Storage>(std::move(loader.load(dbcs_required)));
 
 	LOG_INFO_SYNC(logger, "Resolving DBC references...");
-	dbc::link(dbc_store);
+	dbc::link(*ctx->dbcs);
 
-	const auto tip = random_tip(dbc_store.game_tips);
+	const auto tip = random_tip(ctx->dbcs->game_tips);
 
 	if(!tip.empty()) {
 		LOG_INFO_SYNC(logger, "Tip: {}", tip);
@@ -45,24 +53,25 @@ int Service::run(const boost::program_options::variables_map& args) {
 
 	const auto& maps = args["world.map_id"].as<std::vector<std::int32_t>>();
 
-	if(!validate_maps(maps, dbc_store.map, logger)) {
+	if(!validate_maps(maps, ctx->dbcs->map, logger)) {
 		return EXIT_FAILURE;
 	}
 
 	LOG_INFO_SYNC(logger, "Serving as world server for maps:");
-	print_maps(maps, dbc_store.map, logger);
+	print_maps(maps, ctx->dbcs->map, logger);
 
 	// All done setting up
 	LOG_INFO_SYNC(logger, "{} started successfully in {}", app_name,
 		utility::start_time_format(start_time));
 
 	// temporary bits
-	boost::asio::io_context context;
 	const auto interface = args["spark.address"].as<std::string>();
 	const auto port = args["spark.port"].as<std::uint16_t>();
-	spark::Server spark(context, app_name, interface, port, logger);
-	WorldRPCServer rpc_server(spark, logger);
-	std::jthread thread(&boost::asio::io_context::run, &context);
+
+	ctx->spark = std::make_unique<spark::Server>(service, app_name, interface, port, logger);
+	ctx->world_rpc_service = std::make_unique<WorldRPCServer>(*ctx->spark, logger);
+
+	std::jthread thread(&boost::asio::io_context::run, &service);
 	// end of temporary bits
 
 	map::run(logger);

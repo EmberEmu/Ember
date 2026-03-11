@@ -10,7 +10,6 @@
 
 #include "CharacterService.h"
 #include "CharacterHandler.h"
-#include <spark/Server.h>
 #include <dbcreader/Storage.h>
 #include <conpool/ConnectionPool.h>
 #include <conpool/drivers/AutoSelect.h>

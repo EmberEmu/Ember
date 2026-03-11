@@ -11,7 +11,7 @@
 #include <array>
 #include <string_view>
 
-namespace ember {
+namespace ember::character {
 
 inline const std::array<std::string_view, 18> dbcs_required {
 	"ChrClasses",
@@ -34,4 +34,4 @@ inline const std::array<std::string_view, 18> dbcs_required {
 	"StartItemQuantities"
 };
 
-};
+} // character
