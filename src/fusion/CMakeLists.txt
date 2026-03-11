@@ -18,11 +18,11 @@ add_executable(${EXECUTABLE_NAME}
 )
 
 set(SERVICE_LIBRARIES
+    login_shared
+    mdns_shared
     libworld
-    liblogin
     librealm
     libaccount
-    libmdns 
     libcharacter
 )
 

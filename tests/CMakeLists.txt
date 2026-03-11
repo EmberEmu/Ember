@@ -42,9 +42,14 @@ if(WIN32)
     set(EXECUTABLE_SRC ${EXECUTABLE_SRC} resources.rc)
 endif()
 
-add_executable(${EXECUTABLE_NAME} ${EXECUTABLE_SRC})
-target_include_directories(${EXECUTABLE_NAME} PRIVATE ../src)
-target_link_libraries(${EXECUTABLE_NAME} PRIVATE gtest gtest_main liblogin shared spark srp6 libmdns stun ports mpq botan::botan-static ${Boost_LIBRARIES})
+add_executable(${EXECUTABLE_NAME}
+    ${EXECUTABLE_SRC}
+    $<TARGET_OBJECTS:liblogin>
+	$<TARGET_OBJECTS:libmdns>
+)
+
+target_include_directories(${EXECUTABLE_NAME} PUBLIC ../src)
+target_link_libraries(${EXECUTABLE_NAME} PRIVATE gtest gtest_main liblogin libmdns ports shared spark srp6 libmdns stun mpq botan::botan-static ${Boost_LIBRARIES})
 gtest_discover_tests(${EXECUTABLE_NAME})
 
 add_custom_command(TARGET ${EXECUTABLE_NAME} PRE_BUILD

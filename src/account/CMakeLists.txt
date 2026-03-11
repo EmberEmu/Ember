@@ -28,10 +28,16 @@ set(LIBRARY_SRC
 )
 
 include_directories(${SPARK_INCLUDES_DIR})
-add_library(${LIBRARY_NAME} ${LIBRARY_HDR} ${LIBRARY_SRC})
+
+add_library(${LIBRARY_NAME} SHARED 
+    ${LIBRARY_HDR}
+    ${LIBRARY_SRC}
+)
+
+target_compile_definitions(${LIBRARY_NAME} PUBLIC EXPORT_SERVICE)
 add_dependencies(${LIBRARY_NAME} FB_SCHEMA_COMPILE)
 add_dependencies(${LIBRARY_NAME} SPARK_RPC_GENERATE)
-target_link_libraries(${LIBRARY_NAME} PRIVATE spark conpool ${MYSQLCCPP_LIBRARY} Threads::Threads PUBLIC thread logger commands shared ${Boost_LIBRARIES})
+target_link_libraries(${LIBRARY_NAME} PRIVATE spark conpool ${MYSQLCCPP_LIBRARY} Threads::Threads PUBLIC service thread logger commands shared ${Boost_LIBRARIES})
 
 if(WIN32)
     set(ICON_RESOURCE resources.rc)
@@ -44,6 +50,6 @@ add_executable(${EXECUTABLE_NAME}
 
 target_link_libraries(${EXECUTABLE_NAME} PRIVATE ${LIBRARY_NAME} banner logger commands shared ${Boost_LIBRARIES} Threads::Threads)
 
-install(TARGETS ${EXECUTABLE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})
-set_target_properties(account PROPERTIES FOLDER "Services/Applications")
-set_target_properties(libaccount PROPERTIES FOLDER "Services/Libraries")
+install(TARGETS ${EXECUTABLE_NAME} ${LIBRARY_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})
+set_target_properties(${EXECUTABLE_NAME} PROPERTIES FOLDER "Services/Applications")
+set_target_properties(${LIBRARY_NAME} PROPERTIES FOLDER "Services/Libraries")

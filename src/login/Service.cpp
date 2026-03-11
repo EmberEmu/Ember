@@ -80,6 +80,14 @@ namespace ember::login {
 
 void print_lib_versions(log::Logger& logger);
 
+Service::Service(log::Logger& logger, commands::Registry& registry)
+	: service(thread::hardware_concurrency())
+	, serialise(service)
+	, logger(logger)
+	, registry(registry)
+	, start_time(std::chrono::steady_clock::now())
+	, stopping_(false) {}
+
 /*
  * Starts Asio worker threads, blocking until the launch thread exits
  * upon error or signal handling.
@@ -373,6 +381,10 @@ std::unique_ptr<Metrics> Service::start_metrics(boost::asio::io_context& service
 	}
 
 	return metrics;
+}
+
+Service::~Service() {
+	stop();
 }
 
 opts::options_description Service::options() {

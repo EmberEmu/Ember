@@ -88,10 +88,18 @@ set(LIBRARY_SRC
     Digest.cpp
 )
 
-add_library(${LIBRARY_NAME} STATIC ${LIBRARY_HDR} ${LIBRARY_SRC})
-add_dependencies(${LIBRARY_NAME} FB_SCHEMA_COMPILE)
-add_dependencies(${LIBRARY_NAME} SPARK_RPC_GENERATE)
-target_link_libraries(${LIBRARY_NAME} PRIVATE thread nsd conpool stun ports dbcreader protocol spark ${ZLIB_LIBRARY} Threads::Threads PUBLIC logger commands shared ${Boost_LIBRARIES})
+add_library(${LIBRARY_NAME} SHARED 
+    ${LIBRARY_HDR}
+    ${LIBRARY_SRC}
+)
+
+add_dependencies(${LIBRARY_NAME}
+    FB_SCHEMA_COMPILE
+    SPARK_RPC_GENERATE
+)
+
+target_compile_definitions(${LIBRARY_NAME} PUBLIC EXPORT_SERVICE)
+target_link_libraries(${LIBRARY_NAME} PRIVATE thread nsd conpool stun ports dbcreader protocol spark ${ZLIB_LIBRARY} Threads::Threads PUBLIC service logger commands shared ${Boost_LIBRARIES})
 
 if(WIN32)
     set(ICON_RESOURCE resources.rc)
@@ -104,6 +112,6 @@ add_executable(${EXECUTABLE_NAME}
 
 target_link_libraries(${EXECUTABLE_NAME} PRIVATE ${LIBRARY_NAME} banner logger commands shared ${Boost_LIBRARIES} Threads::Threads)
 
-install(TARGETS ${EXECUTABLE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})
+install(TARGETS ${EXECUTABLE_NAME} ${LIBRARY_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})
 set_target_properties(${EXECUTABLE_NAME} PROPERTIES FOLDER "Services/Applications")
 set_target_properties(${LIBRARY_NAME} PROPERTIES FOLDER "Services/Libraries")

@@ -8,13 +8,15 @@
 
 #pragma once
 
-#include <logger/LoggerFwd.h>
 #include <commands/Registry.h>
+#include <logger/LoggerFwd.h>
+#include <service/Service.h>
 #include <shared/utility/cstring_view.hpp>
-#include <boost/program_options/variables_map.hpp>
 #include <boost/program_options/options_description.hpp>
+#include <boost/program_options/variables_map.hpp>
 #include <exception>
 #include <chrono>
+#include <memory>
 #include <semaphore>
 
 namespace ember::thread {
@@ -25,7 +27,7 @@ namespace ember::realm {
 
 static inline constexpr cstring_view app_name { "Realm Gateway" };
 
-class Service {
+class EMBER_EXPORT_SERVICE Service final : public IService {
 	std::exception_ptr eptr;
 	std::binary_semaphore stop_flag { 0 };
 
@@ -38,17 +40,23 @@ class Service {
 public:
 	static boost::program_options::options_description options();
 
-	explicit Service(log::Logger& logger, commands::Registry& registry)
-		: logger(logger)
-		 , registry(registry)
-		 , start_time(std::chrono::steady_clock::now()) {}
-
-	~Service() {
-		stop();
-	}
+	Service(log::Logger& logger, commands::Registry& registry);
+	~Service();
 
 	int run(const boost::program_options::variables_map& args);
 	void stop();
+
+	static std::unique_ptr<Service> create(log::Logger& logger, commands::Registry& registry) {
+		return std::make_unique<Service>(logger, registry);
+	}
 };
+
+extern "C" {
+
+EMBER_EXPORT_SERVICE inline Service* create_service(log::Logger& logger, commands::Registry& registry) {
+	return Service::create(logger, registry).release();
+}
+
+} // extern "C"
 
 } // realm, ember

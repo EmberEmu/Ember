@@ -68,6 +68,11 @@ std::optional<Realm> load_realm(const opts::variables_map& args, log::Logger& lo
 std::string_view category_name(const Realm& realm, const dbc::Store<dbc::Cfg_Categories>& dbc);
 void print_lib_versions(log::Logger& logger);
 
+Service::Service(log::Logger& logger, commands::Registry& registry)
+	: logger(logger)
+	, registry(registry)
+	, start_time(std::chrono::steady_clock::now()) {}
+
 /*
  * Starts Asio worker threads, blocking until the launch thread exits
  * upon error or signal handling.
@@ -327,6 +332,10 @@ std::optional<Realm> load_realm(const opts::variables_map& args, log::Logger& lo
 
 	LOG_INFO_SYNC(logger, "Retrieving realm information...");
 	return realm_dao.get_realm(args["realm.id"].as<unsigned int>());
+}
+
+Service::~Service() {
+	stop();
 }
 
 void print_lib_versions(log::Logger& logger) {

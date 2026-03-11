@@ -7,3 +7,4 @@
 add_subdirectory(thread)
 add_subdirectory(banner)
 add_subdirectory(commands)
+add_subdirectory(service)

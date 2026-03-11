@@ -19,7 +19,7 @@ namespace ember::ports {
 template<typename T> T deserialise(std::span<const std::uint8_t> buffer){};
 
 template<>
-pcp::OptionHeader deserialise(std::span<const std::uint8_t> buffer) {
+inline pcp::OptionHeader deserialise(std::span<const std::uint8_t> buffer) {
 	spark::io::BufferAdaptor adaptor(buffer);
 	spark::io::BinaryStream stream(adaptor, spark::io::endian::big);
 
@@ -31,7 +31,7 @@ pcp::OptionHeader deserialise(std::span<const std::uint8_t> buffer) {
 }
 
 template<>
-pcp::MapRequest deserialise(std::span<const std::uint8_t> buffer) {
+inline pcp::MapRequest deserialise(std::span<const std::uint8_t> buffer) {
 	spark::io::BufferAdaptor adaptor(buffer);
 	spark::io::BinaryStream stream(adaptor, spark::io::endian::big);
 
@@ -46,7 +46,7 @@ pcp::MapRequest deserialise(std::span<const std::uint8_t> buffer) {
 }
 
 template<>
-pcp::RequestHeader deserialise(std::span<const std::uint8_t> buffer) {
+inline pcp::RequestHeader deserialise(std::span<const std::uint8_t> buffer) {
 	spark::io::BufferAdaptor adaptor(buffer);
 	spark::io::BinaryStream stream(adaptor, spark::io::endian::big);
 
@@ -63,7 +63,7 @@ pcp::RequestHeader deserialise(std::span<const std::uint8_t> buffer) {
 }
 
 template<>
-pcp::ResponseHeader deserialise(std::span<const std::uint8_t> buffer) {
+inline pcp::ResponseHeader deserialise(std::span<const std::uint8_t> buffer) {
 	spark::io::BufferAdaptor adaptor(buffer);
 	spark::io::BinaryStream stream(adaptor, spark::io::endian::big);
 
@@ -82,7 +82,7 @@ pcp::ResponseHeader deserialise(std::span<const std::uint8_t> buffer) {
 }
 
 template<>
-pcp::MapResponse deserialise(std::span<const std::uint8_t> buffer) {
+inline pcp::MapResponse deserialise(std::span<const std::uint8_t> buffer) {
 	spark::io::BufferAdaptor adaptor(buffer);
 	spark::io::BinaryStream stream(adaptor, spark::io::endian::big);
 
@@ -97,7 +97,7 @@ pcp::MapResponse deserialise(std::span<const std::uint8_t> buffer) {
 }
 
 template<>
-natpmp::MapRequest deserialise(std::span<const std::uint8_t> buffer) {
+inline natpmp::MapRequest deserialise(std::span<const std::uint8_t> buffer) {
 	spark::io::BufferAdaptor adaptor(buffer);
 	spark::io::BinaryStream stream(adaptor, spark::io::endian::big);
 
@@ -112,7 +112,7 @@ natpmp::MapRequest deserialise(std::span<const std::uint8_t> buffer) {
 }
 
 template<>
-natpmp::MapResponse deserialise(std::span<const std::uint8_t> buffer) {
+inline natpmp::MapResponse deserialise(std::span<const std::uint8_t> buffer) {
 	spark::io::BufferAdaptor adaptor(buffer);
 	spark::io::BinaryStream stream(adaptor, spark::io::endian::big);
 
@@ -128,7 +128,7 @@ natpmp::MapResponse deserialise(std::span<const std::uint8_t> buffer) {
 }
 
 template<>
-natpmp::ExtAddressRequest deserialise(std::span<const std::uint8_t> buffer) {
+inline natpmp::ExtAddressRequest deserialise(std::span<const std::uint8_t> buffer) {
 	spark::io::BufferAdaptor adaptor(buffer);
 	spark::io::BinaryStream stream(adaptor, spark::io::endian::big);
 
@@ -139,7 +139,7 @@ natpmp::ExtAddressRequest deserialise(std::span<const std::uint8_t> buffer) {
 }
 
 template<>
-natpmp::ExtAddressResponse deserialise(std::span<const std::uint8_t> buffer) {
+inline natpmp::ExtAddressResponse deserialise(std::span<const std::uint8_t> buffer) {
 	spark::io::BufferAdaptor adaptor(buffer);
 	spark::io::BinaryStream stream(adaptor, spark::io::endian::big);
 
@@ -153,7 +153,7 @@ natpmp::ExtAddressResponse deserialise(std::span<const std::uint8_t> buffer) {
 }
 
 template<>
-natpmp::UnsupportedErrorResponse deserialise(std::span<const std::uint8_t> buffer) {
+inline natpmp::UnsupportedErrorResponse deserialise(std::span<const std::uint8_t> buffer) {
 	spark::io::BufferAdaptor adaptor(buffer);
 	spark::io::BinaryStream stream(adaptor, spark::io::endian::big);
 

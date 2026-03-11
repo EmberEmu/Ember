@@ -82,6 +82,10 @@ void Service::stop() {
 	// todo
 }
 
+Service::~Service() {
+	stop();
+}
+
 opts::options_description Service::options() {
 	opts::options_description opts;
 	opts.add_options()

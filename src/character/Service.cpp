@@ -156,6 +156,10 @@ void Service::stop() {
 	shutdown();
 }
 
+Service::~Service() {
+	stop();
+}
+
 opts::options_description Service::options() {
 	opts::options_description opts;
 	opts.add_options()
