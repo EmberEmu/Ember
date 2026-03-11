@@ -11,11 +11,11 @@
 #include <array>
 #include <string_view>
 
-namespace ember {
+namespace ember::realm {
 
 inline const std::array<std::string_view, 2> dbcs_required {
 	"AddonData",
 	"Cfg_Categories"
 };
 
-};
+} // realm

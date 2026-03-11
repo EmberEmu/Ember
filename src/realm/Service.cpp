@@ -153,11 +153,12 @@ void Service::launch(const opts::variables_map& args, thread::ServicePool& servi
 	dbc::link(dbc_store);
 
 	const auto realm_id = args["realm.id"].as<unsigned int>();
+	LOG_INFO_SYNC(logger, "Loading configuration for realm ID {}", realm_id);
 	auto realm = load_realm(args, logger);
 	
 	if(!realm) {
 		throw std::invalid_argument(
-			std::format("(Configured realm ID {} does not exist in database.", realm_id)
+			std::format("Configured realm ID {} does not exist in database.", realm_id)
 		);
 	}
 	
