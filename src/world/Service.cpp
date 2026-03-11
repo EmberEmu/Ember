@@ -67,8 +67,10 @@ int Service::run(const boost::program_options::variables_map& args) {
 	// temporary bits
 	const auto interface = args["spark.address"].as<std::string>();
 	const auto port = args["spark.port"].as<std::uint16_t>();
-	spark::Server spark(service, app_name, interface, port, logger);
-	WorldRPCServer rpc_server(spark, logger);
+
+	ctx->spark = std::make_unique<spark::Server>(service, app_name, interface, port, logger);
+	ctx->world_rpc_service = std::make_unique<WorldRPCServer>(*ctx->spark, logger);
+
 	std::jthread thread(&boost::asio::io_context::run, &service);
 	// end of temporary bits
 

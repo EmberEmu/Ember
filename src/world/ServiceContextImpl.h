@@ -8,23 +8,17 @@
 
 #pragma once
 
+#include "WorldRPCServer.h"
 #include <spark/Server.h>
 #include <dbcreader/Storage.h>
-#include <conpool/ConnectionPool.h>
-#include <conpool/drivers/AutoSelect.h>
-#include <shared/database/daos/CharacterDAO.h>
-#include <thread/ThreadPool.h>
-#include <spark/Server.h>
 #include <memory>
 
 namespace ember::world {
 
 struct ServiceContext::Impl {
 	std::unique_ptr<dbc::Storage> dbcs;
-	std::unique_ptr<thread::ThreadPool> thread_pool;
-	std::unique_ptr<connection_pool::Pool<drivers::DriverType>> conn_pool;
-	std::unique_ptr<dal::CharacterDAO> character_dao;
 	std::unique_ptr<spark::Server> spark;
+	std::unique_ptr<WorldRPCServer> world_rpc_service;
 };
 
 } // character, ember
