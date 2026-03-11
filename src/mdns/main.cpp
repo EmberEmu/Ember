@@ -9,18 +9,20 @@
 #include "Service.h"
 #include <logger/Logger.h>
 #include <banner/Banner.h>
-#include <banner/Banner.h>
 #include <commands/Registry.h>
 #include <thread/Utility.h>
 #include <shared/utility/CommandHelpers.h>
 #include <shared/utility/LogConfig.h>
 #include <shared/utility/Utility.h>
-#include <shared/utility/cstring_view.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/signal_set.hpp>
+#include <boost/program_options.hpp>
+#include <exception>
 #include <fstream>
 #include <iostream>
+#include <string>
 #include <thread>
+#include <cstdlib>
 
 using namespace ember;
 namespace opts = boost::program_options;
@@ -60,7 +62,7 @@ int main(int argc, const char* argv[]) try {
 	return EXIT_FAILURE;
 }
 
-int run(const opts::variables_map& args, log::Logger& logger, commands::Registry& registry) try {
+int run(const opts::variables_map& args, log::Logger& logger, commands::Registry& registry) {
 	boost::asio::io_context io_ctx;
 	boost::asio::signal_set signals(io_ctx, SIGINT, SIGTERM);
 
@@ -72,21 +74,19 @@ int run(const opts::variables_map& args, log::Logger& logger, commands::Registry
 		}
 
 		LOG_DEBUG_SYNC(logger, "Received signal {}({})", utility::sig_str(signal), signal);
-		signals.clear();
 		service.stop();
 	});
 
 	std::jthread worker([&]() {
 		thread::set_name("Signal handler");
-		io_ctx.run_one();
+		io_ctx.run();
 	});
 
-	const auto ret = service.run(args);
+	thread::set_name("Service runner");
+	const auto result = service.run(args);
+
 	signals.cancel();
-	return ret;
-} catch(const std::exception& e) {
-	LOG_FATAL_SYNC(logger, "{}", e.what());
-	return EXIT_FAILURE;
+	return result;
 }
 
 opts::variables_map parse_arguments(const int argc, const char* argv[]) {

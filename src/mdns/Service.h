@@ -8,37 +8,33 @@
 
 #pragma once
 
-#include <logger/LoggerFwd.h>
+#include "ServiceContext.h"
 #include <commands/Registry.h>
+#include <logger/LoggerFwd.h>
 #include <shared/utility/cstring_view.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/variables_map.hpp>
 #include <chrono>
-#include <exception>
-#include <semaphore>
 
 namespace ember::dns {
 
 static constexpr cstring_view app_name { "MDNS-SD" };
 
 class Service {
-	std::exception_ptr eptr;
-	std::binary_semaphore stop_flag { 0 };
-
 	log::Logger& logger;
 	commands::Registry& registry;
 	std::chrono::steady_clock::time_point start_time;
+	boost::asio::io_context service;
+	ServiceContext context;
 
-	void launch(const boost::program_options::variables_map& args, boost::asio::io_context& service);
+	void initialise(const boost::program_options::variables_map& args, boost::asio::io_context& service);
+	void shutdown();
 
 public:
 	static boost::program_options::options_description options();
 
-	explicit Service(log::Logger& logger, commands::Registry& registry)
-		: logger(logger)
-		, registry(registry)
-		, start_time(std::chrono::steady_clock::now()) {}
+	Service(log::Logger& logger, commands::Registry& registry);
 
 	~Service() {
 		stop();

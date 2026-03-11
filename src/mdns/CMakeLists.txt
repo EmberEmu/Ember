@@ -20,6 +20,8 @@ set(LIBRARY_HDR
     NSDService.h
     Service.h
     StreamType.h
+    ServiceContext.h
+    ServiceContextImpl.h
 )
 
 set(LIBRARY_SRC
@@ -31,6 +33,7 @@ set(LIBRARY_SRC
     detail/Parser.cpp
     NSDService.cpp
     Service.cpp
+    ServiceContext.cpp
 )
 
 add_library(${LIBRARY_NAME} ${LIBRARY_HDR} ${LIBRARY_SRC})
