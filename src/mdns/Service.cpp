@@ -7,6 +7,7 @@
  */
 
 #include "Service.h"
+#include "ServiceContextImpl.h"
 #include "Server.h"
 #include "MulticastSocket.h"
 #include "NSDService.h"
@@ -25,73 +26,64 @@ namespace opts = boost::program_options;
 
 namespace ember::dns {
 
-/*
- * Starts Asio worker threads, blocking until the launch thread exits
- * upon error or signal handling.
- * 
- * io_context is only stopped after the thread joins to ensure that all
- * services can cleanly shut down upon destruction without requiring
- * explicit shutdown() calls in a signal handler.
- */
+Service::Service(log::Logger& logger, commands::Registry& registry)
+	: logger(logger)
+	, registry(registry)
+	, start_time(std::chrono::steady_clock::now()) {
+#ifdef DEBUG_NO_THREADS
+	LOG_WARN_SYNC(logger, "Compiled with DEBUG_NO_THREADS!");
+#endif
+}
+
 int Service::run(const opts::variables_map& args) try {
-	boost::asio::io_context service(BOOST_ASIO_CONCURRENCY_HINT_UNSAFE_IO);
-	auto work = boost::asio::make_work_guard(service);
+	initialise(args, service);
+	service.run();
 
-	std::thread thread([&]() {
-		thread::set_name("Launcher");
-		launch(args, service);
-	});
-
-	std::jthread worker(&boost::asio::io_context::run, &service);
-	thread::set_name(worker, "Asio Worker");
-
-	thread.join();
-	service.stop();
-
-	if(eptr) {
-		std::rethrow_exception(eptr);
-	}
-
+	LOG_INFO_SYNC(logger, "{} shutting down...", app_name);
 	return EXIT_SUCCESS;
 } catch(const std::exception& e) {
 	LOG_FATAL_SYNC(logger, "{}", e.what());
 	return EXIT_FAILURE;
 }
 
-void Service::stop() {
-	stop_flag.release();
-}
-
-void Service::launch(const opts::variables_map& args, boost::asio::io_context& service) try {
-#ifdef DEBUG_NO_THREADS
-	LOG_WARN_SYNC(logger, "Compiled with DEBUG_NO_THREADS!");
-#endif
+void Service::initialise(const opts::variables_map& args, boost::asio::io_context& service) {
+	auto ctx = context.get();
 
 	const auto& iface = args["mdns.interface"].as<std::string>();
 	const auto& group = args["mdns.group"].as<std::string>();
 	const auto port = args["mdns.port"].as<std::uint16_t>();
 
 	// start multicast DNS services
+	LOG_INFO_SYNC(logger, "Starting multicaster...");
 	auto socket = std::make_unique<dns::MulticastSocket>(service, iface, group, port, logger);
-	dns::Server server(std::move(socket), logger);
+
+	LOG_INFO_SYNC(logger, "Starting DNS server handler...");
+	ctx->server = std::make_unique<Server>(std::move(socket), logger);
 
 	const auto& spark_iface = args["spark.address"].as<std::string>();
 	const auto spark_port = args["spark.port"].as<std::uint16_t>();
 
 	// start RPC services
-	spark::Server spark(service, app_name, spark_iface, spark_port, logger);
-	NSDService nsd(spark, logger);
+	LOG_INFO_SYNC(logger, "Starting RPC services...");
+	ctx->spark = std::make_unique<spark::Server>(service, app_name, spark_iface, spark_port, logger);
+	ctx->nsd_service = std::make_unique<NSDService>(*ctx->spark, logger);
 
 	// All done setting up
 	boost::asio::dispatch(service, [&]() {
 		LOG_INFO_SYNC(logger, "{} started successfully in {}", app_name,
 			utility::start_time_format(start_time));
 	});
+}
 
-	stop_flag.acquire();
-	LOG_INFO_SYNC(logger, "{} shutting down...", app_name);
-} catch(...) {
-	eptr = std::current_exception();
+void Service::shutdown() {
+	auto ctx = context.get();
+	ctx->server->shutdown();
+	ctx->spark->shutdown();
+}
+
+void Service::stop() {
+	LOG_TRACE_SYNC(logger, "Service termination requested");
+	shutdown();
 }
 
 opts::options_description Service::options() {
