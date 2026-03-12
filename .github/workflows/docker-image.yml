@@ -38,8 +38,8 @@ jobs:
           build-args: |
             SKIP_UPGRADE=1
           tags: emberemu/ember:latest-gcc
-          cache-from: type=registry,ref=user/app:buildcache
-          cache-to: type=registry,ref=user/app:buildcache,mode=max
+          cache-from: type=registry,ref=emberemu/ember:buildcache
+          cache-to: type=registry,ref=emberemu/ember:buildcache,mode=max
 
   build-clang:
     runs-on: ubuntu-latest
@@ -72,5 +72,5 @@ jobs:
             SKIP_UPGRADE=1
             USE_CLANG=1
           tags: emberemu/ember:latest-clang
-          cache-from: type=registry,ref=user/app:buildcache
-          cache-to: type=registry,ref=user/app:buildcache,mode=max
+          cache-from: type=registry,ref=emberemu/ember:buildcache
+          cache-to: type=registry,ref=emberemu/ember:buildcache,mode=max
