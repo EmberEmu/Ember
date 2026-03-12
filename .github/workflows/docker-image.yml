@@ -28,8 +28,9 @@ jobs:
             --load \
             --file Dockerfile \
             --build-arg SKIP_UPGRADE \
-            --cache-from=type=local,src=/tmp/docker-cache \
-            --cache-to=type=local,dest=/tmp/docker-cache,mode=max \
+            --tag ghcr.io/${{ github.repository_owner }}/my-image:latest \
+            --cache-from=type=registry,ref=ghcr.io/${{ github.repository_owner }}/ember:buildcache \
+            --cache-to=type=registry,ref=ghcr.io/${{ github.repository_owner }}/ember:buildcache,mode=max \
             .
 
   build-shared:
@@ -53,6 +54,7 @@ jobs:
             --file Dockerfile \
             --build-arg SKIP_UPGRADE \
             --build-arg build_shared_libs=true \
-            --cache-from=type=local,src=/tmp/docker-cache \
-            --cache-to=type=local,dest=/tmp/docker-cache,mode=max \
+            --tag ghcr.io/${{ github.repository_owner }}/my-image:latest \
+            --cache-from=type=registry,ref=ghcr.io/${{ github.repository_owner }}/ember-shared:buildcache \
+            --cache-to=type=registry,ref=ghcr.io/${{ github.repository_owner }}/ember-shared:buildcache,mode=max \
             .

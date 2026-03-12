@@ -90,9 +90,9 @@ endif()
 set(BUILD_SHARED_MSG "Builds the services as shared libraries - generated code may be slower but Fusion service reloading is enabled")
 
 option(BUILD_SHARED ${BUILD_SHARED_MSG} OFF)
+set(CMAKE_POSITION_INDEPENDENT_CODE ${BUILD_SHARED})
 
 if (BUILD_SHARED)
-	set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 	add_compile_definitions(EXPORT_SERVICE)
 	set(SERVICE_LIB_LINKAGE "SHARED")
 else()
