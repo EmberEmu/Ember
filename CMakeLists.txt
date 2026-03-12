@@ -163,10 +163,6 @@ include_directories(${ZLIB_INCLUDE_DIR})
 find_package(PCRE 8.39 REQUIRED)
 include_directories(${PCRE_INCLUDE_DIR})
 
-if(PCRE_STATIC_LIB)
-    add_compile_definitions(PCRE_STATIC)
-endif()
-
 ##############################
 #         Google Test        #
 ##############################
