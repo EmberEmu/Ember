@@ -15,19 +15,44 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
 
       - name: Docker Cache
-        uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306  # v5.0.3
+        uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306     # v5.0.3
         with:
           path: /tmp/docker-cache
           key: docker-cache-${{ runner.os }}-${{ hashFiles('Dockerfile') }}
           restore-keys: docker-cache-${{ runner.os }}
 
-      - name: Build the Docker image
+      - name: Build the Docker image with GCC
         run: |
           docker buildx create --use --name mybuilder || docker buildx use mybuilder
           docker buildx build \
             --load \
             --file Dockerfile \
             --build-arg SKIP_UPGRADE \
+            --cache-from=type=local,src=/tmp/docker-cache \
+            --cache-to=type=local,dest=/tmp/docker-cache,mode=max \
+            .
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+
+      - name: Docker Cache
+        uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306     # v5.0.3
+        with:
+          path: /tmp/docker-cache
+          key: docker-cache-${{ runner.os }}-${{ hashFiles('Dockerfile') }}-clang
+          restore-keys: docker-cache-${{ runner.os }}
+
+      - name: Build the Docker image with Clang
+        run: |
+          docker buildx create --use --name mybuilder || docker buildx use mybuilder
+          docker buildx build \
+            --load \
+            --file Dockerfile \
+            --build-arg SKIP_UPGRADE \
+			--build-arg USE_CLANG \
             --cache-from=type=local,src=/tmp/docker-cache \
             --cache-to=type=local,dest=/tmp/docker-cache,mode=max \
             .

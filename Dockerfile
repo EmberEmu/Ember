@@ -10,7 +10,6 @@ RUN if [ -z "SKIP_UPGRADE" ]; then apt-get -y upgrade; fi
 
 RUN apt-get -y install software-properties-common \
  && apt-get -y install wget \
- && apt-get -y install clang \
  && apt-get -y install cmake \
  && apt-get -y install git \
  # Install required library packages
@@ -18,8 +17,19 @@ RUN apt-get -y install software-properties-common \
  && apt-get install -y libmysqlcppconn-dev \
  && apt-get install -y zlib1g-dev \
  && apt-get install -y libpcre3-dev \
- && apt-get install -y libflatbuffers-dev \
- && wget -q https://archives.boost.io/release/1.90.0/source/boost_1_90_0.tar.gz \
+ && apt-get install -y libflatbuffers-dev
+
+RUN if [ -z "USE_CLANG" ]; then \
+ apt-get -y install clang; \
+else \
+ apt-get -y gcc-15 g++-15 \
+ && update-alternatives --install /usr/bin/cc cc /usr/bin/gcc-15 100   \
+ && update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++-15 100 \
+ && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-15 100 \
+ && update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-15 100 \
+fi
+
+RUN && wget -q https://archives.boost.io/release/1.90.0/source/boost_1_90_0.tar.gz \
  && tar -zxf boost_1_90_0.tar.gz \
  && cd boost_1_90_0 \
  && ./bootstrap.sh --with-libraries=system,program_options,headers \
