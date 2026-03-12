@@ -26,6 +26,7 @@ RUN apt-get -y install software-properties-common \
  && apt-get -y install git \
  # Install required library packages
  && apt-get install -y libbotan-3-dev \
+ && apt-get install -y botan \
  && apt-get install -y libmysqlcppconn-dev \
  && apt-get install -y zlib1g-dev \
  && apt-get install -y libpcre3-dev \
