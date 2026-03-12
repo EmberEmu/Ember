@@ -27,7 +27,7 @@ jobs:
           docker buildx build \
             --load \
             --file Dockerfile \
-            --build-arg SKIP_UPGRADE \
+            --build-arg SKIP_UPGRADE=1 \
             --cache-from=type=local,src=/tmp/docker-cache \
             --cache-to=type=local,dest=/tmp/docker-cache,mode=max \
             .
@@ -51,8 +51,8 @@ jobs:
           docker buildx build \
             --load \
             --file Dockerfile \
-            --build-arg SKIP_UPGRADE \
-            --build-arg USE_CLANG \
+            --build-arg SKIP_UPGRADE=1 \
+            --build-arg USE_CLANG=1 \
             --cache-from=type=local,src=/tmp/docker-cache \
             --cache-to=type=local,dest=/tmp/docker-cache,mode=max \
             .
