@@ -21,16 +21,19 @@ jobs:
           key: docker-cache-${{ runner.os }}-${{ hashFiles('Dockerfile') }}
           restore-keys: docker-cache-${{ runner.os }}
 
-      - name: Build the Docker image with GCC
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4.0.0
+
+      - name: Build the Docker image with Clang
+        uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294 # v7.0.0
         run: |
-          docker buildx create --use --name mybuilder || docker buildx use mybuilder
-          docker buildx build \
-            --load \
-            --file Dockerfile \
-            --build-arg SKIP_UPGRADE=1 \
-            --cache-from=type=local,src=/tmp/docker-cache \
-            --cache-to=type=local,dest=/tmp/docker-cache,mode=max \
-            .
+        with:
+          context: .
+          push: true
+          build-arg: SKIP_UPGRADE=1
+          tags: emberemu/ember:latest-gcc
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
   build-clang:
     runs-on: ubuntu-latest
@@ -45,14 +48,17 @@ jobs:
           key: docker-cache-${{ runner.os }}-${{ hashFiles('Dockerfile') }}-clang
           restore-keys: docker-cache-${{ runner.os }}
 
+     - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4.0.0
+
       - name: Build the Docker image with Clang
+        uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294 # v7.0.0
         run: |
-          docker buildx create --use --name mybuilder || docker buildx use mybuilder
-          docker buildx build \
-            --load \
-            --file Dockerfile \
-            --build-arg SKIP_UPGRADE=1 \
-            --build-arg USE_CLANG=1 \
-            --cache-from=type=local,src=/tmp/docker-cache \
-            --cache-to=type=local,dest=/tmp/docker-cache,mode=max \
-            .
+        with:
+          context: .
+          push: true
+          build-arg: SKIP_UPGRADE=1
+          build-arg: USE_CLANG=1
+          tags: emberemu/ember:latest-clang
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
