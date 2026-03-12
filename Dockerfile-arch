@@ -1,0 +1,61 @@
+# syntax=docker/dockerfile:experimental
+
+FROM arch:latest AS builder
+LABEL description="Development build environment"
+
+# Update the distro and install our tools
+RUN pacman -Syu
+ && pacman -Sy base-devel\
+ && pacman -Sy wget \
+ # GCC stuff
+ && pacman -Sy gcc-15 \
+ # Clang stuff
+ #&& pacman -Sy clang \
+ && pacman -Sy libstdc++ \
+ && pacman -Sy cmake \
+ && pacman -Sy git \
+ # Install required library packages
+ && pacman -Sy botan \
+ # && pacman -Sy libmysqlcppconn-dev \ - no replacement
+ && pacman -Sy zlib \
+ && pacman -Sy pcre \
+ && pacman -Sy flatbuffers \
+ && wget -q https://archives.boost.io/release/1.90.0/source/boost_1_90_0.tar.gz \
+ && tar -zxf boost_1_90_0.tar.gz \
+ && cd boost_1_90_0 \
+ && ./bootstrap.sh --with-libraries=system,program_options,headers \
+ && ./b2 link=static install -d0 -j $(nproc) cxxflags="-std=c++23"
+
+# Copy source
+ARG working_dir=/usr/src/ember
+COPY . ${working_dir}
+WORKDIR ${working_dir}
+
+# CMake arguments
+# These can be overriden by passing them through to `docker build`
+ARG build_optional_tools=1
+ARG build_type=Rel
+ARG install_dir=/usr/local/bin
+
+# Generate Makefile & compile
+RUN --mount=type=cache,target=build \
+    cmake -S . -B build \
+    -DCMAKE_BUILD_TYPE=${build_type} \
+    -DCMAKE_INSTALL_PREFIX=${install_dir} \
+    -DBUILD_OPT_TOOLS=${build_optional_tools} \
+    && cd build && make -j$(nproc) install \
+    && make test
+
+FROM arch:latest AS run_environment
+ARG install_dir=/usr/local/bin
+ARG working_dir=/usr/src/ember
+WORKDIR ${install_dir}
+RUN pacman -Sy \
+ && pacman -Sy libbotan-3-10 \
+ && pacman -Sy libmysqlcppconn7v5 \
+ && pacman -Sy mysql-client
+COPY --from=builder ${install_dir} ${install_dir}
+RUN cp configs/*.dist .
+COPY ./sql ${install_dir}/sql
+COPY ./scripts ${install_dir}
+COPY ./dbcs ${install_dir}/dbcs
