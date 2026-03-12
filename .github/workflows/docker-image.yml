@@ -56,7 +56,7 @@ jobs:
       - name: Docker Cache
         uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306     # v5.0.3
         with:
-          path: build-dir
+          path: usr/src/ember/build
           key: docker-cache-${{ runner.os }}-${{ hashFiles('Dockerfile') }}-clang
           restore-keys: docker-cache-${{ runner.os }}
 
@@ -68,7 +68,7 @@ jobs:
         uses: reproducible-containers/buildkit-cache-dance@v3
         with:
           builder: ${{ steps.setup-buildx.outputs.name }}
-          cache-map: '{ "build-dir": { "target": "/usr/src/ember/build", "id": "build-cache" } }'
+          cache-map: '{ "usr/src/ember/build": { "target": "/usr/src/ember/build", "id": "build-cache" } }'
           save-always: true
 
       - name: Build the Docker image with Clang
