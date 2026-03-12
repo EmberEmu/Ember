@@ -151,10 +151,10 @@ set(version_file "${CMAKE_CURRENT_BINARY_DIR}/Version.cpp")
 ##############################
 find_package(Botan 3.10 REQUIRED)
 
-if (${BUILD_STATIC})
-	set(BOTAN_TARGET botan::botan-static)
-else()
+if (BUILD_SHARED)
 	set(BOTAN_TARGET botan::botan)
+else()
+	set(BOTAN_TARGET botan::botan-static)
 endif()
 
 ##############################
@@ -182,7 +182,7 @@ include_directories(${ZLIB_INCLUDE_DIR})
 find_package(PCRE 8.39 REQUIRED)
 include_directories(${PCRE_INCLUDE_DIR})
 
-if (${BUILD_STATIC})
+if (BUILD_SHARED)
 	add_compile_definitions(PCRE_STATIC)
 endif()
 
