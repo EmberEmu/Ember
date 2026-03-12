@@ -30,7 +30,7 @@ set(LIBRARY_SRC
 
 include_directories(${CMAKE_SOURCE_DIR}/deps/utf8cpp)
 
-add_library(${LIBRARY_NAME} SHARED 
+add_library(${LIBRARY_NAME} ${SERVICE_LIB_LINKAGE} 
     ${LIBRARY_HDR}
     ${LIBRARY_SRC}
 )

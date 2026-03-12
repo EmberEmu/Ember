@@ -88,7 +88,7 @@ set(LIBRARY_SRC
     Digest.cpp
 )
 
-add_library(${LIBRARY_NAME} SHARED 
+add_library(${LIBRARY_NAME} ${SERVICE_LIB_LINKAGE} 
     ${LIBRARY_HDR}
     ${LIBRARY_SRC}
 )
