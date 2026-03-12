@@ -3,6 +3,9 @@
 FROM ubuntu:resolute AS builder
 LABEL description="Development build environment"
 
+ARG SKIP_UPGRADE
+ARG USE_CLANG
+
 # Update the distro and install our tools
 RUN apt-get -y update
 
