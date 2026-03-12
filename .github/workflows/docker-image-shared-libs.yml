@@ -28,7 +28,7 @@ jobs:
             --load \
             --file Dockerfile \
             --build-arg SKIP_UPGRADE \
-			--build_static_libs=0 SKIP_UPGRADE \
+			--build_static_libs 0 \
             --cache-from=type=local,src=/tmp/docker-cache \
             --cache-to=type=local,dest=/tmp/docker-cache,mode=max \
             .
