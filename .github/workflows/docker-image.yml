@@ -66,7 +66,7 @@ jobs:
       - name: Inject object cache
         uses: reproducible-containers/buildkit-cache-dance@v2.1.4
         with:
-          cache-source: /usr/src/ember/build
+          cache-source: usr/src/ember/build
           cache-target: /usr/src/ember/build
           skip-extraction: ${{ steps.cache.outputs.cache-hit }}
 
