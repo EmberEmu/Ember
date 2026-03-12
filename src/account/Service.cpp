@@ -151,7 +151,7 @@ opts::options_description Service::options() {
 
 extern "C" {
 
-EMBER_EXPORT_SERVICE Service* create_service(log::Logger& logger, commands::Registry& registry) {
+EMBER_EXPORT_SERVICE Service* create_account(log::Logger& logger, commands::Registry& registry) {
 	return Service::create(logger, registry).release();
 }
 

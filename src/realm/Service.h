@@ -51,6 +51,6 @@ public:
 	}
 };
 
-extern "C" EMBER_EXPORT_SERVICE Service* create_service(log::Logger& logger, commands::Registry& registry);
+extern "C" EMBER_EXPORT_SERVICE Service* create_realm(log::Logger& logger, commands::Registry& registry);
 
 } // realm, ember
