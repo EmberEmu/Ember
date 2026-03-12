@@ -31,3 +31,28 @@ jobs:
             --cache-from=type=local,src=/tmp/docker-cache \
             --cache-to=type=local,dest=/tmp/docker-cache,mode=max \
             .
+
+ build-shared:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+
+      - name: Docker Cache
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684  # v4.2.3
+        with:
+          path: /tmp/docker-cache
+          key: docker-cache-${{ runner.os }}-${{ hashFiles('Dockerfile') }}
+          restore-keys: docker-cache-${{ runner.os }}
+
+      - name: Build the Docker image
+        run: |
+          docker buildx create --use --name mybuilder || docker buildx use mybuilder
+          docker buildx build \
+            --load \
+            --file Dockerfile \
+            --build-arg build_static_libs=false \
+            --build-arg SKIP_UPGRADE \
+            --cache-from=type=local,src=/tmp/docker-cache \
+            --cache-to=type=local,dest=/tmp/docker-cache,mode=max \
+            .
