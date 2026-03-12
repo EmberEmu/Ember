@@ -6,7 +6,7 @@ LABEL description="Development build environment"
 # Update the distro and install our tools
 RUN apt-get -y update
 
-RUN if [ -z "SKIP_UPGRADE" ]; then apt-get -y upgrade; fi
+RUN if [ -z "$SKIP_UPGRADE" ]; then apt-get -y upgrade; fi
 
 RUN apt-get -y install software-properties-common \
  && apt-get -y install wget \
@@ -19,14 +19,14 @@ RUN apt-get -y install software-properties-common \
  && apt-get install -y libpcre3-dev \
  && apt-get install -y libflatbuffers-dev
 
-RUN if [ -z "USE_CLANG" ]; then \
+RUN if [ -z "$USE_CLANG" ]; then \
  apt-get -y install clang; \
 else \
  apt-get -y gcc-15 g++-15 \
  && update-alternatives --install /usr/bin/cc cc /usr/bin/gcc-15 100   \
  && update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++-15 100 \
  && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-15 100 \
- && update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-15 100 \
+ && update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-15 100
 fi
 
 RUN && wget -q https://archives.boost.io/release/1.90.0/source/boost_1_90_0.tar.gz \
