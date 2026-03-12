@@ -33,7 +33,6 @@ namespace ember::account {
 Service::Service(log::Logger& logger, commands::Registry& registry)
 	: logger(logger)
 	, registry(registry)
-	, start_time(std::chrono::steady_clock::now())
 	, service(BOOST_ASIO_CONCURRENCY_HINT_UNSAFE_IO) {}
 
 int Service::run(const opts::variables_map& args) try {
@@ -48,6 +47,7 @@ int Service::run(const opts::variables_map& args) try {
 }
 
 void Service::initialise(const opts::variables_map& args, boost::asio::io_context& service) {
+	const auto time = std::chrono::steady_clock::now();
 	auto ctx = context.get();
 	
 	LOG_INFO_SYNC(logger, "Initialising database connection pool...");
@@ -90,7 +90,9 @@ void Service::initialise(const opts::variables_map& args, boost::asio::io_contex
 	// All done setting up
 	boost::asio::dispatch(service, [&]() {
 		LOG_INFO_SYNC(logger, "{} started successfully in {}", app_name,
-			utility::start_time_format(start_time));
+			utility::start_time_format(time));
+
+		start_time = std::chrono::steady_clock::now();
 	});
 }
 
