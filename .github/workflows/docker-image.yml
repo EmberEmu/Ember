@@ -66,8 +66,8 @@ jobs:
       - name: Inject object cache
         uses: reproducible-containers/buildkit-cache-dance@v2.1.4
         with:
-          cache-source: build
-          cache-target: build
+          cache-source: /usr/src/ember/build
+          cache-target: /usr/src/ember/build
           skip-extraction: ${{ steps.cache.outputs.cache-hit }}
 
       - name: Build the Docker image with Clang
