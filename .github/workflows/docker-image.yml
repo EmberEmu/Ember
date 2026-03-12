@@ -29,7 +29,7 @@ jobs:
         with:
           context: .
           push: true
-          build-arg: SKIP_UPGRADE=1
+          build-args: SKIP_UPGRADE=1
           tags: emberemu/ember:latest-gcc
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -55,8 +55,7 @@ jobs:
         with:
           context: .
           push: true
-          build-arg: SKIP_UPGRADE=1
-          build-arg: USE_CLANG=1
+          build-args: SKIP_UPGRADE=1,USE_CLANG=1
           tags: emberemu/ember:latest-clang
           cache-from: type=gha
           cache-to: type=gha,mode=max
