@@ -36,7 +36,7 @@ RUN apt-get -y install software-properties-common \
  && tar -zxf boost_1_90_0.tar.gz \
  && cd boost_1_90_0 \
  && ./bootstrap.sh --with-libraries=system,program_options,headers \
- && ./b2 link=shared install -d0 -j $(nproc) cxxflags="-std=c++23"
+ && ./b2 link=shared,static install -d0 -j $(nproc) cxxflags="-std=c++23"
 
 # Copy source
 ARG working_dir=/usr/src/ember
