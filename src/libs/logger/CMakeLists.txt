@@ -40,4 +40,5 @@ endif(WIN32)
 
 target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/src/libs/shared)
 target_link_libraries(${LIBRARY_NAME} PRIVATE thread bprinter PUBLIC commands ${Boost_LIBRARIES} Threads::Threads)
+set_target_properties(${LIBRARY_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
 set_target_properties(${LIBRARY_NAME} PROPERTIES FOLDER "Common Libraries")
