@@ -123,4 +123,12 @@ opts::options_description Service::options() {
 	return opts;
 }
 
+extern "C" {
+
+EMBER_EXPORT_SERVICE Service* create_service(log::Logger& logger, commands::Registry& registry) {
+	return Service::create(logger, registry).release();
+}
+
+} // extern "C"
+
 } // world, ember

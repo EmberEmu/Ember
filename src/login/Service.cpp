@@ -455,4 +455,12 @@ void print_lib_versions(log::Logger& logger) {
 		<< " - Zlib " << ZLIB_VERSION << LOG_SYNC;
 }
 
+extern "C" {
+
+EMBER_EXPORT_SERVICE Service* create_service(log::Logger& logger, commands::Registry& registry) {
+	return Service::create(logger, registry).release();
+}
+
+} // extern "C"
+
 } // login, ember
