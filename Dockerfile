@@ -19,9 +19,9 @@ RUN apt-get -y install software-properties-common \
  && apt-get install -y libpcre3-dev \
  && apt-get install -y libflatbuffers-dev
 
-RUN if [ -z "$USE_CLANG" ]; then \
+RUN if [ -z "$USE_CLANG" ]; then
  apt-get -y install clang
-else \
+else
  apt-get -y gcc-15 g++-15                                               \
  && update-alternatives --install /usr/bin/cc cc /usr/bin/gcc-15 100    \
  && update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++-15 100  \
