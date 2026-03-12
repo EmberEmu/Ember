@@ -14,6 +14,12 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
 
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
       - name: Docker Cache
         uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306     # v5.0.3
         with:
@@ -30,15 +36,21 @@ jobs:
           context: .
           push: true
           build-args: SKIP_UPGRADE=1
-          tags: emberemu/ember:latest-gcc
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          tags: user/app:latest-gcc
+          cache-from: type=registry,ref=user/app:buildcache
+          cache-to: type=registry,ref=user/app:buildcache,mode=max
 
   build-clang:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+
+	  - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Docker Cache
         uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306     # v5.0.3
@@ -56,6 +68,6 @@ jobs:
           context: .
           push: true
           build-args: SKIP_UPGRADE=1,USE_CLANG=1
-          tags: emberemu/ember:latest-clang
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          tags: user/app:latest-clang
+          cache-from: type=registry,ref=user/app:buildcache
+          cache-to: type=registry,ref=user/app:buildcache,mode=max
