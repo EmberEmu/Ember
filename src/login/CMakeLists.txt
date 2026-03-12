@@ -127,5 +127,5 @@ target_link_libraries(${EXECUTABLE_NAME} PRIVATE ${LIBRARY_NAME} banner logger c
 install(TARGETS ${EXECUTABLE_NAME} ${LIBRARY_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})
 set_target_properties(${EXECUTABLE_NAME} PROPERTIES FOLDER "Services/Applications")
 set_target_properties(${LIBRARY_OBJECTS} PROPERTIES FOLDER "Services/Libraries")
-set_target_properties(${LIBRARY_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
+set_target_properties(${LIBRARY_OBJECTS} PROPERTIES POSITION_INDEPENDENT_CODE ON)
 set_target_properties(${LIBRARY_NAME} PROPERTIES FOLDER "Shared Service Libraries")
