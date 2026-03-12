@@ -10,9 +10,9 @@
 
 #ifdef _WIN32
 	#ifdef EXPORT_SERVICE 
-		#define EMBER_EXPORT_SERVICE __declspec(dllexport)  
+		#define EMBER_EXPORT_SERVICE __declspec(dllexport) 
 	#else
-		#define EMBER_EXPORT_SERVICE __declspec(dllimport)  
+		#define EMBER_EXPORT_SERVICE __declspec(dllimport) 
 	#endif
 #else
 	#define EMBER_EXPORT_SERVICE
