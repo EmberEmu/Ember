@@ -81,12 +81,6 @@ if(MSVC)
 	endif()
 endif()
 
-option(DISABLE_EMBER_THREADS "Disable multithreading for debugging" OFF)
-
-if(DISABLE_EMBER_THREADS)
-	add_compile_definitions(DEBUG_NO_THREADS)
-endif()
-
 set(BUILD_SHARED_MSG "Builds the services as shared libraries - generated code may be slower but Fusion service reloading is enabled")
 
 option(BUILD_SHARED ${BUILD_SHARED_MSG} OFF)

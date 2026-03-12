@@ -28,10 +28,10 @@ namespace ember::world {
 
 Service::Service(log::Logger& logger, commands::Registry& registry)
 	: logger(logger)
-	, registry(registry)
-	, start_time(std::chrono::steady_clock::now()) {}
+	, registry(registry) {}
 
 int Service::run(const boost::program_options::variables_map& args) {
+	const auto time = std::chrono::steady_clock::now();
 	auto ctx = context.get();
 
 	LOG_INFO_SYNC(logger, "Loading DBC data...");
@@ -60,10 +60,6 @@ int Service::run(const boost::program_options::variables_map& args) {
 	LOG_INFO_SYNC(logger, "Serving as world server for maps:");
 	print_maps(maps, ctx->dbcs->map, logger);
 
-	// All done setting up
-	LOG_INFO_SYNC(logger, "{} started successfully in {}", app_name,
-		utility::start_time_format(start_time));
-
 	// temporary bits
 	const auto interface = args["spark.address"].as<std::string>();
 	const auto port = args["spark.port"].as<std::uint16_t>();
@@ -73,6 +69,10 @@ int Service::run(const boost::program_options::variables_map& args) {
 
 	std::jthread thread(&boost::asio::io_context::run, &service);
 	// end of temporary bits
+
+	// All done setting up
+	LOG_INFO_SYNC(logger, "{} started successfully in {}", app_name, utility::start_time_format(time));
+	start_time = time;
 
 	map::run(logger);
 	return EXIT_SUCCESS;

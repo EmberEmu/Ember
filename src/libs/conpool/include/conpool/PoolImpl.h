@@ -138,10 +138,6 @@ class PoolImpl final : private ReusePolicy, private GrowthPolicy {
 	
 	std::optional<Connection<ConType>> get_connection() {
 		driver_.thread_enter();
-
-#ifdef DEBUG_NO_THREADS
-		manager_.run();
-#endif
 		manager_.check_exceptions();
 
 		std::unique_lock guard(lock_);
