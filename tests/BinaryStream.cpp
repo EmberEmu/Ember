@@ -13,7 +13,6 @@
 #include <spark/buffers/BufferAdaptor.h>
 #include <shared/utility/cstring_view.hpp>
 #include <shared/utility/FileMD5.h>
-#include <shared/utility/polyfill/ranged_iota>
 #include <boost/endian/conversion.hpp>
 #include <gtest/gtest.h>
 #include <gsl/narrow>
