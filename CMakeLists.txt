@@ -87,6 +87,18 @@ if(DISABLE_EMBER_THREADS)
 	add_compile_definitions(DEBUG_NO_THREADS)
 endif()
 
+set(BUILD_STATIC_MSG "Builds the services as static libraries - generated code may be faster but Fusion service reloading is disabled")
+
+option(BUILD_STATIC ${BUILD_STATIC_MSG} ON)
+
+if (BUILD_STATIC)
+	set(SERVICE_LIB_LINKAGE "STATIC")
+else()
+	set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+	add_compile_definitions(EXPORT_SERVICE)
+	set(SERVICE_LIB_LINKAGE "SHARED")
+endif()
+
 find_package(Threads REQUIRED)
 
 # todo, breaks with 64-bit
@@ -119,6 +131,7 @@ endif(WIN32)
 ##############################
 add_compile_definitions(BOOST_ALL_NO_LIB)
 add_compile_definitions(BOOST_UUID_FORCE_AUTO_LINK)
+set(Boost_USE_STATIC_LIBS ${BUILD_STATIC})
 set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
 find_package(Boost 1.90.0 REQUIRED COMPONENTS program_options)
@@ -137,6 +150,12 @@ set(version_file "${CMAKE_CURRENT_BINARY_DIR}/Version.cpp")
 #            Botan           #
 ##############################
 find_package(Botan 3.10 REQUIRED)
+
+if (${BUILD_STATIC})
+	set(BOTAN_TARGET botan::botan-static)
+else()
+	set(BOTAN_TARGET botan::botan)
+endif()
 
 ##############################
 #     MySQL Connector C++    #
@@ -163,6 +182,10 @@ include_directories(${ZLIB_INCLUDE_DIR})
 find_package(PCRE 8.39 REQUIRED)
 include_directories(${PCRE_INCLUDE_DIR})
 
+if (${BUILD_STATIC})
+	add_compile_definitions(PCRE_STATIC)
+endif()
+
 ##############################
 #         Google Test        #
 ##############################
@@ -182,8 +205,6 @@ set(FETCHCONTENT_FULLY_DISCONNECTED ON)
 include(GoogleTest)
 
 add_compile_definitions(DB_MYSQL) # temporary!
-
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 include_directories(${CMAKE_SOURCE_DIR}/deps)
 include(BuildDBCLoaders)

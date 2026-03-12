@@ -105,7 +105,7 @@ add_library(${LIBRARY_OBJECTS} OBJECT
 )
 
 target_include_directories(${LIBRARY_OBJECTS} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(${LIBRARY_OBJECTS} PUBLIC ${ZLIB_LIBRARY} botan::botan Threads::Threads spark ports dbcreader stun service spark srp6 shared)
+target_link_libraries(${LIBRARY_OBJECTS} PUBLIC ${ZLIB_LIBRARY} ${BOTAN_TARGET} Threads::Threads spark ports dbcreader stun service spark srp6 shared)
 
 add_library(${LIBRARY_NAME} SHARED
 	$<TARGET_OBJECTS:${LIBRARY_OBJECTS}>
@@ -127,5 +127,4 @@ target_link_libraries(${EXECUTABLE_NAME} PRIVATE ${LIBRARY_NAME} banner logger c
 install(TARGETS ${EXECUTABLE_NAME} ${LIBRARY_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})
 set_target_properties(${EXECUTABLE_NAME} PROPERTIES FOLDER "Services/Applications")
 set_target_properties(${LIBRARY_OBJECTS} PROPERTIES FOLDER "Services/Libraries")
-set_target_properties(${LIBRARY_OBJECTS} PROPERTIES POSITION_INDEPENDENT_CODE ON)
 set_target_properties(${LIBRARY_NAME} PROPERTIES FOLDER "Shared Service Libraries")

@@ -32,6 +32,5 @@ add_library(${LIBRARY_NAME} STATIC
 )
 
 target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_link_libraries(${LIBRARY_NAME} PRIVATE thread PUBLIC shared spark botan::botan ${Boost_LIBRARIES})
-set_target_properties(${LIBRARY_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
+target_link_libraries(${LIBRARY_NAME} PRIVATE thread PUBLIC shared spark ${BOTAN_TARGET} ${Boost_LIBRARIES})
 set_target_properties(${LIBRARY_NAME} PROPERTIES FOLDER "Common Libraries")

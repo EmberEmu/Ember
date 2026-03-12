@@ -29,7 +29,7 @@ set(LIBRARY_SRC
 
 include_directories(${SPARK_INCLUDES_DIR})
 
-add_library(${LIBRARY_NAME} SHARED 
+add_library(${LIBRARY_NAME} ${SERVICE_LIB_LINKAGE}
     ${LIBRARY_HDR}
     ${LIBRARY_SRC}
 )

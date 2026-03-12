@@ -25,5 +25,4 @@ add_library(${LIBRARY_NAME} STATIC
 
 target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_link_libraries(${LIBRARY_NAME} PUBLIC thread shared ${MYSQLCCPP_LIBRARY})
-set_target_properties(${LIBRARY_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
 set_target_properties(${LIBRARY_NAME} PROPERTIES FOLDER "Common Libraries")
