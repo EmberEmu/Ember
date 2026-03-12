@@ -46,7 +46,7 @@ WORKDIR ${working_dir}
 # CMake arguments
 # These can be overriden by passing them through to `docker build`
 ARG build_optional_tools=1
-ARG build_static_libs=1
+ARG build_shared_libs=0
 ARG disable_threads=0
 ARG build_type=Rel
 ARG install_dir=/usr/local/bin
@@ -57,7 +57,7 @@ RUN --mount=type=cache,target=build \
     -DCMAKE_BUILD_TYPE=${build_type} \
     -DCMAKE_INSTALL_PREFIX=${install_dir} \
     -DBUILD_OPT_TOOLS=${build_optional_tools} \
-    -DBUILD_STATIC=${build_static_libs} \
+    -DBUILD_SHARED=${build_shared_libs} \
 	-DDISABLE_EMBER_THREADS=${disable_threads} \
     && cd build && make -j$(nproc) install \
     && make test
