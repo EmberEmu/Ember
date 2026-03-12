@@ -3,25 +3,16 @@
 FROM ubuntu:resolute AS builder
 LABEL description="Development build environment"
 
+ARG USE_CLANG=0
+ARG SKIP_UPGRADE=0
+
 # Update the distro and install our tools
 RUN apt-get -y update
 
-RUN if [ -z "SKIP_UPGRADE" ]; then apt-get -y upgrade; fi
+RUN if [ "$SKIP_UPGRADE" = "1" ]; then apt-get -y upgrade; fi
 
 RUN apt-get -y install software-properties-common \
  && apt-get -y install wget \
- # GCC stuff
- && apt-get -y install build-essential gcc-15 g++-15 \
- # Clang stuff
- #&& wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc >/dev/null \
- #&& add-apt-repository -y 'deb http://apt.llvm.org/noble/ llvm-toolchain-noble-18 main' \
- #&& apt update \
- #&& apt-get -y install clang-18 \
- && update-alternatives --install /usr/bin/cc cc /usr/bin/gcc-15 100 \
- && update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++-15 100 \
- && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-15 100 \
- && update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-15 100 \
- && apt-get -y install libstdc++-15-dev \
  && apt-get -y install cmake \
  && apt-get -y install git \
  # Install required library packages
@@ -29,8 +20,19 @@ RUN apt-get -y install software-properties-common \
  && apt-get install -y libmysqlcppconn-dev \
  && apt-get install -y zlib1g-dev \
  && apt-get install -y libpcre3-dev \
- && apt-get install -y libflatbuffers-dev \
- && wget -q https://archives.boost.io/release/1.90.0/source/boost_1_90_0.tar.gz \
+ && apt-get install -y libflatbuffers-dev
+
+RUN if [ "$USE_CLANG" = "1" ]; then                                  \
+ apt-get -y install clang;                                              \
+else                                                                    \
+ apt-get -y install gcc-15 g++-15                                       \
+ && update-alternatives --install /usr/bin/cc cc /usr/bin/gcc-15 100    \
+ && update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++-15 100  \
+ && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-15 100  \
+ && update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-15 100; \
+fi
+
+RUN wget -q https://archives.boost.io/release/1.90.0/source/boost_1_90_0.tar.gz \
  && tar -zxf boost_1_90_0.tar.gz \
  && cd boost_1_90_0 \
  && ./bootstrap.sh --with-libraries=system,program_options,headers \
