@@ -27,7 +27,9 @@ RUN apt-get -y install software-properties-common \
  # Install required library packages
  && apt-get install -y libbotan-3-dev \
  && apt-get install -y libmysqlcppconn-dev \
- && apt-get install -y zlib1g-dev \
+ && apt-get install -y zlib1g \ 
+ && apt-get install -y zlib1g-dev \ 
+ && apt-get install -y libpcre3 \
  && apt-get install -y libpcre3-dev \
  && apt-get install -y libflatbuffers-dev \
  && wget -q https://archives.boost.io/release/1.90.0/source/boost_1_90_0.tar.gz \
