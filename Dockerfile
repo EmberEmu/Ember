@@ -50,7 +50,7 @@ ARG build_type=Rel
 ARG install_dir=/usr/local/bin
 
 # Generate Makefile & compile
-RUN --mount=type=cache,target=/usr/src/ember/build \
+RUN --mount=type=cache,id=build-cache,target=/usr/src/ember/build \
     cmake -S . -B build \
     -DCMAKE_BUILD_TYPE=${build_type} \
     -DCMAKE_INSTALL_PREFIX=${install_dir} \
