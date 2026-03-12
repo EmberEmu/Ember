@@ -35,7 +35,9 @@ jobs:
         with:
           context: .
           push: true
-          build-args: SKIP_UPGRADE=1
+          build-args:
+            - SKIP_UPGRADE=1
+            - USE_CLANG=1
           tags: emberemu/ember:latest-gcc
           cache-from: type=registry,ref=user/app:buildcache
           cache-to: type=registry,ref=user/app:buildcache,mode=max
@@ -67,7 +69,9 @@ jobs:
         with:
           context: .
           push: true
-          build-args: SKIP_UPGRADE=1,USE_CLANG=1
+          build-args:
+            - SKIP_UPGRADE=1
+            - USE_CLANG=1
           tags: emberemu/ember:latest-clang
           cache-from: type=registry,ref=user/app:buildcache
           cache-to: type=registry,ref=user/app:buildcache,mode=max
