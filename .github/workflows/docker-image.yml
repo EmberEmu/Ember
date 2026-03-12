@@ -52,7 +52,7 @@ jobs:
             --load \
             --file Dockerfile \
             --build-arg SKIP_UPGRADE \
-			--build-arg USE_CLANG \
+            --build-arg USE_CLANG \
             --cache-from=type=local,src=/tmp/docker-cache \
             --cache-to=type=local,dest=/tmp/docker-cache,mode=max \
             .
