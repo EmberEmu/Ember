@@ -26,7 +26,7 @@ else                                                                    \
  && update-alternatives --install /usr/bin/cc cc /usr/bin/gcc-15 100    \
  && update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++-15 100  \
  && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-15 100  \
- && update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-15 100
+ && update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-15 100  \
 fi
 
 RUN wget -q https://archives.boost.io/release/1.90.0/source/boost_1_90_0.tar.gz \
