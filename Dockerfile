@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:experimental
 
-FROM ubuntu:resolute-20260108 AS builder
+FROM ubuntu:resolute AS builder
 LABEL description="Development build environment"
 
 # Update the distro and install our tools
