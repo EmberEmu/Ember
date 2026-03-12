@@ -28,11 +28,7 @@ public:
 	~ThreadPool();
 
 	void run(auto&& work) {
-#ifdef DEBUG_NO_THREADS
-		work();
-#else
 		boost::asio::post(service_, std::move(work));
-#endif
 	}
 
 	void shutdown();

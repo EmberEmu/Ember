@@ -68,10 +68,6 @@ int main(int argc, const char* argv[]) try {
 }
 
 int launch(const opts::variables_map& args, log::Logger& logger) try {
-#ifdef DEBUG_NO_THREADS
-	LOG_WARN_SYNC(logger, "Compiled with DEBUG_NO_THREADS!");
-#endif
-
 	boost::asio::io_context service;
 
 	// Start metrics service

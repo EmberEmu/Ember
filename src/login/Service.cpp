@@ -131,11 +131,6 @@ void Service::stop() {
 
 void Service::launch(const opts::variables_map& args, boost::asio::io_context& service) try {
 	const auto time = std::chrono::steady_clock::now();
-
-#ifdef DEBUG_NO_THREADS
-	LOG_WARN_SYNC(logger, "Compiled with DEBUG_NO_THREADS!");
-#endif
-
 	print_lib_versions(logger);
 
 	const auto allowed_builds = args["login.builds"].as<std::vector<GameVersion>>();
