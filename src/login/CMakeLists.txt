@@ -105,7 +105,7 @@ add_library(${LIBRARY_OBJECTS} OBJECT
 )
 
 target_include_directories(${LIBRARY_OBJECTS} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(${LIBRARY_OBJECTS} PUBLIC ${ZLIB_LIBRARY} botan::botan Threads::Threads spark ports dbcreader stun service spark srp6 shared)
+target_link_libraries(${LIBRARY_OBJECTS} PUBLIC ${ZLIB_LIBRARY} Botan::Botan Threads::Threads spark ports dbcreader stun service spark srp6 shared)
 
 add_library(${LIBRARY_NAME} SHARED
 	$<TARGET_OBJECTS:${LIBRARY_OBJECTS}>
