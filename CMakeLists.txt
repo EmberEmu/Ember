@@ -131,7 +131,13 @@ endif(WIN32)
 ##############################
 add_compile_definitions(BOOST_ALL_NO_LIB)
 add_compile_definitions(BOOST_UUID_FORCE_AUTO_LINK)
-set(Boost_USE_STATIC_LIBS $<IF:${BUILD_SHARED},OFF,ON>)
+
+if(BUILD_SHARED)
+    set(Boost_USE_STATIC_LIBS OFF)
+else()
+    set(Boost_USE_STATIC_LIBS ON)
+endif()
+
 set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
 find_package(Boost 1.90.0 REQUIRED COMPONENTS program_options)
