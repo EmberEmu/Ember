@@ -1,12 +1,12 @@
 # syntax=docker/dockerfile:experimental
 
-FROM ubuntu:resolute-20260108 AS builder
+FROM ubuntu:questing AS builder
 LABEL description="Development build environment"
 
 # Update the distro and install our tools
 RUN apt-get -y update
 
-RUN apt-get -y upgrade
+RUN if [ -z "SKIP_UPGRADE" ]; then apt-get -y upgrade; fi
 
 RUN apt-get -y install software-properties-common \
  && apt-get -y install wget \
