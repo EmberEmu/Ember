@@ -162,14 +162,10 @@ public:
 		pool_->driver_.thread_enter();
 		std::unique_lock lock(cond_lock_);
 
-#ifndef DEBUG_NO_THREADS
 		while(!stop_) {
 			cond_.wait_for(lock, interval_);
 			manage_pool();
 		}
-#else
-		manage_pool();
-#endif
 	} catch(...) {
 		std::lock_guard lock(exception_lock_);
 		exception_ = std::current_exception();
@@ -189,10 +185,8 @@ public:
 	}
 
 	void start() {
-#ifndef DEBUG_NO_THREADS
 		manager_ = std::thread(&PoolManager::run, this);
 		thread::set_name(manager_, "Pool Manager");
-#endif
 	}
 };
 

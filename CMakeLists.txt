@@ -81,12 +81,6 @@ if(MSVC)
 	endif()
 endif()
 
-option(DISABLE_EMBER_THREADS "Disable multithreading for debugging" OFF)
-
-if(DISABLE_EMBER_THREADS)
-	add_compile_definitions(DEBUG_NO_THREADS)
-endif()
-
 find_package(Threads REQUIRED)
 
 # todo, breaks with 64-bit

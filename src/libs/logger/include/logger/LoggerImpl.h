@@ -68,15 +68,11 @@ class Logger::impl final {
 
 public:
 	impl() : worker_(sinks_, sink_lock_) {
-#ifndef DEBUG_NO_THREADS
 		worker_.start();
-#endif
 	}
 
 	~impl() {
-#ifndef DEBUG_NO_THREADS
 		worker_.stop();
-#endif
 	}
 
 	void copy_to_stream(auto& data) {

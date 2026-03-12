@@ -29,9 +29,6 @@ namespace ember::dns {
 Service::Service(log::Logger& logger, commands::Registry& registry)
 	: logger(logger)
 	, registry(registry) {
-#ifdef DEBUG_NO_THREADS
-	LOG_WARN_SYNC(logger, "Compiled with DEBUG_NO_THREADS!");
-#endif
 }
 
 int Service::run(const opts::variables_map& args) try {

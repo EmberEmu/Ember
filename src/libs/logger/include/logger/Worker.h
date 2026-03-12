@@ -52,9 +52,6 @@ public:
 	void stop();
 	inline void signal() { 
 		sem_.release();
-#ifdef DEBUG_NO_THREADS
-		run();
-#endif
 	}
 };
 
