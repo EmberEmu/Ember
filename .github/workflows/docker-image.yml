@@ -32,7 +32,7 @@ jobs:
             --cache-to=type=local,dest=/tmp/docker-cache,mode=max \
             .
 
- build-shared:
+ build_shared:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -51,7 +51,7 @@ jobs:
           docker buildx build \
             --load \
             --file Dockerfile \
-            --build-arg build_static_libs=false \
+            --build-arg build_shared_libs=true \
             --build-arg SKIP_UPGRADE \
             --cache-from=type=local,src=/tmp/docker-cache \
             --cache-to=type=local,dest=/tmp/docker-cache,mode=max \
