@@ -9,7 +9,7 @@ ARG SKIP_UPGRADE
 # Update the distro and install our tools
 RUN apt-get -y update
 
-RUN if [ -z "$SKIP_UPGRADE" ]; then apt-get -y upgrade; fi
+RUN if [ "$SKIP_UPGRADE" = "1" ]; then apt-get -y upgrade; fi
 
 RUN apt-get -y install software-properties-common \
  && apt-get -y install wget \
@@ -22,7 +22,7 @@ RUN apt-get -y install software-properties-common \
  && apt-get install -y libpcre3-dev \
  && apt-get install -y libflatbuffers-dev
 
-RUN if [ -z "$USE_CLANG" ]; then                                  \
+RUN if [ "$USE_CLANG" = "1" ]; then                                     \
  apt-get -y install clang;                                              \
 else                                                                    \
  apt-get -y install gcc-15 g++-15                                       \
