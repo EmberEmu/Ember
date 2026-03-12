@@ -26,7 +26,6 @@ jobs:
 
       - name: Build the Docker image with Clang
         uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294 # v7.0.0
-        run: |
         with:
           context: .
           push: true
@@ -53,7 +52,6 @@ jobs:
 
       - name: Build the Docker image with Clang
         uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294 # v7.0.0
-        run: |
         with:
           context: .
           push: true
