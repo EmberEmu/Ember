@@ -29,7 +29,7 @@ else \
  && update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-15 100; \
 fi
 
-RUN && wget -q https://archives.boost.io/release/1.90.0/source/boost_1_90_0.tar.gz \
+RUN wget -q https://archives.boost.io/release/1.90.0/source/boost_1_90_0.tar.gz \
  && tar -zxf boost_1_90_0.tar.gz \
  && cd boost_1_90_0 \
  && ./bootstrap.sh --with-libraries=system,program_options,headers \
