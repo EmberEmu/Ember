@@ -119,7 +119,7 @@ endif(WIN32)
 ##############################
 add_compile_definitions(BOOST_ALL_NO_LIB)
 add_compile_definitions(BOOST_UUID_FORCE_AUTO_LINK)
-set(Boost_USE_STATIC_LIBS ON)
+set(Boost_USE_STATIC_LIBS OFF)
 set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
 find_package(Boost 1.90.0 REQUIRED COMPONENTS program_options)
@@ -162,7 +162,7 @@ include_directories(${ZLIB_INCLUDE_DIR})
 #            PCRE            #
 ##############################
 find_package(PCRE 8.39 REQUIRED)
-option(PCRE_STATIC_LIB "Statically link to PCRE" ON)
+option(PCRE_STATIC_LIB "Statically link to PCRE" OFF)
 include_directories(${PCRE_INCLUDE_DIR})
 
 if(PCRE_STATIC_LIB)

@@ -38,7 +38,7 @@ add_library(${LIBRARY_NAME} SHARED
 target_compile_definitions(${LIBRARY_NAME} PUBLIC EXPORT_SERVICE)
 add_dependencies(${LIBRARY_NAME} FB_SCHEMA_COMPILE)
 add_dependencies(${LIBRARY_NAME} SPARK_RPC_GENERATE)
-target_link_libraries(${LIBRARY_NAME} PRIVATE thread dbcreader spark protocol botan::botan-static Threads::Threads PUBLIC service ${Boost_LIBRARIES} logger commands shared)
+target_link_libraries(${LIBRARY_NAME} PRIVATE thread dbcreader spark protocol botan::botan Threads::Threads PUBLIC service ${Boost_LIBRARIES} logger commands shared)
 
 if(WIN32)
     set(ICON_RESOURCE resources.rc)
