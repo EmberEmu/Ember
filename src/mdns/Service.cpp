@@ -28,8 +28,7 @@ namespace ember::dns {
 
 Service::Service(log::Logger& logger, commands::Registry& registry)
 	: logger(logger)
-	, registry(registry)
-	, start_time(std::chrono::steady_clock::now()) {
+	, registry(registry) {
 #ifdef DEBUG_NO_THREADS
 	LOG_WARN_SYNC(logger, "Compiled with DEBUG_NO_THREADS!");
 #endif
@@ -47,6 +46,7 @@ int Service::run(const opts::variables_map& args) try {
 }
 
 void Service::initialise(const opts::variables_map& args, boost::asio::io_context& service) {
+	const auto time = std::chrono::steady_clock::now();
 	auto ctx = context.get();
 
 	const auto& iface = args["mdns.interface"].as<std::string>();
@@ -71,7 +71,9 @@ void Service::initialise(const opts::variables_map& args, boost::asio::io_contex
 	// All done setting up
 	boost::asio::dispatch(service, [&]() {
 		LOG_INFO_SYNC(logger, "{} started successfully in {}", app_name,
-			utility::start_time_format(start_time));
+			utility::start_time_format(time));
+
+		start_time = std::chrono::steady_clock::now();
 	});
 }
 

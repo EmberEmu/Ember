@@ -130,6 +130,8 @@ void Service::stop() {
 }
 
 void Service::launch(const opts::variables_map& args, boost::asio::io_context& service) try {
+	const auto time = std::chrono::steady_clock::now();
+
 #ifdef DEBUG_NO_THREADS
 	LOG_WARN_SYNC(logger, "Compiled with DEBUG_NO_THREADS!");
 #endif
@@ -352,7 +354,9 @@ void Service::launch(const opts::variables_map& args, boost::asio::io_context& s
 	// All done setting up
 	boost::asio::dispatch(service, [&]() {
 		LOG_INFO_SYNC(logger, "{} started successfully in {}", app_name,
-			utility::start_time_format(start_time));
+			utility::start_time_format(time));
+
+		start_time = std::chrono::steady_clock::now();
 	});
 	
 	stop_flag.acquire();
