@@ -183,6 +183,8 @@ include(GoogleTest)
 
 add_compile_definitions(DB_MYSQL) # temporary!
 
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
 include_directories(${CMAKE_SOURCE_DIR}/deps)
 include(BuildDBCLoaders)
 include(BuildSparkServices)
