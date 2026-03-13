@@ -44,6 +44,9 @@ RUN wget -q https://archives.boost.io/release/1.90.0/source/boost_1_90_0.tar.gz 
 ARG working_dir=/usr/src/ember
 COPY . ${working_dir}
 WORKDIR ${working_dir}
+
+ENV CCACHE_COMPILERCHECK=content
+ENV CCACHE_BASEDIR=${working_dir}
 ENV CCACHE_DIR=${working_dir}/build/.ccache
 
 # CMake arguments
