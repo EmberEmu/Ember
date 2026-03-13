@@ -49,6 +49,9 @@ ENV CCACHE_COMPILERCHECK=content
 ENV CCACHE_BASEDIR=${working_dir}
 ENV CCACHE_DIR=${working_dir}/build/.ccache
 
+ENV CCACHE_LOGFILE=/tmp/ccache.log
+ENV CCACHE_LOGLEVEL=debug
+
 # CMake arguments
 # These can be overriden by passing them through to `docker build`
 ARG build_optional_tools=1
@@ -57,14 +60,15 @@ ARG install_dir=/usr/local/bin
 
 # Generate Makefile & compile
 RUN --mount=type=cache,id=build-cache,target=/usr/src/ember/build \
-    cmake -S . -B build -G Ninja  -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
+    cmake -S . -B build -G Ninja  -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -- -v \
     -DCMAKE_BUILD_TYPE=${build_type}          \
     -DCMAKE_INSTALL_PREFIX=${install_dir}     \
     -DBUILD_OPT_TOOLS=${build_optional_tools} \
 	&& ccache --max-size=10G                  \
     && cmake --build build -j$(nproc)         \
 	&& cmake --install build                  \
-    && ctest --test-dir build
+    && ctest --test-dir build                 \
+    && cat /usr/src/project/build/ccache.log
 
 FROM ubuntu:resolute AS run_environment
 ARG install_dir=/usr/local/bin

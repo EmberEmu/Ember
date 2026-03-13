@@ -25,7 +25,7 @@ jobs:
         id: build-cache
         with:
           path: cache-mount
-          key: docker-cache-gcc-${{ runner.os }}-${{ hashFiles('Dockerfile') }}
+          key: docker-cache-gcc-${{ runner.os }}
           restore-keys: docker-cache-gcc-${{ runner.os }}
 
       - name: Set up Docker Buildx
@@ -68,7 +68,7 @@ jobs:
         id: build-cache
         with:
           path: cache-mount
-          key: docker-cache-clang-${{ runner.os }}-${{ hashFiles('Dockerfile') }}
+          key: docker-cache-clang-${{ runner.os }}
           restore-keys: docker-cache-clang-${{ runner.os }}
 
       - name: Set up Docker Buildx
