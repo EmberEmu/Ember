@@ -58,8 +58,8 @@ RUN --mount=type=cache,id=build-cache,target=/usr/src/ember/build \
     && cd build && make -j$(nproc) install \
     && make test \
     echo "Build mount contents..." && \
-    du -sh /usr/src/project/build && \
-    find /usr/src/project/build -type f | wc -l
+    du -sh /usr/src/ember/build && \
+    find /usr/src/ember/build -type f | wc -l
 
 FROM ubuntu:resolute AS run_environment
 ARG install_dir=/usr/local/bin
