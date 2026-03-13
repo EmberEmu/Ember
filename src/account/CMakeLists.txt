@@ -29,7 +29,6 @@ set(LIBRARY_SRC
 
 include_directories(${SPARK_INCLUDES_DIR})
 add_library(${LIBRARY_NAME} ${LIBRARY_HDR} ${LIBRARY_SRC})
-add_dependencies(${LIBRARY_NAME} FB_SCHEMA_COMPILE)
 add_dependencies(${LIBRARY_NAME} SPARK_RPC_GENERATE)
 target_link_libraries(${LIBRARY_NAME} PRIVATE spark conpool ${MYSQLCCPP_LIBRARY} Threads::Threads PUBLIC thread logger commands shared ${Boost_LIBRARIES})
 
