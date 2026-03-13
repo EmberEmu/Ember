@@ -51,14 +51,14 @@ ARG install_dir=/usr/local/bin
 
 # Generate Makefile & compile
 RUN --mount=type=cache,id=build-cache,target=/usr/src/ember/build \
-    && echo "Build folder size " && du -sh /usr/src/ember/build \
-    && echo "# files " && find /usr/src/ember/build -type f | wc -l \
-    && echo "Largest objs " \
-    && find /usr/src/ember/build -type f -exec du -sh {} + | sort -rh | head -20 \
-    && cmake -S . -B build \
+    cmake -S . -B build \
     -DCMAKE_BUILD_TYPE=${build_type} \
     -DCMAKE_INSTALL_PREFIX=${install_dir} \
     -DBUILD_OPT_TOOLS=${build_optional_tools} \
+	&& echo "Build folder size " && du -sh /usr/src/ember/build \
+    && echo "# files " && find /usr/src/ember/build -type f | wc -l \
+    && echo "Largest objs " \
+    && find /usr/src/ember/build -type f -exec du -sh {} + | sort -rh | head -20 \
     && cd build && make -j$(nproc) install \
     && make test \
     && echo "Build folder size " && du -sh /usr/src/ember/build \
