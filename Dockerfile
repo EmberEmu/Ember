@@ -63,8 +63,7 @@ RUN --mount=type=cache,id=build-cache,target=/usr/src/ember/build \
 	&& ccache --max-size=10G                  \
     && cmake --build build -j$(nproc)         \
 	&& cmake --install build                  \
-    && ctest --test-dir build                 \
-    && cat /tmp/ccache.log
+    && ctest --test-dir build
 
 FROM ubuntu:resolute AS run_environment
 ARG install_dir=/usr/local/bin
