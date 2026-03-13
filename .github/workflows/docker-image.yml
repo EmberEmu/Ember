@@ -74,6 +74,5 @@ jobs:
             SKIP_UPGRADE=1
             USE_CLANG=1
           tags: emberemu/ember:latest-clang
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          load: true
+          cache-from: type=registry,ref=emberemu/ember:buildcache
+          cache-to: type=registry,ref=emberemu/ember:buildcache,mode=max
