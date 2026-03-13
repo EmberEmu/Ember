@@ -20,8 +20,8 @@ RUN apt-get -y install software-properties-common \
  && apt-get install -y libmysqlcppconn-dev \
  && apt-get install -y zlib1g-dev \
  && apt-get install -y libpcre3-dev \
- && apt-get install -y libflatbuffers-dev
- && apt-get install -y ccache
+ && apt-get install -y libflatbuffers-dev \
+ && apt-get install -y ccache \
  && apt-get install -y ninja-build
 
 RUN if [ -n "$USE_CLANG" ]; then                                        \
