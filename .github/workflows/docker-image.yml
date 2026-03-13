@@ -57,7 +57,7 @@ jobs:
         uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306     # v5.0.3
         id: build-cache
         with:
-          path: usr/src/ember/build
+          path: build
           key: docker-cache-${{ runner.os }}-${{ hashFiles('Dockerfile') }}-clang
           restore-keys: docker-cache-${{ runner.os }}
 
@@ -68,7 +68,7 @@ jobs:
       - name: Inject
         uses: reproducible-containers/buildkit-cache-dance@v2.1.4
         with:
-          cache-source: usr/src/ember/build
+          cache-source: build
           cache-target: /usr/src/ember/build
           skip-extraction: ${{ steps.cache.outputs.cache-hit }}
      
