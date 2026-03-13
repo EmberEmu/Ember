@@ -20,7 +20,8 @@ RUN apt-get -y install software-properties-common \
  && apt-get install -y libmysqlcppconn-dev \
  && apt-get install -y zlib1g-dev \
  && apt-get install -y libpcre3-dev \
- && apt-get install -y libflatbuffers-dev
+ && apt-get install -y libflatbuffers-dev \
+ && apt-get install -y ccache
 
 RUN if [ -n "$USE_CLANG" ]; then                                        \
  apt-get -y install clang;                                              \
@@ -42,6 +43,7 @@ RUN wget -q https://archives.boost.io/release/1.90.0/source/boost_1_90_0.tar.gz 
 ARG working_dir=/usr/src/ember
 COPY . ${working_dir}
 WORKDIR ${working_dir}
+ENV CCACHE_DIR=${working_dir}/build/.ccache
 
 # CMake arguments
 # These can be overriden by passing them through to `docker build`
@@ -50,13 +52,15 @@ ARG build_type=Rel
 ARG install_dir=/usr/local/bin
 
 # Generate Makefile & compile
-RUN --mount=type=cache,target=build \
-    cmake -S . -B build \
-    -DCMAKE_BUILD_TYPE=${build_type} \
-    -DCMAKE_INSTALL_PREFIX=${install_dir} \
+RUN --mount=type=cache,id=build-cache,target=/usr/src/ember/build \
+    cmake -S . -B build -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
+    -DCMAKE_BUILD_TYPE=${build_type}          \
+    -DCMAKE_INSTALL_PREFIX=${install_dir}     \
     -DBUILD_OPT_TOOLS=${build_optional_tools} \
-    && cd build && make -j$(nproc) install \
-    && make test
+	&& ccache --max-size=10G                  \
+    && cmake --build build -j$(nproc)         \
+	&& cmake --install build                  \
+    && ctest --test-dir build
 
 FROM ubuntu:resolute AS run_environment
 ARG install_dir=/usr/local/bin
