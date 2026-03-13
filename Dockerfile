@@ -43,6 +43,7 @@ RUN wget -q https://archives.boost.io/release/1.90.0/source/boost_1_90_0.tar.gz 
 ARG working_dir=/usr/src/ember
 COPY . ${working_dir}
 WORKDIR ${working_dir}
+ENV CCACHE_DIR=${working_dir}/build/.ccache
 
 # CMake arguments
 # These can be overriden by passing them through to `docker build`
@@ -50,12 +51,14 @@ ARG build_optional_tools=1
 ARG build_type=Rel
 ARG install_dir=/usr/local/bin
 
+
 # Generate Makefile & compile
 RUN --mount=type=cache,id=build-cache,target=/usr/src/ember/build \
-    cmake -S . -B build -DCMAKE_C_COMPILER_LAUNCHER=ccache \
+    cmake -S . -B build -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
     -DCMAKE_BUILD_TYPE=${build_type} \
     -DCMAKE_INSTALL_PREFIX=${install_dir} \
     -DBUILD_OPT_TOOLS=${build_optional_tools} \
+	&& ccache --max-size=10G \
 	&& echo "Build folder size " && du -sh /usr/src/ember/build \
     && echo "# files " && find /usr/src/ember/build -type f | wc -l \
     && echo "Largest objs " \
@@ -65,7 +68,8 @@ RUN --mount=type=cache,id=build-cache,target=/usr/src/ember/build \
     && echo "Build folder size " && du -sh /usr/src/ember/build \
     && echo "# files " && find /usr/src/ember/build -type f | wc -l \
     && echo "Largest objs " \
-    && find /usr/src/ember/build -type f -exec du -sh {} + | sort -rh | head -20
+    && find /usr/src/ember/build -type f -exec du -sh {} + | sort -rh | head -20 \
+	&& ccache -s -v 
 
 FROM ubuntu:resolute AS run_environment
 ARG install_dir=/usr/local/bin
