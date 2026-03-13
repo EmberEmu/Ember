@@ -39,7 +39,7 @@ jobs:
           cache-map: '{ "cache-mount": { "target": "/usr/src/ember/build", "id": "build-cache" } }'
           skip-extraction: ${{ steps.cache.outputs.cache-hit }}
 
-      - name: Build the Docker image with Clang
+      - name: Build Docker image
         uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294 # v7.0.0
         with:
           context: .
@@ -82,7 +82,7 @@ jobs:
           cache-map: '{ "cache-mount": { "target": "/usr/src/ember/build", "id": "build-cache" } }'
           skip-extraction: ${{ steps.cache.outputs.cache-hit }}
 
-      - name: Build the Docker image with Clang
+      - name: Build Docker image
         uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294 # v7.0.0
         with:
           context: .
