@@ -21,8 +21,7 @@ RUN apt-get -y install software-properties-common \
  && apt-get install -y zlib1g-dev \
  && apt-get install -y libpcre3-dev \
  && apt-get install -y libflatbuffers-dev \
- && apt-get install -y ccache \
- && apt-get install -y ninja-build
+ && apt-get install -y ccache
 
 RUN if [ -n "$USE_CLANG" ]; then                                        \
  apt-get -y install clang;                                              \
@@ -61,8 +60,8 @@ RUN --mount=type=cache,id=build-cache,target=/usr/src/ember/build \
     && echo "# files " && find /usr/src/ember/build -type f | wc -l \
     && echo "Largest objs " \
     && find /usr/src/ember/build -type f -exec du -sh {} + | sort -rh | head -20 \
-    && cd build && ninja -j$(nproc) install \
-    && ninja test \
+    && cd build && make -j$(nproc) install \
+    && make test \
     && echo "Build folder size " && du -sh /usr/src/ember/build \
     && echo "# files " && find /usr/src/ember/build -type f | wc -l \
     && echo "Largest objs " \
