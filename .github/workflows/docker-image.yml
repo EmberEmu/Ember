@@ -62,7 +62,8 @@ jobs:
         uses: reproducible-containers/buildkit-cache-dance@v3
         with:
           builder: ${{ steps.setup-buildx.outputs.name }}
-          cache-map: '{ "cache-mount": { "target": "/usr/src/ember/build", "id": "build-cache" } }'
+          cache-dir: cache-mount
+          cache-map: '{ "build-cache": { "target": "/usr/src/project/build", "id": "build-cache" } }'
           skip-extraction: ${{ steps.cache.outputs.cache-hit }}
 
       - name: Build the Docker image with Clang
