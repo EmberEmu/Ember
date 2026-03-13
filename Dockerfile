@@ -60,8 +60,8 @@ RUN --mount=type=cache,id=build-cache,target=/usr/src/ember/build \
     && echo "# files " && find /usr/src/ember/build -type f | wc -l \
     && echo "Largest objs " \
     && find /usr/src/ember/build -type f -exec du -sh {} + | sort -rh | head -20 \
-    && cd build && make -j$(nproc) install \
-    && make test \
+    && && cmake --build build -j$(nproc) --install \
+    && ctest \
     && echo "Build folder size " && du -sh /usr/src/ember/build \
     && echo "# files " && find /usr/src/ember/build -type f | wc -l \
     && echo "Largest objs " \
