@@ -50,7 +50,7 @@ jobs:
         uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306     # v5.0.3
         id: build-cache
         with:
-          path: build
+          path: cache-mount
           key: docker-cache-${{ runner.os }}-${{ hashFiles('Dockerfile') }}-clang
           restore-keys: docker-cache-${{ runner.os }}
 
@@ -62,8 +62,7 @@ jobs:
         uses: reproducible-containers/buildkit-cache-dance@v3
         with:
           builder: ${{ steps.setup-buildx.outputs.name }}
-          cache-dir: build
-          dockerfile: Dockerfile
+          cache-map: '{ "cache-mount": { "target": "/usr/src/ember/build", "id": "build-cache" } }'
           skip-extraction: ${{ steps.cache.outputs.cache-hit }}
 
       - name: Build the Docker image with Clang
