@@ -51,7 +51,7 @@ ENV CCACHE_DIR=${working_dir}/build/.ccache
 
 ENV CCACHE_LOGFILE=/tmp/ccache.log
 ENV CCACHE_LOGLEVEL=debug
-ENV CCACHE_IGNOREOPTION="-fmodules-ts -fmodule-mapper=*"
+ENV CCACHE_IGNOREOPTIONS=-fmodules-ts -fmodule-mapper=*
 # CMake arguments
 # These can be overriden by passing them through to `docker build`
 ARG build_optional_tools=1
