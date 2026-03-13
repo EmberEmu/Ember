@@ -48,6 +48,7 @@ WORKDIR ${working_dir}
 ENV CCACHE_COMPILERCHECK=content
 ENV CCACHE_BASEDIR=${working_dir}
 ENV CCACHE_DIR=${working_dir}/build/.ccache
+export CCACHE_IGNOREOPTIONS="-fmodules-ts"
 
 ENV CCACHE_LOGFILE=/tmp/ccache.log
 ENV CCACHE_LOGLEVEL=debug
