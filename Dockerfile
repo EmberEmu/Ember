@@ -21,6 +21,8 @@ RUN apt-get -y install software-properties-common \
  && apt-get install -y zlib1g-dev \
  && apt-get install -y libpcre3-dev \
  && apt-get install -y libflatbuffers-dev
+ && apt-get install -y ccache
+ && apt-get install -y ninja-build
 
 RUN if [ -n "$USE_CLANG" ]; then                                        \
  apt-get -y install clang;                                              \
@@ -51,7 +53,7 @@ ARG install_dir=/usr/local/bin
 
 # Generate Makefile & compile
 RUN --mount=type=cache,id=build-cache,target=/usr/src/ember/build \
-    cmake -S . -B build \
+    cmake -S . -B build -G Ninja -DCMAKE_C_COMPILER_LAUNCHER=ccache \
     -DCMAKE_BUILD_TYPE=${build_type} \
     -DCMAKE_INSTALL_PREFIX=${install_dir} \
     -DBUILD_OPT_TOOLS=${build_optional_tools} \
@@ -59,8 +61,8 @@ RUN --mount=type=cache,id=build-cache,target=/usr/src/ember/build \
     && echo "# files " && find /usr/src/ember/build -type f | wc -l \
     && echo "Largest objs " \
     && find /usr/src/ember/build -type f -exec du -sh {} + | sort -rh | head -20 \
-    && cd build && make -j$(nproc) install \
-    && make test \
+    && cd build && ninja -j$(nproc) install \
+    && ninja test \
     && echo "Build folder size " && du -sh /usr/src/ember/build \
     && echo "# files " && find /usr/src/ember/build -type f | wc -l \
     && echo "Largest objs " \
