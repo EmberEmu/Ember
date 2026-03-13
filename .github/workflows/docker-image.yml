@@ -43,10 +43,10 @@ jobs:
         uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294 # v7.0.0
         with:
           context: .
-          push: true
           build-args: |
             SKIP_UPGRADE=1
           tags: emberemu/ember:latest-gcc
+          push: ${{ github.event_name != 'pull_request' }}
           cache-from: type=registry,ref=emberemu/ember:buildcache-gcc
           cache-to: type=registry,ref=emberemu/ember:buildcache-gcc,mode=max
 
@@ -85,10 +85,10 @@ jobs:
         uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294 # v7.0.0
         with:
           context: .
-          push: true
           build-args: |
             SKIP_UPGRADE=1
             USE_CLANG=1
           tags: emberemu/ember:latest-clang
+          push: ${{ github.event_name != 'pull_request' }}
           cache-from: type=registry,ref=emberemu/ember:buildcache-clang
           cache-to: type=registry,ref=emberemu/ember:buildcache-clang,mode=max
