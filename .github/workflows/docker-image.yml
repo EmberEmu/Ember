@@ -48,7 +48,7 @@ jobs:
           tags: emberemu/ember:latest-gcc
           push: ${{ github.event_name != 'pull_request' }}
           load: ${{ github.event_name == 'pull_request' }}
-          target: builder
+          output: type=docker
           cache-from: type=registry,ref=emberemu/ember:buildcache-gcc
           cache-to: type=registry,ref=emberemu/ember:buildcache-gcc,mode=max
 
@@ -93,6 +93,6 @@ jobs:
           tags: emberemu/ember:latest-clang
           push: ${{ github.event_name != 'pull_request' }}
           load: ${{ github.event_name == 'pull_request' }}
-          target: builder
+          output: type=docker
           cache-from: type=registry,ref=emberemu/ember:buildcache-clang
           cache-to: type=registry,ref=emberemu/ember:buildcache-clang,mode=max
