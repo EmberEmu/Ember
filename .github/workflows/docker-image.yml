@@ -47,7 +47,7 @@ jobs:
             SKIP_UPGRADE=1
           tags: emberemu/ember:latest-gcc
           push: ${{ github.event_name != 'pull_request' }}
-          load: true
+          load: ${{ github.event_name == 'pull_request' }}
           cache-from: type=registry,ref=emberemu/ember:buildcache-gcc
           cache-to: type=registry,ref=emberemu/ember:buildcache-gcc,mode=max
 
@@ -91,6 +91,6 @@ jobs:
             USE_CLANG=1
           tags: emberemu/ember:latest-clang
           push: ${{ github.event_name != 'pull_request' }}
-          load: true
+          load: ${{ github.event_name == 'pull_request' }}
           cache-from: type=registry,ref=emberemu/ember:buildcache-clang
           cache-to: type=registry,ref=emberemu/ember:buildcache-clang,mode=max
