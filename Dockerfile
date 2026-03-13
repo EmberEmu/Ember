@@ -51,7 +51,6 @@ ARG build_optional_tools=1
 ARG build_type=Rel
 ARG install_dir=/usr/local/bin
 
-
 # Generate Makefile & compile
 RUN --mount=type=cache,id=build-cache,target=/usr/src/ember/build \
     cmake -S . -B build -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
@@ -64,6 +63,7 @@ RUN --mount=type=cache,id=build-cache,target=/usr/src/ember/build \
     && echo "Largest objs " \
     && find /usr/src/ember/build -type f -exec du -sh {} + | sort -rh | head -20 \
     && cmake --build build -j$(nproc) \
+	&& cmake --install build \
     && ctest --test-dir build \
     && echo "Build folder size " && du -sh /usr/src/ember/build \
     && echo "# files " && find /usr/src/ember/build -type f | wc -l \
