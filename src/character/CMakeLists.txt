@@ -31,7 +31,6 @@ set(LIBRARY_SRC
 include_directories(${CMAKE_SOURCE_DIR}/deps/utf8cpp)
 
 add_library(${LIBRARY_NAME} ${LIBRARY_HDR} ${LIBRARY_SRC})
-add_dependencies(${LIBRARY_NAME} FB_SCHEMA_COMPILE)
 add_dependencies(${LIBRARY_NAME} SPARK_RPC_GENERATE)
 target_link_libraries(${LIBRARY_NAME} PRIVATE thread dbcreader spark protocol botan::botan-static Threads::Threads PUBLIC ${Boost_LIBRARIES} logger commands shared)
 

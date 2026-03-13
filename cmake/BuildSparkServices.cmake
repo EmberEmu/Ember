@@ -27,7 +27,7 @@ function(build_spark_services
                     -t ${template_dir}
                     -s ${bfbs_file}
                     -o ${output_dir}
-            DEPENDS ${rpcgen} ${bfbs_file}
+            DEPENDS ${rpcgen} FB_SCHEMA_COMPILE
             COMMENT "Generating Spark stubs for ${name}"
             VERBATIM
         )

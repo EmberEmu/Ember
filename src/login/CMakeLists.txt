@@ -98,7 +98,6 @@ set(EXECUTABLE_SOURCE
 source_group("Grunt Protocol" FILES ${GRUNT_SRC})
 
 add_library(${LIBRARY_NAME} ${LIBRARY_HDR} ${LIBRARY_SRC} ${GRUNT_SRC})
-add_dependencies(${LIBRARY_NAME} FB_SCHEMA_COMPILE)
 add_dependencies(${LIBRARY_NAME} SPARK_RPC_GENERATE)
 target_link_libraries(${LIBRARY_NAME} PRIVATE thread spark srp6 stun ports ${ZLIB_LIBRARY} dbcreader botan::botan-static Threads::Threads PUBLIC logger commands shared ${Boost_LIBRARIES})
 
