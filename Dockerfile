@@ -56,7 +56,10 @@ RUN --mount=type=cache,id=build-cache,target=/usr/src/ember/build \
     -DCMAKE_INSTALL_PREFIX=${install_dir} \
     -DBUILD_OPT_TOOLS=${build_optional_tools} \
     && cd build && make -j$(nproc) install \
-    && make test
+    && make test \
+    echo "Build mount contents..." && \
+    du -sh /usr/src/project/build && \
+    find /usr/src/project/build -type f | wc -l
 
 FROM ubuntu:resolute AS run_environment
 ARG install_dir=/usr/local/bin
