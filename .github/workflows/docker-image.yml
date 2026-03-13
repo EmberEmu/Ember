@@ -62,7 +62,6 @@ jobs:
         uses: reproducible-containers/buildkit-cache-dance@v3
         with:
           builder: ${{ steps.setup-buildx.outputs.name }}
-          cache-dir: cache-mount
           cache-map: '{ "cache-mount": { "target": "/usr/src/ember/build", "id": "build-cache" } }'
           skip-extraction: ${{ steps.cache.outputs.cache-hit }}
 
