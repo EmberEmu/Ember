@@ -15,33 +15,7 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
 
       - name: Login to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4.0.0
-
-      - name: Build the Docker image with Clang
-        uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294 # v7.0.0
-        with:
-          context: .
-          push: true
-          build-args: |
-            SKIP_UPGRADE=1
-          tags: emberemu/ember:latest-gcc
-          cache-from: type=registry,ref=emberemu/ember:buildcache
-          cache-to: type=registry,ref=emberemu/ember:buildcache,mode=max
-
-  build-clang:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
-
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
+        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # v4.0.0
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -51,8 +25,50 @@ jobs:
         id: build-cache
         with:
           path: cache-mount
-          key: docker-cache-${{ runner.os }}-${{ hashFiles('Dockerfile') }}-clang
-          restore-keys: docker-cache-${{ runner.os }}
+          key: docker-cache-gcc-${{ runner.os }}-${{ hashFiles('Dockerfile') }}
+          restore-keys: docker-cache-gcc-${{ runner.os }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4.0.0
+        id: setup-buildx
+
+      - name: Restore Docker cache mounts
+        uses: reproducible-containers/buildkit-cache-dance@v3
+        with:
+          builder: ${{ steps.setup-buildx.outputs.name }}
+          cache-map: '{ "cache-mount": { "target": "/usr/src/ember/build", "id": "build-cache" } }'
+          skip-extraction: ${{ steps.cache.outputs.cache-hit }}
+
+      - name: Build the Docker image with Clang
+        uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294 # v7.0.0
+        with:
+          context: .
+          push: true
+          build-args: |
+            SKIP_UPGRADE=1
+          tags: emberemu/ember:latest-gcc
+          cache-from: type=registry,ref=emberemu/ember:buildcache-gcc
+          cache-to: type=registry,ref=emberemu/ember:buildcache-gcc,mode=max
+
+  build-clang:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # v4.0.0
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Docker Cache
+        uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306     # v5.0.3
+        id: build-cache
+        with:
+          path: cache-mount
+          key: docker-cache-clang-${{ runner.os }}-${{ hashFiles('Dockerfile') }}
+          restore-keys: docker-cache-clang-${{ runner.os }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4.0.0
@@ -74,5 +90,5 @@ jobs:
             SKIP_UPGRADE=1
             USE_CLANG=1
           tags: emberemu/ember:latest-clang
-          cache-from: type=registry,ref=emberemu/ember:buildcache
-          cache-to: type=registry,ref=emberemu/ember:buildcache,mode=max
+          cache-from: type=registry,ref=emberemu/ember:buildcache-clang
+          cache-to: type=registry,ref=emberemu/ember:buildcache-clang,mode=max
