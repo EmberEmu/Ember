@@ -65,7 +65,7 @@ RUN --mount=type=cache,id=build-cache,target=/usr/src/ember/build \
     -DCMAKE_INSTALL_PREFIX=${install_dir}     \
     -DBUILD_OPT_TOOLS=${build_optional_tools} \
 	&& ccache --max-size=10G                  \
-    && cmake --build build -j$(nproc)  -- -v  \
+    && cmake --build build -j$(nproc)         \
 	&& cmake --install build                  \
     && ctest --test-dir build                 \
     && cat /tmp/ccache.log
