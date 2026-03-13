@@ -62,8 +62,9 @@ jobs:
         uses: reproducible-containers/buildkit-cache-dance@v3
         with:
           builder: ${{ steps.setup-buildx.outputs.name }}
-          cache-map: '{ "build": { "target": "/usr/src/ember/build", "id": "build-cache" } }'
-          save-always: true
+          cache-dir: build
+          dockerfile: Dockerfile
+          skip-extraction: ${{ steps.cache.outputs.cache-hit }}
 
       - name: Build the Docker image with Clang
         uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294 # v7.0.0
@@ -74,5 +75,6 @@ jobs:
             SKIP_UPGRADE=1
             USE_CLANG=1
           tags: emberemu/ember:latest-clang
-          cache-from: type=registry,ref=emberemu/ember:buildcache
-          cache-to: type=registry,ref=emberemu/ember:buildcache,mode=max
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          load: true
