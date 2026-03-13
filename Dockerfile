@@ -60,12 +60,12 @@ ARG install_dir=/usr/local/bin
 
 # Generate Makefile & compile
 RUN --mount=type=cache,id=build-cache,target=/usr/src/ember/build \
-    cmake -S . -B build -G Ninja  -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -- -v \
+    cmake -S . -B build -G Ninja  -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
     -DCMAKE_BUILD_TYPE=${build_type}          \
     -DCMAKE_INSTALL_PREFIX=${install_dir}     \
     -DBUILD_OPT_TOOLS=${build_optional_tools} \
 	&& ccache --max-size=10G                  \
-    && cmake --build build -j$(nproc)         \
+    && cmake --build build -j$(nproc)  -- -v  \
 	&& cmake --install build                  \
     && ctest --test-dir build                 \
     && cat /tmp/ccache.log
