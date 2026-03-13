@@ -56,10 +56,10 @@ RUN --mount=type=cache,id=build-cache,target=/usr/src/ember/build \
     -DCMAKE_INSTALL_PREFIX=${install_dir} \
     -DBUILD_OPT_TOOLS=${build_optional_tools} \
     && cd build && make -j$(nproc) install \
-    && make test
-	&& echo "Current workdir " && pwd && \
-    ls -l /usr/src/ember && \
-    ls -l /usr/src/ember/build
+    && make test \
+	&& echo "Current workdir " && pwd \
+    && ls -l /usr/src/ember \
+    && ls -l /usr/src/ember/build
 
 FROM ubuntu:resolute AS run_environment
 ARG install_dir=/usr/local/bin
