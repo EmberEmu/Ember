@@ -57,10 +57,10 @@ RUN --mount=type=cache,id=build-cache,target=/usr/src/ember/build \
     -DBUILD_OPT_TOOLS=${build_optional_tools} \
     && cd build && make -j$(nproc) install \
     && make test \
-    && echo "Build folder size " && du -sh /usr/src/project/build \
-    && echo "# files " && find /usr/src/project/build -type f | wc -l \
+    && echo "Build folder size " && du -sh /usr/src/ember/build \
+    && echo "# files " && find /usr/src/ember/build -type f | wc -l \
     && echo "Largest objs " \
-    && find /usr/src/project/build -type f -exec du -sh {} + | sort -rh | head -20
+    && find /usr/src/ember/build -type f -exec du -sh {} + | sort -rh | head -20
 
 FROM ubuntu:resolute AS run_environment
 ARG install_dir=/usr/local/bin
