@@ -29,6 +29,7 @@ set(LIBRARY_SRC
     utilities/Utility.cpp
 )
 
+add_dependencies(${LIBRARY_NAME} SPARK_RPC_GENERATE)
 add_library(${LIBRARY_NAME} ${LIBRARY_HDR} ${LIBRARY_SRC})
 target_link_libraries(${LIBRARY_NAME} PRIVATE dbcreader spark Threads::Threads PUBLIC logger commands shared ${Boost_LIBRARIES})
 
