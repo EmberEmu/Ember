@@ -203,7 +203,7 @@ const std::string_view IGDevice::http_body_view(const HTTPHeader& header, std::s
 
 	const auto length = sv_to_int(header.fields.at("Content-Length"));
 
-	if(length > buffer.size()) {
+	if(length < 0 || length > buffer.size()) {
 		throw std::invalid_argument("Invalid Content-Length");
 	}
 
