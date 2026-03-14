@@ -34,9 +34,9 @@ long long span_to_ll(std::span<const char> span) {
 }
 
 /*
-  This exists because string_view isn't guaranteed to be null-terminated,
-  (and we know ours isn't) so we can't use the standard atoi functions
-*/ 
+ *  This exists because string_view isn't guaranteed to be null-terminated,
+ *  (and we know ours isn't) so we can't use the standard atoi functions
+ */ 
 int sv_to_int(const std::string_view string) {
 	return gsl::narrow<int>(span_to_ll(string));
 }
@@ -50,9 +50,9 @@ long long sv_to_ll(const std::string_view string) {
 }
 
 /*
-   Just a quick and dirty func. to extract values from HTTP fields (e.g. "max-age=300")
-   C++ developers arguing about how best to split strings and on why
-   the standard still provides no functionality for it will never not be funny
+ *  Just a quick and dirty func. to extract values from HTTP fields (e.g. "max-age=300")
+ *  C++ developers arguing about how best to split strings and on why
+ *  the standard still provides no functionality for it will never not be funny
  */
 std::string_view split_argument(const std::string_view input, const char needle) {
 	const auto pos = input.find_last_of(needle);
