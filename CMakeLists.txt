@@ -7,6 +7,8 @@
 cmake_minimum_required(VERSION 3.30)
 project(Ember)
 
+cmake_policy(SET CMP0155 OLD)
+
 option(BUILD_OPT_TOOLS "Build optional tools" ON)
 
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
