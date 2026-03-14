@@ -133,7 +133,7 @@ UPnPActionArgs IGDevice::build_upnp_del_mapping(const Mapping& mapping) {
 std::vector<std::uint8_t> IGDevice::build_http_post_request(const std::string_view body,
                                                             const std::string_view action,
                                                             const std::string_view control_url) {
-	const auto soap_action = std::format("{}#{}", service_, action);
+	const auto soap_action = std::format(R"("{}#{}")", service_, action);
 	const auto content_length = std::to_string(body.size());
 
 	const HTTPRequest request {
