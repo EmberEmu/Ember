@@ -73,7 +73,7 @@ std::string IGDevice::build_soap_request(const UPnPActionArgs& action) {
 
 std::vector<std::uint8_t> IGDevice::build_http_request(const HTTPRequest& request) {
 	std::vector<std::uint8_t> output;
-	output.reserve(4096);
+	output.reserve(4096 + request.body.size());
 
 	std::format_to(std::back_inserter(output), "{} {} HTTP/1.1\r\n", request.method, request.url);
 	
