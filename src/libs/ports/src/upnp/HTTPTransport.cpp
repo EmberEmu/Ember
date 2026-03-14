@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 - 2025 Ember
+ * Copyright (c) 2024 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -17,10 +17,12 @@
 
 namespace ember::ports::upnp {
 
+namespace asio = boost::asio;
+
 HTTPTransport::HTTPTransport(asio::io_context& ctx, std::string_view bind)
-	: socket_(ctx, asio::ip::tcp::endpoint(asio::ip::make_address(bind), 0)),
-	  resolver_(ctx),
-	  timeout_(ctx) {
+	: socket_(ctx, asio::ip::tcp::endpoint(asio::ip::make_address(bind), 0))
+	, resolver_(ctx)
+	, timeout_(ctx) {
 	socket_.set_option(asio::ip::tcp::no_delay(true));
 	buffer_.resize(INITIAL_BUFFER_SIZE);
 }

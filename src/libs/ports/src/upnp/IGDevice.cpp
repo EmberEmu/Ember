@@ -20,6 +20,8 @@
 
 namespace ember::ports::upnp {
 
+namespace asio = boost::asio;
+
 IGDevice::IGDevice(boost::asio::io_context& ctx, std::string bind,
                    std::string service, const std::string& location)
 	: ctx_(ctx)

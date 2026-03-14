@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 - 2025 Ember
+ * Copyright (c) 2024 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -15,6 +15,8 @@
 #include <regex>
 
 namespace ember::ports::upnp {
+
+namespace asio = boost::asio;
 
 SSDP::SSDP(const std::string& bind, boost::asio::io_context& ctx)
 	: ctx_(ctx),
