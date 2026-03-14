@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Ember
+ * Copyright (c) 2024 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -15,6 +15,7 @@
 #include <ports/upnp/SCPDXMLParser.h>
 #include <ports/upnp/ErrorCode.h>
 #include <boost/asio/io_context.hpp>
+#include <boost/asio/strand.hpp>
 #include <chrono>
 #include <functional>
 #include <future>
@@ -56,6 +57,7 @@ struct UPnPRequest {
 class IGDevice final : public std::enable_shared_from_this<IGDevice> {
 private:
 	boost::asio::io_context& ctx_;
+	boost::asio::strand<boost::asio::io_context::executor_type> strand_;
 	std::string bind_;
 
 	// device info

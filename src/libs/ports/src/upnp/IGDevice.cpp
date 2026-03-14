@@ -10,6 +10,7 @@
 #include <ports/upnp/Utility.h>
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
+#include <boost/asio/strand.hpp>
 #include <algorithm>
 #include <format>
 #include <ranges>
@@ -21,7 +22,11 @@ namespace ember::ports::upnp {
 
 IGDevice::IGDevice(boost::asio::io_context& ctx, std::string bind,
                    std::string service, const std::string& location)
-	: ctx_(ctx), port_(80), service_(std::move(service)), bind_(std::move(bind)) {
+	: ctx_(ctx)
+	, strand_(boost::asio::make_strand(ctx))
+	, port_(80)
+	, service_(std::move(service))
+	, bind_(std::move(bind)) {
 	parse_location(location);
 }
 
@@ -374,7 +379,7 @@ void IGDevice::launch_request(UPnPRequest::Handler&& handler) {
 	};
 
 	auto request_ptr = std::make_shared<UPnPRequest>(std::move(request));
-	asio::co_spawn(ctx_, process_request(std::move(request_ptr)), asio::detached);
+	asio::co_spawn(strand_, process_request(std::move(request_ptr)), asio::detached);
 }
 
 void IGDevice::add_port_mapping(Mapping mapping, Result cb) {
