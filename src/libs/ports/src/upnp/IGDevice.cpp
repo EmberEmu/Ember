@@ -192,18 +192,7 @@ asio::awaitable<void> IGDevice::refresh_scpd(HTTPTransport& transport) {
 	co_await request_scpd(transport);
 	const auto& [header, buffer] = co_await transport.receive_http_response();
 	const auto body = http_body_view(header, buffer);
-
-	if(auto field = header.fields.find("Cache-Control"); field != header.fields.end()) {
-		try {
-			const auto value = sv_to_int(split_argument(field->second, '='));
-			scpd_cc_ = std::chrono::steady_clock::now() + std::chrono::seconds(value);
-		} catch(const std::invalid_argument&) {
-			scpd_cc_ = std::chrono::steady_clock::now();
-		}
-	} else {
-		scpd_cc_ = std::chrono::steady_clock::now();
-	}
-
+	scpd_cc_ = calculate_cache_expiry(header);
 	scpd_xml_ = std::make_unique<SCPDXMLParser>(std::string(body));
 }
 
@@ -221,22 +210,24 @@ const std::string_view IGDevice::http_body_view(const HTTPHeader& header, std::s
 	return  std::string_view { buffer.end() - length, buffer.end() };
 }
 
+std::chrono::steady_clock::time_point IGDevice::calculate_cache_expiry(const HTTPHeader& header) {
+	if(auto field = header.fields.find("Cache-Control"); field != header.fields.end()) {
+		try {
+			const auto value = sv_to_int(extract_field_value(field->second, '='));
+			return std::chrono::steady_clock::now() + std::chrono::seconds(value);
+		} catch(const std::invalid_argument&) {
+			return std::chrono::steady_clock::now();
+		}
+	}
+
+	return std::chrono::steady_clock::now();
+}
+
 asio::awaitable<void> IGDevice::refresh_igdd(HTTPTransport& transport) {
 	co_await request_igdd(transport);
 	const auto& [header, buffer] = co_await transport.receive_http_response();
 	const auto body = http_body_view(header, buffer);
-
-	if(auto field = header.fields.find("Cache-Control"); field != header.fields.end()) {
-		try {
-			const auto value = sv_to_int(split_argument(field->second, '='));
-			igdd_cc_ = std::chrono::steady_clock::now() + std::chrono::seconds(value);
-		} catch(const std::invalid_argument&) {
-			igdd_cc_ = std::chrono::steady_clock::now();
-		}
-	} else {
-		igdd_cc_ = std::chrono::steady_clock::now();
-	}
-	
+	igdd_cc_ = calculate_cache_expiry(header);
 	igdd_xml_ = std::make_unique<XMLParser>(std::string(body));
 }
 

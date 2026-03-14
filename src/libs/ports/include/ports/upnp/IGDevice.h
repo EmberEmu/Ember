@@ -81,6 +81,7 @@ private:
 	asio::awaitable<ErrorCode> do_delete_port_mapping(const Mapping& mapping, HTTPTransport& transport);
 	ErrorCode validate_soap_arguments(const UPnPActionArgs& args);
 	const std::string_view protocol_to_string(const Protocol protocol);
+	std::chrono::steady_clock::time_point calculate_cache_expiry(const HTTPHeader& header);
 
 	void launch_request(UPnPRequest::Handler&& handler);
 	asio::awaitable<void> process_request(std::shared_ptr<UPnPRequest> request);
