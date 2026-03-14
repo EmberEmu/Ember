@@ -350,8 +350,7 @@ asio::awaitable<ErrorCode> IGDevice::do_add_port_mapping(Mapping mapping, HTTPTr
 		co_return ec;
 	}
 
-	auto body = build_soap_request(args);
-
+	const auto body = build_soap_request(args);
 	auto request = build_http_post_request(body, "AddPortMapping", *post_uri);
 
 	co_await transport.send(std::move(request));
