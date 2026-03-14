@@ -165,7 +165,7 @@ asio::awaitable<void> IGDevice::request_igdd(HTTPTransport& transport) {
 		.url = dev_desc_uri_,
 		.fields {
 			{ "Host",           http_host_ },
-			{ "Accept",        R"(text/html,application/xhtml+xml,application/xml;)" },
+			{ "Accept",         R"(text/html,application/xhtml+xml,application/xml;)" },
 			{ "Connection",     "keep-alive" },
 		}
 	};
