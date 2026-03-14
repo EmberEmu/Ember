@@ -80,21 +80,19 @@ private:
 	asio::awaitable<ErrorCode> do_add_port_mapping(Mapping mapping, HTTPTransport& transport);
 	asio::awaitable<ErrorCode> do_delete_port_mapping(const Mapping& mapping, HTTPTransport& transport);
 	ErrorCode validate_soap_arguments(const UPnPActionArgs& args);
-	std::string protocol_to_string(const Protocol protocol);
+	const std::string_view protocol_to_string(const Protocol protocol);
 
 	void launch_request(UPnPRequest::Handler&& handler);
 	asio::awaitable<void> process_request(std::shared_ptr<UPnPRequest> request);
 	asio::awaitable<ErrorCode> process_request(HTTPTransport& transport, use_awaitable_t);
 
-	template<typename BufType>
-	BufType build_http_post_request(const std::string_view body,
-	                                const std::string_view action,
-	                                const std::string_view control_url);
+	std::vector<std::uint8_t> build_http_post_request(const std::string_view body,
+	                                                  const std::string_view action,
+	                                                  const std::string_view control_url);
 
-	template<typename BufType>
-	BufType build_http_request(const HTTPRequest& request);
-	std::string build_soap_request(const UPnPActionArgs&& args);
-	std::string_view http_body_view(const HTTPHeader& header, std::span<const char> buffer);
+	std::vector<std::uint8_t> build_http_request(const HTTPRequest& request);
+	std::string build_soap_request(const UPnPActionArgs& args);
+	const std::string_view http_body_view(const HTTPHeader& header, std::span<const char> buffer);
 	UPnPActionArgs build_upnp_add_mapping(const Mapping& mapping);
 	UPnPActionArgs build_upnp_del_mapping(const Mapping& mapping);
 
