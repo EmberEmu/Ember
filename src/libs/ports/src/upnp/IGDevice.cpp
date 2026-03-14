@@ -15,6 +15,7 @@
 #include <ranges>
 #include <utility>
 #include <regex>
+#include <cassert>
 
 namespace ember::ports::upnp {
 
@@ -168,6 +169,7 @@ asio::awaitable<void> IGDevice::request_igdd(HTTPTransport& transport) {
 }
 
 asio::awaitable<void> IGDevice::request_scpd(HTTPTransport& transport) {
+	assert(igdd_xml_);
 	auto scpd_uri = igdd_xml_->get_node_value(service_, "SCPDURL");
 
 	if(!scpd_uri) {
@@ -271,6 +273,7 @@ asio::awaitable<void> IGDevice::process_request(std::shared_ptr<UPnPRequest> req
 
 asio::awaitable<ErrorCode> IGDevice::do_delete_port_mapping(const Mapping& mapping,
                                                           HTTPTransport& transport) {
+	assert(igdd_xml_);
 	const auto post_uri = igdd_xml_->get_node_value(service_, "controlURL");
 
 	if(!post_uri) {
@@ -305,6 +308,7 @@ asio::awaitable<ErrorCode> IGDevice::do_delete_port_mapping(const Mapping& mappi
  *  we're about to send. However, we do not perform type checking.
  */
 ErrorCode IGDevice::validate_soap_arguments(const UPnPActionArgs& args) {
+	assert(scpd_xml_);
 	const auto& expected_args = scpd_xml_->arguments(args.action, "in");
 
 	if(expected_args.empty()) {
@@ -326,6 +330,7 @@ ErrorCode IGDevice::validate_soap_arguments(const UPnPActionArgs& args) {
 }
 
 asio::awaitable<ErrorCode> IGDevice::do_add_port_mapping(Mapping mapping, HTTPTransport& transport) {
+	assert(igdd_xml_);
 	const auto post_uri = igdd_xml_->get_node_value(service_, "controlURL");
 
 	if(!post_uri) {
