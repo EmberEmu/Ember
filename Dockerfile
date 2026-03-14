@@ -21,10 +21,7 @@ RUN apt-get -y install software-properties-common \
  && apt-get install -y zlib1g-dev \
  && apt-get install -y libpcre3-dev \
  && apt-get install -y libflatbuffers-dev \
- && apt-get install -y ccache \
- && apt-get install -y libboost-system-dev \
- && apt-get install -y libboost-program-options-dev \
- && apt-get install -y libboost-dev
+ && apt-get install -y ccache
 
 RUN if [ -n "$USE_CLANG" ]; then                                        \
  apt-get -y install clang;                                              \
@@ -36,11 +33,11 @@ else                                                                    \
  && update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-15 100; \
 fi
 
-#RUN wget -q https://archives.boost.io/release/1.90.0/source/boost_1_90_0.tar.gz \
-# && tar -zxf boost_1_90_0.tar.gz \
-# && cd boost_1_90_0 \
-# && ./bootstrap.sh --with-libraries=system,program_options,headers \
-# && ./b2 link=static install -d0 -j $(nproc) cxxflags="-std=c++23"
+RUN wget -q https://archives.boost.io/release/1.90.0/source/boost_1_90_0.tar.gz \
+ && tar -zxf boost_1_90_0.tar.gz \
+ && cd boost_1_90_0 \
+ && ./bootstrap.sh --with-libraries=system,program_options,headers \
+ && ./b2 link=static install -d0 -j $(nproc) cxxflags="-std=c++23"
 
 # Copy source
 ARG working_dir=/usr/src/ember
