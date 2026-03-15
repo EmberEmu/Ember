@@ -58,6 +58,8 @@ set(LIBRARY_HDR
     WorldRPCClient.h
     Digest.h
     DBCRequired.h
+    ServiceContext.h
+    ServiceContextImpl.h
 )
 
 set(LIBRARY_SRC
@@ -86,6 +88,7 @@ set(LIBRARY_SRC
     Service.cpp
     WorldRPCClient.cpp
     Digest.cpp
+    ServiceContext.cpp
 )
 
 add_library(${LIBRARY_NAME} STATIC ${LIBRARY_HDR} ${LIBRARY_SRC})

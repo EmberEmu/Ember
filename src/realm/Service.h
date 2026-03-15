@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include "ServiceContext.h"
 #include <logger/LoggerFwd.h>
 #include <commands/Registry.h>
 #include <shared/utility/cstring_view.hpp>
@@ -26,26 +27,19 @@ namespace ember::realm {
 static inline constexpr cstring_view app_name { "Realm Gateway" };
 
 class Service {
-	std::exception_ptr eptr;
-	std::binary_semaphore stop_flag { 0 };
-
 	log::Logger& logger;
 	commands::Registry& registry;
 	std::chrono::steady_clock::time_point start_time;
+	ServiceContext context;
+	std::binary_semaphore stop_flag;
 
-	void launch(const boost::program_options::variables_map& args, thread::ServicePool& service_pool);
+	void initialise(const boost::program_options::variables_map& args, thread::ServicePool& service_pool);
 
 public:
 	static boost::program_options::options_description options();
 
-	explicit Service(log::Logger& logger, commands::Registry& registry)
-		: logger(logger)
-		 , registry(registry)
-		 , start_time(std::chrono::steady_clock::now()) {}
-
-	~Service() {
-		stop();
-	}
+	Service(log::Logger& logger, commands::Registry& registry);
+	~Service();
 
 	int run(const boost::program_options::variables_map& args);
 	void stop();
