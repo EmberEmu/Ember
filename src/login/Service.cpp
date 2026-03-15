@@ -19,7 +19,6 @@
 #include <shared/game/GameVersion.h>
 #include <shared/game/Utility.h>
 #include <shared/utility/cstring_view.hpp>
-#include <shared/utility/polyfill/inplace_vector>
 #include <shared/utility/Utility.h>
 #include <shared/utility/xoroshiro128plus.h>
 #include <shared/utility/STUN.h>
@@ -54,9 +53,6 @@ namespace ember::login {
 void print_lib_versions(log::Logger& logger);
 
 int Service::run(const opts::variables_map& args) try {
-	constexpr std::size_t worker_num_hint = 32;
-	
-	// Initialise the service components
 	initialise(args);
 
 	// Spawn worker threads for Asio
@@ -64,7 +60,7 @@ int Service::run(const opts::variables_map& args) try {
 		LOG_ERROR_SYNC(logger, "{}", msg);
 	});
 
-	std::inplace_vector<std::jthread, worker_num_hint> threads;
+	std::vector<std::jthread> threads;
 	threads.reserve(concurrency);
 
 	for(unsigned int i = 0; i < concurrency; ++i) {
