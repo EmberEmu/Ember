@@ -32,7 +32,7 @@ Service::Service(log::Logger& logger, commands::Registry& registry)
 }
 
 int Service::run(const opts::variables_map& args) try {
-	initialise(args, service);
+	initialise(args);
 	service.run();
 
 	LOG_INFO_SYNC(logger, "{} shutting down...", app_name);
@@ -42,7 +42,7 @@ int Service::run(const opts::variables_map& args) try {
 	return EXIT_FAILURE;
 }
 
-void Service::initialise(const opts::variables_map& args, boost::asio::io_context& service) {
+void Service::initialise(const opts::variables_map& args) {
 	const auto time = std::chrono::steady_clock::now();
 	auto ctx = context.get();
 

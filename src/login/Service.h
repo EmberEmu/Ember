@@ -43,7 +43,7 @@ class Service {
 		const boost::program_options::variables_map& args
 	);
 
-	void launch(const boost::program_options::variables_map& args, boost::asio::io_context& service);
+	void launch(const boost::program_options::variables_map& args);
 
 public:
 	static boost::program_options::options_description options();

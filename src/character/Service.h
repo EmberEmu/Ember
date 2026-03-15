@@ -28,7 +28,7 @@ class Service {
 	boost::asio::io_context service;
 	ServiceContext context;
 
-	void initialise(const boost::program_options::variables_map& args, boost::asio::io_context& service);
+	void initialise(const boost::program_options::variables_map& args);
 	void shutdown();
 
 public:

@@ -93,7 +93,7 @@ int Service::run(const opts::variables_map& args) try {
 
 	std::thread thread([&]() {
 		thread::set_name("Launcher");
-		launch(args, service);
+		launch(args);
 	});
 
 	// Spawn worker threads for Asio
@@ -129,7 +129,7 @@ void Service::stop() {
 	});
 }
 
-void Service::launch(const opts::variables_map& args, boost::asio::io_context& service) try {
+void Service::launch(const opts::variables_map& args) try {
 	const auto time = std::chrono::steady_clock::now();
 	print_lib_versions(logger);
 
