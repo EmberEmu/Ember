@@ -41,6 +41,7 @@ class Service {
 		const boost::program_options::variables_map& args
 	);
 
+	void register_commands();
 	void initialise(const boost::program_options::variables_map& args);
 
 public:

@@ -263,6 +263,21 @@ void Service::initialise(const opts::variables_map& args) {
 	}
 
 	// Install service command handlers
+	LOG_INFO_SYNC(logger, "Registering command handlers...", utility::max_sockets_desc());
+	register_commands();
+
+	// All done setting up
+	boost::asio::dispatch(io_context, [this, time]() {
+		LOG_INFO_SYNC(logger, "{} started successfully in {}", app_name,
+			utility::start_time_format(time));
+
+		start_time = std::chrono::steady_clock::now();
+	});
+}
+
+void Service::register_commands() {
+	auto ctx = context.get();
+
 	ctx->cmd_exec = std::make_unique<utility::CommandExecutor>(serialise, stopped, [&]() {
 		LOG_CONSOLE_ERROR_ASYNC(logger, "Command cannot be executed, service is shutting down");
 	});
@@ -286,14 +301,6 @@ void Service::initialise(const opts::variables_map& args) {
 	);
 
 	ctx->commands.emplace_back(std::move(handle));
-
-	// All done setting up
-	boost::asio::dispatch(io_context, [this, time]() {
-		LOG_INFO_SYNC(logger, "{} started successfully in {}", app_name,
-			utility::start_time_format(time));
-
-		start_time = std::chrono::steady_clock::now();
-	});
 }
 
 std::unique_ptr<Metrics> Service::start_metrics(boost::asio::io_context& service, const opts::variables_map& args) {
