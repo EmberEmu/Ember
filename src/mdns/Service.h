@@ -42,7 +42,7 @@ public:
 	int run(const boost::program_options::variables_map& args);
 	void stop();
 
-	static std::unique_ptr<Service> create(log::Logger& logger, commands::Registry& registry) {
+	static auto create(log::Logger& logger, commands::Registry& registry) {
 		return std::make_unique<Service>(logger, registry);
 	}
 };
