@@ -7,11 +7,10 @@ ARG SKIP_UPGRADE
 ARG USE_CLANG
 
 # Update the distro and install our tools
-RUN apt-get -y update
+RUN if [ -n "$SKIP_UPGRADE" ]; then apt-get -y update && apt-get -y upgrade; fi
 
-RUN if [ -n "$SKIP_UPGRADE" ]; then apt-get -y upgrade; fi
-
-RUN apt-get -y install software-properties-common \
+RUN apt-get -y update \
+ && apt-get -y install software-properties-common \
  && apt-get -y install wget \
  && apt-get -y install cmake \
  && apt-get -y install git \
