@@ -80,7 +80,7 @@ void handle_authentication(ClientContext& ctx) {
 		<< auth_ctx.packet->username
 		<< LOG_ASYNC;
 	
-	const bool build_res = std::ranges::any_of(Locator::builds(), [&](auto& version) {
+	const bool build_res = std::ranges::any_of(Locator::config()->allowed_builds, [&](auto& version) {
 		return version.build == auth_ctx.packet->build;
 	});
 
