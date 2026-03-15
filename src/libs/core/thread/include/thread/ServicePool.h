@@ -10,7 +10,6 @@
 
 #include <boost/asio/executor_work_guard.hpp>
 #include <boost/asio/io_context.hpp>
-#include <boost/container/small_vector.hpp>
 #include <memory>
 #include <thread>
 #include <vector>
@@ -19,13 +18,12 @@
 namespace ember::thread {
 
 class ServicePool final {
-	static constexpr auto POOL_SIZE_HINT = 16;
-	static constexpr auto ASIO_CONCURRENCY_HINT = 1;
+	static constexpr auto asio_concurrency_hint = 1;
 
 	const int hint_;
 	std::size_t pool_size_;
 	std::size_t next_service_;
-	boost::container::small_vector<std::unique_ptr<boost::asio::io_context>, POOL_SIZE_HINT> services_;
+	std::vector<std::unique_ptr<boost::asio::io_context>> services_;
 	std::vector<boost::asio::executor_work_guard<boost::asio::io_context::executor_type>> work_;
 	std::vector<std::jthread> threads_;
 
@@ -33,7 +31,7 @@ class ServicePool final {
 	void initialise_pool();
 	
 public:
-	explicit ServicePool(std::size_t pool_size, int hint = ASIO_CONCURRENCY_HINT);
+	explicit ServicePool(std::size_t pool_size, int hint = asio_concurrency_hint);
 	~ServicePool();
 
 	boost::asio::io_context& get();
