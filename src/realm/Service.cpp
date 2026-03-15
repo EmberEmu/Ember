@@ -64,9 +64,13 @@ Service::Service(log::Logger& logger, commands::Registry& registry)
 	, stop_flag(0) {}
 
 int Service::run(const opts::variables_map& args) try {
-	const auto concurrency = thread::hardware_concurrency([&](auto msg) {
-		LOG_ERROR_SYNC(logger, "{}", msg);
-	});
+	auto concurrency = args["misc.concurrency"].as<unsigned int>();
+
+	if(!concurrency) {
+		concurrency = thread::hardware_concurrency([&](auto msg) {
+			LOG_ERROR_SYNC(logger, "{}", msg);
+		});
+	}
 
 	LOG_INFO_SYNC(logger, "Starting service pool with {} threads", concurrency);
 	thread::ServicePool service_pool(concurrency, BOOST_ASIO_CONCURRENCY_HINT_UNSAFE_IO);
@@ -321,7 +325,7 @@ opts::options_description Service::options() {
 	opts::options_description opts;
 	opts.add_options()
 		("dbc.path", opts::value<std::string>()->required())
-		("misc.concurrency", opts::value<unsigned int>())
+		("misc.concurrency", opts::value<unsigned int>()->required())
 		("realm.builds", opts::value<std::vector<GameVersion>>()->composing()->required())
 		("realm.id", opts::value<unsigned int>()->required())
 		("realm.max_slots", opts::value<unsigned int>()->required())
