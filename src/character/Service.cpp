@@ -99,6 +99,7 @@ void Service::initialise(const opts::variables_map& args) {
 		                      "(use {} to match logical core count)", concurrency);
 	}
 
+	LOG_INFO_SYNC(logger, "Initialising database connection pool...");
 	ctx->conn_pool = std::make_unique<connection_pool::Pool<drivers::AutoSelect>>(
 		init_database(args, logger)
 	);

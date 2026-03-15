@@ -26,8 +26,6 @@ auto init_database(const boost::program_options::variables_map& args,
 	auto min_conns = args["database.min_connections"].as<unsigned short>();
 	auto max_conns = args["database.max_connections"].as<unsigned short>();
 
-	LOG_INFO_SYNC(logger, "Initialising database connection pool...");
-
 	auto pool = create<drivers::AutoSelect, CheckinClean, ExponentialGrowth>(
 		std::move(driver), min_conns, max_conns, 30s
 	);

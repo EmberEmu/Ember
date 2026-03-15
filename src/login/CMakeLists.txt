@@ -63,6 +63,9 @@ set(LIBRARY_HDR
     SocketType.h
     Service.h
     LoggingCallbacks.h
+    InitHelpers.h
+    ServiceContext.h
+    ServiceContextImpl.h
 )
 
 set(LIBRARY_SRC
@@ -81,7 +84,8 @@ set(LIBRARY_SRC
     IntegrityData.cpp
     LocaleMap.cpp
     Survey.cpp
-    Service.cpp   
+    Service.cpp
+    ServiceContext.cpp
 )
 
 if(WIN32)
@@ -92,7 +96,7 @@ set(EXECUTABLE_SOURCE
     main.cpp
     commands/Shutdown.h
     commands/Shutdown.cpp
-	${ICON_RESOURCE}
+    ${ICON_RESOURCE}
 )
 
 source_group("Grunt Protocol" FILES ${GRUNT_SRC})

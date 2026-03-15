@@ -103,6 +103,10 @@ public:
 		accept_connection();
 	}
 
+	~NetworkListener() {
+		shutdown();
+	}
+
 	void shutdown() {
 		LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 		acceptor_.close();
