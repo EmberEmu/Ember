@@ -127,6 +127,10 @@ EMBER_EXPORT_SERVICE Service* create_mdns(log::Logger& logger, commands::Registr
 	return Service::create(logger, registry).release();
 }
 
+EMBER_EXPORT_SERVICE void destroy_mdns(Service* service) {
+	std::unique_ptr<Service>{service};
+}
+
 } // extern "C"
 
 } // dns, ember

@@ -204,6 +204,10 @@ EMBER_EXPORT_SERVICE Service* create_character(log::Logger& logger, commands::Re
 	return Service::create(logger, registry).release();
 }
 
+EMBER_EXPORT_SERVICE void destroy_character(Service* service) {
+	std::unique_ptr<Service>{service};
+}
+
 } // extern "C"
 
 } // character, ember

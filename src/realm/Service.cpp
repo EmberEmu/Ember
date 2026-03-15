@@ -412,6 +412,10 @@ EMBER_EXPORT_SERVICE Service* create_realm(log::Logger& logger, commands::Regist
 	return Service::create(logger, registry).release();
 }
 
+EMBER_EXPORT_SERVICE void destroy_realm(Service* service) {
+	std::unique_ptr<Service>{service};
+}
+
 } // extern "C"
 
 } // realm, ember

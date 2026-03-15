@@ -155,6 +155,10 @@ EMBER_EXPORT_SERVICE Service* create_account(log::Logger& logger, commands::Regi
 	return Service::create(logger, registry).release();
 }
 
+EMBER_EXPORT_SERVICE void destroy_account(Service* service) {
+	std::unique_ptr<Service>{service};
+}
+
 } // extern "C"
 
 } // account, ember

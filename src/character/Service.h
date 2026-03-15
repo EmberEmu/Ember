@@ -48,5 +48,6 @@ public:
 };
 
 extern "C" EMBER_EXPORT_SERVICE Service* create_character(log::Logger& logger, commands::Registry& registry);
+extern "C" EMBER_EXPORT_SERVICE void destroy_character(Service* service);
 
 } // character, ember

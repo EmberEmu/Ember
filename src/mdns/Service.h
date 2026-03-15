@@ -48,5 +48,6 @@ public:
 };
 
 extern "C" EMBER_EXPORT_SERVICE Service* create_mdns(log::Logger& logger, commands::Registry& registry);
+extern "C" EMBER_EXPORT_SERVICE void destroy_mdns(Service* service);
 
 } // dns, ember
