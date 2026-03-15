@@ -78,7 +78,6 @@ void Service::stop() {
 	LOG_TRACE_SYNC(logger, "{} shutting down...", app_name);
 	auto ctx = context.get();
 	ctx->server->shutdown();
-	ctx->spark->shutdown();
 }
 
 opts::options_description Service::options() {

@@ -109,11 +109,11 @@ void Channel::link_up() {
 }
 
 void Channel::close() {
-	if(handler_ && is_open()) {
+	/*if(handler_ && is_open()) {
 		link_.channel = weak_from_this();
 		tracking_.shutdown();
 		handler_->on_link_down(link_);
-	}
+	}*/
 
 	state_ = State::closed;
 }

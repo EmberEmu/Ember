@@ -16,8 +16,8 @@
 namespace ember::dns {
 
 struct ServiceContext::Impl {
-	std::unique_ptr<spark::Server> spark;
 	std::unique_ptr<NSDService> nsd_service;
+	std::unique_ptr<spark::Server> spark;
 	std::unique_ptr<Server> server;
 };
 

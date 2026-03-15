@@ -146,7 +146,6 @@ void Service::stop() {
 	LOG_TRACE_SYNC(logger, "{} shutting down...", app_name);
 	auto ctx = context.get();
 	ctx->thread_pool->shutdown();
-	ctx->spark->shutdown();
 	ctx->conn_pool->get().close();
 }
 
