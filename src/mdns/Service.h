@@ -29,7 +29,6 @@ class Service {
 	ServiceContext context;
 
 	void initialise(const boost::program_options::variables_map& args);
-	void shutdown();
 
 public:
 	static boost::program_options::options_description options();

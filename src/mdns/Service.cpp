@@ -74,15 +74,11 @@ void Service::initialise(const opts::variables_map& args) {
 	});
 }
 
-void Service::shutdown() {
+void Service::stop() {
+	LOG_TRACE_SYNC(logger, "{} shutting down...", app_name);
 	auto ctx = context.get();
 	ctx->server->shutdown();
 	ctx->spark->shutdown();
-}
-
-void Service::stop() {
-	LOG_TRACE_SYNC(logger, "Service termination requested");
-	shutdown();
 }
 
 opts::options_description Service::options() {

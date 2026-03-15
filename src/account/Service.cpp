@@ -96,16 +96,12 @@ void Service::initialise(const opts::variables_map& args) {
 	});
 }
 
-void Service::shutdown() {
+void Service::stop() {
+	LOG_TRACE_SYNC(logger, "Service termination requested");
 	auto ctx = context.get();
 	ctx->thread_pool->shutdown();
 	ctx->spark->shutdown();
 	ctx->conn_pool->get().close();
-}
-
-void Service::stop() {
-	LOG_TRACE_SYNC(logger, "Service termination requested");
-	shutdown();
 }
 
 opts::options_description Service::options() {

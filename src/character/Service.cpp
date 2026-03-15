@@ -44,8 +44,6 @@ Service::Service(log::Logger& logger, commands::Registry& registry)
 int Service::run(const opts::variables_map& args) try {
 	initialise(args);
 	service.run();
-
-	LOG_INFO_SYNC(logger, "{} shutting down...", app_name);
 	return EXIT_SUCCESS;
 } catch(const std::exception& e) {
 	LOG_FATAL_SYNC(logger, "{}", e.what());
@@ -143,16 +141,12 @@ void Service::initialise(const opts::variables_map& args) {
 	});
 }
 
-void Service::shutdown() {
+void Service::stop() {
+	LOG_TRACE_SYNC(logger, "{} shutting down...", app_name);
 	auto ctx = context.get();
 	ctx->thread_pool->shutdown();
 	ctx->spark->shutdown();
 	ctx->conn_pool->get().close();
-}
-
-void Service::stop() {
-	LOG_TRACE_SYNC(logger, "Service termination requested");
-	shutdown();
 }
 
 opts::options_description Service::options() {
