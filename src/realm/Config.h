@@ -21,7 +21,7 @@ struct Realm;
 namespace ember::realm {
 
 struct Config {
-	Realm& realm;
+	Realm* realm;
 	unsigned int realm_id;
 	unsigned int max_slots;
 	std::chrono::seconds auth_timeout;

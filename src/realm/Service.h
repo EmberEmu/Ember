@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include "Config.h"
 #include "ServiceContext.h"
 #include <logger/LoggerFwd.h>
 #include <commands/Registry.h>
@@ -33,6 +34,8 @@ class Service {
 	ServiceContext context;
 	std::binary_semaphore stop_flag;
 
+	boost::program_options::variables_map reload_args();
+	Config generate_config(const boost::program_options::variables_map& args);
 	void initialise(const boost::program_options::variables_map& args, thread::ServicePool& service_pool);
 
 public:

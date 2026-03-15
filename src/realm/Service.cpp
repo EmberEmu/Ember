@@ -34,12 +34,14 @@
 #include <thread/Utility.h>
 #include <boost/asio/dispatch.hpp>
 #include <boost/asio/io_context.hpp>
+#include <boost/program_options.hpp>
 #include <boost/version.hpp>
 #include <botan/auto_rng.h>
 #include <botan/version.h>
 #include <pcre.h>
 #include <zlib.h>
 #include <chrono>
+#include <fstream>
 #include <format>
 #include <memory>
 #include <ranges>
@@ -206,14 +208,8 @@ void Service::initialise(const opts::variables_map& args, thread::ServicePool& s
 		);
 	}
 	
-	ctx->config = std::make_unique<Config>(Config {
-		.realm = *ctx->realm,
-		.realm_id = realm_id,
-		.max_slots = args["realm.max_slots"].as<unsigned int>(),
-		.auth_timeout = std::chrono::seconds(args["realm.auth_timeout"].as<unsigned int>()),
-		.char_list_timeout = std::chrono::seconds(args["realm.char_list_timeout"].as<unsigned int>()),
-		.allowed_builds = std::move(allowed_builds)
-	});
+	const auto config = generate_config(args);
+	ctx->config_store = std::make_unique<ConfigStore>(config, service_pool);
 
 	LOG_INFO_SYNC(logger, "Realm will be advertised on {}", ctx->realm->address);
 
@@ -223,7 +219,7 @@ void Service::initialise(const opts::variables_map& args, thread::ServicePool& s
 	ctx->rpc = std::make_unique<spark::Server>(service_pool.get(), app_name, s_address, s_port, logger);
 	ctx->rpc_realm = std::make_unique<RealmService>(*ctx->rpc, *ctx->realm, logger);
 	ctx->rpc_account= std::make_unique<AccountClient>(*ctx->rpc, logger);
-	ctx->rpc_character = std::make_unique<CharacterClient>(*ctx->rpc, *ctx->config, logger);
+	ctx->rpc_character = std::make_unique<CharacterClient>(*ctx->rpc, *ctx->config_store, logger);
 	ctx->rpc_world = std::make_unique<WorldRPCClient>(*ctx->rpc, logger);
 
 	const auto& nsd_host = args["nsd.host"].as<std::string>();
@@ -238,7 +234,7 @@ void Service::initialise(const opts::variables_map& args, thread::ServicePool& s
 	Locator::set(ctx->rpc_account.get());
 	Locator::set(ctx->rpc_character.get());
 	Locator::set(ctx->rpc_realm.get());
-	Locator::set(ctx->config.get());
+	Locator::set(ctx->config_store.get());
 	
 	// Misc. information
 	const auto max_socks = utility::max_sockets_desc();
@@ -248,6 +244,13 @@ void Service::initialise(const opts::variables_map& args, thread::ServicePool& s
 	LOG_INFO_SYNC(logger, "Starting network service...");
 	ctx->server = std::make_unique<NetworkListener>(service_pool, interface, port, tcp_no_delay, logger);
 	LOG_INFO_SYNC(logger, "Started network service on {}:{}", interface, ctx->server->port());
+	
+	// temp, todo
+	registry.insert("reload")->handler([this](const auto& params) {
+		auto config = generate_config(reload_args());
+		context.get()->config_store->post_config(config);
+		LOG_INFO_SYNC(logger, "Config file reloaded, in theory");
+	});
 
 	// All done setting up
 	boost::asio::dispatch(service, [&, time]() {
@@ -269,6 +272,19 @@ std::string_view category_name(const Realm& realm, const dbc::Store<dbc::Cfg_Cat
 	}
 
 	throw std::invalid_argument("Unknown category/region combination in database");
+}
+
+Config Service::generate_config(const opts::variables_map& args) {
+	auto ctx = context.get();
+
+	return Config {
+		.realm = ctx->realm.get(),
+		.realm_id = ctx->realm->id,
+		.max_slots = args["realm.max_slots"].as<unsigned int>(),
+		.auth_timeout = std::chrono::seconds(args["realm.auth_timeout"].as<unsigned int>()),
+		.char_list_timeout = std::chrono::seconds(args["realm.char_list_timeout"].as<unsigned int>()),
+		.allowed_builds = args["realm.builds"].as<std::vector<GameVersion>>()
+	};
 }
 
 /*
@@ -319,6 +335,21 @@ void print_lib_versions(log::Logger& logger) {
 		<< " ("  << drivers::DriverType::version() << ")" << "\n"
 		<< " - PCRE " << PCRE_MAJOR << "." << PCRE_MINOR << "\n"
 		<< " - Zlib " << ZLIB_VERSION << LOG_SYNC;
+}
+
+opts::variables_map Service::reload_args() {
+	opts::options_description config_opts;
+	config_opts.add(options());
+	std::ifstream stream("realm.conf"); // todo, pass in
+
+	if(!stream) {
+		throw std::invalid_argument("Unable to open configuration file");
+	}
+
+	opts::variables_map options;
+	opts::store(opts::parse_config_file(stream, config_opts), options);
+	opts::notify(options);
+	return options;
 }
 
 opts::options_description Service::options() {

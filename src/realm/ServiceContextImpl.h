@@ -11,6 +11,7 @@
 #include "AccountClient.h"
 #include "CharacterClient.h"
 #include "Config.h"
+#include "ConfigStore.h"
 #include "EventDispatcher.h"
 #include "NetworkListener.h"
 #include "RealmService.h"
@@ -27,7 +28,7 @@ namespace ember::realm {
 
 struct ServiceContext::Impl {
 	std::unique_ptr<Realm> realm;
-	std::unique_ptr<Config> config;
+	std::unique_ptr<ConfigStore> config_store;
 	std::unique_ptr<ports::Forward> port_daemon;
 	std::unique_ptr<EventDispatcher> dispatcher;
 	std::unique_ptr<dbc::Storage> dbcs;

@@ -43,6 +43,22 @@ public:
 	void shutdown();
 	std::size_t size() const;
 
+	auto begin() const {
+		return services_.begin();
+	}
+
+	auto end() const {
+		return services_.end();
+	}
+
+	auto begin() {
+		return services_.begin();
+	}
+
+	auto end() {
+		return services_.end();
+	}
+
 	ServicePool(const ServicePool&) = delete;
 	ServicePool& operator=(const ServicePool&) = delete;
 };

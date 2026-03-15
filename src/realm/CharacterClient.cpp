@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 - 2025 Ember
+ * Copyright (c) 2024 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -15,10 +15,10 @@ namespace ember::realm {
 
 using namespace rpc::Character;
 
-CharacterClient::CharacterClient(spark::Server& server, Config& config, log::Logger& logger)
-	: services::CharacterClient(server),
-	  config_(config),
-	  logger_(logger) {
+CharacterClient::CharacterClient(spark::Server& server, ConfigStore& config_store, log::Logger& logger)
+	: services::CharacterClient(server)
+	, config_store_(config_store_)
+	, logger_(logger) {
 	connect("127.0.0.1", 6001); // temp
 }
 
@@ -38,9 +38,11 @@ void CharacterClient::connect_failed(const std::string_view ip, const std::uint1
 void CharacterClient::retrieve_characters(const std::uint32_t account_id, RetrieveCB cb) const {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
+	const auto& config = config_store_.config();
+
 	RetrieveT msg {
 		.account_id = account_id,
-		.realm_id = config_.realm.id
+		.realm_id = config.realm->id
 	};
 
 	send<RetrieveResponse>(msg, link_, [this, cb](auto link, auto message) {
@@ -53,9 +55,11 @@ void CharacterClient::create_character(const std::uint32_t account_id,
 									   ResponseCB cb) const {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
+	const auto& config = config_store_.config();
+
 	CreateT msg;
 	msg.account_id = account_id;
-	msg.realm_id = config_.realm.id;
+	msg.realm_id = config.realm->id;
 	msg.character = std::make_unique<CharacterTemplateT>(character);
 
 	send<CreateResponse>(msg, link_, [this, cb](auto link, auto message) {
@@ -68,9 +72,11 @@ void CharacterClient::delete_character(std::uint32_t account_id,
 									   ResponseCB cb) const {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
+	const auto& config = config_store_.config();
+
 	DeleteT msg {
 		.account_id = account_id,
-		.realm_id = config_.realm.id,
+		.realm_id = config.realm->id,
 		.character_id = id,
 	};
 
@@ -84,11 +90,13 @@ void CharacterClient::rename_character(std::uint32_t account_id,
 									   const utf8_string& name,
 									   RenameCB cb) const {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	
+	const auto& config = config_store_.config();
 
 	RenameT msg {
 		.account_id = account_id,
 		.name = name,
-		.realm_id = config_.realm.id,
+		.realm_id = config.realm->id,
 		.character_id = character_id,
 	};
 

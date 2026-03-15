@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 - 2025 Ember
+ * Copyright (c) 2024 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "Config.h"
+#include "ConfigStore.h"
 #include <logger/LoggerFwd.h>
 #include <CharacterClientStub.h>
 #include <protocol/ResultCodes.h>
@@ -23,7 +23,7 @@ public:
 	using RetrieveCB = std::function<void(rpc::Character::Status, std::vector<ember::Character>)>;
 
 private:
-	const Config& config_;
+	const ConfigStore& config_store_;
 	spark::Link link_;
 	log::Logger& logger_;
 
@@ -52,7 +52,7 @@ private:
 		ResponseCB cb) const;
 
 public:
-	CharacterClient(spark::Server& server, Config& config, log::Logger& logger);
+	CharacterClient(spark::Server& server, ConfigStore& config_store, log::Logger& logger);
 
 	void retrieve_characters(std::uint32_t account_id,
 	                         RetrieveCB cb) const;
