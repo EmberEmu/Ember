@@ -22,12 +22,16 @@ class ServicePool final {
 	static constexpr auto POOL_SIZE_HINT = 16;
 	static constexpr auto ASIO_CONCURRENCY_HINT = 1;
 
+	const int hint_;
 	std::size_t pool_size_;
 	std::size_t next_service_;
 	boost::container::small_vector<std::unique_ptr<boost::asio::io_context>, POOL_SIZE_HINT> services_;
 	std::vector<boost::asio::executor_work_guard<boost::asio::io_context::executor_type>> work_;
 	std::vector<std::jthread> threads_;
 
+	std::size_t limit_pool_size(const std::size_t pool_size);
+	void initialise_pool();
+	
 public:
 	explicit ServicePool(std::size_t pool_size, int hint = ASIO_CONCURRENCY_HINT);
 	~ServicePool();
@@ -38,6 +42,7 @@ public:
 
 	void run();
 	void stop();
+	void shutdown();
 	std::size_t size() const;
 
 	ServicePool(const ServicePool&) = delete;

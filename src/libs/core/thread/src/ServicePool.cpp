@@ -14,23 +14,30 @@
 namespace ember::thread {
 
 ServicePool::ServicePool(const std::size_t pool_size, const int hint)
-	: pool_size_(pool_size),
-	  next_service_(0) {
-	if(pool_size == 0) {
-		throw std::runtime_error("Cannot have an empty Asio IO service pool!");
-	}
+	: hint_(hint)
+	, pool_size_(limit_pool_size(pool_size))
+	, next_service_(0)  {}
 
-	for(std::size_t i = 0; i < pool_size; ++i) {
+ServicePool::~ServicePool() {
+	stop();
+}
+
+std::size_t ServicePool::limit_pool_size(const std::size_t pool_size) {
+	if(pool_size == 0) {
+		throw std::runtime_error("Cannot have an empty Asio io_context pool");
+	}
+	
+	return pool_size;
+}
+
+void ServicePool::initialise_pool() {
+	for(std::size_t i = 0; i < pool_size_; ++i) {
 		auto& ctx = services_.emplace_back(
-			std::make_unique<boost::asio::io_context>(hint)
+			std::make_unique<boost::asio::io_context>(hint_)
 		);
 
 		work_.emplace_back(boost::asio::make_work_guard(*ctx));
 	}
-}
-
-ServicePool::~ServicePool() {
-	stop();
 }
 
 boost::asio::io_context& ServicePool::get() {
@@ -38,7 +45,6 @@ boost::asio::io_context& ServicePool::get() {
 	next_service_ %= pool_size_;
 	return service;
 }
-
 
 boost::asio::io_context& ServicePool::get(const std::size_t index) const {
 	if(index >= services_.size()) {
@@ -57,6 +63,12 @@ boost::asio::io_context* ServicePool::get_if(const std::size_t index) const {
 }
 
 void ServicePool::run() {
+	if(!threads_.empty()) {
+		throw std::runtime_error("Service pool already running");
+	}
+
+	initialise_pool();
+
 	const auto core_count = std::thread::hardware_concurrency();
 
 	for(std::size_t i = 0; i < pool_size_; ++i) {
@@ -66,14 +78,21 @@ void ServicePool::run() {
 	}
 }
 
-void ServicePool::stop() {
+// only returns once all pending work has been completed 
+void ServicePool::shutdown() {
 	work_.clear();
+	threads_.clear();
+}
 
+void ServicePool::stop() {
  	for(auto& service : services_) {
 		if(!service->stopped()) {
 			service->stop();
 		}
 	}
+
+	work_.clear();
+	threads_.clear();
 }
 
 std::size_t ServicePool::size() const {

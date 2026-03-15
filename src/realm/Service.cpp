@@ -70,16 +70,16 @@ int Service::run(const opts::variables_map& args) try {
 
 	LOG_INFO_SYNC(logger, "Starting service pool with {} threads", concurrency);
 	thread::ServicePool service_pool(concurrency, BOOST_ASIO_CONCURRENCY_HINT_UNSAFE_IO);
-	initialise(args, service_pool);
+	service_pool.run();
 
 	std::jthread runner([&] {
-		service_pool.run();
 		stop_flag.acquire();
-		service_pool.stop();
+		service_pool.shutdown();
 	});
 
+	initialise(args, service_pool);
 	runner.join();
-	LOG_TRACE_SYNC(logger, "{} terminated...", app_name);
+	LOG_INFO_SYNC(logger, "{} stopped", app_name);
 	return EXIT_SUCCESS;
 } catch(const std::exception& e) {
 	LOG_FATAL_SYNC(logger, "{}", e.what());
@@ -295,7 +295,7 @@ std::optional<Realm> load_realm(const opts::variables_map& args, log::Logger& lo
 }
 
 void Service::stop() {
-	LOG_INFO_SYNC(logger, "{} shutting down...", app_name);
+	LOG_TRACE_SYNC(logger, "{} shutting down...", app_name);
 	context.reset();
 	stop_flag.release();
 }
