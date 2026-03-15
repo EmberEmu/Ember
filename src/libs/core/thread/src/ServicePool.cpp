@@ -73,7 +73,7 @@ void ServicePool::run() {
 
 	for(std::size_t i = 0; i < pool_size_; ++i) {
 		threads_.emplace_back(&boost::asio::io_context::run, services_[i].get());
-		thread::set_affinity(threads_[i], i % core_count);
+		thread::set_affinity(threads_[i], i % (core_count? core_count : 1));
 		thread::set_name(threads_[i], "Service Pool");
 	}
 }
