@@ -11,6 +11,7 @@
 #include "Config.h"
 #include <thread/ServicePool.h>
 #include <boost/asio/post.hpp>
+#include <mutex>
 
 namespace ember::realm {
 
@@ -19,7 +20,8 @@ class ConfigStore {
 	static inline thread_local const Config* tls_config_ = nullptr;
 
 	const thread::ServicePool& pool_;
-	const Config base_config_;
+	mutable Config base_config_;
+	mutable std::mutex lock;
 
 public:
 	ConfigStore(Config config, const thread::ServicePool& pool)
@@ -35,13 +37,16 @@ public:
 				tls_config_ = &live_config_;
 			});
 		}
+
+		std::lock_guard guard(lock);
+		base_config_ = config;
 	}
 
 	const Config& config() const {
-		if(tls_config_) {
+		if(tls_config_) [[likely]] {
 			return live_config_;
 		} else {
-			tls_config_ = &base_config_;
+			std::lock_guard guard(lock);
 			return base_config_;
 		}
 	}
