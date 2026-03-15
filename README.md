@@ -68,7 +68,6 @@ Ember currently targets C++26. The use of future language additions is permitted
 |  | master  | development |
 | :------------ |:---------------:|:---------------:|
 | GitHub   | [![Docker Image CI](https://github.com/EmberEmu/Ember/actions/workflows/docker-image.yml/badge.svg?branch=master)](https://github.com/EmberEmu/Ember/actions/workflows/docker-image.yml)| [![Docker Image CI](https://github.com/EmberEmu/Ember/actions/workflows/docker-image.yml/badge.svg?branch=development)](https://github.com/EmberEmu/Ember/actions/workflows/docker-image.yml) |
-| AppVeyor | [![Build status](https://ci.appveyor.com/api/projects/status/wtctwhykqeelwk4g/branch/master?svg=true)](https://ci.appveyor.com/project/Chaosvex/ember/branch/master) | [![Build status](https://ci.appveyor.com/api/projects/status/wtctwhykqeelwk4g/branch/development?svg=true)](https://ci.appveyor.com/project/Chaosvex/ember/branch/development)  |
 | Coverity | [![Coverity Scan Status](https://scan.coverity.com/projects/5653/badge.svg)](https://scan.coverity.com/projects/5653) | [![Coverity Scan Status](https://scan.coverity.com/projects/5653/badge.svg)](https://scan.coverity.com/projects/5653) |
 
 ##  💤 License
