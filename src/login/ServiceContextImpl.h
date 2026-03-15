@@ -15,7 +15,7 @@
 #include "Patcher.h"
 #include "RealmClient.h"
 #include "RealmList.h"
-#include "SessionBuilders.h"
+#include "SessionBuilder.h"
 #include "Survey.h"
 #include <commands/ScopedCommand.h>
 #include <conpool/ConnectionPool.h>

@@ -10,7 +10,7 @@
 
 #include "FilterTypes.h"
 #include "NetworkSession.h"
-#include "SessionBuilders.h"
+#include "SessionBuilder.h"
 #include "SessionManager.h"
 #include "SocketType.h"
 #include <logger/Logger.h>

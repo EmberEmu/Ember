@@ -36,7 +36,7 @@ set(GRUNT_SRC
 
 set(LIBRARY_HDR
     Actions.h
-    SessionBuilders.h
+    SessionBuilder.h
     LoginSession.h
     NetworkListener.h
     NetworkSession.h
