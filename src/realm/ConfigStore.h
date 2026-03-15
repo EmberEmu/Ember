@@ -42,7 +42,7 @@ public:
 			return live_config_;
 		} else {
 			tls_config_ = &base_config_;
-			return live_config_;
+			return base_config_;
 		}
 	}
 };
