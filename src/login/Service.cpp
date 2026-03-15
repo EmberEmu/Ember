@@ -53,14 +53,6 @@ namespace ember::login {
 
 void print_lib_versions(log::Logger& logger);
 
-/*
- * Starts Asio worker threads, blocking until the launch thread exits
- * upon error or signal handling.
- * 
- * io_context is only stopped after the thread joins to ensure that all
- * services can cleanly shut down upon destruction without requiring
- * explicit shutdown() calls in a signal handler.
- */
 int Service::run(const opts::variables_map& args) try {
 	constexpr std::size_t worker_num_hint = 32;
 	
