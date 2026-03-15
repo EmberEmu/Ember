@@ -26,6 +26,7 @@ Forward::Forward(boost::asio::io_context& ctx, Method method, const std::string&
 }
 
 Forward::~Forward() {
+	log(Severity::trace, "Port forwarding daemon shutting down...");
 	unmap();
 }
 

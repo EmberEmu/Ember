@@ -43,6 +43,11 @@ public:
 
 	template<typename Handler>
 	auto operator()(Handler&& handler) {
+		return wrap(handler);
+	}
+
+	template<typename Handler>
+	auto wrap(Handler&& handler) {
 		return [&, handler = std::forward<Handler>(handler)](auto&&... args) {
 			boost::asio::post(strand_, [&, handler = std::move(handler), args...]() {
 				if(stop_flag_) {

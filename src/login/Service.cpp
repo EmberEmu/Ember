@@ -7,48 +7,27 @@
  */
 
 #include "Service.h"
-#include "AccountClient.h"
 #include "FilterTypes.h"
-#include "IntegrityData.h"
-#include "LoggingCallbacks.h"
-#include "LoginHandlerBuilder.h"
+#include "InitHelpers.h"
 #include "MonitorCallbacks.h"
-#include "NetworkListener.h"
-#include "Patcher.h"
-#include "RealmClient.h"
-#include "RealmList.h"
-#include "SessionBuilders.h"
-#include "Survey.h"
+#include "ServiceContextImpl.h"
 #include <logger/Logger.h>
-#include <conpool/ConnectionPool.h>
-#include <conpool/Policies.h>
-#include <conpool/drivers/AutoSelect.h>
-#include <ports/Forward.h>
 #include <ports/Utility.h>
-#include <shared/metrics/MetricsImpl.h>
-#include <shared/metrics/MetricsPoll.h>
-#include <shared/metrics/Monitor.h>
 #include <shared/database/daos/IPBanDAO.h>
 #include <shared/database/daos/PatchDAO.h>
 #include <shared/database/daos/RealmDAO.h>
-#include <shared/database/daos/UserDAO.h>
 #include <shared/game/GameVersion.h>
 #include <shared/game/Utility.h>
-#include <shared/IPBanCache.h>
-#include <shared/utility/CommandExecutor.h>
 #include <shared/utility/cstring_view.hpp>
 #include <shared/utility/polyfill/inplace_vector>
 #include <shared/utility/Utility.h>
 #include <shared/utility/xoroshiro128plus.h>
 #include <shared/utility/STUN.h>
-#include <spark/Server.h>
 #include <stun/Client.h>
 #include <stun/Utility.h>
-#include <thread/ThreadPool.h>
 #include <botan/version.h>
 #include <boost/asio/dispatch.hpp>
 #include <boost/asio/executor_work_guard.hpp>
-#include <boost/container/small_vector.hpp>
 #include <boost/version.hpp>
 #include <boost/program_options.hpp>
 #include <pcre.h>
@@ -70,12 +49,6 @@ using namespace std::chrono_literals;
 namespace opts = boost::program_options;
 namespace ep = ember::connection_pool;
 
-#if defined TARGET_WORKER_COUNT
-constexpr std::size_t WORKER_NUM_HINT = TARGET_WORKER_COUNT;
-#else
-constexpr std::size_t WORKER_NUM_HINT = 32;
-#endif
-
 namespace ember::login {
 
 void print_lib_versions(log::Logger& logger);
@@ -89,32 +62,25 @@ void print_lib_versions(log::Logger& logger);
  * explicit shutdown() calls in a signal handler.
  */
 int Service::run(const opts::variables_map& args) try {
-	auto work = boost::asio::make_work_guard(service);
-
-	std::thread thread([&]() {
-		thread::set_name("Launcher");
-		launch(args);
-	});
+	constexpr std::size_t worker_num_hint = 32;
+	
+	// Initialise the service components
+	initialise(args);
 
 	// Spawn worker threads for Asio
 	const auto concurrency = thread::hardware_concurrency([&](auto msg) {
 		LOG_ERROR_SYNC(logger, "{}", msg);
 	});
 
-	boost::container::small_vector<std::jthread, WORKER_NUM_HINT> workers;
-	workers.reserve(concurrency);
+	std::inplace_vector<std::jthread, worker_num_hint> threads;
+	threads.reserve(concurrency);
 
 	for(unsigned int i = 0; i < concurrency; ++i) {
-		workers.emplace_back(&boost::asio::io_context::run, &service);
-		thread::set_name(workers[i], "Asio Worker");
+		threads.emplace_back(&boost::asio::io_context::run, &io_context);
+		thread::set_name(threads[i], "Asio Worker");
 	}
 
-	thread.join();
-	service.stop();
-
-	if(eptr) {
-		std::rethrow_exception(eptr);
-	}
+	io_context.run();
 
 	return EXIT_SUCCESS;
 } catch(const std::exception& e) {
@@ -122,18 +88,13 @@ int Service::run(const opts::variables_map& args) try {
 	return EXIT_FAILURE;
 }
 
-void Service::stop() {
-	boost::asio::dispatch(serialise, [&] {
-		stopping_ = true;
-		stop_flag.release();
-	});
-}
-
-void Service::launch(const opts::variables_map& args) try {
+void Service::initialise(const opts::variables_map& args) {
 	const auto time = std::chrono::steady_clock::now();
+	auto ctx = context.get();
+
 	print_lib_versions(logger);
 
-	const auto allowed_builds = args["login.builds"].as<std::vector<GameVersion>>();
+	auto allowed_builds = args["login.builds"].as<std::vector<GameVersion>>();
 	std::string builds;
 
 	for(const auto& client : allowed_builds) {
@@ -162,70 +123,66 @@ void Service::launch(const opts::variables_map& args) try {
 	auto seed_bytes = std::as_writable_bytes(std::span(rng::xorshift::seed));
 	rng.randomize(reinterpret_cast<std::uint8_t*>(seed_bytes.data()), seed_bytes.size_bytes());
 
-	LOG_INFO_SYNC(logger, "Initialising database driver...");
-	const auto& db_config_path = args["database.config_path"].as<std::string>();
-	auto driver(drivers::init_db_driver(db_config_path, "login"));
-	auto min_conns = args["database.min_connections"].as<unsigned short>();
-	auto max_conns = args["database.max_connections"].as<unsigned short>();
-
 	const auto concurrency = thread::hardware_concurrency([&](auto msg) {
 		LOG_ERROR_SYNC(logger, "{}", msg);
 	});
 
+	LOG_INFO_SYNC(logger, "Initialising database connection pool...");
+	auto max_conns = args["database.max_connections"].as<unsigned short>();
+
 	if(!max_conns) {
 		max_conns = concurrency;
 	} else if(max_conns != concurrency) {
-		LOG_WARN_SYNC(logger, "Max. database connection count may be non-optimal "
-		                      "(use {} to match logical core count)", concurrency);
+		LOG_WARN_SYNC(
+			logger, "Max. database connection count may be non-optimal for local database, "
+			"use {} to match logical core count", concurrency
+		);
 	}
 
-	LOG_INFO_SYNC(logger, "Initialising database connection pool...");
-	ep::PoolImpl<drivers::AutoSelect, ep::CheckinClean, ep::ExponentialGrowth> pool(
-		std::move(driver), min_conns, max_conns, 30s
+	ctx->conn_pool = std::make_unique<connection_pool::Pool<drivers::AutoSelect>>(
+		init_database(args, logger)
 	);
 
-	pool.logging_callback([&](auto severity, auto message) {
-		pool_log_callback(severity, message, logger);
-	});
-
 	LOG_INFO_SYNC(logger, "Initialising DAOs...");
-	auto user_dao = dal::user_dao(pool);
-	auto realm_dao = dal::realm_dao(pool);
-	auto patch_dao = dal::patch_dao(pool);
-	auto ip_ban_dao = dal::ip_ban_dao(pool); 
-	auto ip_ban_cache = IPBanCache(ip_ban_dao.all_bans());
+	auto user_dao = dal::user_dao(ctx->conn_pool->get());
+	auto patch_dao = dal::patch_dao(ctx->conn_pool->get());
+	auto realm_dao = dal::realm_dao(ctx->conn_pool->get());
+	auto ip_ban_dao = dal::ip_ban_dao(ctx->conn_pool->get());
+	ctx->user_dao = std::make_unique<decltype(user_dao)>(std::move(user_dao));
+	ctx->ip_ban_cache = std::make_unique<IPBanCache>(ip_ban_dao.all_bans());
 
 	// Load integrity, patch and survey data
 	LOG_INFO_SYNC(logger, "Loading client integrity validation data...");
-	IntegrityData bin_data;
+	ctx->integrity_data = std::make_unique<IntegrityData>();
 
 	if(args["integrity.enabled"].as<bool>()) {
 		const auto& bin_path = args["integrity.bin_path"].as<std::string>();
-		bin_data.add_versions(allowed_builds, bin_path);
+		ctx->integrity_data->add_versions(allowed_builds, bin_path);
 	}
 
 	LOG_INFO_SYNC(logger, "Loading patch data...");
-
 	auto patches = Patcher::load_patches(
 		args["patches.bin_path"].as<std::string>(), patch_dao
 	);
 
-	Patcher patcher(allowed_builds, patches);
-	Survey survey(args["survey.id"].as<std::uint32_t>());
+	ctx->patcher = std::make_unique<Patcher>(std::move(allowed_builds), std::move(patches));
+	ctx->survey = std::make_unique<Survey>(args["survey.id"].as<std::uint32_t>());
 
-	if(survey.id()) {
+	if(ctx->survey->id()) {
 		LOG_INFO_SYNC(logger, "Loading survey data...");
 
-		survey.add_data(grunt::Platform::x86, grunt::System::Win,
-		                args["survey.path"].as<std::string>());
+		ctx->survey->add_data(
+			grunt::Platform::x86, grunt::System::Win,
+		    args["survey.path"].as<std::string>()
+		);
 	}
 
 	LOG_INFO_SYNC(logger, "Loading realm list...");
-	RealmList realm_list(realm_dao.get_realms());
+	ctx->realm_list = std::make_unique<RealmList>(realm_dao.get_realms());
 
-	LOG_INFO_SYNC(logger, "Added {} realm(s)", realm_list.realms()->size());
+	LOG_INFO_SYNC(logger, "Added {} realm(s)", ctx->realm_list->realms()->size());
 
-	for(const auto& realm : *realm_list.realms() | std::views::values) {
+	for(const auto& realm : *ctx->realm_list->realms() | std::views::values) {
 		LOG_DEBUG_SYNC(logger, "#{} {}", realm.id, realm.name);
 	}
 
@@ -233,15 +190,15 @@ void Service::launch(const opts::variables_map& args) try {
 	auto s_port = args["spark.port"].as<std::uint16_t>();
 
 	LOG_INFO_SYNC(logger, "Starting RPC services...");
-	spark::Server spark(service, app_name, s_address, s_port, logger);
-	AccountClient acct_svc(spark, logger);
-	RealmClient realm_svcv2(spark, realm_list, logger);
+	ctx->rpc = std::make_unique<spark::Server>(io_context, app_name, s_address, s_port, logger);
+	ctx->rpc_account = std::make_unique<AccountClient>(*ctx->rpc, logger);
+	ctx->rpc_realm = std::make_unique<RealmClient>(*ctx->rpc, *ctx->realm_list, logger);
 
 	// Start metrics service
-	auto metrics = start_metrics(service, args);
+	ctx->metrics = start_metrics(io_context, args);
 
 	LOG_INFO_SYNC(logger, "Starting thread pool with {} threads...", concurrency);
-	thread::ThreadPool thread_pool(concurrency);
+	ctx->thread_pool = std::make_unique<thread::ThreadPool>(concurrency);
 
 	const LoginHandler::Options config {
 		.locales = args["misc.locales"].as<bool>(),
@@ -249,48 +206,48 @@ void Service::launch(const opts::variables_map& args) try {
 		.verified_email = args["misc.verified_emails"].as<bool>()
 	};
 
-	LoginHandlerBuilder builder(
-		logger, patcher, survey, bin_data, user_dao,
-	    acct_svc, realm_list, *metrics, config
+	ctx->login_handler_builder = std::make_unique<LoginHandlerBuilder>(
+		logger, *ctx->patcher, *ctx->survey, *ctx->integrity_data, *ctx->user_dao,
+	    *ctx->rpc_account, *ctx->realm_list, *ctx->metrics, config
 	);
 
-	LoginSessionBuilder s_builder(builder, thread_pool);
+	ctx->login_session_builder = std::make_unique<LoginSessionBuilder>(
+		*ctx->login_handler_builder, *ctx->thread_pool
+	);
 
 	const auto& interface = args["network.interface"].as<std::string>();
 	const auto port = args["network.port"].as<std::uint16_t>();
 	const auto tcp_no_delay = args["network.tcp_no_delay"].as<bool>();
 
 	LOG_INFO_SYNC(logger, "Starting network service...");
-
-	NetworkListener server(
-		service, interface, port, tcp_no_delay, s_builder, ip_ban_cache, logger, *metrics
+	ctx->server = std::make_unique<NetworkListener>(
+		io_context, interface, port, tcp_no_delay, *ctx->login_session_builder,
+		*ctx->ip_ban_cache, logger, *ctx->metrics
 	);
 
-	LOG_INFO_SYNC(logger, "Started network service on {}:{}", interface, server.port());
+	LOG_INFO_SYNC(logger, "Started network service on {}:{}", interface, ctx->server->port());
 
 	// Start monitoring service
-	std::unique_ptr<Monitor> monitor;
-
 	if(args["monitor.enabled"].as<bool>()) {
 		LOG_INFO_SYNC(logger, "Starting monitoring service...");
 
-		monitor = std::make_unique<Monitor>(	
-			service, args["monitor.interface"].as<std::string>(),
+		ctx->monitor = std::make_unique<Monitor>(	
+			io_context, args["monitor.interface"].as<std::string>(),
 			args["monitor.port"].as<std::uint16_t>()
 		);
 
-		install_net_monitor(*monitor, server, logger);
-		install_pool_monitor(*monitor, pool, logger);
+		install_net_monitor(*ctx->monitor, *ctx->server, logger);
+		install_pool_monitor(*ctx->monitor, ctx->conn_pool->get(), logger);
 	}
 
 	// Start metrics polling
-	MetricsPoll poller(service, *metrics);
+	ctx->metrics_poll = std::make_unique<MetricsPoll>(io_context, *ctx->metrics);
 
-	poller.add_source([&pool](Metrics& metrics) {
-		metrics.gauge("db_connections", pool.size());
+	ctx->metrics_poll->add_source([&pool = *ctx->conn_pool](Metrics& metrics) {
+		metrics.gauge("db_connections", pool->size());
 	}, 5s);
 
-	poller.add_source([&server](Metrics& metrics) {
+	ctx->metrics_poll->add_source([&server = *ctx->server](Metrics& metrics) {
 		metrics.gauge("sessions", server.connection_count());
 	}, 5s);
 
@@ -306,58 +263,49 @@ void Service::launch(const opts::variables_map& args) try {
 	}
 
 	// Start port forwarding
-	std::unique_ptr<ports::Forward> forward;
-
 	if(forward_enabled) {
 		const auto mode = args["forward.method"].as<ports::Forward::Method>();
 		const auto gateway = args["forward.gateway"].as<std::string>();
 
-		forward = std::make_unique<ports::Forward>(
-			service, mode, interface, gateway, port, [&](auto severity, auto message) {
+		ctx->port_daemon = std::make_unique<ports::Forward>(
+			io_context, mode, interface, gateway, port, [&](auto severity, auto message) {
 				forward_log_callback(severity, message, logger);
 			}
 		);
 	}
 
 	// Install service command handlers
-	utility::CommandExecutor executor(serialise, stopping_, [&]() {
+	ctx->cmd_exec = std::make_unique<utility::CommandExecutor>(serialise, stopped, [&]() {
 		LOG_CONSOLE_ERROR_ASYNC(logger, "Command cannot be executed, service is shutting down");
 	});
-
-	std::inplace_vector<commands::ScopedCommand, 2> commands;
 	
 	auto handle = registry.scoped_insert(commands::Command::create("connections")
 		->description("Display open connection count")
-		->handler(executor([&](auto& command) {
+		->handler(ctx->cmd_exec->wrap([this, &server = *ctx->server](auto& command) {
 			LOG_CONSOLE_ASYNC(logger, "{} active connection(s), {} peak",
 				server.connection_count(), server.peak_connections());
 		}))
 	);
 
-	commands.emplace_back(std::move(handle));
+	ctx->commands.emplace_back(std::move(handle));
 
 	handle = registry.scoped_insert(commands::Command::create("uptime")
 		->description("Display service uptime")
-		->handler(executor([&](auto& command) {
+		->handler(ctx->cmd_exec->wrap([&](auto& command) {
 			const auto uptime = std::chrono::steady_clock::now() - start_time;
 			LOG_CONSOLE_ASYNC(logger, "Server has been up for {}", utility::time_duration_format(uptime));
 		}))
 	);
 
-	commands.emplace_back(std::move(handle));
+	ctx->commands.emplace_back(std::move(handle));
 
 	// All done setting up
-	boost::asio::dispatch(service, [&]() {
+	boost::asio::dispatch(io_context, [this, time]() {
 		LOG_INFO_SYNC(logger, "{} started successfully in {}", app_name,
 			utility::start_time_format(time));
 
 		start_time = std::chrono::steady_clock::now();
 	});
-	
-	stop_flag.acquire();
-	LOG_INFO_SYNC(logger, "{} shutting down...", app_name);
-} catch(...) {
-	eptr = std::current_exception();
 }
 
 std::unique_ptr<Metrics> Service::start_metrics(boost::asio::io_context& service, const opts::variables_map& args) {
@@ -372,6 +320,26 @@ std::unique_ptr<Metrics> Service::start_metrics(boost::asio::io_context& service
 	}
 
 	return metrics;
+}
+
+void Service::stop() {
+	bool expected = false;
+
+	if(!stopped.compare_exchange_strong(expected, true)) {
+		return;
+	}
+
+	LOG_TRACE_SYNC(logger, "Service termination requested");
+
+	boost::asio::dispatch(serialise, [&] {
+		auto ctx = context.get();
+		ctx->thread_pool->shutdown();
+		context.reset(); // todo, determine proper order
+	});
+}
+
+Service::~Service() {
+	stop();
 }
 
 opts::options_description Service::options() {

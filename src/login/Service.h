@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include "ServiceContext.h"
 #include <logger/LoggerFwd.h>
 #include <commands/Registry.h>
 #include <shared/metrics/Metrics.h>
@@ -21,44 +22,38 @@
 #include <chrono>
 #include <exception>
 #include <memory>
-#include <semaphore>
 
 namespace ember::login {
 
 constexpr cstring_view app_name { "Login Daemon" };
 
 class Service {
-	boost::asio::io_context service;
-	boost::asio::io_context::strand serialise;
-	std::exception_ptr eptr;
-	std::binary_semaphore stop_flag { 0 };
-	std::atomic_bool stopping_;
-
 	log::Logger& logger;
 	commands::Registry& registry;
 	std::chrono::steady_clock::time_point start_time;
+	boost::asio::io_context io_context;
+	boost::asio::io_context::strand serialise;
+	std::atomic_bool stopped;
+	ServiceContext context;
 
 	std::unique_ptr<Metrics> start_metrics(
 		boost::asio::io_context& service,
 		const boost::program_options::variables_map& args
 	);
 
-	void launch(const boost::program_options::variables_map& args);
+	void initialise(const boost::program_options::variables_map& args);
 
 public:
 	static boost::program_options::options_description options();
 
 	explicit Service(log::Logger& logger, commands::Registry& registry)
-		: service(thread::hardware_concurrency())
-		, serialise(service)
-		, logger(logger)
+		: logger(logger)
 		, registry(registry)
 		, start_time(std::chrono::steady_clock::now())
-		, stopping_(false) {}
+		, io_context(thread::hardware_concurrency())
+		, serialise(io_context) {}
 
-	~Service() {
-		stop();
-	}
+	~Service();
 
 	int run(const boost::program_options::variables_map& args);
 	void stop();
