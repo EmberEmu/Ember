@@ -110,11 +110,11 @@ void handle_active_mover(ClientContext& ctx) {
 }
 
 void handle_query_time(ClientContext& ctx) {
-	protocol::cmsg_set_active_mover packet;
+	protocol::cmsg_query_time packet;
 
-	//if(!ctx.handler.deserialise(packet, *ctx.stream)) {
-	//	return;
-	//}
+	if(!ctx.handler.deserialise(packet, *ctx.stream)) {
+		return;
+	}
 
 	protocol::smsg_query_time_response response;
 	response->time = get_time();
@@ -124,9 +124,9 @@ void handle_query_time(ClientContext& ctx) {
 void handle_request_raid_info(ClientContext& ctx) {
 	protocol::cmsg_request_raid_info packet;
 
-	//if(!ctx.handler.deserialise(packet, *ctx.stream)) {
-	//	return;
-	//}
+	if(!ctx.handler.deserialise(packet, *ctx.stream)) {
+		return;
+	}
 
 	protocol::smsg_raid_instance_info response;
 	ctx.connection.send(response);
@@ -147,9 +147,9 @@ void handle_item_query(ClientContext& ctx) {
 void handle_mail_query(ClientContext& ctx) {
 	protocol::msg_query_next_mail_time_c packet;
 
-	/*if(!ctx.handler.deserialise(packet, *ctx.stream)) {
+	if(!ctx.handler.deserialise(packet, *ctx.stream)) {
 		return;
-	}*/
+	}
 
 	protocol::msg_query_next_mail_time_s response;
 	response->next_time = -1.f;
@@ -159,9 +159,9 @@ void handle_mail_query(ClientContext& ctx) {
 void handle_gmticket_getticket(ClientContext& ctx) {
 	protocol::msg_query_next_mail_time_c packet;
 
-	/*if(!ctx.handler.deserialise(packet, *ctx.stream)) {
-	return;
-	}*/
+	if(!ctx.handler.deserialise(packet, *ctx.stream)) {
+		return;
+	}
 
 	protocol::smsg_gmticket_getticket response;
 	response->status = 0;
@@ -171,9 +171,9 @@ void handle_gmticket_getticket(ClientContext& ctx) {
 void handle_battlefield_status(ClientContext& ctx) {
 	protocol::cmsg_battlefield_status packet;
 
-	/*if(!ctx.handler.deserialise(packet, *ctx.stream)) {
-	return;
-	}*/
+	if(!ctx.handler.deserialise(packet, *ctx.stream)) {
+		return;
+	}
 
 	protocol::smsg_battlefield_status response;
 	response->map = 0;
@@ -184,9 +184,9 @@ void handle_battlefield_status(ClientContext& ctx) {
 void handle_meetingstone_info(ClientContext& ctx) {
 	protocol::cmsg_meetingstone_info packet;
 
-	/*if(!ctx.handler.deserialise(packet, *ctx.stream)) {
-	return;
-	}*/
+	if(!ctx.handler.deserialise(packet, *ctx.stream)) {
+		return;
+	}
 
 	protocol::smsg_meetingstone_setqueue response;
 	response->area = 0;
@@ -252,9 +252,6 @@ void handle_update_account_data(ClientContext& ctx) {
 	if(!ctx.handler.deserialise(packet, *ctx.stream)) {
 		return;
 	}
-
-	/*protocol::smsg_account_data_times adt;
-	ctx.connection.send(adt);*/
 }
 
 void handle_join_channel(ClientContext& ctx) {
