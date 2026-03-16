@@ -15,9 +15,9 @@ namespace ember::realm {
 
 using namespace rpc::Character;
 
-CharacterClient::CharacterClient(spark::Server& server, ConfigStore& config_store, log::Logger& logger)
+CharacterClient::CharacterClient(spark::Server& server, const ConfigStore& config_store, log::Logger& logger)
 	: services::CharacterClient(server)
-	, config_store_(config_store_)
+	, config_store_(config_store)
 	, logger_(logger) {
 	connect("127.0.0.1", 6001); // temp
 }
@@ -90,7 +90,6 @@ void CharacterClient::rename_character(std::uint32_t account_id,
 									   const utf8_string& name,
 									   RenameCB cb) const {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
-	
 	const auto& config = config_store_.config();
 
 	RenameT msg {

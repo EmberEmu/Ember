@@ -34,9 +34,10 @@ class Service {
 	ServiceContext context;
 	std::binary_semaphore stop_flag;
 
+	void reload_config();
 	boost::program_options::variables_map reload_args();
 	Config generate_config(const boost::program_options::variables_map& args);
-	void initialise(const boost::program_options::variables_map& args, thread::ServicePool& service_pool);
+	void initialise(const boost::program_options::variables_map& args);
 
 public:
 	static boost::program_options::options_description options();

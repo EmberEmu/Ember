@@ -9,42 +9,52 @@
 #pragma once
 
 #include "Config.h"
-#include <thread/ServicePool.h>
-#include <boost/asio/post.hpp>
 #include <mutex>
+#include <optional>
 
 namespace ember::realm {
 
-class ConfigStore {
-	static inline thread_local Config live_config_;
-	static inline thread_local const Config* tls_config_ = nullptr;
+class ConfigStore final {
+	static inline thread_local std::optional<Config> tls_config_;
 
-	const thread::ServicePool& pool_;
 	mutable Config base_config_;
 	mutable std::mutex lock;
 
 public:
-	ConfigStore(Config config, const thread::ServicePool& pool)
-		: pool_(pool)
-		, base_config_(std::move(config)) {
-		post_config(base_config_);
+	explicit ConfigStore(Config config) {
+		update_default_config(std::move(config));
 	}
 
-	void post_config(const Config& config) {
-		for(auto& service : pool_) {
-			boost::asio::post(*service, [&, config]() {
-				live_config_ = config;
-				tls_config_ = &live_config_;
-			});
-		}
+	ConfigStore(const ConfigStore&) = delete;
+	ConfigStore& operator=(const ConfigStore&) = delete;
 
+	/*
+	 * Updates the config that will be served by threads that have not called
+	 * update_tls_config (i.e. those outside of the Asio service pool).
+	 * 
+	 * This only exists to serve as a fallback mechanism in case other threads
+	 * require the use of updated configs in the future.
+	 */
+	void update_default_config(Config config) {
 		std::lock_guard guard(lock);
-		base_config_ = config;
+		base_config_ = std::move(config);
+		tls_config_ = base_config_;
 	}
 
+	/*
+	 * Updates the config for the current thread only. 
+	 */
+	void update_thread_config(Config config) {
+		tls_config_ = std::move(config);
+	}
+
+	/*
+	 * Retrieves the cached config copy for the calling thread, falling back to the
+	 * base/default config if the calling thread has never called update_thead_config.
+	 */
 	const Config& config() const {
 		if(tls_config_) [[likely]] {
-			return live_config_;
+			return *tls_config_;
 		} else {
 			std::lock_guard guard(lock);
 			return base_config_;

@@ -75,15 +75,19 @@ int Service::run(const opts::variables_map& args) try {
 	}
 
 	LOG_INFO_SYNC(logger, "Starting service pool with {} threads", concurrency);
-	thread::ServicePool service_pool(concurrency, BOOST_ASIO_CONCURRENCY_HINT_UNSAFE_IO);
-	service_pool.run();
+	auto ctx = context.get();
+	ctx->service_pool = std::make_unique<thread::ServicePool>(
+		concurrency, BOOST_ASIO_CONCURRENCY_HINT_UNSAFE_IO
+	);
+
+	ctx->service_pool->run();
 
 	std::jthread runner([&] {
 		stop_flag.acquire();
-		service_pool.shutdown();
+		ctx->service_pool->shutdown();
 	});
 
-	initialise(args, service_pool);
+	initialise(args);
 	runner.join();
 	LOG_INFO_SYNC(logger, "{} stopped", app_name);
 	return EXIT_SUCCESS;
@@ -92,7 +96,7 @@ int Service::run(const opts::variables_map& args) try {
 	return EXIT_FAILURE;
 }
 
-void Service::initialise(const opts::variables_map& args, thread::ServicePool& service_pool) {
+void Service::initialise(const opts::variables_map& args) {
 	auto ctx = context.get();
 	const auto time = std::chrono::steady_clock::now();
 
@@ -156,7 +160,7 @@ void Service::initialise(const opts::variables_map& args, thread::ServicePool& s
 	LOG_INFO_SYNC(logger, "Serving as realm for {} ({})", ctx->realm->name, cat_name);
 
 	LOG_INFO_SYNC(logger, "Starting event dispatcher...");
-	ctx->dispatcher = std::make_unique<EventDispatcher>(service_pool, logger);
+	ctx->dispatcher = std::make_unique<EventDispatcher>(*ctx->service_pool, logger);
 
 	LOG_INFO_SYNC(logger, "Starting Spark service...");
 	const auto& s_address = args["spark.address"].as<std::string>();
@@ -194,8 +198,10 @@ void Service::initialise(const opts::variables_map& args, thread::ServicePool& s
 		}
 	}
 
+	LOG_INFO_SYNC(logger, "Realm will be advertised on {}", ctx->realm->address);
+
 	// Start port forwarding
-	auto& service = service_pool.get();
+	auto& service = ctx->service_pool->get();
 
 	if(forward_enabled) {
 		const auto mode = args["forward.method"].as<ports::Forward::Method>();
@@ -208,15 +214,11 @@ void Service::initialise(const opts::variables_map& args, thread::ServicePool& s
 		);
 	}
 	
-	const auto config = generate_config(args);
-	ctx->config_store = std::make_unique<ConfigStore>(config, service_pool);
+	// Load config into store
+	ctx->config_store = std::make_unique<ConfigStore>(generate_config(args));
 
-	LOG_INFO_SYNC(logger, "Realm will be advertised on {}", ctx->realm->address);
-
-	ctx->queue = std::make_unique<RealmQueue>(service_pool.get());
-	
 	LOG_INFO_SYNC(logger, "Starting RPC services...");
-	ctx->rpc = std::make_unique<spark::Server>(service_pool.get(), app_name, s_address, s_port, logger);
+	ctx->rpc = std::make_unique<spark::Server>(ctx->service_pool->get(), app_name, s_address, s_port, logger);
 	ctx->rpc_realm = std::make_unique<RealmService>(*ctx->rpc, *ctx->realm, logger);
 	ctx->rpc_account= std::make_unique<AccountClient>(*ctx->rpc, logger);
 	ctx->rpc_character = std::make_unique<CharacterClient>(*ctx->rpc, *ctx->config_store, logger);
@@ -226,6 +228,7 @@ void Service::initialise(const opts::variables_map& args, thread::ServicePool& s
 	const auto nsd_port = args["nsd.port"].as<std::uint16_t>();
 
 	ctx->rpc_discovery = std::make_unique<NetworkServiceDiscovery>(*ctx->rpc, nsd_host, nsd_port, logger);
+	ctx->queue = std::make_unique<RealmQueue>(ctx->service_pool->get());
 
 	// set services - not the best design pattern but it'll do for now
 	// todo, this can probably be removed now
@@ -242,14 +245,13 @@ void Service::initialise(const opts::variables_map& args, thread::ServicePool& s
 
 	// Start network listener
 	LOG_INFO_SYNC(logger, "Starting network service...");
-	ctx->server = std::make_unique<NetworkListener>(service_pool, interface, port, tcp_no_delay, logger);
+	ctx->server = std::make_unique<NetworkListener>(*ctx->service_pool, interface, port, tcp_no_delay, logger);
 	LOG_INFO_SYNC(logger, "Started network service on {}:{}", interface, ctx->server->port());
 	
 	// temp, todo
-	registry.insert("reload")->handler([this](const auto& params) {
-		auto config = generate_config(reload_args());
-		context.get()->config_store->post_config(config);
-		LOG_INFO_SYNC(logger, "Config file reloaded, in theory");
+	registry.insert("reload")->handler([&](const auto& params) {
+		reload_config();
+		LOG_CONSOLE_ASYNC(logger, "Configuration file reloaded");
 	});
 
 	// All done setting up
@@ -264,6 +266,17 @@ void Service::initialise(const opts::variables_map& args, thread::ServicePool& s
 	});
 }
 
+void Service::reload_config() {
+	auto ctx = context.get();
+	auto config = generate_config(reload_args());
+	ctx->config_store->update_default_config(config);
+
+	for(auto& service : *ctx->service_pool) {
+		boost::asio::dispatch(*service, [&, ctx, config] {
+			ctx->config_store->update_thread_config(config);
+		});
+	}
+}
 std::string_view category_name(const Realm& realm, const dbc::Store<dbc::Cfg_Categories>& dbc) {
 	for(auto& record : dbc | std::views::values) {
 		if(record.category == realm.category && record.region == realm.region) {

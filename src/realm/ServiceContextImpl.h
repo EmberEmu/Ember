@@ -22,11 +22,13 @@
 #include <ports/Forward.h>
 #include <shared/Realm.h>
 #include <spark/Server.h>
+#include <thread/ServicePool.h>
 #include <memory>
 
 namespace ember::realm {
 
 struct ServiceContext::Impl {
+	std::unique_ptr<thread::ServicePool> service_pool;
 	std::unique_ptr<Realm> realm;
 	std::unique_ptr<ConfigStore> config_store;
 	std::unique_ptr<ports::Forward> port_daemon;

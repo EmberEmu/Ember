@@ -52,7 +52,7 @@ private:
 		ResponseCB cb) const;
 
 public:
-	CharacterClient(spark::Server& server, ConfigStore& config_store, log::Logger& logger);
+	CharacterClient(spark::Server& server, const ConfigStore& config_store, log::Logger& logger);
 
 	void retrieve_characters(std::uint32_t account_id,
 	                         RetrieveCB cb) const;
