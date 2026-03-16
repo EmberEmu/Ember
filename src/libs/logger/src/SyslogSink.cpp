@@ -103,7 +103,7 @@ void SyslogSink::impl::write(Severity severity, Filter type, std::span<const cha
 
 	boost::container::small_vector<char, 128> buffer;
 	const auto time = std::chrono::system_clock::now();
-	auto it = std::format_to(std::back_inserter(buffer), "{:%b %e %H:%M:%S} {} ", time, host_);
+	std::format_to(std::back_inserter(buffer), "{:%b %e %H:%M:%S} {} ", time, host_);
 
 	const std::array<asio::const_buffer, 5> segments {{
 		{ std::span(priority) },
