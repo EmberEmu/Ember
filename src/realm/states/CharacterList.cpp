@@ -25,6 +25,8 @@
 #include <memory>
 #include <vector>
 
+using namespace std::chrono_literals;
+
 namespace ember::realm::character_list {
 
 namespace {
@@ -171,7 +173,10 @@ void handle_timeout(ClientContext& ctx) {
 
 void enter(ClientContext& ctx) {
 	const auto& config = Locator::config_store()->config();
-	ctx.handler.start_timer(config.char_list_timeout);
+
+	if(auto timeout = config.char_list_timeout; timeout != 0s) {
+		ctx.handler.start_timer(timeout);
+	}
 }
 
 void handle_packet(ClientContext& ctx, protocol::ClientOpcode opcode) {
