@@ -14,6 +14,18 @@
 
 namespace ember::realm {
 
+/*
+ * This class allows for configuration files to be reloaded without requiring
+ * any locks when used as intended, which is for reload config events to
+ * require worker threads to call 'update_thread_config' to update their 
+ * thread local copy of the active config.
+ * 
+ * The base config is purely a mechanism for ensuring that even threads
+ * that have not told to update their configs can still make use of the
+ * store. That case will require a lock, otherwise it wouldn't be possible
+ * to update the base config after initial creation. Could use some
+ * atomic swapping to make it work without the mutex but it's not worth it.
+ */
 class ConfigStore final {
 	static inline thread_local std::optional<Config> tls_config_;
 

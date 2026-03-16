@@ -277,6 +277,7 @@ void Service::reload_config() {
 		});
 	}
 }
+
 std::string_view category_name(const Realm& realm, const dbc::Store<dbc::Cfg_Categories>& dbc) {
 	for(auto& record : dbc | std::views::values) {
 		if(record.category == realm.category && record.region == realm.region) {
