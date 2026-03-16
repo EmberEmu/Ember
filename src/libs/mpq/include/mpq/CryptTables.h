@@ -17,7 +17,7 @@
 
 namespace ember::mpq {
 
-[[nodiscard]] static consteval auto crypt_table() {
+[[nodiscard]] static consteval auto generate_crypt_table() {
     std::array<std::uint32_t, 1280> table{};
     std::uint32_t seed = 0x00100001;
 
@@ -34,7 +34,7 @@ namespace ember::mpq {
     return table;
 }
 
-extern const std::invoke_result<decltype(&crypt_table)>::type CRYPT_TABLE;
-extern const std::array<char, 256> TOUPPER_TABLE;
+extern const std::invoke_result<decltype(&generate_crypt_table)>::type crypt_table;
+extern const std::array<char, 256> toupper_table;
 
 } // mpq, ember

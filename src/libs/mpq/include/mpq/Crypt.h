@@ -27,7 +27,7 @@ static constexpr void decrypt_block(std::span<std::byte> buffer, std::uint32_t k
 	};
 
 	for(auto& block : cast_block) {
-		seed += CRYPT_TABLE[0x400 + (key & 0xFF)];
+		seed += crypt_table[0x400 + (key & 0xFF)];
 		const auto ch = block ^ (key + seed);
 		key = ((~key << 0x15) + 0x11111111) | (key >> 0x0B);
 		seed = ch + seed + (seed << 5) + 3;
@@ -40,8 +40,8 @@ static constexpr std::uint32_t hash_string(const std::string_view key, std::uint
 	std::uint32_t seed2 = 0xEEEEEEEE;
 
 	for(auto byte : key) {
-		auto ch = TOUPPER_TABLE[byte];
-		seed1 = CRYPT_TABLE[(type << 8) + ch] ^ (seed1 + seed2);
+		auto ch = toupper_table[byte];
+		seed1 = crypt_table[(type << 8) + ch] ^ (seed1 + seed2);
 		seed2 = ch + seed1 + seed2 + (seed2 << 5) + 3;
 	}
 

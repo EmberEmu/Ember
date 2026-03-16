@@ -47,7 +47,7 @@ const std::unordered_map<std::string_view, std::array<std::string_view, 2>> db_a
 	{ "world", { "world.root-user", "world.root-password" }}
 };
 
-const std::chrono::seconds UPDATE_BACKOUT_PERIOD { 10 };
+const std::chrono::seconds update_backout_period { 10 };
 
 void configure_logger(log::Logger& logger, const opts::variables_map& args);
 int launch(const opts::variables_map& args, log::Logger& logger);
@@ -121,8 +121,8 @@ int launch(const opts::variables_map& args, log::Logger& logger) try {
 		if(clean && !args["shutup"].as<bool>()) {
 			LOG_WARN_SYNC(logger, "You are performing an installation with --clean.\n"
 			                      "This will drop any existing databases and users specified in the arguments!\n"
-			                      "Proceeding in {} seconds...", UPDATE_BACKOUT_PERIOD.count());
-			std::this_thread::sleep_for(UPDATE_BACKOUT_PERIOD);
+			                      "Proceeding in {} seconds...", update_backout_period.count());
+			std::this_thread::sleep_for(update_backout_period);
 		}
 
 		const auto& dbs = args["install"].as<std::vector<std::string>>();
@@ -164,9 +164,9 @@ int launch(const opts::variables_map& args, log::Logger& logger) try {
 		if(!args["shutup"].as<bool>()) {
 			LOG_WARN(logger) << "Please ensure all running Ember services have been "
 			                    "stopped and you have backed up your database!\n"
-			                    "Proceeding in " << UPDATE_BACKOUT_PERIOD.count()
+			                    "Proceeding in " << update_backout_period.count()
 			                 << " seconds..." << LOG_SYNC;
-			std::this_thread::sleep_for(UPDATE_BACKOUT_PERIOD);
+			std::this_thread::sleep_for(update_backout_period);
 		}
 
 		const auto& dbs = args["update"].as<std::vector<std::string>>();
