@@ -10,6 +10,7 @@
 
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/post.hpp>
+#include <boost/asio/strand.hpp>
 #include <atomic>
 #include <functional>
 #include <string_view>
@@ -30,17 +31,28 @@ namespace ember::utility {
  * allowed to finish but no new commands may begin.
  */
 class CommandExecutor {
-	using OnFailure = std::function<void(std::string_view)>;
+	using OnError = std::function<void(std::string_view)>;
 
-	boost::asio::io_context::strand& strand_;
-	const std::atomic_bool& stop_flag_;
-	OnFailure failure_cb_;
+	boost::asio::io_context::strand strand_;
+	std::shared_ptr<std::atomic_bool> stop_flag_;
+	std::shared_ptr<std::recursive_mutex> stop_lock_;
+	OnError error_;
 
 public:
-	CommandExecutor(boost::asio::io_context::strand& strand, const std::atomic_bool& stop_flag, OnFailure&& failure_cb)
-		: strand_(strand)
-		, stop_flag_(stop_flag)
-		, failure_cb_(std::move(failure_cb)) { }
+	CommandExecutor(boost::asio::io_context& io_context, OnError&& error_cb)
+		: strand_(io_context)
+		, stop_flag_(std::make_shared<std::atomic_bool>(false))
+		, stop_lock_(std::make_shared<std::recursive_mutex>())
+		, error_(std::move(error_cb)) { }
+
+	~CommandExecutor() {
+		signal_stop();
+	}
+
+	void signal_stop() {
+		std::lock_guard guard(*stop_lock_);
+		*stop_flag_ = true;
+	}
 
 	template<typename Handler>
 	auto operator()(Handler&& handler) {
@@ -49,10 +61,19 @@ public:
 
 	template<typename Handler>
 	auto wrap(Handler&& handler) {
-		return [&, handler = std::forward<Handler>(handler)](auto&&... args) {
-			boost::asio::post(strand_, [&, handler = std::move(handler), args...]() {
-				if(stop_flag_) {
-					failure_cb_("command handler is shutting down");
+		return [&, lock = stop_lock_, handler = std::forward<Handler>(handler)](auto&&... args) {
+			// ensure the executor cannot be stopped or destroyed before we can post the real handler
+			std::lock_guard guard(*lock);
+
+			if(stop_flag_->load()) {
+				error_("command handler is shutting down");
+				return;
+			}
+
+			boost::asio::post(strand_, [error = error_, stop = stop_flag_, handler = std::move(handler), args...]() {
+				// we need to check again, state may have changed between post and execution
+				if(stop->load()) {
+					error("command handler is shutting down");
 					return;
 				}
 
@@ -60,10 +81,10 @@ public:
 					handler(args...);
 				} catch(const std::exception& e) {
 					auto reason = std::format(R"(encountered exception, '{}')", e.what());
-					failure_cb_(reason);
+					error(reason);
 				} catch(...) {
 					auto reason = std::format(R"(encountered exception")");
-					failure_cb_(reason);
+					error(reason);
 				}
 			});
 		};

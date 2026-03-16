@@ -278,7 +278,7 @@ void Service::initialise(const opts::variables_map& args) {
 void Service::register_commands() {
 	auto ctx = context.get();
 
-	ctx->cmd_exec = std::make_unique<utility::CommandExecutor>(serialise, stopped, [&](auto reason) {
+	ctx->cmd_exec = std::make_unique<utility::CommandExecutor>(io_context, [&](auto reason) {
 		LOG_CONSOLE_ERROR_ASYNC(logger, "Command could not be executed, {}", reason);
 	});
 	
@@ -326,8 +326,9 @@ void Service::stop() {
 
 	LOG_TRACE_SYNC(logger, "Service termination requested");
 
-	boost::asio::dispatch(serialise, [&] {
+	boost::asio::post(io_context, [&] {
 		auto ctx = context.get();
+		ctx->cmd_exec->signal_stop();
 		ctx->thread_pool->shutdown();
 		context.reset(); // todo, determine proper order
 	});

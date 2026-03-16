@@ -25,14 +25,12 @@
 #include <shared/Realm.h>
 #include <spark/Server.h>
 #include <thread/ServicePool.h>
-#include <boost/asio/strand.hpp>
 #include <memory>
 #include <vector>
 
 namespace ember::realm {
 
 struct ServiceContext::Impl {
-	std::unique_ptr<boost::asio::io_context::strand> cmd_strand;
 	std::unique_ptr<utility::CommandExecutor> cmd_exec;
 	std::unique_ptr<thread::ServicePool> service_pool;
 	std::unique_ptr<Realm> realm;

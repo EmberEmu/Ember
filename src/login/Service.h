@@ -32,7 +32,6 @@ class Service {
 	commands::Registry& registry;
 	std::chrono::steady_clock::time_point start_time;
 	boost::asio::io_context io_context;
-	boost::asio::io_context::strand serialise;
 	std::atomic_bool stopped;
 	ServiceContext context;
 
@@ -51,8 +50,7 @@ public:
 		: logger(logger)
 		, registry(registry)
 		, start_time(std::chrono::steady_clock::now())
-		, io_context(thread::hardware_concurrency())
-		, serialise(io_context) {}
+		, io_context(thread::hardware_concurrency()) {}
 
 	~Service();
 

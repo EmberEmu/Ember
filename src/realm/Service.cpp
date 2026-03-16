@@ -269,10 +269,11 @@ void Service::initialise(const opts::variables_map& args) {
 void Service::register_commands() {
 	auto ctx = context.get();
 
-	ctx->cmd_strand = std::make_unique<boost::asio::io_context::strand>(ctx->service_pool->get());
-	ctx->cmd_exec = std::make_unique<utility::CommandExecutor>(*ctx->cmd_strand, stopped, [&](auto reason) {
-		LOG_CONSOLE_ERROR_ASYNC(logger, "Command could not be executed, {}", reason);
-	});
+	ctx->cmd_exec = std::make_unique<utility::CommandExecutor>(
+		ctx->service_pool->get(), [&](auto reason) {
+			LOG_CONSOLE_ERROR_ASYNC(logger, "Command could not be executed, {}", reason);
+		}
+	);
 
 	auto cmd = registry.scoped_insert(commands::Command::create("config_reload")
 		->optional_argument("filename", commands::args::Type::at_string)
@@ -281,7 +282,7 @@ void Service::register_commands() {
 			std::string config_file;
 
 			if(auto it = arguments.find("filename"); it != arguments.end()) {
-				config_file = std::get<std::string>(arguments["filename"]);
+				config_file = std::get<std::string>(it->second);
 			} else {
 				config_file = "realm.conf";
 			}
@@ -363,11 +364,23 @@ std::optional<Realm> load_realm(const opts::variables_map& args, log::Logger& lo
 	return realm_dao.get_realm(args["realm.id"].as<unsigned int>());
 }
 
+
 void Service::stop() {
+	bool expected = false;
+
+	if(!stopped.compare_exchange_strong(expected, true)) {
+		return;
+	}
+
 	LOG_TRACE_SYNC(logger, "{} shutting down...", app_name);
-	stopped = true;
-	context.reset();
-	stop_flag.release();
+	auto ctx = context.get();
+
+	boost::asio::post(ctx->service_pool->get(), [this] {
+		auto ctx = context.get();
+		ctx->cmd_exec->signal_stop();
+		context.reset();
+		stop_flag.release();
+	});
 }
 
 Service::~Service() {
