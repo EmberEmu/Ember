@@ -19,6 +19,7 @@
 #include <array>
 #include <chrono>
 #include <format>
+#include <iterator>
 #include <span>
 
 namespace asio = boost::asio;
@@ -99,15 +100,16 @@ void SyslogSink::impl::write(Severity severity, Filter type, std::span<const cha
 
 	const int priority_val = (static_cast<int>(facility_) * 8)
 		+ static_cast<std::uint8_t>(severity_map(severity));
-	std::string priority = std::format("<{}>", priority_val);
+	boost::container::small_vector<char, 8> prio_fmt;
+	std::format_to(std::back_inserter(prio_fmt), "<{}>", priority_val);
 
-	boost::container::small_vector<char, 128> buffer;
 	const auto time = std::chrono::system_clock::now();
-	std::format_to(std::back_inserter(buffer), "{:%b %e %H:%M:%S} {} ", time, host_);
+	boost::container::small_vector<char, 128> time_fmt;
+	std::format_to(std::back_inserter(time_fmt), "{:%b %e %H:%M:%S} {} ", time, host_);
 
 	const std::array<asio::const_buffer, 5> segments {{
-		{ std::span(priority) },
-		{ std::span(buffer) },
+		{ std::span(prio_fmt) },
+		{ std::span(time_fmt) },
 		{ std::span(tag_) },
 		{ ": ", 2 },
 		{ record }
