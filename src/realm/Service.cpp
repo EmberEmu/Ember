@@ -34,12 +34,14 @@
 #include <thread/Utility.h>
 #include <boost/asio/dispatch.hpp>
 #include <boost/asio/io_context.hpp>
+#include <boost/program_options.hpp>
 #include <boost/version.hpp>
 #include <botan/auto_rng.h>
 #include <botan/version.h>
 #include <pcre.h>
 #include <zlib.h>
 #include <chrono>
+#include <fstream>
 #include <format>
 #include <memory>
 #include <ranges>
@@ -73,15 +75,19 @@ int Service::run(const opts::variables_map& args) try {
 	}
 
 	LOG_INFO_SYNC(logger, "Starting service pool with {} threads", concurrency);
-	thread::ServicePool service_pool(concurrency, BOOST_ASIO_CONCURRENCY_HINT_UNSAFE_IO);
-	service_pool.run();
+	auto ctx = context.get();
+	ctx->service_pool = std::make_unique<thread::ServicePool>(
+		concurrency, BOOST_ASIO_CONCURRENCY_HINT_UNSAFE_IO
+	);
+
+	ctx->service_pool->run();
 
 	std::jthread runner([&] {
 		stop_flag.acquire();
-		service_pool.shutdown();
+		ctx->service_pool->shutdown();
 	});
 
-	initialise(args, service_pool);
+	initialise(args);
 	runner.join();
 	LOG_INFO_SYNC(logger, "{} stopped", app_name);
 	return EXIT_SUCCESS;
@@ -90,7 +96,7 @@ int Service::run(const opts::variables_map& args) try {
 	return EXIT_FAILURE;
 }
 
-void Service::initialise(const opts::variables_map& args, thread::ServicePool& service_pool) {
+void Service::initialise(const opts::variables_map& args) {
 	auto ctx = context.get();
 	const auto time = std::chrono::steady_clock::now();
 
@@ -154,7 +160,7 @@ void Service::initialise(const opts::variables_map& args, thread::ServicePool& s
 	LOG_INFO_SYNC(logger, "Serving as realm for {} ({})", ctx->realm->name, cat_name);
 
 	LOG_INFO_SYNC(logger, "Starting event dispatcher...");
-	ctx->dispatcher = std::make_unique<EventDispatcher>(service_pool, logger);
+	ctx->dispatcher = std::make_unique<EventDispatcher>(*ctx->service_pool, logger);
 
 	LOG_INFO_SYNC(logger, "Starting Spark service...");
 	const auto& s_address = args["spark.address"].as<std::string>();
@@ -192,8 +198,10 @@ void Service::initialise(const opts::variables_map& args, thread::ServicePool& s
 		}
 	}
 
+	LOG_INFO_SYNC(logger, "Realm will be advertised on {}", ctx->realm->address);
+
 	// Start port forwarding
-	auto& service = service_pool.get();
+	auto& service = ctx->service_pool->get();
 
 	if(forward_enabled) {
 		const auto mode = args["forward.method"].as<ports::Forward::Method>();
@@ -206,30 +214,23 @@ void Service::initialise(const opts::variables_map& args, thread::ServicePool& s
 		);
 	}
 	
-	ctx->config = std::make_unique<Config>(Config {
-		.realm = *ctx->realm,
-		.realm_id = realm_id,
-		.max_slots = args["realm.max_slots"].as<unsigned int>(),
-		.auth_timeout = std::chrono::seconds(args["realm.auth_timeout"].as<unsigned int>()),
-		.char_list_timeout = std::chrono::seconds(args["realm.char_list_timeout"].as<unsigned int>()),
-		.allowed_builds = std::move(allowed_builds)
-	});
+	// Load config into store
+	const auto config = generate_config(args);
+	ctx->config_store = std::make_unique<ConfigStore>(config);
+	update_config(config, true);
 
-	LOG_INFO_SYNC(logger, "Realm will be advertised on {}", ctx->realm->address);
-
-	ctx->queue = std::make_unique<RealmQueue>(service_pool.get());
-	
 	LOG_INFO_SYNC(logger, "Starting RPC services...");
-	ctx->rpc = std::make_unique<spark::Server>(service_pool.get(), app_name, s_address, s_port, logger);
+	ctx->rpc = std::make_unique<spark::Server>(ctx->service_pool->get(), app_name, s_address, s_port, logger);
 	ctx->rpc_realm = std::make_unique<RealmService>(*ctx->rpc, *ctx->realm, logger);
 	ctx->rpc_account= std::make_unique<AccountClient>(*ctx->rpc, logger);
-	ctx->rpc_character = std::make_unique<CharacterClient>(*ctx->rpc, *ctx->config, logger);
+	ctx->rpc_character = std::make_unique<CharacterClient>(*ctx->rpc, *ctx->config_store, logger);
 	ctx->rpc_world = std::make_unique<WorldRPCClient>(*ctx->rpc, logger);
 
 	const auto& nsd_host = args["nsd.host"].as<std::string>();
 	const auto nsd_port = args["nsd.port"].as<std::uint16_t>();
 
 	ctx->rpc_discovery = std::make_unique<NetworkServiceDiscovery>(*ctx->rpc, nsd_host, nsd_port, logger);
+	ctx->queue = std::make_unique<RealmQueue>(ctx->service_pool->get());
 
 	// set services - not the best design pattern but it'll do for now
 	// todo, this can probably be removed now
@@ -238,7 +239,7 @@ void Service::initialise(const opts::variables_map& args, thread::ServicePool& s
 	Locator::set(ctx->rpc_account.get());
 	Locator::set(ctx->rpc_character.get());
 	Locator::set(ctx->rpc_realm.get());
-	Locator::set(ctx->config.get());
+	Locator::set(ctx->config_store.get());
 	
 	// Misc. information
 	const auto max_socks = utility::max_sockets_desc();
@@ -246,8 +247,12 @@ void Service::initialise(const opts::variables_map& args, thread::ServicePool& s
 
 	// Start network listener
 	LOG_INFO_SYNC(logger, "Starting network service...");
-	ctx->server = std::make_unique<NetworkListener>(service_pool, interface, port, tcp_no_delay, logger);
+	ctx->server = std::make_unique<NetworkListener>(*ctx->service_pool, interface, port, tcp_no_delay, logger);
 	LOG_INFO_SYNC(logger, "Started network service on {}:{}", interface, ctx->server->port());
+	
+	// Install service command handlers
+	LOG_INFO_SYNC(logger, "Registering command handlers...");
+	register_commands();
 
 	// All done setting up
 	boost::asio::dispatch(service, [&, time]() {
@@ -261,6 +266,53 @@ void Service::initialise(const opts::variables_map& args, thread::ServicePool& s
 	});
 }
 
+void Service::register_commands() {
+	auto ctx = context.get();
+
+	ctx->cmd_strand = std::make_unique<boost::asio::io_context::strand>(ctx->service_pool->get());
+	ctx->cmd_exec = std::make_unique<utility::CommandExecutor>(*ctx->cmd_strand, stopped, [&](auto reason) {
+		LOG_CONSOLE_ERROR_ASYNC(logger, "Command could not be executed, {}", reason);
+	});
+
+	auto cmd = registry.scoped_insert(commands::Command::create("config_reload")
+		->optional_argument("filename", commands::args::Type::at_string)
+		->description("Reload the service configuration")
+		->handler(ctx->cmd_exec->wrap([&](auto arguments) {
+			std::string config_file;
+
+			if(auto it = arguments.find("filename"); it != arguments.end()) {
+				config_file = std::get<std::string>(arguments["filename"]);
+			} else {
+				config_file = "realm.conf";
+			}
+
+			try {
+				const auto config = generate_config(reload_args(config_file));
+				update_config(config);
+				LOG_CONSOLE_ASYNC(logger, "Configuration file successfully reloaded");
+			} catch(const std::exception& e) {
+				LOG_CONSOLE_ERROR_ASYNC(logger, "Could not reload configuration, '{}'", e.what());
+			}
+		})
+	));
+
+	ctx->commands.emplace_back(std::move(cmd));
+}
+
+void Service::update_config(const Config& config, bool post_only) {
+	auto ctx = context.get();
+
+	if(post_only) {
+		ctx->config_store->update_default_config(config);
+	}
+
+	for(auto& service : *ctx->service_pool) {
+		boost::asio::dispatch(*service, [&, ctx, config] {
+			ctx->config_store->update_thread_config(config);
+		});
+	}
+}
+
 std::string_view category_name(const Realm& realm, const dbc::Store<dbc::Cfg_Categories>& dbc) {
 	for(auto& record : dbc | std::views::values) {
 		if(record.category == realm.category && record.region == realm.region) {
@@ -269,6 +321,19 @@ std::string_view category_name(const Realm& realm, const dbc::Store<dbc::Cfg_Cat
 	}
 
 	throw std::invalid_argument("Unknown category/region combination in database");
+}
+
+Config Service::generate_config(const opts::variables_map& args) {
+	auto ctx = context.get();
+
+	return Config {
+		.realm = ctx->realm.get(),
+		.realm_id = ctx->realm->id,
+		.max_slots = args["realm.max_slots"].as<unsigned int>(),
+		.auth_timeout = std::chrono::seconds(args["realm.auth_timeout"].as<unsigned int>()),
+		.char_list_timeout = std::chrono::seconds(args["realm.char_list_timeout"].as<unsigned int>()),
+		.allowed_builds = args["realm.builds"].as<std::vector<GameVersion>>()
+	};
 }
 
 /*
@@ -300,6 +365,7 @@ std::optional<Realm> load_realm(const opts::variables_map& args, log::Logger& lo
 
 void Service::stop() {
 	LOG_TRACE_SYNC(logger, "{} shutting down...", app_name);
+	stopped = true;
 	context.reset();
 	stop_flag.release();
 }
@@ -319,6 +385,23 @@ void print_lib_versions(log::Logger& logger) {
 		<< " ("  << drivers::DriverType::version() << ")" << "\n"
 		<< " - PCRE " << PCRE_MAJOR << "." << PCRE_MINOR << "\n"
 		<< " - Zlib " << ZLIB_VERSION << LOG_SYNC;
+}
+
+opts::variables_map Service::reload_args(const std::string& filename) {
+	opts::options_description config_opts;
+	config_opts.add(options());
+	std::ifstream stream(filename);
+
+	if(!stream) {
+		throw std::invalid_argument(
+			std::format(R"(Unable to open configuration file "{}")", filename)
+		);
+	}
+
+	opts::variables_map options;
+	opts::store(opts::parse_config_file(stream, config_opts), options);
+	opts::notify(options);
+	return options;
 }
 
 opts::options_description Service::options() {

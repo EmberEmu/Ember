@@ -9,7 +9,7 @@
 #include "CharacterList.h"
 #include "ClientContext.h"
 #include "../ClientHandler.h"
-#include "../Config.h"
+#include "../ConfigStore.h"
 #include "../Locator.h"
 #include "../RealmQueue.h"
 #include "../CharacterClient.h"
@@ -170,7 +170,8 @@ void handle_timeout(ClientContext& ctx) {
 } // unnamed
 
 void enter(ClientContext& ctx) {
-	ctx.handler.start_timer(Locator::config()->char_list_timeout);
+	const auto& config = Locator::config_store()->config();
+	ctx.handler.start_timer(config.char_list_timeout);
 }
 
 void handle_packet(ClientContext& ctx, protocol::ClientOpcode opcode) {
