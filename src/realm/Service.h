@@ -33,9 +33,11 @@ class Service {
 	std::chrono::steady_clock::time_point start_time;
 	ServiceContext context;
 	std::binary_semaphore stop_flag;
+	std::atomic_bool stopped;
 
-	void reload_config();
-	boost::program_options::variables_map reload_args();
+	void register_commands();
+	void update_config(const Config& config, bool post_only = false);
+	boost::program_options::variables_map reload_args(const std::string& filename);
 	Config generate_config(const boost::program_options::variables_map& args);
 	void initialise(const boost::program_options::variables_map& args);
 

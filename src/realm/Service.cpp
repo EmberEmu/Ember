@@ -215,7 +215,9 @@ void Service::initialise(const opts::variables_map& args) {
 	}
 	
 	// Load config into store
-	ctx->config_store = std::make_unique<ConfigStore>(generate_config(args));
+	const auto config = generate_config(args);
+	ctx->config_store = std::make_unique<ConfigStore>(config);
+	update_config(config, true);
 
 	LOG_INFO_SYNC(logger, "Starting RPC services...");
 	ctx->rpc = std::make_unique<spark::Server>(ctx->service_pool->get(), app_name, s_address, s_port, logger);
@@ -248,11 +250,9 @@ void Service::initialise(const opts::variables_map& args) {
 	ctx->server = std::make_unique<NetworkListener>(*ctx->service_pool, interface, port, tcp_no_delay, logger);
 	LOG_INFO_SYNC(logger, "Started network service on {}:{}", interface, ctx->server->port());
 	
-	// temp, todo
-	registry.insert("reload")->handler([&](const auto& params) {
-		reload_config();
-		LOG_CONSOLE_ASYNC(logger, "Configuration file reloaded");
-	});
+	// Install service command handlers
+	LOG_INFO_SYNC(logger, "Registering command handlers...");
+	register_commands();
 
 	// All done setting up
 	boost::asio::dispatch(service, [&, time]() {
@@ -266,10 +266,45 @@ void Service::initialise(const opts::variables_map& args) {
 	});
 }
 
-void Service::reload_config() {
+void Service::register_commands() {
 	auto ctx = context.get();
-	auto config = generate_config(reload_args());
-	ctx->config_store->update_default_config(config);
+
+	ctx->cmd_strand = std::make_unique<boost::asio::io_context::strand>(ctx->service_pool->get());
+	ctx->cmd_exec = std::make_unique<utility::CommandExecutor>(*ctx->cmd_strand, stopped, [&](auto reason) {
+		LOG_CONSOLE_ERROR_ASYNC(logger, "Command could not be executed, {}", reason);
+	});
+
+	auto cmd = registry.scoped_insert(commands::Command::create("config_reload")
+		->optional_argument("filename", commands::args::Type::at_string)
+		->description("Reload the service configuration")
+		->handler(ctx->cmd_exec->wrap([&](auto arguments) {
+			std::string config_file;
+
+			if(auto it = arguments.find("filename"); it != arguments.end()) {
+				config_file = std::get<std::string>(arguments["filename"]);
+			} else {
+				config_file = "realm.conf";
+			}
+
+			try {
+				const auto config = generate_config(reload_args(config_file));
+				update_config(config);
+				LOG_CONSOLE_ASYNC(logger, "Configuration file successfully reloaded");
+			} catch(const std::exception& e) {
+				LOG_CONSOLE_ERROR_ASYNC(logger, "Could not reload configuration, '{}'", e.what());
+			}
+		})
+	));
+
+	ctx->commands.emplace_back(std::move(cmd));
+}
+
+void Service::update_config(const Config& config, bool post_only) {
+	auto ctx = context.get();
+
+	if(post_only) {
+		ctx->config_store->update_default_config(config);
+	}
 
 	for(auto& service : *ctx->service_pool) {
 		boost::asio::dispatch(*service, [&, ctx, config] {
@@ -330,6 +365,7 @@ std::optional<Realm> load_realm(const opts::variables_map& args, log::Logger& lo
 
 void Service::stop() {
 	LOG_TRACE_SYNC(logger, "{} shutting down...", app_name);
+	stopped = true;
 	context.reset();
 	stop_flag.release();
 }
@@ -351,13 +387,15 @@ void print_lib_versions(log::Logger& logger) {
 		<< " - Zlib " << ZLIB_VERSION << LOG_SYNC;
 }
 
-opts::variables_map Service::reload_args() {
+opts::variables_map Service::reload_args(const std::string& filename) {
 	opts::options_description config_opts;
 	config_opts.add(options());
-	std::ifstream stream("realm.conf"); // todo, pass in
+	std::ifstream stream(filename);
 
 	if(!stream) {
-		throw std::invalid_argument("Unable to open configuration file");
+		throw std::invalid_argument(
+			std::format(R"(Unable to open configuration file "{}")", filename)
+		);
 	}
 
 	opts::variables_map options;

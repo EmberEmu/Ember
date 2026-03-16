@@ -12,6 +12,7 @@
 #include <boost/asio/post.hpp>
 #include <atomic>
 #include <functional>
+#include <string_view>
 #include <utility>
 
 namespace ember::utility {
@@ -29,7 +30,7 @@ namespace ember::utility {
  * allowed to finish but no new commands may begin.
  */
 class CommandExecutor {
-	using OnFailure = std::function<void(void)>;
+	using OnFailure = std::function<void(std::string_view)>;
 
 	boost::asio::io_context::strand& strand_;
 	const std::atomic_bool& stop_flag_;
@@ -37,9 +38,9 @@ class CommandExecutor {
 
 public:
 	CommandExecutor(boost::asio::io_context::strand& strand, const std::atomic_bool& stop_flag, OnFailure&& failure_cb)
-		: strand_(strand),
-		  stop_flag_(stop_flag),
-		  failure_cb_(std::move(failure_cb)) { }
+		: strand_(strand)
+		, stop_flag_(stop_flag)
+		, failure_cb_(std::move(failure_cb)) { }
 
 	template<typename Handler>
 	auto operator()(Handler&& handler) {
@@ -51,11 +52,19 @@ public:
 		return [&, handler = std::forward<Handler>(handler)](auto&&... args) {
 			boost::asio::post(strand_, [&, handler = std::move(handler), args...]() {
 				if(stop_flag_) {
-					failure_cb_();
+					failure_cb_("command handler is shutting down");
 					return;
 				}
 
-				handler(args...);
+				try {
+					handler(args...);
+				} catch(const std::exception& e) {
+					auto reason = std::format(R"(encountered exception, '{}')", e.what());
+					failure_cb_(reason);
+				} catch(...) {
+					auto reason = std::format(R"(encountered exception")");
+					failure_cb_(reason);
+				}
 			});
 		};
 	}

@@ -263,7 +263,7 @@ void Service::initialise(const opts::variables_map& args) {
 	}
 
 	// Install service command handlers
-	LOG_INFO_SYNC(logger, "Registering command handlers...", utility::max_sockets_desc());
+	LOG_INFO_SYNC(logger, "Registering command handlers...");
 	register_commands();
 
 	// All done setting up
@@ -278,8 +278,8 @@ void Service::initialise(const opts::variables_map& args) {
 void Service::register_commands() {
 	auto ctx = context.get();
 
-	ctx->cmd_exec = std::make_unique<utility::CommandExecutor>(serialise, stopped, [&]() {
-		LOG_CONSOLE_ERROR_ASYNC(logger, "Command cannot be executed, service is shutting down");
+	ctx->cmd_exec = std::make_unique<utility::CommandExecutor>(serialise, stopped, [&](auto reason) {
+		LOG_CONSOLE_ERROR_ASYNC(logger, "Command could not be executed, {}", reason);
 	});
 	
 	auto handle = registry.scoped_insert(commands::Command::create("connections")

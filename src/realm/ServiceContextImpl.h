@@ -17,17 +17,23 @@
 #include "RealmService.h"
 #include "RealmQueue.h"
 #include "WorldRPCClient.h"
+#include <commands/ScopedCommand.h>
 #include <dbcreader/Storage.h>
 #include <nsd/NSD.h>
 #include <ports/Forward.h>
+#include <shared/utility/CommandExecutor.h>
 #include <shared/Realm.h>
 #include <spark/Server.h>
 #include <thread/ServicePool.h>
+#include <boost/asio/strand.hpp>
 #include <memory>
+#include <vector>
 
 namespace ember::realm {
 
 struct ServiceContext::Impl {
+	std::unique_ptr<boost::asio::io_context::strand> cmd_strand;
+	std::unique_ptr<utility::CommandExecutor> cmd_exec;
 	std::unique_ptr<thread::ServicePool> service_pool;
 	std::unique_ptr<Realm> realm;
 	std::unique_ptr<ConfigStore> config_store;
@@ -42,6 +48,7 @@ struct ServiceContext::Impl {
 	std::unique_ptr<WorldRPCClient> rpc_world;
 	std::unique_ptr<NetworkServiceDiscovery> rpc_discovery;
 	std::unique_ptr<NetworkListener> server;
+	std::vector<commands::ScopedCommand> commands;
 };
 
 } // realm, ember
