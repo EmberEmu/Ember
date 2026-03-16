@@ -8,12 +8,11 @@
 
 #pragma once
 
-#include <cstdint>
 #include <shared/smartenum.hpp>
-#include <shared/utility/enum_bitmask.h>
-#include <array>
 #include <shared/utility/polyfill/inplace_vector>
+#include <array>
 #include <string_view>
+#include <cstdint>
 
 namespace ember::protocol {
 
