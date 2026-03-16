@@ -16,7 +16,9 @@ namespace ember::thread {
 ServicePool::ServicePool(const std::size_t pool_size, const int hint)
 	: hint_(hint)
 	, pool_size_(limit_pool_size(pool_size))
-	, next_service_(0)  {}
+	, next_service_(0)  {
+	initialise_pool();
+}
 
 ServicePool::~ServicePool() {
 	stop();
@@ -66,8 +68,6 @@ void ServicePool::run() {
 	if(!threads_.empty()) {
 		throw std::runtime_error("Service pool already running");
 	}
-
-	initialise_pool();
 
 	const auto core_count = std::thread::hardware_concurrency();
 

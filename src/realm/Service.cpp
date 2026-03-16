@@ -80,15 +80,15 @@ int Service::run(const opts::variables_map& args) try {
 		concurrency, BOOST_ASIO_CONCURRENCY_HINT_UNSAFE_IO
 	);
 
-	ctx->service_pool->run();
-
 	std::jthread runner([&] {
 		stop_flag.acquire();
 		ctx->service_pool->shutdown();
 	});
 
 	initialise(args);
+	ctx->service_pool->run();
 	runner.join();
+
 	LOG_INFO_SYNC(logger, "{} stopped", app_name);
 	return EXIT_SUCCESS;
 } catch(const std::exception& e) {
@@ -96,7 +96,7 @@ int Service::run(const opts::variables_map& args) try {
 	return EXIT_FAILURE;
 }
 
-void Service::initialise(const opts::variables_map& args) {
+void Service::initialise(const opts::variables_map& args) try {
 	auto ctx = context.get();
 	const auto time = std::chrono::steady_clock::now();
 
@@ -228,7 +228,6 @@ void Service::initialise(const opts::variables_map& args) {
 
 	const auto& nsd_host = args["nsd.host"].as<std::string>();
 	const auto nsd_port = args["nsd.port"].as<std::uint16_t>();
-
 	ctx->rpc_discovery = std::make_unique<NetworkServiceDiscovery>(*ctx->rpc, nsd_host, nsd_port, logger);
 	ctx->queue = std::make_unique<RealmQueue>(ctx->service_pool->get());
 
@@ -240,7 +239,7 @@ void Service::initialise(const opts::variables_map& args) {
 	Locator::set(ctx->rpc_character.get());
 	Locator::set(ctx->rpc_realm.get());
 	Locator::set(ctx->config_store.get());
-	
+
 	// Misc. information
 	const auto max_socks = utility::max_sockets_desc();
 	LOG_INFO_SYNC(logger, "Max allowed sockets: {}", max_socks);
@@ -264,6 +263,9 @@ void Service::initialise(const opts::variables_map& args) {
 
 		start_time = std::chrono::steady_clock::now();
 	});
+} catch(...) {
+	stop_flag.release();
+	std::rethrow_exception(std::current_exception());
 }
 
 void Service::register_commands() {
