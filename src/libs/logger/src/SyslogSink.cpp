@@ -15,8 +15,11 @@
 #include <boost/asio/ip/host_name.hpp>
 #include <boost/asio/ip/udp.hpp>
 #include <boost/assert.hpp>
+#include <boost/container/small_vector.hpp>
 #include <array>
+#include <chrono>
 #include <format>
+#include <span>
 
 namespace asio = boost::asio;
 
@@ -42,7 +45,6 @@ class SyslogSink::impl final : public Sink {
 	std::string tag_; 
 	Facility facility_;
 
-	std::string month_map(int month);
 	SyslogSeverity severity_map(Severity severity);
 
 public:
@@ -90,26 +92,6 @@ auto SyslogSink::impl::severity_map(Severity severity) -> SyslogSeverity {
 	}
 }
 
-std::string SyslogSink::impl::month_map(int month) {
-	switch(month) {
-		case 0: return "Jan";
-		case 1: return "Feb";
-		case 2: return "Mar";
-		case 3: return "Apr";
-		case 4: return "May";
-		case 5: return "Jun";
-		case 6: return "Jul";
-		case 7: return "Aug";
-		case 8: return "Sept";
-		case 9: return "Oct";
-		case 10: return "Nov";
-		case 11: return "Dec";
-		default: BOOST_ASSERT_MSG(false,
-		"SyslogSink encountered an unknown month value. Only Earth is supported.");
-			return "err";
-	}
-}
-
 void SyslogSink::impl::write(Severity severity, Filter type, std::span<const char> record, bool flush) {
 	if(this->severity() >= severity || (this->filter() & type)) {
 		return;
@@ -119,19 +101,16 @@ void SyslogSink::impl::write(Severity severity, Filter type, std::span<const cha
 		+ static_cast<std::uint8_t>(severity_map(severity));
 	std::string priority = std::format("<{}>", priority_val);
 
-	std::tm time = detail::current_time();
-	std::stringstream stream;
-	stream << month_map(time.tm_mon) << ((time.tm_mday < 10)? "  " : " ") << time.tm_mday
-		<< " " << time.tm_hour << ":" << time.tm_min << ":" << ((time.tm_sec < 10) ? "0" : "")
-		<< time.tm_sec << " " << host_ << " ";
+	boost::container::small_vector<char, 128> buffer;
+	const auto time = std::chrono::system_clock::now();
+	auto it = std::format_to(std::back_inserter(buffer), "{:%b %e %H:%M:%S} {} ", time, host_);
 
-	const auto header = stream.view();
 	const std::array<asio::const_buffer, 5> segments {{
-		{ priority.data(), priority.size() },
-		{ header.data(), header.size() },
-		{ tag_.data(), tag_.size() },
-		{": ", 2},
-		{ record.data(), record.size() }
+		{ std::span(priority) },
+		{ std::span(buffer) },
+		{ std::span(tag_) },
+		{ ": ", 2 },
+		{ record }
 	}};
 
 	boost::system::error_code err; // ignoring any send errors
