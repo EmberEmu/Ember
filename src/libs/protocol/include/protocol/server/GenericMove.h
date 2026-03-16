@@ -27,24 +27,24 @@ struct GenericMove final {
 		stream >> info.position;
 		stream >> info.orientation;
 
-		if(info.flags & ON_TRANSPORT) {
+		if(info.flags & MovementFlags::on_transport) {
 			throw std::runtime_error("Not implemented, at all");
 		}
 
-		if(info.flags & SWIMMING) {
+		if(info.flags & MovementFlags::swimming) {
 			stream >> info.pitch;
 		}
 
 		stream >> info.fall_time;
 
-		if(info.flags & JUMPING) {
+		if(info.flags & MovementFlags::jumping) {
 			stream >> info.z_speed;
 			stream >> info.cos_angle;
 			stream >> info.sin_angle;
 			stream >> info.xy_speed;
 		}
 
-		if(info.flags & SPLINE_ELEVATION) {
+		if(info.flags & MovementFlags::spline_elevation) {
 			stream >> info.spline_elevation;
 		}
 
@@ -60,24 +60,24 @@ struct GenericMove final {
 		stream << info.position;
 		stream << info.orientation;
 
-		if(info.flags & ON_TRANSPORT) {
+		if(info.flags & MovementFlags::on_transport) {
 			throw std::runtime_error("Not implemented, at all");
 		}
 
-		if(info.flags & SWIMMING) {
+		if(info.flags & MovementFlags::swimming) {
 			stream << info.pitch;
 		}
 
 		stream << info.fall_time;
 
-		if(info.flags & JUMPING) {
+		if(info.flags & MovementFlags::jumping) {
 			stream << info.z_speed;
 			stream << info.cos_angle;
 			stream << info.sin_angle;
 			stream << info.xy_speed;
 		}
 
-		if(info.flags & SPLINE_ELEVATION) {
+		if(info.flags & MovementFlags::spline_elevation) {
 			stream << info.spline_elevation;
 		}
 
