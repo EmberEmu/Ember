@@ -117,6 +117,7 @@ std::vector<std::uint8_t> SSDP::build_ssdp_request(const std::string_view type,
 	};
 
 	std::vector<std::uint8_t> buffer;
+	buffer.reserve(4096);
 	std::format_to(std::back_inserter(buffer), request, MULTICAST_IPV4_ADDR,
 	               DEST_PORT, type, subtype, version);
 	return buffer;
