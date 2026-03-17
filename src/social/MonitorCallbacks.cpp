@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Ember
+ * Copyright (c) 2016 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,36 +8,32 @@
 
 #include "FilterTypes.h"
 #include "MonitorCallbacks.h"
-#include <sstream>
+#include <format>
 
 namespace ember {
 
 void monitor_log_callback(const Monitor::Source& source, Monitor::Severity severity,
                           std::intmax_t value, log::Logger& logger) {
-	std::stringstream message;
-	message << source.key << ":v:" << value << ":t:" << source.threshold << " - ";
-
-	if(source.triggered) {
-		message << source.message;
-	} else {
-		message << "Incident has been resolved.";
-	}
+	auto message = std::format(
+		"{}:v:{}:t:{} - {}", source.key, value, source.threshold,
+		source.triggered? source.message : "Incident has been resolved."
+	);
 
 	switch(severity) {
 		case Monitor::Severity::fatal:
-			LOG_FATAL(logger) << message.view() << LOG_ASYNC;
+			LOG_FATAL(logger) << message << LOG_ASYNC;
 			break;
 		case Monitor::Severity::error:
-			LOG_ERROR(logger) << message.view() << LOG_ASYNC;
+			LOG_ERROR(logger) << message << LOG_ASYNC;
 			break;
 		case Monitor::Severity::warn:
-			LOG_WARN(logger) << message.view() << LOG_ASYNC;
+			LOG_WARN(logger) << message << LOG_ASYNC;
 			break;
 		case Monitor::Severity::info:
-			LOG_INFO(logger) << message.view() << LOG_ASYNC;
+			LOG_INFO(logger) << message << LOG_ASYNC;
 			break;
 		case Monitor::Severity::debug:
-			LOG_DEBUG(logger) << message.view() << LOG_ASYNC;
+			LOG_DEBUG(logger) << message << LOG_ASYNC;
 			break;
 	}
 }
