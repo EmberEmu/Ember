@@ -14,7 +14,6 @@
 
 #include <format>
 #include <iostream>
-#include <sstream>
 #include <system_error>
 #include <utility>
 #include <cstdio>
@@ -52,11 +51,8 @@ void print(FILE* file, std::format_string<Args...> fmt, Args&&... args) {
 template<typename... Args>
 void println(FILE* file, std::format_string<Args...> fmt, Args&&... args) {
 	const auto message = std::format(fmt, std::forward<Args>(args)...);
-	std::stringstream out;
-	out << message << "\n";
-
-	const auto view = out.view();
-	const auto count = std::fwrite(view.data(), view.size(), 1, file);
+	const auto out = std::format("{}\n", message);
+	const auto count = std::fwrite(out.data(), out.size(), 1, file);
 
 	if(count != 1) {
 		throw std::system_error(

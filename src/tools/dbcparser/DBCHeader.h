@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 - 2025 Ember
+ * Copyright (c) 2019 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -34,27 +34,33 @@ struct Header {
 inline void validate_dbc(const std::string_view name, const Header& header, const std::size_t expect_size,
                          const std::size_t expect_fields, const std::size_t dbc_size) {
 	if(header.magic != DBC_MAGIC) {
-		std::stringstream err;
-		err << name << ": " << "Invalid header magic - found 0x" << std::hex << header.magic
-		    << ", expected 0x" << DBC_MAGIC;
-		throw std::runtime_error(err.str());
+		auto msg = std::format(
+			"{}: Invalid header magic - found 0x{:X}, expected 0x{:X}",
+			name, header.magic, DBC_MAGIC
+		);
+
+		throw std::runtime_error(std::move(msg));
 	}
 
 	if(header.record_size != expect_size || header.fields != expect_fields) {
-		std::stringstream err;
-		err << name << ": " << "Expected " << expect_fields << " fields, " << expect_size << " byte records "
-		    << "but DBC has " << header.fields << " fields and " << header.record_size << " byte records";
-		throw std::runtime_error(err.str());
+		auto msg = std::format(
+			"{}: Expected {} fields, {} byte records but DBC has {} fields and {} byte records",
+			name, expect_fields, expect_size, header.fields, header.record_size
+		);
+
+		throw std::runtime_error(std::move(msg));
 	}
 
 	const std::size_t calculated_size =
 		sizeof(Header) + header.string_block_size + (header.record_size * header.records);
 
 	if(calculated_size != dbc_size) {
-		std::stringstream err;
-		err << name << ": " << "Invalid size! Expected " << calculated_size << " bytes but the file was "
-		    << dbc_size << " bytes";
-		throw std::runtime_error(err.str());
+		auto msg = std::format(
+			"{}: Invalid size! Expected {} bytes but the file was {} bytes",
+			name, calculated_size, dbc_size
+		);
+
+		throw std::runtime_error(std::move(msg));
 	}
 }
 
