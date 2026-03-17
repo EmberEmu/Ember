@@ -46,7 +46,7 @@ void ClientConnection::send(const protocol::is_packet auto& packet) {
 	LOG_TRACE_ASYNC(logger_,"{} <- {}", remote_address(), protocol::to_string(packet.opcode));
 
 	// we're in a bad state if writing fails, we can't recover
-	if(!write_packet_stream(packet)) {
+	if(!write_packet_stream(packet)) [[unlikely]] {
 		LOG_WARN_ASYNC(logger_, "Failed to write packet to stream");
 		close_session();
 		return;
