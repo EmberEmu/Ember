@@ -10,9 +10,9 @@
 
 #include <shared/utility/MulticharConstant.h>
 #include <boost/endian/arithmetic.hpp>
+#include <format>
 #include <string_view>
 #include <stdexcept>
-#include <sstream>
 #include <cstdint>
 #include <cstddef>
 
