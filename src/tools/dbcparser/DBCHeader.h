@@ -36,7 +36,7 @@ inline void validate_dbc(const std::string_view name, const Header& header, cons
 	if(header.magic != DBC_MAGIC) {
 		auto msg = std::format(
 			"{}: Invalid header magic - found 0x{:X}, expected 0x{:X}",
-			name, header.magic, DBC_MAGIC
+			name, header.magic.value(), DBC_MAGIC
 		);
 
 		throw std::runtime_error(std::move(msg));
@@ -45,7 +45,7 @@ inline void validate_dbc(const std::string_view name, const Header& header, cons
 	if(header.record_size != expect_size || header.fields != expect_fields) {
 		auto msg = std::format(
 			"{}: Expected {} fields, {} byte records but DBC has {} fields and {} byte records",
-			name, expect_fields, expect_size, header.fields, header.record_size
+			name, expect_fields, expect_size, header.fields.value(), header.record_size.value()
 		);
 
 		throw std::runtime_error(std::move(msg));
