@@ -403,7 +403,7 @@ void print_lib_versions(log::Logger& logger) {
 		<< " ("  << drivers::DriverType::version() << ")" << "\n"
 		<< " - PCRE " << PCRE_MAJOR << "." << PCRE_MINOR << "\n"
 		<< " - Zlib " << ZLIB_VERSION
-#ifdef JEMALLOC_VERSION
+#ifdef WITH_JEMALLOC
 		<< "\n" << " - jemalloc " << JEMALLOC_VERSION
 #endif
 		<< LOG_SYNC;
