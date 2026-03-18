@@ -38,6 +38,9 @@
 #include <boost/version.hpp>
 #include <botan/auto_rng.h>
 #include <botan/version.h>
+#ifdef WITH_JEMALLOC
+#include <jemalloc/jemalloc.h>
+#endif
 #include <pcre.h>
 #include <zlib.h>
 #include <chrono>
@@ -399,7 +402,11 @@ void print_lib_versions(log::Logger& logger) {
 		<< " - " << drivers::DriverType::name()
 		<< " ("  << drivers::DriverType::version() << ")" << "\n"
 		<< " - PCRE " << PCRE_MAJOR << "." << PCRE_MINOR << "\n"
-		<< " - Zlib " << ZLIB_VERSION << LOG_SYNC;
+		<< " - Zlib " << ZLIB_VERSION
+#ifdef JEMALLOC_VERSION
+		<< " - jemalloc " << JEMALLOC_VERSION
+#endif
+		<< LOG_SYNC;
 }
 
 opts::variables_map Service::reload_args(const std::string& filename) {
