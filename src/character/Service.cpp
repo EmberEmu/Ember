@@ -149,12 +149,8 @@ void Service::stop() {
 	ctx->conn_pool->get().close();
 }
 
-void Service::stop() {
-	LOG_TRACE_SYNC(logger, "Service termination requested");
-	shutdown();
-}
-
 Service::~Service() {
+	LOG_TRACE_SYNC(logger, "Service termination requested");
 	stop();
 }
 
