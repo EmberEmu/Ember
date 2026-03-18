@@ -20,6 +20,7 @@ RUN apt-get -y update \
  && apt-get install -y zlib1g-dev \
  && apt-get install -y libpcre3-dev \
  && apt-get install -y libflatbuffers-dev \
+ && apt-get install -y libjemalloc-dev \
  && apt-get install -y ccache
 
 RUN if [ -n "$USE_CLANG" ]; then                                        \
@@ -59,9 +60,9 @@ RUN --mount=type=cache,id=build-cache,target=/usr/src/ember/build \
     -DCMAKE_BUILD_TYPE=${build_type}          \
     -DCMAKE_INSTALL_PREFIX=${install_dir}     \
     -DBUILD_OPT_TOOLS=${build_optional_tools} \
-	&& ccache --max-size=10G                  \
+    && ccache --max-size=10G                  \
     && cmake --build build -j$(nproc)         \
-	&& cmake --install build                  \
+    && cmake --install build                  \
     && ctest --test-dir build
 
 FROM ubuntu:resolute AS run_environment
@@ -72,6 +73,7 @@ RUN apt-get -y update \
  && apt-get install -y libbotan-3-10 \
  && apt-get install -y libmysqlcppconn7v5 \
  && apt-get install -y mysql-client
+ && apt-get install -y libjemalloc2 \
 COPY --from=builder ${install_dir} ${install_dir}
 RUN cp configs/*.dist .
 COPY ./sql ${install_dir}/sql
