@@ -53,12 +53,10 @@ namespace ember::login {
 void print_lib_versions(log::Logger& logger);
 
 Service::Service(log::Logger& logger, commands::Registry& registry)
-	: service(thread::hardware_concurrency())
-	, serialise(service)
-	, logger(logger)
+	: logger(logger)
 	, registry(registry)
 	, start_time(std::chrono::steady_clock::now())
-	, stopping_(false) {}
+	, io_context(thread::hardware_concurrency()) {}
 
 /*
  * Starts Asio worker threads, blocking until the launch thread exits
