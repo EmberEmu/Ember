@@ -404,7 +404,7 @@ void print_lib_versions(log::Logger& logger) {
 		<< " - PCRE " << PCRE_MAJOR << "." << PCRE_MINOR << "\n"
 		<< " - Zlib " << ZLIB_VERSION
 #ifdef JEMALLOC_VERSION
-		<< " - jemalloc " << JEMALLOC_VERSION
+		<< "\n" << " - jemalloc " << JEMALLOC_VERSION
 #endif
 		<< LOG_SYNC;
 }
