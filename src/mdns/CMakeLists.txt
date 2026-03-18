@@ -46,13 +46,14 @@ add_library(${LIBRARY_NAME} ${SERVICE_LIB_LINKAGE}
     $<TARGET_OBJECTS:${LIBRARY_OBJECTS}>
 )
 
+if(BUILD_SHARED)
+	target_compile_definitions(${LIBRARY_NAME} PUBLIC EXPORT_SERVICE)
+endif()
+
 add_dependencies(${LIBRARY_NAME} SPARK_RPC_GENERATE)
 target_include_directories(${LIBRARY_OBJECTS} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(${LIBRARY_OBJECTS} PUBLIC service shared spark commands)
-target_link_libraries(${LIBRARY_NAME} PRIVATE spark PUBLIC logger commands shared ${Boost_LIBRARIES} Threads::Threads)
-
-target_compile_definitions(${LIBRARY_OBJECTS} PUBLIC EXPORT_SERVICE)
-target_link_libraries(${LIBRARY_NAME} PRIVATE ${LIBRARY_OBJECTS} INTERFACE commands logger ${Boost_LIBRARIES} PUBLIC Threads::Threads)
+target_link_libraries(${LIBRARY_NAME} PRIVATE ${LIBRARY_OBJECTS} spark INTERFACE commands logger ${Boost_LIBRARIES} PUBLIC shared Threads::Threads)
 
 if(WIN32)
     set(ICON_RESOURCE resources.rc)

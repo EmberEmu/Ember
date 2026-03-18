@@ -105,6 +105,10 @@ add_dependencies(${LIBRARY_NAME}
     SPARK_RPC_GENERATE
 )
 
+if(BUILD_SHARED)
+	target_compile_definitions(${LIBRARY_NAME} PUBLIC EXPORT_SERVICE)
+endif()
+
 target_compile_definitions(${LIBRARY_NAME} PUBLIC EXPORT_SERVICE)
 target_link_libraries(${LIBRARY_NAME} PRIVATE thread nsd conpool stun ports dbcreader protocol spark ${ZLIB_LIBRARY} Threads::Threads PUBLIC service logger commands shared ${Boost_LIBRARIES})
 

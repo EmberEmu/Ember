@@ -9,11 +9,15 @@
 #pragma once
 
 #ifdef _WIN32
-	#ifdef EXPORT_SERVICE 
-		#define EMBER_EXPORT_SERVICE __declspec(dllexport) 
+	#ifdef BUILD_SHARED_SERVICES
+		#ifdef EXPORT_SERVICE
+			#define EMBER_EXPORT_SERVICE __declspec(dllexport) 
+		#else
+			#define EMBER_EXPORT_SERVICE __declspec(dllimport) 
+		#endif // EXPORT_SERVICE
 	#else
-		#define EMBER_EXPORT_SERVICE __declspec(dllimport) 
-	#endif
+		#define EMBER_EXPORT_SERVICE
+	#endif // BUILD_SHARED_SERVICES
 #else
 	#define EMBER_EXPORT_SERVICE
-#endif
+#endif // _WIN32

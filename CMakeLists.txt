@@ -87,7 +87,7 @@ option(BUILD_SHARED ${BUILD_SHARED_MSG} OFF)
 set(CMAKE_POSITION_INDEPENDENT_CODE ${BUILD_SHARED})
 
 if (BUILD_SHARED)
-	add_compile_definitions(EXPORT_SERVICE)
+	add_compile_definitions(BUILD_SHARED_SERVICES)
 	set(SERVICE_LIB_LINKAGE "SHARED")
 else()
 	set(SERVICE_LIB_LINKAGE "STATIC")
@@ -188,7 +188,7 @@ include_directories(${ZLIB_INCLUDE_DIR})
 find_package(PCRE 8.39 REQUIRED)
 include_directories(${PCRE_INCLUDE_DIR})
 
-if (BUILD_SHARED)
+if(NOT BUILD_SHARED)
 	add_compile_definitions(PCRE_STATIC)
 endif()
 
