@@ -60,6 +60,7 @@ RUN --mount=type=cache,id=build-cache,target=/usr/src/ember/build \
     -DCMAKE_BUILD_TYPE=${build_type}          \
     -DCMAKE_INSTALL_PREFIX=${install_dir}     \
     -DBUILD_OPT_TOOLS=${build_optional_tools} \
+    -DWITH_JEMALLOC=1                         \
     && ccache --max-size=10G                  \
     && cmake --build build -j$(nproc)         \
     && cmake --install build                  \
