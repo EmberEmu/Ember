@@ -130,7 +130,7 @@ std::optional<PatchMeta> Patcher::find_patch(const GameVersion& client_version,
 }
 
 auto Patcher::check_version(const GameVersion& client_version) const -> PatchLevel {
-	if(std::ranges::find(versions_, client_version) != versions_.end()) {
+	if(std::ranges::contains(versions_, client_version)) {
 		return PatchLevel::ok;
 	}
 

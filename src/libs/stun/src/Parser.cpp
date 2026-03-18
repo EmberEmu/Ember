@@ -338,9 +338,7 @@ bool Parser::check_attr_validity(const Attributes attr_type, const MessageType m
 	 */
 	if(required) {
 		if(const auto rfc = attr_req_lut.find(attr_type); rfc != attr_req_lut.end()) {
-			const auto res = std::ranges::find(rfc->second, mode_);
-
-			if(res == rfc->second.end()) { // definitely not our fault... probably
+			if(!std::ranges::contains(rfc->second, mode_)) { // definitely not our fault... probably
 				logger_(Severity::debug, Error::resp_bad_req_attr_server);
 				return false;
 			}

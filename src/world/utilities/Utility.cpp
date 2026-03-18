@@ -63,7 +63,7 @@ bool validate_maps(std::span<const std::int32_t> maps, const dbc::Store<dbc::Map
 		return true;
 	};
 
-	return std::ranges::find(maps, false, validate) == maps.end();
+	return !std::ranges::contains(maps, false, validate);
 }
 
 void print_maps(std::span<const std::int32_t> maps, const dbc::Store<dbc::Map>& dbc, log::Logger& logger) {
