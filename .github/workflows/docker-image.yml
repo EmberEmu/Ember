@@ -92,8 +92,8 @@ jobs:
           tags: emberemu/ember:latest-gcc
           push: ${{ github.event_name != 'pull_request' }}
           load: ${{ github.event_name == 'pull_request' }}
-          cache-from: type=registry,ref=emberemu/ember:buildcache-gcc
-          cache-to: type=registry,ref=emberemu/ember:buildcache-gcc,mode=max
+          cache-from: type=registry,ref=emberemu/ember:buildcache-gcc-shared
+          cache-to: type=registry,ref=emberemu/ember:buildcache-gcc-shared,mode=max
 
   build-clang:
     runs-on: ubuntu-latest
