@@ -10,7 +10,7 @@
 
 #include "FilterTypes.h"
 #include "NetworkSession.h"
-#include "SessionBuilders.h"
+#include "SessionBuilder.h"
 #include "SessionManager.h"
 #include "SocketType.h"
 #include <logger/Logger.h>
@@ -101,6 +101,10 @@ public:
 		acceptor_.set_option(boost::asio::ip::tcp::no_delay(tcp_no_delay));
 		acceptor_.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
 		accept_connection();
+	}
+
+	~NetworkListener() {
+		shutdown();
 	}
 
 	void shutdown() {

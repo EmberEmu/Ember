@@ -9,27 +9,27 @@
 #include "Authentication.h"
 #include "ClientContext.h"
 #include "../AccountClient.h"
-#include "../ClientHandler.h"
-#include "../Config.h"
-#include "../RealmQueue.h"
 #include "../ClientConnection.h"
-#include "../Locator.h"
-#include "../EventDispatcher.h"
+#include "../ClientHandler.h"
 #include "../ClientLogHelper.h"
-#include "../Events.h"
+#include "../ConfigStore.h"
 #include "../Digest.h"
+#include "../EventDispatcher.h"
+#include "../Events.h"
+#include "../Locator.h"
+#include "../RealmQueue.h"
+#include <logger/Logger.h>
 #include <protocol/Opcodes.h>
 #include <protocol/PacketHeaders.h>
 #include <protocol/Packets.h>
-#include <spark/buffers/pmr/Buffer.h>
 #include <shared/game/GameVersion.h>
+#include <spark/buffers/pmr/Buffer.h>
 #include <shared/utility/EnumHelper.h>
 #include <shared/utility/UTF8String.h>
 #include <shared/utility/xoroshiro128plus.h>
-#include <logger/Logger.h>
 #include <boost/container/small_vector.hpp>
-#include <algorithm>
 #include <gsl/narrow>
+#include <algorithm>
 #include <utility>
 #include <cstddef>
 #include <cstdint>
@@ -80,7 +80,9 @@ void handle_authentication(ClientContext& ctx) {
 		<< auth_ctx.packet->username
 		<< LOG_ASYNC;
 	
-	const bool build_res = std::ranges::any_of(Locator::builds(), [&](auto& version) {
+	const auto& config = Locator::config_store()->config();
+
+	const bool build_res = std::ranges::any_of(config.allowed_builds, [&](auto& version) {
 		return version.build == auth_ctx.packet->build;
 	});
 
@@ -202,8 +204,9 @@ void prove_session(ClientContext& ctx, const Botan::BigInt& key) {
 	 // todo, allowing for multiple realms to connect to a single world server
 	 // will require an external service to keep track of available slots
 	unsigned int active_players = 0;
+	const auto& config = Locator::config_store()->config();
 
-	if(active_players < Locator::config()->max_slots) {
+	if(active_players < config.max_slots) {
 		auth_success(ctx);
 	} else {
 		auth_queue(ctx);
@@ -307,7 +310,8 @@ void handle_timeout(ClientContext& ctx) {
 
 void enter(ClientContext& ctx) {
 	ctx.state_ctx = Context{};
-	ctx.handler.start_timer(Locator::config()->auth_timeout);
+	const auto& config = Locator::config_store()->config();
+	ctx.handler.start_timer(config.auth_timeout);
 	send_auth_challenge(ctx);
 }
 

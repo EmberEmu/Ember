@@ -15,7 +15,7 @@
 #include <logger/Logger.h>
 #include <boost/program_options/variables_map.hpp>
 
-namespace ember::account {
+namespace ember::login {
 
 auto init_database(const boost::program_options::variables_map& args,
                    log::Logger& logger) -> connection_pool::Pool<drivers::DriverType> {
@@ -37,4 +37,4 @@ auto init_database(const boost::program_options::variables_map& args,
 	return pool;
 }
 
-} // account, ember
+} // login, ember

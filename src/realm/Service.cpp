@@ -7,31 +7,21 @@
  */
 
 #include "Service.h"
-#include "AccountClient.h"
-#include "CharacterClient.h"
-#include "Config.h"
 #include "DBCRequired.h"
-#include "EventDispatcher.h"
 #include "FilterTypes.h"
 #include "Locator.h"
 #include "LoggingCallbacks.h"
-#include "NetworkListener.h"
-#include "RealmQueue.h"
-#include "RealmService.h"
-#include "WorldRPCClient.h"
+#include "ServiceContextImpl.h"
 #include <conpool/ConnectionPool.h>
 #include <conpool/Policies.h>
 #include <conpool/drivers/AutoSelect.h>
 #include <dbcreader/Reader.h>
 #include <logger/Logger.h>
 #include <nsd/NSD.h>
-#include <ports/Forward.h>
 #include <ports/Utility.h>
-#include <spark/Server.h>
 #include <shared/utility/EnumHelper.h>
 #include <shared/database/daos/RealmDAO.h>
 #include <shared/database/daos/UserDAO.h>
-#include <shared/game/GameVersion.h>
 #include <shared/game/Utility.h>
 #include <shared/utility/cstring_view.hpp>
 #include <shared/utility/LogConfig.h>
@@ -44,12 +34,17 @@
 #include <thread/Utility.h>
 #include <boost/asio/dispatch.hpp>
 #include <boost/asio/io_context.hpp>
+#include <boost/program_options.hpp>
 #include <boost/version.hpp>
 #include <botan/auto_rng.h>
 #include <botan/version.h>
+#ifdef WITH_JEMALLOC
+#include <jemalloc/jemalloc.h>
+#endif
 #include <pcre.h>
 #include <zlib.h>
 #include <chrono>
+#include <fstream>
 #include <format>
 #include <memory>
 #include <ranges>
@@ -71,52 +66,46 @@ void print_lib_versions(log::Logger& logger);
 Service::Service(log::Logger& logger, commands::Registry& registry)
 	: logger(logger)
 	, registry(registry)
-	, start_time(std::chrono::steady_clock::now()) {}
+	, stop_flag(0) {}
 
-/*
- * Starts Asio worker threads, blocking until the launch thread exits
- * upon error or signal handling.
- * 
- * io_context is only stopped after the thread joins to ensure that all
- * services can cleanly shut down upon destruction without requiring
- * explicit shutdown() calls in a signal handler.
- */
 int Service::run(const opts::variables_map& args) try {
-	const auto concurrency = thread::hardware_concurrency([&](auto msg) {
-		LOG_ERROR_SYNC(logger, "{}", msg);
-	});
+	auto concurrency = args["misc.concurrency"].as<unsigned int>();
 
-	// Start Asio service pool
-	LOG_INFO_SYNC(logger, "Starting service pool with {} threads", concurrency);
-	thread::ServicePool service_pool(concurrency, BOOST_ASIO_CONCURRENCY_HINT_UNSAFE_IO);
-	service_pool.run();
-
-	std::thread thread([&]() {
-		thread::set_name("Launcher");
-		launch(args, service_pool);
-	});
-
-	thread.join();
-
-	if(eptr) {
-		std::rethrow_exception(eptr);
+	if(!concurrency) {
+		concurrency = thread::hardware_concurrency([&](auto msg) {
+			LOG_ERROR_SYNC(logger, "{}", msg);
+		});
 	}
 
+	LOG_INFO_SYNC(logger, "Starting service pool with {} threads", concurrency);
+	auto ctx = context.get();
+	ctx->service_pool = std::make_unique<thread::ServicePool>(
+		concurrency, BOOST_ASIO_CONCURRENCY_HINT_UNSAFE_IO
+	);
+
+	std::jthread runner([&] {
+		stop_flag.acquire();
+		ctx->service_pool->shutdown();
+	});
+
+	initialise(args);
+	ctx->service_pool->run();
+	runner.join();
+
+	LOG_INFO_SYNC(logger, "{} stopped", app_name);
 	return EXIT_SUCCESS;
 } catch(const std::exception& e) {
 	LOG_FATAL_SYNC(logger, "{}", e.what());
 	return EXIT_FAILURE;
 }
 
-void Service::stop() {
-	stop_flag.release();
-}
-
-void Service::launch(const opts::variables_map& args, thread::ServicePool& service_pool) try {
+void Service::initialise(const opts::variables_map& args) try {
+	auto ctx = context.get();
 	const auto time = std::chrono::steady_clock::now();
+
 	print_lib_versions(logger);
 
-	const auto allowed_builds = args["realm.builds"].as<std::vector<GameVersion>>();
+	auto allowed_builds = args["realm.builds"].as<std::vector<GameVersion>>();
 	std::string builds;
 
 	for(const auto& client : allowed_builds) {
@@ -150,47 +139,36 @@ void Service::launch(const opts::variables_map& args, thread::ServicePool& servi
 		LOG_DEBUG(logger) << message << LOG_SYNC;
 	});
 
-	auto dbc_store = loader.load(dbcs_required);
+	ctx->dbcs = std::make_unique<dbc::Storage>(std::move(loader.load(dbcs_required)));
 
 	LOG_INFO_SYNC(logger, "Resolving DBC references...");
-	dbc::link(dbc_store);
+	dbc::link(*ctx->dbcs);
 
 	const auto realm_id = args["realm.id"].as<unsigned int>();
 	LOG_INFO_SYNC(logger, "Loading configuration for realm ID {}", realm_id);
-	auto realm = load_realm(args, logger);
-	
-	if(!realm) {
+
+	if(auto realm = load_realm(args, logger)) {
+		ctx->realm = std::make_unique<Realm>(std::move(*realm));
+	} else {
 		throw std::invalid_argument(
 			std::format("Configured realm ID {} does not exist in database.", realm_id)
 		);
 	}
-	
-	const auto& title = std::format("{} - {}", app_name, realm->name);
+
+	const auto& title = std::format("{} - {}", app_name, ctx->realm->name);
 	utility::set_window_title(title);
 
 	// Validate category & region
-	const auto& cat_name = category_name(*realm, dbc_store.cfg_categories);
-	LOG_INFO_SYNC(logger, "Serving as realm for {} ({})", realm->name, cat_name);
-
-	// Determine concurrency level
-	unsigned int concurrency = 0;
-	
-	if(args.count("misc.concurrency")) {
-		concurrency = args["misc.concurrency"].as<unsigned int>();
-	} else {
-		concurrency = thread::hardware_concurrency([&](auto msg) {
-			LOG_ERROR_SYNC(logger, "{}", msg);
-		});
-	}
+	const auto& cat_name = category_name(*ctx->realm, ctx->dbcs->cfg_categories);
+	LOG_INFO_SYNC(logger, "Serving as realm for {} ({})", ctx->realm->name, cat_name);
 
 	LOG_INFO_SYNC(logger, "Starting event dispatcher...");
-	EventDispatcher dispatcher(service_pool, logger);
+	ctx->dispatcher = std::make_unique<EventDispatcher>(*ctx->service_pool, logger);
 
 	LOG_INFO_SYNC(logger, "Starting Spark service...");
 	const auto& s_address = args["spark.address"].as<std::string>();
 	auto s_port = args["spark.port"].as<std::uint16_t>();
 
-	auto& service = service_pool.get();
 	const auto port = args["network.port"].as<std::uint16_t>();
 	const auto& interface = args["network.interface"].as<std::string>();
 	const auto tcp_no_delay = args["network.tcp_no_delay"].as<bool>();
@@ -200,14 +178,14 @@ void Service::launch(const opts::variables_map& args, thread::ServicePool& servi
 	};
 
 	// If the database port differs from the config file port, use the config file port
-	if(port != realm->port) {
+	if(port != ctx->realm->port) {
 		LOG_WARN_SYNC(
 			logger, "Configured port {} differs from database entry port {}, using {}",
-			port, realm->port, port
+			port, ctx->realm->port, port
 		);
 
-		realm->port = port;
-		update_realm_address(*realm);
+		ctx->realm->port = port;
+		update_realm_address(*ctx->realm);
 	}
 
 	// Retrieve STUN result
@@ -218,83 +196,127 @@ void Service::launch(const opts::variables_map& args, thread::ServicePool& servi
 		log_stun_result(stun, result, port, logger);
 
 		if(result) {
-			realm->ip = stun::extract_ip_to_string(*result);
-			update_realm_address(*realm);
+			ctx->realm->ip = stun::extract_ip_to_string(*result);
+			update_realm_address(*ctx->realm);
 		}
 	}
 
+	LOG_INFO_SYNC(logger, "Realm will be advertised on {}", ctx->realm->address);
+
 	// Start port forwarding
-	std::unique_ptr<ports::Forward> forward;
+	auto& service = ctx->service_pool->get();
 
 	if(forward_enabled) {
 		const auto mode = args["forward.method"].as<ports::Forward::Method>();
 		const auto gateway = args["forward.gateway"].as<std::string>();
 
-		forward = std::make_unique<ports::Forward>(
+		ctx->port_daemon = std::make_unique<ports::Forward>(
 			service, mode, interface, gateway, port, [&](auto severity, auto message) {
 				forward_log_callback(severity, message, logger);
 			}
 		);
 	}
-
-	Config config {
-		.realm = *realm,
-		.realm_id = realm_id,
-		.max_slots = args["realm.max_slots"].as<unsigned int>(),
-		.auth_timeout = std::chrono::seconds(args["realm.auth_timeout"].as<unsigned int>()),
-		.char_list_timeout = std::chrono::seconds(args["realm.char_list_timeout"].as<unsigned int>())
-	};
-
-	LOG_INFO_SYNC(logger, "Realm will be advertised on {}", realm->address);
-
-	RealmQueue realm_queue(service_pool.get());
 	
+	// Load config into store
+	const auto config = generate_config(args);
+	ctx->config_store = std::make_unique<ConfigStore>(config);
+	update_config(config, true);
+
 	LOG_INFO_SYNC(logger, "Starting RPC services...");
-	spark::Server spark(service_pool.get(), app_name, s_address, s_port, logger);
-	RealmService realm_svc(spark, *realm, logger);
-	AccountClient acct_svc(spark, logger);
-	CharacterClient char_svc(spark, config, logger);
-	WorldRPCClient world_svc(spark, logger);
+	ctx->rpc = std::make_unique<spark::Server>(ctx->service_pool->get(), app_name, s_address, s_port, logger);
+	ctx->rpc_realm = std::make_unique<RealmService>(*ctx->rpc, *ctx->realm, logger);
+	ctx->rpc_account= std::make_unique<AccountClient>(*ctx->rpc, logger);
+	ctx->rpc_character = std::make_unique<CharacterClient>(*ctx->rpc, *ctx->config_store, logger);
+	ctx->rpc_world = std::make_unique<WorldRPCClient>(*ctx->rpc, logger);
 
 	const auto& nsd_host = args["nsd.host"].as<std::string>();
 	const auto nsd_port = args["nsd.port"].as<std::uint16_t>();
-
-	NetworkServiceDiscovery nds(spark, nsd_host, nsd_port, logger);
+	ctx->rpc_discovery = std::make_unique<NetworkServiceDiscovery>(*ctx->rpc, nsd_host, nsd_port, logger);
+	ctx->queue = std::make_unique<RealmQueue>(ctx->service_pool->get());
 
 	// set services - not the best design pattern but it'll do for now
-	Locator::set(allowed_builds);
-	Locator::set(&dispatcher);
-	Locator::set(&realm_queue);
-	Locator::set(&realm_svc);
-	Locator::set(&acct_svc);
-	Locator::set(&char_svc);
-	Locator::set(&config);
-	
+	// todo, this can probably be removed now
+	Locator::set(ctx->dispatcher.get());
+	Locator::set(ctx->queue.get());
+	Locator::set(ctx->rpc_account.get());
+	Locator::set(ctx->rpc_character.get());
+	Locator::set(ctx->rpc_realm.get());
+	Locator::set(ctx->config_store.get());
+
 	// Misc. information
 	const auto max_socks = utility::max_sockets_desc();
 	LOG_INFO_SYNC(logger, "Max allowed sockets: {}", max_socks);
 
 	// Start network listener
 	LOG_INFO_SYNC(logger, "Starting network service...");
-
-	NetworkListener server(service_pool, interface, port, tcp_no_delay, logger);
-
-	LOG_INFO_SYNC(logger, "Started network service on {}:{}", interface, server.port());
+	ctx->server = std::make_unique<NetworkListener>(*ctx->service_pool, interface, port, tcp_no_delay, logger);
+	LOG_INFO_SYNC(logger, "Started network service on {}:{}", interface, ctx->server->port());
+	
+	// Install service command handlers
+	LOG_INFO_SYNC(logger, "Registering command handlers...");
+	register_commands();
 
 	// All done setting up
-	boost::asio::dispatch(service, [&]() {
-		realm_svc.set_online();
+	boost::asio::dispatch(service, [&, time]() {
+		auto ctx = context.get();
+		ctx->rpc_realm->set_online();
 
 		LOG_INFO_SYNC(logger, "{} started successfully in {}", app_name,
 			utility::start_time_format(time));
 
 		start_time = std::chrono::steady_clock::now();
 	});
-	
-	stop_flag.acquire();
-	LOG_INFO_SYNC(logger, "{} shutting down...", app_name);
 } catch(...) {
-	eptr = std::current_exception();
+	stop_flag.release();
+	std::rethrow_exception(std::current_exception());
+}
+
+void Service::register_commands() {
+	auto ctx = context.get();
+
+	ctx->cmd_exec = std::make_unique<utility::CommandExecutor>(
+		ctx->service_pool->get(), [&](auto reason) {
+			LOG_CONSOLE_ERROR_ASYNC(logger, "Command could not be executed, {}", reason);
+		}
+	);
+
+	auto cmd = registry.scoped_insert(commands::Command::create("config_reload")
+		->optional_argument("filename", commands::args::Type::at_string)
+		->description("Reload the service configuration")
+		->handler(ctx->cmd_exec->wrap([&](auto arguments) {
+			std::string config_file;
+
+			if(auto it = arguments.find("filename"); it != arguments.end()) {
+				config_file = std::get<std::string>(it->second);
+			} else {
+				config_file = "realm.conf";
+			}
+
+			try {
+				const auto config = generate_config(reload_args(config_file));
+				update_config(config);
+				LOG_CONSOLE_ASYNC(logger, "Configuration file successfully reloaded");
+			} catch(const std::exception& e) {
+				LOG_CONSOLE_ERROR_ASYNC(logger, "Could not reload configuration, '{}'", e.what());
+			}
+		})
+	));
+
+	ctx->commands.emplace_back(std::move(cmd));
+}
+
+void Service::update_config(const Config& config, bool post_only) {
+	auto ctx = context.get();
+
+	if(post_only) {
+		ctx->config_store->update_default_config(config);
+	}
+
+	for(auto& service : *ctx->service_pool) {
+		boost::asio::dispatch(*service, [&, ctx, config] {
+			ctx->config_store->update_thread_config(config);
+		});
+	}
 }
 
 std::string_view category_name(const Realm& realm, const dbc::Store<dbc::Cfg_Categories>& dbc) {
@@ -305,6 +327,19 @@ std::string_view category_name(const Realm& realm, const dbc::Store<dbc::Cfg_Cat
 	}
 
 	throw std::invalid_argument("Unknown category/region combination in database");
+}
+
+Config Service::generate_config(const opts::variables_map& args) {
+	auto ctx = context.get();
+
+	return Config {
+		.realm = ctx->realm.get(),
+		.realm_id = ctx->realm->id,
+		.max_slots = args["realm.max_slots"].as<unsigned int>(),
+		.auth_timeout = std::chrono::seconds(args["realm.auth_timeout"].as<unsigned int>()),
+		.char_list_timeout = std::chrono::seconds(args["realm.char_list_timeout"].as<unsigned int>()),
+		.allowed_builds = args["realm.builds"].as<std::vector<GameVersion>>()
+	};
 }
 
 /*
@@ -334,6 +369,25 @@ std::optional<Realm> load_realm(const opts::variables_map& args, log::Logger& lo
 	return realm_dao.get_realm(args["realm.id"].as<unsigned int>());
 }
 
+
+void Service::stop() {
+	bool expected = false;
+
+	if(!stopped.compare_exchange_strong(expected, true)) {
+		return;
+	}
+
+	LOG_TRACE_SYNC(logger, "{} shutting down...", app_name);
+	auto ctx = context.get();
+
+	boost::asio::post(ctx->service_pool->get(), [this] {
+		auto ctx = context.get();
+		ctx->cmd_exec->signal_stop();
+		context.reset();
+		stop_flag.release();
+	});
+}
+
 Service::~Service() {
 	stop();
 }
@@ -348,14 +402,35 @@ void print_lib_versions(log::Logger& logger) {
 		<< " - " << drivers::DriverType::name()
 		<< " ("  << drivers::DriverType::version() << ")" << "\n"
 		<< " - PCRE " << PCRE_MAJOR << "." << PCRE_MINOR << "\n"
-		<< " - Zlib " << ZLIB_VERSION << LOG_SYNC;
+		<< " - Zlib " << ZLIB_VERSION
+#ifdef WITH_JEMALLOC
+		<< "\n" << " - jemalloc " << JEMALLOC_VERSION
+#endif
+		<< LOG_SYNC;
+}
+
+opts::variables_map Service::reload_args(const std::string& filename) {
+	opts::options_description config_opts;
+	config_opts.add(options());
+	std::ifstream stream(filename);
+
+	if(!stream) {
+		throw std::invalid_argument(
+			std::format(R"(Unable to open configuration file "{}")", filename)
+		);
+	}
+
+	opts::variables_map options;
+	opts::store(opts::parse_config_file(stream, config_opts), options);
+	opts::notify(options);
+	return options;
 }
 
 opts::options_description Service::options() {
 	opts::options_description opts;
 	opts.add_options()
 		("dbc.path", opts::value<std::string>()->required())
-		("misc.concurrency", opts::value<unsigned int>())
+		("misc.concurrency", opts::value<unsigned int>()->required())
 		("realm.builds", opts::value<std::vector<GameVersion>>()->composing()->required())
 		("realm.id", opts::value<unsigned int>()->required())
 		("realm.max_slots", opts::value<unsigned int>()->required())

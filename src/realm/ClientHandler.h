@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2025 Ember
+ * Copyright (c) 2016 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -51,10 +51,10 @@ public:
 	void close();
 	std::string_view client_identify() const;
 
-	template<protocol::is_packet T>
+	template<protocol::is_packet<BinaryStream> T>
 	std::optional<T> deserialise(BinaryStream& stream);
 
-	bool deserialise(protocol::is_packet auto& packet, BinaryStream& stream);
+	bool deserialise(protocol::is_packet<BinaryStream> auto& packet, BinaryStream& stream);
 	void skip(BinaryStream& stream);
 
 	void state_update(ClientState new_state);

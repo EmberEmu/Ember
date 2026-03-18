@@ -68,4 +68,8 @@ std::uint16_t NetworkListener::port() const {
 	return acceptor_.local_endpoint().port();
 }
 
+NetworkListener::~NetworkListener() {
+	shutdown();
+}
+
 } // realm, ember

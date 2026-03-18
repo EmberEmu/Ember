@@ -30,8 +30,7 @@ class EMBER_EXPORT_SERVICE Service final : public IService {
 	boost::asio::io_context service;
 	ServiceContext context;
 
-	void initialise(const boost::program_options::variables_map& args, boost::asio::io_context& service);
-	void shutdown();
+	void initialise(const boost::program_options::variables_map& args);
 
 public:
 	static boost::program_options::options_description options();

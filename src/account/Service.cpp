@@ -36,17 +36,15 @@ Service::Service(log::Logger& logger, commands::Registry& registry)
 	, service(BOOST_ASIO_CONCURRENCY_HINT_UNSAFE_IO) {}
 
 int Service::run(const opts::variables_map& args) try {
-	initialise(args, service);
+	initialise(args);
 	service.run();
-
-	LOG_INFO_SYNC(logger, "{} shutting down...", app_name);
 	return EXIT_SUCCESS;
 } catch(const std::exception& e) {
 	LOG_FATAL_SYNC(logger, "{}", e.what());
 	return EXIT_FAILURE;
 }
 
-void Service::initialise(const opts::variables_map& args, boost::asio::io_context& service) {
+void Service::initialise(const opts::variables_map& args) {
 	const auto time = std::chrono::steady_clock::now();
 	auto ctx = context.get();
 	
@@ -96,20 +94,11 @@ void Service::initialise(const opts::variables_map& args, boost::asio::io_contex
 	});
 }
 
-void Service::shutdown() {
-	auto ctx = context.get();
-	ctx->thread_pool->shutdown();
-	ctx->spark->shutdown();
-	ctx->conn_pool->get().close();
-}
-
 void Service::stop() {
 	LOG_TRACE_SYNC(logger, "Service termination requested");
-	shutdown();
-}
-
-Service::~Service() {
-	stop();
+	auto ctx = context.get();
+	ctx->thread_pool->shutdown();
+	ctx->conn_pool->get().close();
 }
 
 opts::options_description Service::options() {

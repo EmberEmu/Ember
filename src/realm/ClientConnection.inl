@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 - 2025 Ember
+ * Copyright (c) 2018 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -13,7 +13,7 @@
 
 namespace ember::realm {
 
-template<protocol::is_packet PacketType>
+template<protocol::is_packet<BinaryStream> PacketType>
 bool ClientConnection::write_packet_stream(const PacketType& packet) {
 	using SizeType = typename PacketType::SizeType;
 
@@ -42,11 +42,11 @@ bool ClientConnection::write_packet_stream(const PacketType& packet) {
 	return true;
 }
 
-void ClientConnection::send(const protocol::is_packet auto& packet) {
+void ClientConnection::send(const protocol::is_packet<BinaryStream> auto& packet) {
 	LOG_TRACE_ASYNC(logger_,"{} <- {}", remote_address(), protocol::to_string(packet.opcode));
 
 	// we're in a bad state if writing fails, we can't recover
-	if(!write_packet_stream(packet)) {
+	if(!write_packet_stream(packet)) [[unlikely]] {
 		LOG_WARN_ASYNC(logger_, "Failed to write packet to stream");
 		close_session();
 		return;

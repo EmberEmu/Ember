@@ -17,7 +17,6 @@ set(LIBRARY_SRC
 )
 
 add_library(${LIBRARY_NAME} ${LIBRARY_HDR} ${LIBRARY_SRC})
-add_dependencies(${LIBRARY_NAME} FB_SCHEMA_COMPILE)
 add_dependencies(${LIBRARY_NAME} SPARK_RPC_GENERATE)
 target_link_libraries(${LIBRARY_NAME} PUBLIC logger shared ${Boost_LIBRARIES} PRIVATE spark)
 

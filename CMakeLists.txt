@@ -21,64 +21,64 @@ set(CMAKE_CXX_STANDARD_REQUIRED OFF)
 set(CMAKE_STATIC_LIBRARY_PREFIX "")
 
 if(MSVC)
-	set(CMAKE_SYSTEM_VERSION 10.0)
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /MP") # Multiprocessor compilation
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP") # Multiprocessor compilation
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Zc:preprocessor")  # Enable the conforming preprocessor
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /permissive-")  # Conformance mode
+    set(CMAKE_SYSTEM_VERSION 10.0)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /MP") # Multiprocessor compilation
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP") # Multiprocessor compilation
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Zc:preprocessor")  # Enable the conforming preprocessor
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /permissive-")  # Conformance mode
 
-	# Release build without the optimisations for faster iteration
-	set(CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebInfo;MinSizeRel;ReleaseUnoptimised" CACHE STRING "Build types" FORCE)
-	set(CMAKE_EXE_LINKER_FLAGS_RELEASEUNOPTIMISED "${CMAKE_EXE_LINKER_FLAGS_RELEASE}" CACHE STRING "" FORCE)
+    # Release build without the optimisations for faster iteration
+    set(CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebInfo;MinSizeRel;ReleaseUnoptimised" CACHE STRING "Build types" FORCE)
+    set(CMAKE_EXE_LINKER_FLAGS_RELEASEUNOPTIMISED "${CMAKE_EXE_LINKER_FLAGS_RELEASE}" CACHE STRING "" FORCE)
 
-	option(AVX2 "Enable AVX2 instruction set" ON)
+    option(AVX2 "Enable AVX2 instruction set" ON)
 
-	add_compile_options(
-		# Enable intrinsics
-		"$<$<CONFIG:Release>:/Oi>"
-		"$<$<CONFIG:RelWithDebInfo>:/Oi>"
+    add_compile_options(
+        # Enable intrinsics
+        "$<$<CONFIG:Release>:/Oi>"
+        "$<$<CONFIG:RelWithDebInfo>:/Oi>"
 
-		# Whole program optimisation
-		"$<$<CONFIG:Release>:/GL>"
-		"$<$<CONFIG:RelWithDebInfo>:/GL>"
+        # Whole program optimisation
+        "$<$<CONFIG:Release>:/GL>"
+        "$<$<CONFIG:RelWithDebInfo>:/GL>"
 
-		# Favour speed over size
-		"$<$<CONFIG:Release>:/Ot>"
-		"$<$<CONFIG:RelWithDebInfo>:/Ot>"
+        # Favour speed over size
+        "$<$<CONFIG:Release>:/Ot>"
+        "$<$<CONFIG:RelWithDebInfo>:/Ot>"
 
-		# Disable optimisations
-		"$<$<CONFIG:ReleaseUnoptimised>:/Od>"
+        # Disable optimisations
+        "$<$<CONFIG:ReleaseUnoptimised>:/Od>"
 
-		# String pooling
-		"$<$<CONFIG:Release>:/GF>"
-		"$<$<CONFIG:RelWithDebInfo>:/GF>"
+        # String pooling
+        "$<$<CONFIG:Release>:/GF>"
+        "$<$<CONFIG:RelWithDebInfo>:/GF>"
 
-		# Disable buffer security checks
-		"$<$<CONFIG:Release>:/GS->"
-		"$<$<CONFIG:ReleaseWithDebInfo>:/GS->"
-		"$<$<CONFIG:ReleaseUnoptimised>:/GS->"
-	)
+        # Disable buffer security checks
+        "$<$<CONFIG:Release>:/GS->"
+        "$<$<CONFIG:ReleaseWithDebInfo>:/GS->"
+        "$<$<CONFIG:ReleaseUnoptimised>:/GS->"
+    )
 
-	# Enable AVX2
-	if(AVX2)
-		add_compile_options(
-			"$<$<CONFIG:Release>:/arch:AVX2>"
-			"$<$<CONFIG:RelWithDebInfo>:/arch:AVX2>"
-		)
-	endif()
-	
-	add_link_options(
-		 # Link-time code generation
-		"$<$<CONFIG:Release>:/LTCG:INCREMENTAL>"
-		"$<$<CONFIG:RelWithDebInfo>:/LTCG:INCREMENTAL>"
+    # Enable AVX2
+    if(AVX2)
+        add_compile_options(
+            "$<$<CONFIG:Release>:/arch:AVX2>"
+            "$<$<CONFIG:RelWithDebInfo>:/arch:AVX2>"
+        )
+    endif()
+    
+    add_link_options(
+         # Link-time code generation
+        "$<$<CONFIG:Release>:/LTCG:INCREMENTAL>"
+        "$<$<CONFIG:RelWithDebInfo>:/LTCG:INCREMENTAL>"
 
-		"$<$<CONFIG:Release>:/ignore:4075>"
-		"$<$<CONFIG:RelWithDebInfo>:/ignore:4075>"
-	)
+        "$<$<CONFIG:Release>:/ignore:4075>"
+        "$<$<CONFIG:RelWithDebInfo>:/ignore:4075>"
+    )
 
-	if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 19.36)
-		message(FATAL_ERROR "You need VS2022 17.6.0 or newer to compile Ember on Windows!")
-	endif()
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 19.36)
+        message(FATAL_ERROR "You need VS2022 17.6.0 or newer to compile Ember on Windows!")
+    endif()
 endif()
 
 set(BUILD_SHARED_MSG "Builds the services as shared libraries - generated code may be slower but Fusion service reloading is enabled")
@@ -119,6 +119,12 @@ if (WIN32)
     get_WIN32_WINNT(ver)
     add_compile_definitions(_WIN32_WINNT=${ver})
 endif(WIN32)
+
+option(WITH_JEMALLOC "Compile with Jemalloc, replacing the system allocator" OFF)
+
+if(WITH_JEMALLOC)
+    add_compile_definitions(WITH_JEMALLOC)
+endif()
 
 ##############################
 #            Boost           #
@@ -187,6 +193,14 @@ if (BUILD_SHARED)
 endif()
 
 ##############################
+#          JEMALLOC          #
+##############################
+if(WITH_JEMALLOC)
+    find_package(Jemalloc REQUIRED)
+    link_libraries(Jemalloc::Jemalloc)
+endif()
+
+##############################
 #         Google Test        #
 ##############################
 include(FetchContent)
@@ -216,6 +230,7 @@ enable_testing()
 add_subdirectory(tests)
 add_subdirectory(src)
 add_subdirectory(configs)
+add_subdirectory(scripts)
 add_subdirectory(deps)
 
 # Enables folder view in Visual Studio solutions

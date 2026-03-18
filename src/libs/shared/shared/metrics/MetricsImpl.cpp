@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2025 Ember
+ * Copyright (c) 2015 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,6 +8,7 @@
 
 #include <shared/metrics/MetricsImpl.h>
 #include <boost/asio/connect.hpp>
+#include <format>
 #include <functional>
 #include <memory>
 #include <sstream>
@@ -31,15 +32,13 @@ void MetricsImpl::shutdown() {
 }
 
 void MetricsImpl::increment(const char* key, std::intmax_t value) {
-	std::stringstream format;
-	format << key << ":" << value << "|c";
-	send(format.str());
+	auto format = std::format("{}:{}|c", key, value);
+	send(std::move(format));
 }
 
 void MetricsImpl::timing(const char* key, const std::chrono::milliseconds& value) {
-	std::stringstream format;
-	format << key << ":" << value.count() << "|ms";
-	send(format.str());
+	auto format = std::format("{}:{}|ms", key, value.count());
+	send(std::move(format));
 }
 
 void MetricsImpl::gauge(const char* key, std::uintmax_t value, Adjustment adjustment) {
@@ -61,9 +60,8 @@ void MetricsImpl::gauge(const char* key, std::uintmax_t value, Adjustment adjust
 }
 
 void MetricsImpl::set(const char* key, std::intmax_t value) {
-	std::stringstream format;
-	format << key << ":" << value << "|s";
-	send(format.str());
+	auto format = std::format("{}:{}|s", key, value);
+	send(std::move(format));
 }
 
 void MetricsImpl::send(std::string message) {

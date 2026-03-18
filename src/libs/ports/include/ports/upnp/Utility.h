@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Ember
+ * Copyright (c) 2024 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -53,6 +53,6 @@ long long span_to_ll(std::span<const char> span);
    C++ developers arguing about how best to split strings and on why
    the standard still provides no functionality for it will never not be funny
  */
-std::string_view split_argument(const std::string_view input, const char needle);
+std::string_view extract_field_value(const std::string_view input, const char needle);
 
 } // upnp, ports, ember

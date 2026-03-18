@@ -9,7 +9,7 @@
 #include "CharacterList.h"
 #include "ClientContext.h"
 #include "../ClientHandler.h"
-#include "../Config.h"
+#include "../ConfigStore.h"
 #include "../Locator.h"
 #include "../RealmQueue.h"
 #include "../CharacterClient.h"
@@ -24,6 +24,8 @@
 #include <shared/utility/UTF8String.h>
 #include <memory>
 #include <vector>
+
+using namespace std::chrono_literals;
 
 namespace ember::realm::character_list {
 
@@ -170,7 +172,11 @@ void handle_timeout(ClientContext& ctx) {
 } // unnamed
 
 void enter(ClientContext& ctx) {
-	ctx.handler.start_timer(Locator::config()->char_list_timeout);
+	const auto& config = Locator::config_store()->config();
+
+	if(auto timeout = config.char_list_timeout; timeout != 0s) {
+		ctx.handler.start_timer(timeout);
+	}
 }
 
 void handle_packet(ClientContext& ctx, protocol::ClientOpcode opcode) {

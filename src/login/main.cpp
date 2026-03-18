@@ -8,10 +8,9 @@
 
 #include "Service.h"
 #include "commands/Shutdown.h"
+#include <banner/Banner.h>
 #include <logger/CommandSink.h>
 #include <logger/Logger.h>
-#include <banner/Banner.h>
-#include <banner/Banner.h>
 #include <commands/Registry.h>
 #include <commands/Utility.h>
 #include <thread/Utility.h>

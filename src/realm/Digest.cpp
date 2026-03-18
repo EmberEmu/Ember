@@ -9,7 +9,6 @@
 #include "Digest.h"
 #include <algorithm>
 #include <boost/assert.hpp>
-#include <botan/bigint.h>
 #include <botan/hash.h>
 
 namespace ember::realm::digest {

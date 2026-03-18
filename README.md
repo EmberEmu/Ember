@@ -3,7 +3,6 @@
 <h2 align="center">🔥 High-performance, distributed emulator for WoW 1.12</h2>
 <p align="center">
 <a href="https://github.com/EmberEmu/Ember/actions/workflows/docker-image.yml"><img src="https://img.shields.io/github/actions/workflow/status/emberemu/ember/docker-image.yml?logo=githubactions&label=GitHub%20Actions%20CI&logoColor=white&color=e67a19" /></a>
-<a href="https://ci.appveyor.com/project/Chaosvex/ember/branch/development"><img src="https://img.shields.io/appveyor/build/Chaosvex/ember?logo=appveyor&label=Appveyor%20CI&logoColor=white&color=e67a19" /></a>
 </p>
 </p>
 <p align="center">
@@ -48,24 +47,14 @@ Want to do it the hard way? No problem, just see `docs/GettingStarted.md`.
 
 We have a Discord server over at [https://discord.gg/WpPJzQS](https://discord.gg/WpPJzQS) or you can check [our website](https://mmoemulator.com) out for further documentation.
 
-## 💻 Supported platforms
+## ⚙️ Supported platforms & compilers
 
-Ember aims to support the following platforms as a minimum:
-
-| Operating System  | Architectures |
-| :------------ |:---------------:|
-| Linux         | x86, x64, ARMv7 |
-| Windows       | x86, x64        |
-| Mac OS        | x86, x64        |
-
-## ⚙️ Supported compilers
-
-Any compiler version equal or greater than the supported version should be capable of compiling Ember.
+Ember supports most platforms and architectures. Any compiler version equal or greater than the supported version should be capable of compiling Ember.
 |       |  Supported  |   Minimum   |
 |-------|:-----------:|:-----------:|
 | MSVC  | 19.30 (VS2022) | 19.30 (VS2022) |
 | Clang |     21     |     21     |
-| GCC   |     16     |     15     |
+| GCC   |     15     |     15     |
 
 > [!NOTE]
 > Minimum versions support all language features required to build the project but will not receive any fixes to support their continued use (e.g. compiler-specific workarounds).
@@ -79,7 +68,6 @@ Ember currently targets C++26. The use of future language additions is permitted
 |  | master  | development |
 | :------------ |:---------------:|:---------------:|
 | GitHub   | [![Docker Image CI](https://github.com/EmberEmu/Ember/actions/workflows/docker-image.yml/badge.svg?branch=master)](https://github.com/EmberEmu/Ember/actions/workflows/docker-image.yml)| [![Docker Image CI](https://github.com/EmberEmu/Ember/actions/workflows/docker-image.yml/badge.svg?branch=development)](https://github.com/EmberEmu/Ember/actions/workflows/docker-image.yml) |
-| AppVeyor | [![Build status](https://ci.appveyor.com/api/projects/status/wtctwhykqeelwk4g/branch/master?svg=true)](https://ci.appveyor.com/project/Chaosvex/ember/branch/master) | [![Build status](https://ci.appveyor.com/api/projects/status/wtctwhykqeelwk4g/branch/development?svg=true)](https://ci.appveyor.com/project/Chaosvex/ember/branch/development)  |
 | Coverity | [![Coverity Scan Status](https://scan.coverity.com/projects/5653/badge.svg)](https://scan.coverity.com/projects/5653) | [![Coverity Scan Status](https://scan.coverity.com/projects/5653/badge.svg)](https://scan.coverity.com/projects/5653) |
 
 ##  💤 License

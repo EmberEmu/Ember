@@ -67,7 +67,7 @@ void Connection::send(Message&& buffer) {
  * entire message will be received with one receive call
  */
 asio::awaitable<std::size_t> Connection::read_until(const std::size_t offset,
-                                                  const std::size_t read_size) {
+                                                    const std::size_t read_size) {
 	std::size_t received = offset;
 
 	while(received < read_size) {

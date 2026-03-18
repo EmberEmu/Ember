@@ -30,10 +30,10 @@ constexpr std::optional<std::uint32_t> key_recover(std::span<const std::uint32_t
 		std::uint32_t data[2]{};
 
 		for(std::uint32_t j = 0; j < 0x100; ++j) {
-			std::uint32_t key1 = combined_keys - CRYPT_TABLE[0x400 + j];
+			std::uint32_t key1 = combined_keys - crypt_table[0x400 + j];
 			std::uint32_t key2 = 0xEEEEEEEE;
 
-			key2 += CRYPT_TABLE[0x400 + (key1 & 0xFF)];
+			key2 += crypt_table[0x400 + (key1 & 0xFF)];
 			data[0] = sectors[0] ^ (key1 + key2);
 
 			if(data[0] == expected) {
@@ -42,7 +42,7 @@ constexpr std::optional<std::uint32_t> key_recover(std::span<const std::uint32_t
 				key1 = ((~key1 << 0x15) + 0x11111111) | (key1 >> 0x0B);
 				key2 = data[0] + key2 + (key2 << 5) + 3;
 
-				key2 += CRYPT_TABLE[0x400 + (key1 & 0xFF)];
+				key2 += crypt_table[0x400 + (key1 & 0xFF)];
 				data[1] = sectors[1] ^ (key1 + key2);
 
 				if(data[1] <= max_value) {

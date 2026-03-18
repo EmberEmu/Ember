@@ -2280,7 +2280,7 @@ class Renderer : public NodeVisitor {
     return std::make_shared<json>(*result);
   }
 
-  void throw_renderer_error(const std::string& message, const AstNode& node) {
+  [[noreturn]] void throw_renderer_error(const std::string& message, const AstNode& node) {
     const SourceLocation loc = get_source_location(current_template->content, node.pos);
     INJA_THROW(RenderError(message, loc));
   }

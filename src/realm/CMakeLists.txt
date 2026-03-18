@@ -58,6 +58,9 @@ set(LIBRARY_HDR
     WorldRPCClient.h
     Digest.h
     DBCRequired.h
+    ServiceContext.h
+    ServiceContextImpl.h
+    ConfigStore.h
 )
 
 set(LIBRARY_SRC
@@ -86,12 +89,16 @@ set(LIBRARY_SRC
     Service.cpp
     WorldRPCClient.cpp
     Digest.cpp
+    ServiceContext.cpp
 )
 
 add_library(${LIBRARY_NAME} ${SERVICE_LIB_LINKAGE} 
     ${LIBRARY_HDR}
     ${LIBRARY_SRC}
 )
+
+add_dependencies(${LIBRARY_NAME} SPARK_RPC_GENERATE)
+target_link_libraries(${LIBRARY_NAME} PRIVATE thread nsd conpool stun ports dbcreader protocol spark ${ZLIB_LIBRARY} Threads::Threads PUBLIC logger commands shared ${Boost_LIBRARIES})
 
 add_dependencies(${LIBRARY_NAME}
     FB_SCHEMA_COMPILE

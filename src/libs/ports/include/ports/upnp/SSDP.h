@@ -49,15 +49,15 @@ class SSDP final {
 	                                             const int version);
 
 	ErrorCode validate_message(std::span<const std::uint8_t> datagram);
-	asio::awaitable<void> start_ssdp_search(const std::string_view type, std::string_view subtype, int version);
-	asio::awaitable<void> read_broadcasts();
+	boost::asio::awaitable<void> start_ssdp_search(const std::string_view type, std::string_view subtype, int version);
+	boost::asio::awaitable<void> read_broadcasts();
 	LocateResult build_locate_result(std::span<const std::uint8_t> datagram);
 
 public:
 	SSDP(const std::string& bind, boost::asio::io_context& ctx);
 
 	void locate_gateways(LocateHandler&& handler);
-	asio::awaitable<LocateResult> locate_gateways(use_awaitable_t);
+	boost::asio::awaitable<LocateResult> locate_gateways(use_awaitable_t);
 	std::future<LocateResult> locate_gateways(use_future_t);
 
 	void search(const std::string& type, const std::string& subtype,

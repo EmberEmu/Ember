@@ -36,7 +36,7 @@ set(GRUNT_SRC
 
 set(LIBRARY_HDR
     Actions.h
-    SessionBuilders.h
+    SessionBuilder.h
     LoginSession.h
     NetworkListener.h
     NetworkSession.h
@@ -63,6 +63,9 @@ set(LIBRARY_HDR
     SocketType.h
     Service.h
     LoggingCallbacks.h
+    InitHelpers.h
+    ServiceContext.h
+    ServiceContextImpl.h
 )
 
 set(LIBRARY_SRC
@@ -77,6 +80,8 @@ set(LIBRARY_SRC
     ExecutablesChecksum.cpp
     LocaleMap.cpp
     Survey.cpp
+    Service.cpp
+    ServiceContext.cpp
     Service.cpp
 	Patcher.cpp
     PINAuthenticator.cpp
@@ -93,7 +98,7 @@ set(EXECUTABLE_SOURCE
     main.cpp
     commands/Shutdown.h
     commands/Shutdown.cpp
-	${ICON_RESOURCE}
+    ${ICON_RESOURCE}
 )
 
 source_group("Grunt Protocol" FILES ${GRUNT_SRC})
@@ -112,7 +117,6 @@ add_library(${LIBRARY_NAME} ${SERVICE_LIB_LINKAGE}
 )
 
 add_dependencies(${LIBRARY_NAME}
-    FB_SCHEMA_COMPILE
     SPARK_RPC_GENERATE
 )
 
@@ -120,6 +124,8 @@ target_compile_definitions(${LIBRARY_OBJECTS} PUBLIC EXPORT_SERVICE)
 target_link_libraries(${LIBRARY_NAME} PRIVATE ${LIBRARY_OBJECTS} INTERFACE service logger commands shared ${Boost_LIBRARIES})
 target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 set_target_properties(${LIBRARY_NAME} PROPERTIES OUTPUT_NAME ${LIBRARY_OBJECTS})
+add_dependencies(${LIBRARY_NAME} SPARK_RPC_GENERATE)
+target_link_libraries(${LIBRARY_NAME} PRIVATE thread spark srp6 stun ports ${ZLIB_LIBRARY} dbcreader botan::botan-static Threads::Threads PUBLIC logger commands shared ${Boost_LIBRARIES})
 
 add_executable(${EXECUTABLE_NAME} ${EXECUTABLE_SOURCE})
 target_link_libraries(${EXECUTABLE_NAME} PRIVATE ${LIBRARY_NAME} banner logger commands shared ${Boost_LIBRARIES} Threads::Threads)

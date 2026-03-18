@@ -8,7 +8,9 @@
 
 #pragma once
 
+#include <shared/game/GameVersion.h>
 #include <chrono>
+#include <vector>
 
 namespace ember {
 
@@ -19,11 +21,12 @@ struct Realm;
 namespace ember::realm {
 
 struct Config {
-	Realm& realm;
+	Realm* realm;
 	unsigned int realm_id;
 	unsigned int max_slots;
 	std::chrono::seconds auth_timeout;
 	std::chrono::seconds char_list_timeout;
+	std::vector<GameVersion> allowed_builds;
 };
 
 } // realm, ember

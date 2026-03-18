@@ -16,13 +16,13 @@ namespace ember::commands {
 
 struct Argument {
 	std::string name;
-	bool required;
 	args::Type type;
+	bool required;
 
 	Argument(std::string name, bool required, args::Type type)
-		: name(std::move(name)),
-		  required(required),
-		  type(type) {}
+		: name(std::move(name))
+		, required(required)
+		, type(type) {}
 };
 
 } // commands, ember

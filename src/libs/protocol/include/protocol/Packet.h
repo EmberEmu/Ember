@@ -17,14 +17,11 @@ namespace ember::protocol {
 
 template<typename HeaderType, typename HeaderType::OpcodeType op_, typename Payload>
 struct Packet final {
-	struct packet_tag_t{};
-	using packet_tag = packet_tag_t;
-
 	using OpcodeType = typename HeaderType::OpcodeType;
 	using SizeType = protocol::SizeType;
 
 	static constexpr OpcodeType opcode = op_;
-	static constexpr std::size_t HEADER_wire_size = HeaderType::wire_size;
+	static constexpr std::size_t header_wire_size = HeaderType::wire_size;
 
 	Payload payload;
 

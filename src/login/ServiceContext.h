@@ -8,17 +8,23 @@
 
 #pragma once
 
-#include "NSDService.h"
-#include "Server.h"
-#include <spark/Server.h>
 #include <memory>
 
-namespace ember::dns {
+namespace ember::login {
 
-struct ServiceContext::Impl {
-	std::unique_ptr<NSDService> nsd_service;
-	std::unique_ptr<spark::Server> spark;
-	std::unique_ptr<Server> server;
+class ServiceContext {
+	class Impl;
+	std::unique_ptr<Impl> impl;
+
+public:
+	ServiceContext();
+	~ServiceContext();
+
+	Impl* get() {
+		return impl.get();
+	}
+
+	void reset();
 };
 
-} // dns, ember
+} // login, ember
