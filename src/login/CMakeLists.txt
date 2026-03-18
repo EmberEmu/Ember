@@ -120,12 +120,14 @@ add_dependencies(${LIBRARY_NAME}
     SPARK_RPC_GENERATE
 )
 
-target_compile_definitions(${LIBRARY_OBJECTS} PUBLIC EXPORT_SERVICE)
-target_link_libraries(${LIBRARY_NAME} PRIVATE ${LIBRARY_OBJECTS} INTERFACE service logger commands shared ${Boost_LIBRARIES})
+if(BUILD_SHARED)
+	target_compile_definitions(${LIBRARY_NAME} PUBLIC EXPORT_SERVICE)
+endif()
+
 target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 set_target_properties(${LIBRARY_NAME} PROPERTIES OUTPUT_NAME ${LIBRARY_OBJECTS})
 add_dependencies(${LIBRARY_NAME} SPARK_RPC_GENERATE)
-target_link_libraries(${LIBRARY_NAME} PRIVATE thread spark srp6 stun ports ${ZLIB_LIBRARY} dbcreader botan::botan-static Threads::Threads PUBLIC logger commands shared ${Boost_LIBRARIES})
+target_link_libraries(${LIBRARY_NAME} PUBLIC service PRIVATE ${LIBRARY_OBJECTS} thread spark srp6 stun ports ${ZLIB_LIBRARY} dbcreader botan::botan-static Threads::Threads PUBLIC logger commands shared ${Boost_LIBRARIES})
 
 add_executable(${EXECUTABLE_NAME} ${EXECUTABLE_SOURCE})
 target_link_libraries(${EXECUTABLE_NAME} PRIVATE ${LIBRARY_NAME} banner logger commands shared ${Boost_LIBRARIES} Threads::Threads)

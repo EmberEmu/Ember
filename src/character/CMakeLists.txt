@@ -35,6 +35,10 @@ add_library(${LIBRARY_NAME} ${SERVICE_LIB_LINKAGE}
     ${LIBRARY_SRC}
 )
 
+if(BUILD_SHARED)
+	target_compile_definitions(${LIBRARY_NAME} PUBLIC EXPORT_SERVICE)
+endif()
+
 target_compile_definitions(${LIBRARY_NAME} PUBLIC EXPORT_SERVICE)
 add_dependencies(${LIBRARY_NAME} FB_SCHEMA_COMPILE)
 add_dependencies(${LIBRARY_NAME} SPARK_RPC_GENERATE)

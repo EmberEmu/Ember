@@ -34,6 +34,10 @@ add_library(${LIBRARY_NAME} ${SERVICE_LIB_LINKAGE}
     ${LIBRARY_SRC}
 )
 
+if(BUILD_SHARED)
+	target_compile_definitions(${LIBRARY_NAME} PUBLIC EXPORT_SERVICE)
+endif()
+
 add_dependencies(${LIBRARY_NAME} SPARK_RPC_GENERATE)
 target_link_libraries(${LIBRARY_NAME} PRIVATE dbcreader spark Threads::Threads PUBLIC logger commands shared ${Boost_LIBRARIES})
 
