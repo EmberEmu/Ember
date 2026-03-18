@@ -101,6 +101,10 @@ void Service::stop() {
 	ctx->conn_pool->get().close();
 }
 
+Service::~Service() {
+	stop();
+}
+
 opts::options_description Service::options() {
 	opts::options_description opts;
 	opts.add_options()
