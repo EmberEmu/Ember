@@ -72,8 +72,9 @@ WORKDIR ${install_dir}
 RUN apt-get -y update \
  && apt-get install -y libbotan-3-10 \
  && apt-get install -y libmysqlcppconn7v5 \
- && apt-get install -y mysql-client
- && apt-get install -y libjemalloc2 \
+ && apt-get install -y mysql-client \
+ && apt-get install -y libjemalloc2 
+
 COPY --from=builder ${install_dir} ${install_dir}
 RUN cp configs/*.dist .
 COPY ./sql ${install_dir}/sql
