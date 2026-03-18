@@ -149,6 +149,11 @@ void Service::stop() {
 	ctx->conn_pool->get().close();
 }
 
+Service::~Service() {
+	LOG_TRACE_SYNC(logger, "Service termination requested");
+	stop();
+}
+
 opts::options_description Service::options() {
 	opts::options_description opts;
 	opts.add_options()
@@ -187,5 +192,17 @@ opts::options_description Service::options() {
 		("monitor.port", opts::value<std::uint16_t>()->required());
 	return opts;
 }
+
+extern "C" {
+
+EMBER_EXPORT_SERVICE Service* create_character(log::Logger& logger, commands::Registry& registry) {
+	return Service::create(logger, registry).release();
+}
+
+EMBER_EXPORT_SERVICE void destroy_character(Service* service) {
+	std::unique_ptr<Service>{service};
+}
+
+} // extern "C"
 
 } // character, ember

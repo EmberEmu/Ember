@@ -5,7 +5,8 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 set(EXECUTABLE_NAME mdns)
-set(LIBRARY_NAME    libmdns)
+set(LIBRARY_NAME    mdns_shared) # Shared library
+set(LIBRARY_OBJECTS libmdns)     # Object library
 
 set(LIBRARY_HDR
     ServiceRegistry.h
@@ -36,9 +37,22 @@ set(LIBRARY_SRC
     ServiceContext.cpp
 )
 
-add_library(${LIBRARY_NAME} ${LIBRARY_HDR} ${LIBRARY_SRC})
+add_library(${LIBRARY_OBJECTS} OBJECT
+    ${LIBRARY_HDR}
+	${LIBRARY_SRC}
+)
+
+add_library(${LIBRARY_NAME} ${SERVICE_LIB_LINKAGE} 
+    $<TARGET_OBJECTS:${LIBRARY_OBJECTS}>
+)
+
 add_dependencies(${LIBRARY_NAME} SPARK_RPC_GENERATE)
+target_include_directories(${LIBRARY_OBJECTS} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(${LIBRARY_OBJECTS} PUBLIC service shared spark commands)
 target_link_libraries(${LIBRARY_NAME} PRIVATE spark PUBLIC logger commands shared ${Boost_LIBRARIES} Threads::Threads)
+
+target_compile_definitions(${LIBRARY_OBJECTS} PUBLIC EXPORT_SERVICE)
+target_link_libraries(${LIBRARY_NAME} PRIVATE ${LIBRARY_OBJECTS} INTERFACE commands logger ${Boost_LIBRARIES} PUBLIC Threads::Threads)
 
 if(WIN32)
     set(ICON_RESOURCE resources.rc)
@@ -49,8 +63,9 @@ add_executable(${EXECUTABLE_NAME}
     ${ICON_RESOURCE}
 )
 
-target_link_libraries(${EXECUTABLE_NAME} PRIVATE ${LIBRARY_NAME} banner logger commands shared ${Boost_LIBRARIES} Threads::Threads)
+target_link_libraries(${EXECUTABLE_NAME} PRIVATE ${LIBRARY_NAME} service banner logger commands shared ${Boost_LIBRARIES} Threads::Threads)
 
-install(TARGETS ${EXECUTABLE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})
-set_target_properties(mdns PROPERTIES FOLDER "Services/Applications")
-set_target_properties(libmdns PROPERTIES FOLDER "Services/Libraries")
+install(TARGETS ${EXECUTABLE_NAME} ${LIBRARY_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})
+set_target_properties(${EXECUTABLE_NAME} PROPERTIES FOLDER "Services/Applications")
+set_target_properties(${LIBRARY_OBJECTS} PROPERTIES FOLDER "Services/Libraries")
+set_target_properties(${LIBRARY_NAME} PROPERTIES FOLDER "Shared Service Libraries")

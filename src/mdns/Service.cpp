@@ -80,6 +80,10 @@ void Service::stop() {
 	ctx->server->shutdown();
 }
 
+Service::~Service() {
+	stop();
+}
+
 opts::options_description Service::options() {
 	opts::options_description opts;
 	opts.add_options()
@@ -111,5 +115,17 @@ opts::options_description Service::options() {
 		("file_log.log_severity", opts::value<bool>()->required());
 	return opts;
 }
+
+extern "C" {
+
+EMBER_EXPORT_SERVICE Service* create_mdns(log::Logger& logger, commands::Registry& registry) {
+	return Service::create(logger, registry).release();
+}
+
+EMBER_EXPORT_SERVICE void destroy_mdns(Service* service) {
+	std::unique_ptr<Service>{service};
+}
+
+} // extern "C"
 
 } // dns, ember

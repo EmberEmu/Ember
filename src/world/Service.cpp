@@ -82,6 +82,10 @@ void Service::stop() {
 	// todo
 }
 
+Service::~Service() {
+	stop();
+}
+
 opts::options_description Service::options() {
 	opts::options_description opts;
 	opts.add_options()
@@ -118,5 +122,17 @@ opts::options_description Service::options() {
 		("world.map_id", opts::value<std::vector<std::int32_t>>()->required());
 	return opts;
 }
+
+extern "C" {
+
+EMBER_EXPORT_SERVICE Service* create_world(log::Logger& logger, commands::Registry& registry) {
+	return Service::create(logger, registry).release();
+}
+
+EMBER_EXPORT_SERVICE void destroy_world(Service* service) {
+	std::unique_ptr<Service>{service};
+}
+
+} // extern "C"
 
 } // world, ember

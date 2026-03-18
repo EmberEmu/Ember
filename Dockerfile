@@ -17,7 +17,9 @@ RUN apt-get -y update \
  # Install required library packages
  && apt-get install -y libbotan-3-dev \
  && apt-get install -y libmysqlcppconn-dev \
- && apt-get install -y zlib1g-dev \
+ && apt-get install -y zlib1g \ 
+ && apt-get install -y zlib1g-dev \ 
+ && apt-get install -y libpcre3 \
  && apt-get install -y libpcre3-dev \
  && apt-get install -y libflatbuffers-dev \
  && apt-get install -y libjemalloc-dev \
@@ -37,7 +39,7 @@ RUN wget -q https://archives.boost.io/release/1.90.0/source/boost_1_90_0.tar.gz 
  && tar -zxf boost_1_90_0.tar.gz \
  && cd boost_1_90_0 \
  && ./bootstrap.sh --with-libraries=system,program_options,headers \
- && ./b2 link=static install -d0 -j $(nproc) cxxflags="-std=c++23"
+ && ./b2 link=shared,static install -d0 -j $(nproc) cxxflags="-std=c++23"
 
 # Copy source
 ARG working_dir=/usr/src/ember
@@ -51,6 +53,7 @@ ENV CCACHE_DIR=${working_dir}/build/.ccache
 # CMake arguments
 # These can be overriden by passing them through to `docker build`
 ARG build_optional_tools=1
+ARG build_shared_libs=0
 ARG build_type=Rel
 ARG install_dir=/usr/local/bin
 
@@ -60,6 +63,7 @@ RUN --mount=type=cache,id=build-cache,target=/usr/src/ember/build \
     -DCMAKE_BUILD_TYPE=${build_type}          \
     -DCMAKE_INSTALL_PREFIX=${install_dir}     \
     -DBUILD_OPT_TOOLS=${build_optional_tools} \
+    -DBUILD_SHARED=${build_shared_libs}       \
     -DWITH_JEMALLOC=1                         \
     && ccache --max-size=10G                  \
     && cmake --build build -j$(nproc)         \

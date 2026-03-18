@@ -5,7 +5,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 set(EXECUTABLE_NAME world)
-set(LIBRARY_NAME libworld)
+set(LIBRARY_NAME    libworld)
 
 set(LIBRARY_HDR
     Service.h
@@ -29,9 +29,15 @@ set(LIBRARY_SRC
     utilities/Utility.cpp
 )
 
-add_library(${LIBRARY_NAME} ${LIBRARY_HDR} ${LIBRARY_SRC})
+add_library(${LIBRARY_NAME} ${SERVICE_LIB_LINKAGE} 
+    ${LIBRARY_HDR}
+    ${LIBRARY_SRC}
+)
+
 add_dependencies(${LIBRARY_NAME} SPARK_RPC_GENERATE)
 target_link_libraries(${LIBRARY_NAME} PRIVATE dbcreader spark Threads::Threads PUBLIC logger commands shared ${Boost_LIBRARIES})
+
+target_link_libraries(${LIBRARY_NAME} PRIVATE dbcreader spark Threads::Threads PUBLIC service logger commands shared ${Boost_LIBRARIES})
 
 if(WIN32)
     set(ICON_RESOURCE resources.rc)
@@ -42,8 +48,9 @@ add_executable(${EXECUTABLE_NAME}
     ${ICON_RESOURCE}
 )
 
+target_compile_definitions(${LIBRARY_NAME} PUBLIC EXPORT_SERVICE)
 target_link_libraries(${EXECUTABLE_NAME} PRIVATE ${LIBRARY_NAME} banner logger commands shared ${Boost_LIBRARIES})
 
-install(TARGETS ${EXECUTABLE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})
-set_target_properties(world PROPERTIES FOLDER "Services/Applications")
-set_target_properties(libworld PROPERTIES FOLDER "Services/Libraries")
+install(TARGETS ${EXECUTABLE_NAME} ${LIBRARY_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})
+set_target_properties(${EXECUTABLE_NAME} PROPERTIES FOLDER "Services/Applications")
+set_target_properties(${LIBRARY_NAME} PROPERTIES FOLDER "Services/Libraries")

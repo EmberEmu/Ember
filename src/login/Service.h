@@ -11,13 +11,14 @@
 #include "ServiceContext.h"
 #include <logger/LoggerFwd.h>
 #include <commands/Registry.h>
+#include <service/Service.h>
 #include <shared/metrics/Metrics.h>
-#include <thread/Utility.h>
 #include <shared/utility/cstring_view.hpp>
-#include <boost/program_options/variables_map.hpp>
-#include <boost/program_options/options_description.hpp>
+#include <thread/Utility.h>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/strand.hpp>
+#include <boost/program_options/options_description.hpp>
+#include <boost/program_options/variables_map.hpp>
 #include <atomic>
 #include <chrono>
 #include <exception>
@@ -27,7 +28,7 @@ namespace ember::login {
 
 constexpr cstring_view app_name { "Login Daemon" };
 
-class Service {
+class EMBER_EXPORT_SERVICE Service final : public IService {
 	log::Logger& logger;
 	commands::Registry& registry;
 	std::chrono::steady_clock::time_point start_time;
@@ -46,16 +47,18 @@ class Service {
 public:
 	static boost::program_options::options_description options();
 
-	explicit Service(log::Logger& logger, commands::Registry& registry)
-		: logger(logger)
-		, registry(registry)
-		, start_time(std::chrono::steady_clock::now())
-		, io_context(thread::hardware_concurrency()) {}
-
+	Service(log::Logger& logger, commands::Registry& registry);
 	~Service();
 
 	int run(const boost::program_options::variables_map& args);
 	void stop();
+
+	static auto create(log::Logger& logger, commands::Registry& registry) {
+		return std::make_unique<Service>(logger, registry);
+	}
 };
+
+extern "C" EMBER_EXPORT_SERVICE Service* create_login(log::Logger& logger, commands::Registry& registry);
+extern "C" EMBER_EXPORT_SERVICE void destroy_login(Service* service);
 
 } // login, ember

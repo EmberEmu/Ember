@@ -52,6 +52,20 @@ namespace ember::login {
 
 void print_lib_versions(log::Logger& logger);
 
+Service::Service(log::Logger& logger, commands::Registry& registry)
+	: logger(logger)
+	, registry(registry)
+	, start_time(std::chrono::steady_clock::now())
+	, io_context(thread::hardware_concurrency()) {}
+
+/*
+ * Starts Asio worker threads, blocking until the launch thread exits
+ * upon error or signal handling.
+ * 
+ * io_context is only stopped after the thread joins to ensure that all
+ * services can cleanly shut down upon destruction without requiring
+ * explicit shutdown() calls in a signal handler.
+ */
 int Service::run(const opts::variables_map& args) try {
 	initialise(args);
 
@@ -406,5 +420,17 @@ void print_lib_versions(log::Logger& logger) {
 		<< " - PCRE " << PCRE_MAJOR << "." << PCRE_MINOR << "\n"
 		<< " - Zlib " << ZLIB_VERSION << LOG_SYNC;
 }
+
+extern "C" {
+
+EMBER_EXPORT_SERVICE Service* create_login(log::Logger& logger, commands::Registry& registry) {
+	return Service::create(logger, registry).release();
+}
+
+EMBER_EXPORT_SERVICE void destroy_login(Service* service) {
+	std::unique_ptr<Service>{service};
+}
+
+} // extern "C"
 
 } // login, ember

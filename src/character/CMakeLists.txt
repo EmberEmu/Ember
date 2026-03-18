@@ -30,9 +30,15 @@ set(LIBRARY_SRC
 
 include_directories(${CMAKE_SOURCE_DIR}/deps/utf8cpp)
 
-add_library(${LIBRARY_NAME} ${LIBRARY_HDR} ${LIBRARY_SRC})
+add_library(${LIBRARY_NAME} ${SERVICE_LIB_LINKAGE} 
+    ${LIBRARY_HDR}
+    ${LIBRARY_SRC}
+)
+
+target_compile_definitions(${LIBRARY_NAME} PUBLIC EXPORT_SERVICE)
+add_dependencies(${LIBRARY_NAME} FB_SCHEMA_COMPILE)
 add_dependencies(${LIBRARY_NAME} SPARK_RPC_GENERATE)
-target_link_libraries(${LIBRARY_NAME} PRIVATE thread dbcreader spark protocol botan::botan-static Threads::Threads PUBLIC ${Boost_LIBRARIES} logger commands shared)
+target_link_libraries(${LIBRARY_NAME} PRIVATE thread dbcreader spark protocol ${BOTAN_TARGET} Threads::Threads PUBLIC service ${Boost_LIBRARIES} logger commands shared)
 
 if(WIN32)
     set(ICON_RESOURCE resources.rc)
@@ -45,6 +51,6 @@ add_executable(${EXECUTABLE_NAME}
 
 target_link_libraries(${EXECUTABLE_NAME} PRIVATE ${LIBRARY_NAME} banner logger commands shared ${Boost_LIBRARIES} Threads::Threads)
 
-install(TARGETS ${EXECUTABLE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})
-set_target_properties(character PROPERTIES FOLDER "Services/Applications")
-set_target_properties(libcharacter PROPERTIES FOLDER "Services/Libraries")
+install(TARGETS ${EXECUTABLE_NAME} ${LIBRARY_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})
+set_target_properties(${EXECUTABLE_NAME} PROPERTIES FOLDER "Services/Applications")
+set_target_properties(${LIBRARY_NAME} PROPERTIES FOLDER "Services/Libraries")

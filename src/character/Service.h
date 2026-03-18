@@ -9,19 +9,21 @@
 #pragma once
 
 #include "ServiceContext.h"
-#include <logger/LoggerFwd.h>
 #include <commands/Registry.h>
+#include <logger/LoggerFwd.h>
+#include <service/Service.h>
 #include <shared/utility/cstring_view.hpp>
 #include <boost/asio/io_context.hpp>
-#include <boost/program_options/variables_map.hpp>
 #include <boost/program_options/options_description.hpp>
+#include <boost/program_options/variables_map.hpp>
 #include <chrono>
+#include <memory>
 
 namespace ember::character {
 
 constexpr cstring_view app_name { "Character Daemon" };
 
-class Service {
+class EMBER_EXPORT_SERVICE Service final : public IService {
 	log::Logger& logger;
 	commands::Registry& registry;
 	std::chrono::steady_clock::time_point start_time;
@@ -34,13 +36,17 @@ public:
 	static boost::program_options::options_description options();
 
 	Service(log::Logger& logger, commands::Registry& registry);
-
-	~Service() {
-		stop();
-	}
+	~Service();
 
 	int run(const boost::program_options::variables_map& args);
 	void stop();
+
+	static auto create(log::Logger& logger, commands::Registry& registry) {
+		return std::make_unique<Service>(logger, registry);
+	}
 };
+
+extern "C" EMBER_EXPORT_SERVICE Service* create_character(log::Logger& logger, commands::Registry& registry);
+extern "C" EMBER_EXPORT_SERVICE void destroy_character(Service* service);
 
 } // character, ember

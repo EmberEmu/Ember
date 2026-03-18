@@ -5,14 +5,14 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 set(EXECUTABLE_NAME login)
-set(LIBRARY_NAME    liblogin)
+set(LIBRARY_NAME    login_shared) # Shared library
+set(LIBRARY_OBJECTS liblogin)     # Object library
 
 set(GRUNT_SRC
     grunt/Magic.h
     grunt/Exceptions.h
     grunt/ResultCodes.h
     grunt/Handler.h
-    grunt/Handler.cpp
     grunt/Packets.h
     grunt/Packet.h
     grunt/PacketFwd.h
@@ -24,7 +24,7 @@ set(GRUNT_SRC
     grunt/client/SurveyResult.h
     grunt/client/TransferAccept.h
     grunt/client/TransferResume.h
-    grunt/client/TransferCancel.h
+
     grunt/server/LoginChallenge.h
     grunt/server/ReconnectChallenge.h
     grunt/server/LoginProof.h
@@ -74,18 +74,20 @@ set(LIBRARY_SRC
     LoginSession.cpp
     RealmList.cpp
     Authenticator.cpp
-    Patcher.cpp
     MonitorCallbacks.cpp
     AccountClient.cpp
     RealmClient.cpp
-    PINAuthenticator.cpp
     ExecutablesChecksum.cpp
-    PatchGraph.cpp
-    IntegrityData.cpp
     LocaleMap.cpp
     Survey.cpp
     Service.cpp
     ServiceContext.cpp
+    Service.cpp
+	Patcher.cpp
+    PINAuthenticator.cpp
+    IntegrityData.cpp
+    PatchGraph.cpp
+    grunt/Handler.cpp
 )
 
 if(WIN32)
@@ -101,13 +103,34 @@ set(EXECUTABLE_SOURCE
 
 source_group("Grunt Protocol" FILES ${GRUNT_SRC})
 
-add_library(${LIBRARY_NAME} ${LIBRARY_HDR} ${LIBRARY_SRC} ${GRUNT_SRC})
+add_library(${LIBRARY_OBJECTS} OBJECT
+	${LIBRARY_SRC}
+	${LIBRARY_HDR}
+    ${GRUNT_SRC}
+)
+
+target_include_directories(${LIBRARY_OBJECTS} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(${LIBRARY_OBJECTS} PUBLIC ${ZLIB_LIBRARY} ${BOTAN_TARGET} Threads::Threads spark ports dbcreader stun service spark srp6 shared)
+
+add_library(${LIBRARY_NAME} ${SERVICE_LIB_LINKAGE}
+	$<TARGET_OBJECTS:${LIBRARY_OBJECTS}>
+)
+
+add_dependencies(${LIBRARY_NAME}
+    SPARK_RPC_GENERATE
+)
+
+target_compile_definitions(${LIBRARY_OBJECTS} PUBLIC EXPORT_SERVICE)
+target_link_libraries(${LIBRARY_NAME} PRIVATE ${LIBRARY_OBJECTS} INTERFACE service logger commands shared ${Boost_LIBRARIES})
+target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+set_target_properties(${LIBRARY_NAME} PROPERTIES OUTPUT_NAME ${LIBRARY_OBJECTS})
 add_dependencies(${LIBRARY_NAME} SPARK_RPC_GENERATE)
 target_link_libraries(${LIBRARY_NAME} PRIVATE thread spark srp6 stun ports ${ZLIB_LIBRARY} dbcreader botan::botan-static Threads::Threads PUBLIC logger commands shared ${Boost_LIBRARIES})
 
 add_executable(${EXECUTABLE_NAME} ${EXECUTABLE_SOURCE})
 target_link_libraries(${EXECUTABLE_NAME} PRIVATE ${LIBRARY_NAME} banner logger commands shared ${Boost_LIBRARIES} Threads::Threads)
 
-install(TARGETS ${EXECUTABLE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})
-set_target_properties(login PROPERTIES FOLDER "Services/Applications")
-set_target_properties(liblogin PROPERTIES FOLDER "Services/Libraries")
+install(TARGETS ${EXECUTABLE_NAME} ${LIBRARY_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})
+set_target_properties(${EXECUTABLE_NAME} PROPERTIES FOLDER "Services/Applications")
+set_target_properties(${LIBRARY_OBJECTS} PROPERTIES FOLDER "Services/Libraries")
+set_target_properties(${LIBRARY_NAME} PROPERTIES FOLDER "Shared Service Libraries")

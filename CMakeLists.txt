@@ -81,6 +81,18 @@ if(MSVC)
     endif()
 endif()
 
+set(BUILD_SHARED_MSG "Builds the services as shared libraries - generated code may be slower but Fusion service reloading is enabled")
+
+option(BUILD_SHARED ${BUILD_SHARED_MSG} OFF)
+set(CMAKE_POSITION_INDEPENDENT_CODE ${BUILD_SHARED})
+
+if (BUILD_SHARED)
+	add_compile_definitions(EXPORT_SERVICE)
+	set(SERVICE_LIB_LINKAGE "SHARED")
+else()
+	set(SERVICE_LIB_LINKAGE "STATIC")
+endif()
+
 find_package(Threads REQUIRED)
 
 # todo, breaks with 64-bit
@@ -119,7 +131,13 @@ endif()
 ##############################
 add_compile_definitions(BOOST_ALL_NO_LIB)
 add_compile_definitions(BOOST_UUID_FORCE_AUTO_LINK)
-set(Boost_USE_STATIC_LIBS ON)
+
+if(BUILD_SHARED)
+    set(Boost_USE_STATIC_LIBS OFF)
+else()
+    set(Boost_USE_STATIC_LIBS ON)
+endif()
+
 set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
 find_package(Boost 1.90.0 REQUIRED COMPONENTS program_options)
@@ -138,6 +156,12 @@ set(version_file "${CMAKE_CURRENT_BINARY_DIR}/Version.cpp")
 #            Botan           #
 ##############################
 find_package(Botan 3.10 REQUIRED)
+
+if (BUILD_SHARED)
+	set(BOTAN_TARGET botan::botan)
+else()
+	set(BOTAN_TARGET botan::botan-static)
+endif()
 
 ##############################
 #     MySQL Connector C++    #
@@ -162,11 +186,10 @@ include_directories(${ZLIB_INCLUDE_DIR})
 #            PCRE            #
 ##############################
 find_package(PCRE 8.39 REQUIRED)
-option(PCRE_STATIC_LIB "Statically link to PCRE" ON)
 include_directories(${PCRE_INCLUDE_DIR})
 
-if(PCRE_STATIC_LIB)
-    add_compile_definitions(PCRE_STATIC)
+if (BUILD_SHARED)
+	add_compile_definitions(PCRE_STATIC)
 endif()
 
 ##############################

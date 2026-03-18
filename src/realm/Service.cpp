@@ -481,4 +481,16 @@ opts::options_description Service::options() {
 	return opts;
 }
 
+extern "C" {
+
+EMBER_EXPORT_SERVICE Service* create_realm(log::Logger& logger, commands::Registry& registry) {
+	return Service::create(logger, registry).release();
+}
+
+EMBER_EXPORT_SERVICE void destroy_realm(Service* service) {
+	std::unique_ptr<Service>{service};
+}
+
+} // extern "C"
+
 } // realm, ember
