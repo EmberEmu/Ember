@@ -84,7 +84,7 @@ class ClientConnection final {
 	void completion_check();
 	void dispatch_message();
 
-	template<protocol::is_packet T>
+	template<protocol::is_packet<BinaryStream> T>
 	bool write_packet_stream(const T& packet);
 
 	std::size_t minimum_transfer() const;
@@ -116,7 +116,7 @@ public:
 	std::string remote_address() const;
 	void log_packets(bool enable);
 
-	void send(const protocol::is_packet auto& packet);
+	void send(const protocol::is_packet<BinaryStream> auto& packet);
 
 	static void async_shutdown(std::shared_ptr<ClientConnection> client);
 	void close_session(); // should be made private
