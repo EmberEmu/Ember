@@ -9,7 +9,6 @@
 #pragma once
 
 #include <shared/utility/cstring_view.hpp>
-#include <shared/smartenum.hpp>
 #include <array>
 #include <string_view>
 
