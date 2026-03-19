@@ -382,7 +382,7 @@ int launch(const opts::variables_map& args, Registries& registry, bool share_log
 	}
 
 	if(args["realm.active"].as<bool>()) {
-		auto runner = create_runner<service_login, ember::realm::create_realm>(
+		auto runner = create_runner<service_realm, ember::realm::create_realm>(
 			args, registry, share_logger, logger, realm::Service::options()
 		);
 
@@ -390,7 +390,7 @@ int launch(const opts::variables_map& args, Registries& registry, bool share_log
 	}
 
 	if(args["world.active"].as<bool>()) {
-		auto runner = create_runner<service_login, ember::world::create_world>(
+		auto runner = create_runner<service_world, ember::world::create_world>(
 			args, registry, share_logger, logger, world::Service::options()
 		);
 
