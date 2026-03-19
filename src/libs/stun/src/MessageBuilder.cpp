@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 - 2025 Ember
+ * Copyright (c) 2024 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,7 +9,6 @@
 #include <stun/MessageBuilder.h>
 #include <stun/Exception.h>
 #include <stun/detail/Shared.h>
-#include <shared/utility/FNVHash.h>
 #include <gsl/gsl>
 #include <algorithm>
 #include <random>
@@ -19,16 +18,17 @@ namespace ember::stun {
 using namespace detail;
 
 MessageBuilder::MessageBuilder(MessageType type, RFCMode mode)
-	: vba_(buffer_), stream_(vba_) {
+	: vba_(buffer_)
+	, stream_(vba_) {
 	Header header = build_header(type, mode);
 	write_header(header);
 	key_ = generate_key(header.tx_id, mode);
 }
 
 Header MessageBuilder::build_header(const MessageType type, const RFCMode mode) {
-	Header header{};
-	header.type = std::to_underlying(type);
-	header.length = 0;
+	Header header {
+		.type = std::to_underlying(type),
+	};
 
 	if(mode != rfc3489) {
 		header.cookie = MAGIC_COOKIE;
