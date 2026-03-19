@@ -10,10 +10,25 @@ if(WIN32)
     set(ICON_RESOURCE resources.rc)
 endif()
 
-add_executable(${EXECUTABLE_NAME}
+set(SOURCE_LIST
     main.cpp
     CommandHelpers.h
     CommandHelpers.cpp
+    Prototypes.h
+    Library.h
+    ServiceRunner.h
+    ServiceRunner.cpp
+    Wrapped.h
+)
+
+if(WIN32)
+    set(SOURCE_LIST ${SOURCE_LIST} win32/Library.cpp)
+else()
+    set(SOURCE_LIST ${SOURCE_LIST} posix/Library.cpp)
+endif()
+
+add_executable(${EXECUTABLE_NAME}
+    ${SOURCE_LIST}
     ${ICON_RESOURCE}
 )
 

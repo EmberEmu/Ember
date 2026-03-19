@@ -9,6 +9,7 @@
 #pragma once
 
 #include <service/Config.h>
+#include <boost/program_options/variables_map.hpp>
 
 namespace ember {
 
@@ -17,6 +18,7 @@ public:
 	IService() = default;
 	virtual ~IService() = default;
 
+	virtual int run(const boost::program_options::variables_map&) = 0;
 	virtual void stop() = 0;
 };
 
