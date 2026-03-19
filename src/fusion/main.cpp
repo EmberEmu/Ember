@@ -28,6 +28,7 @@
 #include <fstream>
 #include <iostream>
 #include <thread>
+#include <utility>
 
 using namespace ember;
 using namespace ember::fusion;
@@ -96,8 +97,7 @@ int main(int argc, const char* argv[]) try {
 }
 
 template<typename func_type>
-auto create_dyn_service(const cstring_view lib_name, const cstring_view func_name,
-                        log::Logger& logger, commands::Registry& registry) {
+auto locate_symbol(const cstring_view lib_name, const cstring_view func_name) {
 	auto library = fusion::library::open(lib_name);
 
 	if(!library) {
@@ -114,18 +114,20 @@ auto create_dyn_service(const cstring_view lib_name, const cstring_view func_nam
 		);
 	}
 
-	return Wrapped {
-		.service = (*result)(logger, registry),
-		.lib_handle = *library
-	};
+	return std::pair(*library, *result);
 }
 
 template<ServiceIndex idx, auto fn>
 auto create_service(log::Logger& logger, commands::Registry& registry) {
 #ifdef BUILD_SHARED_SERVICES
-	return create_dyn_service<decltype(fn)>(
-		lib_props[idx].libname, lib_props[idx].create_fn, logger, registry
+	auto [library, create_func] = locate_symbol<decltype(fn)>(
+		lib_props[idx].libname, lib_props[idx].create_fn
 	);
+
+	return Wrapped {
+		.service = (create_func)(logger, registry),
+		.lib_handle = library
+	};
 #else
 	return fn(logger, registry);
 #endif
@@ -380,7 +382,7 @@ int launch(const opts::variables_map& args, Registries& registry, bool share_log
 	}
 
 	if(args["realm.active"].as<bool>()) {
-		auto runner = create_runner<service_login, ember::realm::create_realm>(
+		auto runner = create_runner<service_realm, ember::realm::create_realm>(
 			args, registry, share_logger, logger, realm::Service::options()
 		);
 
@@ -388,7 +390,7 @@ int launch(const opts::variables_map& args, Registries& registry, bool share_log
 	}
 
 	if(args["world.active"].as<bool>()) {
-		auto runner = create_runner<service_login, ember::world::create_world>(
+		auto runner = create_runner<service_world, ember::world::create_world>(
 			args, registry, share_logger, logger, world::Service::options()
 		);
 
