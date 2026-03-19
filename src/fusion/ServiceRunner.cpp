@@ -22,7 +22,7 @@ void ServiceRunner::run() {
 	running_ = true;
 
 	worker_ = std::jthread([&] {
-#ifdef BUILD_SHARED
+#ifdef BUILD_SHARED_SERVICES
 		service_.service->run();
 #else
 		service_->run(opts_);
@@ -35,7 +35,7 @@ void ServiceRunner::store_logger(std::unique_ptr<log::Logger> logger) {
 }
 
 void ServiceRunner::stop() {
-#ifdef BUILD_SHARED
+#ifdef BUILD_SHARED_SERVICES
 	service_.service->stop();
 #else
 	service_->stop();

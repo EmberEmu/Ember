@@ -21,7 +21,7 @@ namespace ember::fusion {
 namespace opts = boost::program_options;
 
 class ServiceRunner final {
-#ifdef BUILD_SHARED
+#ifdef BUILD_SHARED_SERVICES
 	using ServiceHandle = Wrapped;
 #else
 	using ServiceHandle = IService*;

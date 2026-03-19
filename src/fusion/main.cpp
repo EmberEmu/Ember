@@ -122,7 +122,7 @@ auto create_dyn_service(const cstring_view lib_name, const cstring_view func_nam
 
 template<ServiceIndex idx, auto fn>
 auto create_service(log::Logger& logger, commands::Registry& registry) {
-#ifdef BUILD_SHARED
+#ifdef BUILD_SHARED_SERVICES
 	return create_dyn_service<decltype(fn)>(
 		lib_props[idx].libname, lib_props[idx].create_fn, logger, registry
 	);
@@ -293,7 +293,7 @@ void service_stop(const std::string& service, log::Logger& logger) {
 	runner->stop();
 	LOG_CONSOLE_ASYNC(logger, "Service stopped");
 
-#ifdef BUILD_SHARED
+#ifdef BUILD_SHARED_SERVICES
 	library::close(runner->handle.lib_handle);
 #endif
 
