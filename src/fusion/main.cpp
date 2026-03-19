@@ -294,7 +294,7 @@ void service_stop(const std::string& service, log::Logger& logger) {
 	LOG_CONSOLE_ASYNC(logger, "Service stopped");
 
 #ifdef BUILD_SHARED_SERVICES
-	library::close(runner->handle.lib_handle);
+	library::close(runner->handle().lib_handle);
 #endif
 
 }

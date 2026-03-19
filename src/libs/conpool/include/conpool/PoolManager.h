@@ -166,6 +166,8 @@ public:
 			cond_.wait_for(lock, interval_);
 			manage_pool();
 		}
+
+		pool_->driver_.thread_exit();
 	} catch(...) {
 		std::lock_guard lock(exception_lock_);
 		exception_ = std::current_exception();
