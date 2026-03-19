@@ -197,11 +197,12 @@ public:
 		}
 
 		try {
-
 			close();
 		} catch(const std::exception& e) { 
 			POOL_LOG(Severity::error, "Closing pool, threw: "s + e.what());
 		}
+
+		driver_.thread_exit();
 	}
 
 	void close() {

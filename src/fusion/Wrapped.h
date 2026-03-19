@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 - 2025 Ember
+ * Copyright (c) 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,10 +8,14 @@
 
 #pragma once
 
-#include <logger/LoggerFwd.h>
+#include "Library.h"
+#include <service/Service.h>
 
-namespace ember::map {
+namespace ember::fusion {
 
-void run(log::Logger& logger, bool& stop_flag);
+struct Wrapped {
+	IService* service;
+	library::Handle lib_handle;
+};
 
-} // map, ember
+} // fusion, ember

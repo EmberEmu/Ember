@@ -1,7 +1,7 @@
 # Fusion configuration
 
 # Specify which services should be run within the Fusion instance
-[dns]
+[mdns]
 active = true
 config = mdns.conf
 
