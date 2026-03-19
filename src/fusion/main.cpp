@@ -115,7 +115,7 @@ auto create_dyn_service(const cstring_view lib_name, const cstring_view func_nam
 	}
 
 	return Wrapped {
-		.service = (*result)(logger, registry)
+		.service = (*result)(logger, registry),
 		.lib_handle = *library
 	};
 }
