@@ -66,7 +66,7 @@ void Service::initialise(const opts::variables_map& args) {
 	ctx->nsd_service = std::make_unique<NSDService>(*ctx->spark, logger);
 
 	// All done setting up
-	boost::asio::dispatch(service, [&]() {
+	boost::asio::dispatch(service, [&, time]() {
 		LOG_INFO_SYNC(logger, "{} started successfully in {}", app_name,
 			utility::start_time_format(time));
 
