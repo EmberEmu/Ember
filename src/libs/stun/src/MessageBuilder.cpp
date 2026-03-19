@@ -18,8 +18,13 @@ namespace ember::stun {
 using namespace detail;
 
 MessageBuilder::MessageBuilder(MessageType type, RFCMode mode)
-	: vba_(buffer_)
-	, stream_(vba_) {
+	: adaptor_(buffer_)
+	, stream_(adaptor_) {
+	buffer_.reserve(buffer_reserve);
+	initiate(type, mode);
+}
+
+void MessageBuilder::initiate(MessageType type, RFCMode mode) {
 	Header header = build_header(type, mode);
 	write_header(header);
 	key_ = generate_key(header.tx_id, mode);
