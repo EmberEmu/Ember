@@ -12,6 +12,6 @@
 
 namespace ember::map {
 
-void run(log::Logger& logger);
+void run(log::Logger& logger, bool& stop_flag);
 
 } // map, ember

@@ -23,7 +23,7 @@ void ServiceRunner::run() {
 
 	worker_ = std::jthread([&] {
 #ifdef BUILD_SHARED_SERVICES
-		service_.service->run();
+		service_.service->run(opts_);
 #else
 		service_->run(opts_);
 #endif

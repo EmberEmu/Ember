@@ -29,6 +29,7 @@ class EMBER_EXPORT_SERVICE Service final : public IService {
 	std::chrono::steady_clock::time_point start_time;
 	boost::asio::io_context service;
 	ServiceContext context;
+	bool stop_flag;
 
 public:
 	static boost::program_options::options_description options();

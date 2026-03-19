@@ -28,7 +28,8 @@ namespace ember::world {
 
 Service::Service(log::Logger& logger, commands::Registry& registry)
 	: logger(logger)
-	, registry(registry) {}
+	, registry(registry)
+	, stop_flag(false) {}
 
 int Service::run(const boost::program_options::variables_map& args) {
 	const auto time = std::chrono::steady_clock::now();
@@ -74,12 +75,16 @@ int Service::run(const boost::program_options::variables_map& args) {
 	LOG_INFO_SYNC(logger, "{} started successfully in {}", app_name, utility::start_time_format(time));
 	start_time = time;
 
-	map::run(logger);
+	map::run(logger, stop_flag);
+
+	// temp bits again
+	ctx->spark->shutdown();
+	LOG_INFO_SYNC(logger, "{} terminated", app_name);
 	return EXIT_SUCCESS;
 }
 
 void Service::stop() {
-	// todo
+	stop_flag = true;
 }
 
 Service::~Service() {

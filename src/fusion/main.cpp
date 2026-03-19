@@ -270,8 +270,9 @@ void service_start(const std::string& service, log::Logger& logger) {
 		idx, *context->args, *context->registries, context->share_logger, *context->logger
 	);
 
+	LOG_CONSOLE_ASYNC(logger, "Starting {} service...", service);
 	runner->run();
-	runners.emplace(service, std::move(runner));
+	runners.insert_or_assign(service, std::move(runner));
 }
 
 void service_stop(const std::string& service, log::Logger& logger) {
