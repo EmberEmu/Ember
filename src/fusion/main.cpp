@@ -125,8 +125,8 @@ auto create_service(log::Logger& logger, commands::Registry& registry) {
 	);
 
 	return Wrapped {
-		.service = (*create_func)(logger, registry),
-		.lib_handle = *library
+		.service = (create_func)(logger, registry),
+		.lib_handle = library
 	};
 #else
 	return fn(logger, registry);
