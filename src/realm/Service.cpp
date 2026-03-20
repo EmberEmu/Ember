@@ -204,7 +204,7 @@ void Service::initialise(const opts::variables_map& args) try {
 	LOG_INFO_SYNC(logger, "Realm will be advertised on {}", ctx->realm->address);
 
 	// Start port forwarding
-	auto& service = ctx->service_pool->get();
+	auto& service = ctx->service_pool->get(0);
 
 	if(forward_enabled) {
 		const auto mode = args["forward.method"].as<ports::Forward::Method>();
@@ -223,7 +223,7 @@ void Service::initialise(const opts::variables_map& args) try {
 	update_config(config, true);
 
 	LOG_INFO_SYNC(logger, "Starting RPC services...");
-	ctx->rpc = std::make_unique<spark::Server>(ctx->service_pool->get(), app_name, s_address, s_port, logger);
+	ctx->rpc = std::make_unique<spark::Server>(service, app_name, s_address, s_port, logger);
 	ctx->rpc_realm = std::make_unique<RealmService>(*ctx->rpc, *ctx->realm, logger);
 	ctx->rpc_account= std::make_unique<AccountClient>(*ctx->rpc, logger);
 	ctx->rpc_character = std::make_unique<CharacterClient>(*ctx->rpc, *ctx->config_store, logger);
@@ -232,7 +232,7 @@ void Service::initialise(const opts::variables_map& args) try {
 	const auto& nsd_host = args["nsd.host"].as<std::string>();
 	const auto nsd_port = args["nsd.port"].as<std::uint16_t>();
 	ctx->rpc_discovery = std::make_unique<NetworkServiceDiscovery>(*ctx->rpc, nsd_host, nsd_port, logger);
-	ctx->queue = std::make_unique<RealmQueue>(ctx->service_pool->get());
+	ctx->queue = std::make_unique<RealmQueue>(service);
 
 	// set services - not the best design pattern but it'll do for now
 	// todo, this can probably be removed now
@@ -254,7 +254,7 @@ void Service::initialise(const opts::variables_map& args) try {
 	
 	// Install service command handlers
 	LOG_INFO_SYNC(logger, "Registering command handlers...");
-	register_commands();
+	register_commands(service);
 
 	// All done setting up
 	boost::asio::dispatch(service, [&, time, ctx]() {
@@ -270,11 +270,11 @@ void Service::initialise(const opts::variables_map& args) try {
 	std::rethrow_exception(std::current_exception());
 }
 
-void Service::register_commands() {
+void Service::register_commands(boost::asio::io_context& ioc) {
 	auto ctx = context.get();
 
 	ctx->cmd_exec = std::make_unique<utility::CommandExecutor>(
-		ctx->service_pool->get(), [&](auto reason) {
+		ioc, [&](auto reason) {
 			LOG_CONSOLE_ERROR_ASYNC(logger, "Command could not be executed, {}", reason);
 		}
 	);
@@ -379,7 +379,7 @@ void Service::stop() {
 	LOG_TRACE_SYNC(logger, "{} shutting down...", app_name);
 	auto ctx = context.get();
 
-	boost::asio::post(ctx->service_pool->get(), [this] {
+	boost::asio::post(ctx->service_pool->get(0), [this] {
 		auto ctx = context.get();
 		ctx->cmd_exec->signal_stop();
 		context.reset();
