@@ -20,6 +20,8 @@ void handle_shutdown_command(commands::args::Map& arguments,
 							 std::shared_ptr<std::atomic_bool> flag,
                              shutdown::OnInitiate on_initiate,
                              shutdown::OnExpire on_expire) {
+	*flag = true;
+
 	if(arguments.empty()) {
 		timer.expires_after(0s);
 	} else {
@@ -28,13 +30,19 @@ void handle_shutdown_command(commands::args::Map& arguments,
 		on_initiate(time);
 	}
 
-	timer.async_wait([on_expire = std::move(on_expire)](const auto& ec) {
-		if(!ec) {
-			on_expire();
+	timer.async_wait([flag, on_expire = std::move(on_expire)](const auto& ec) {
+		if(ec) {
+			return;
 		}
-	});
 
-	*flag = true;
+		bool expected = true;
+
+		if(!flag->compare_exchange_strong(expected, false)) {
+			return;
+		}
+
+		on_expire();
+	});
 }
 
 void handle_cancel_command(boost::asio::steady_timer& timer,
