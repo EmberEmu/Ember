@@ -19,8 +19,6 @@
 
 namespace ember::spark::io::pmr {
 
-using namespace detail;
-
 template<byte_oriented buf_type>
 requires std::ranges::contiguous_range<buf_type>
 class BufferWriteAdaptor : public BufferWrite {

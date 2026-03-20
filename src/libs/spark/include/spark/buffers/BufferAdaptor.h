@@ -20,8 +20,6 @@
 
 namespace ember::spark::io {
 
-using namespace detail;
-
 template<byte_oriented buf_type, bool space_optimise = true>
 requires std::ranges::contiguous_range<buf_type>
 class BufferAdaptor final {

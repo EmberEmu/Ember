@@ -18,8 +18,6 @@
 
 namespace ember::spark::io {
 
-using namespace detail;
-
 class FileBuffer final {
 public:
 	using size_type       = std::size_t;

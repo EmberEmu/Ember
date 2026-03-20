@@ -20,8 +20,6 @@
 
 namespace ember::spark::io {
 
-using namespace detail;
-
 template<byte_type storage_type, std::size_t buf_size>
 class StaticBuffer final {
 	std::array<storage_type, buf_size> buffer_ = {};
