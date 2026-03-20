@@ -11,6 +11,7 @@
 #include <commands/detail/TypeMap.h>
 #include <algorithm>
 #include <ranges>
+#include <utility>
 
 namespace ember::commands {
 

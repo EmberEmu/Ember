@@ -14,6 +14,6 @@
 
 namespace ember::commands::detail {
 
-extern const std::array<std::type_index, 13> types;
+extern const std::array<std::type_index, args::type_count> types;
 
 } // detail, commands, ember

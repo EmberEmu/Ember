@@ -12,7 +12,7 @@
 
 namespace ember::commands::detail {
 
-const std::array<std::type_index, 13> types {
+const std::array<std::type_index, args::type_count> types {
 	typeid(std::string),
 	typeid(std::uint8_t),
 	typeid(std::uint16_t),
