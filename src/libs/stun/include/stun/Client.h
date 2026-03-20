@@ -62,7 +62,7 @@ class Client final {
 	void abort_transaction(Error error, attributes::ErrorCode = {}, bool erase = true);
 	void rearm_transaction(detail::State state, std::size_t key,
 	                       std::shared_ptr<std::vector<std::uint8_t>> buffer,
-						   detail::Transaction::TestData data = {});
+	                       detail::Transaction::TestData data = {});
 
 	// Message handling stuff
 	void handle_message(std::span<const std::uint8_t> buffer);
