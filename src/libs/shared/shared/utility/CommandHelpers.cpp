@@ -78,7 +78,7 @@ std::any convert_type(const std::type_info& info, std::string_view token) {
 	} else if(info == typeid(float)) {
 		return boost::lexical_cast<float>(token);
 	} else if(info == typeid(double)) {
-		return boost::lexical_cast<std::uint8_t>(token);
+		return boost::lexical_cast<double>(token);
 	} else {
 		throw std::runtime_error("Unhandled argument type");
 	}
