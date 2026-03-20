@@ -26,8 +26,6 @@
 
 namespace ember::spark::io {
 
-using namespace detail;
-
 template<typename buffer_type>
 class BufferSequence;
 
@@ -41,9 +39,9 @@ template<decltype(auto) block_sz,
 requires int_gt_zero<block_sz>
 class DynamicBuffer final : public pmr::Buffer {
 public:
-	using storage_type = IntrusiveStorage<block_sz, storage_value_type>;
+	using storage_type = detail::IntrusiveStorage<block_sz, storage_value_type>;
 	using value_type   = storage_value_type;
-	using node_type    = IntrusiveNode;
+	using node_type    = detail::IntrusiveNode;
 	using size_type    = std::size_t;
 	using offset_type  = std::size_t;
 	using contiguous   = is_non_contiguous;
@@ -53,22 +51,22 @@ public:
 	using unique_storage = std::unique_ptr<storage_type, std::function<void(storage_type*)>>;
 
 private:
-	IntrusiveNode root_;
+	node_type root_;
 	size_type size_;
 	[[no_unique_address]] allocator allocator_;
 
-	void push_back(IntrusiveNode* node) {
+	void push_back(node_type* node) {
 		node->next = &root_;
 		node->prev = root_.prev;
 		root_.prev = root_.prev->next = node;
 	}
 
-	void unlink_node(IntrusiveNode* node) {
+	void unlink_node(node_type* node) {
 		node->next->prev = node->prev;
 		node->prev->next = node->next;
 	}
 
-	inline storage_type* buffer_from_node(const IntrusiveNode* node) const {
+	inline storage_type* buffer_from_node(const node_type* node) const {
 		return reinterpret_cast<storage_type*>(std::uintptr_t(node)
 			- offsetof(storage_type, node));
 	}
@@ -94,7 +92,7 @@ private:
 			return;
 		}
 
-		const IntrusiveNode* head = rhs.root_.next;
+		const node_type* head = rhs.root_.next;
 		root_.next = &root_;
 		root_.prev = &root_;
 		size_ = 0;
@@ -289,7 +287,7 @@ public:
 
 	void write(const void* source, const size_type length) override {
 		size_type remaining = length;
-		IntrusiveNode* tail = root_.prev;
+		node_type* tail = root_.prev;
 
 		do {
 			storage_type* buffer;
@@ -314,7 +312,7 @@ public:
 
 	void reserve(const size_type length) override {
 		size_type remaining = length;
-		IntrusiveNode* tail = root_.prev;
+		node_type* tail = root_.prev;
 
 		do {
 			storage_type* buffer;
@@ -423,7 +421,7 @@ public:
 	}
 
 	void clear() {
-		IntrusiveNode* head = root_.next;
+		node_type* head = root_.next;
 
 		while(head != &root_) {
 			auto next = head->next;

@@ -26,8 +26,6 @@
 
 namespace ember::spark::io::pmr {
 
-using namespace detail;
-
 class BinaryStreamWriter : virtual public StreamBase {
 	BufferWrite& buffer_;
 	std::size_t total_write_;
@@ -196,7 +194,7 @@ public:
 
 	template<is_iterable T>
 	BinaryStreamWriter& operator<<(prefixed_varint<T> adaptor) {
-		varint_encode(*this, adaptor->size());
+		detail::varint_encode(*this, adaptor->size());
 		write_container(adaptor.str);
 		return *this;
 	}
@@ -234,7 +232,7 @@ public:
 
 	template<std::size_t size>
 	void fill(const std::uint8_t value) {
-		const auto filled = generate_filled<size>(value);
+		const auto filled = detail::generate_filled<size>(value);
 		write(filled.data(), filled.size());
 	}
 

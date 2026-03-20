@@ -32,7 +32,6 @@ namespace ember::stun {
 
 constexpr std::string_view SOFTWARE_DESC = "Ember";
 
-using namespace detail;
 using clientopts = int;
 constexpr clientopts SUPPRESS_BANNER = 0x01;
 
@@ -53,17 +52,17 @@ class Client final {
 	std::uint16_t port_;
 	std::optional<bool> is_nat_present_;
 	clientopts opts_{};
-	std::unique_ptr<Transaction> tx_;
+	std::unique_ptr<detail::Transaction> tx_;
 	std::mutex mutex_;
 
 	// Transaction stuff
 	void start_transaction_timer();
 	void complete_transaction();
-	void create_transaction(Transaction::Promise promise);
+	void create_transaction(detail::Transaction::Promise promise);
 	void abort_transaction(Error error, attributes::ErrorCode = {}, bool erase = true);
-	void rearm_transaction(State state, std::size_t key,
+	void rearm_transaction(detail::State state, std::size_t key,
 	                       std::shared_ptr<std::vector<std::uint8_t>> buffer,
-	                       Transaction::TestData data = {});
+						   detail::Transaction::TestData data = {});
 
 	// Message handling stuff
 	void handle_message(std::span<const std::uint8_t> buffer);
@@ -80,7 +79,7 @@ class Client final {
 	void set_nat_present();
 	void on_connection_error(const boost::system::error_code& error);
 	template<typename T> std::future<T> basic_request();
-	template<typename T> std::future<T> behaviour_test(const State state);
+	template<typename T> std::future<T> behaviour_test(const detail::State state);
 
 	void perform_connectivity_test();
 	void perform_mapping_test2();

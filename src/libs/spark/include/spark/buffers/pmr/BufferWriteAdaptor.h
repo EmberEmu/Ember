@@ -19,8 +19,6 @@
 
 namespace ember::spark::io::pmr {
 
-using namespace detail;
-
 template<byte_oriented buf_type>
 requires std::ranges::contiguous_range<buf_type>
 class BufferWriteAdaptor : public BufferWrite {
@@ -40,7 +38,7 @@ public:
 	}
 
 	void write(const void* source, std::size_t length) override {
-		assert(source && !region_overlap(source, length, buffer_.data(), buffer_.size()));
+		assert(source && !detail::region_overlap(source, length, buffer_.data(), buffer_.size()));
 		const auto min_req_size = write_ + length;
 
 		if(buffer_.size() < min_req_size) [[likely]] {

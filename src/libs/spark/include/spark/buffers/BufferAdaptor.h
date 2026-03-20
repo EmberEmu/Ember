@@ -20,8 +20,6 @@
 
 namespace ember::spark::io {
 
-using namespace detail;
-
 template<byte_oriented buf_type, bool space_optimise = true>
 requires std::ranges::contiguous_range<buf_type>
 class BufferAdaptor final {
@@ -77,7 +75,7 @@ public:
 	}
 
 	void copy(void* destination, size_type length) const {
-		assert(destination && !region_overlap(buffer_.data(), buffer_.size(), destination, length));
+		assert(destination && !detail::region_overlap(buffer_.data(), buffer_.size(), destination, length));
 		std::memcpy(destination, read_ptr(), length);
 	}
 
@@ -96,7 +94,7 @@ public:
 	}
 
 	void write(const void* source, size_type length) {
-		assert(source && !region_overlap(source, length, buffer_.data(), buffer_.size()));
+		assert(source && !detail::region_overlap(source, length, buffer_.data(), buffer_.size()));
 		const auto min_req_size = write_ + length;
 
 		if(buffer_.size() < min_req_size) [[likely]] {

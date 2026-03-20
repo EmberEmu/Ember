@@ -45,7 +45,7 @@ struct IntrusiveStorage final {
 	}
 
 	std::size_t write(const auto source, std::size_t length) {
-		assert(!region_overlap(source, length, storage.data(), storage.size()));
+		assert(!detail::region_overlap(source, length, storage.data(), storage.size()));
 		std::size_t write_len = block_size - write_offset;
 
 		if(write_len > length) {
@@ -58,7 +58,7 @@ struct IntrusiveStorage final {
 	}
 
 	std::size_t copy(auto destination, const std::size_t length) const {
-		assert(!region_overlap(storage.data(), storage.size(), destination, length));
+		assert(!detail::region_overlap(storage.data(), storage.size(), destination, length));
 		std::size_t read_len = block_size - read_offset;
 
 		if(read_len > length) {
