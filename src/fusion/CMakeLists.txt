@@ -18,7 +18,8 @@ set(SOURCE_LIST
     Library.h
     ServiceRunner.h
     ServiceRunner.cpp
-    Wrapped.h
+    ServiceContext.h
+    CreateHelpers.h
 )
 
 if(WIN32)

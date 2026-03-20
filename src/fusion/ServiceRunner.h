@@ -8,9 +8,8 @@
 
 #pragma once
 
-#include "Wrapped.h"
+#include "ServiceContext.h"
 #include <commands/Registry.h>
-#include <logger/Logger.h>
 #include <service/Service.h>
 #include <boost/program_options.hpp>
 #include <string>
@@ -21,27 +20,18 @@ namespace ember::fusion {
 namespace opts = boost::program_options;
 
 class ServiceRunner final {
-#ifdef BUILD_SHARED_SERVICES
-	using ServiceHandle = Wrapped;
-#else
-	using ServiceHandle = IService*;
-#endif
-
 	std::jthread worker_;
-	ServiceHandle service_;
+	ServiceContext context_;
 	opts::variables_map opts_;
-	std::unique_ptr<log::Logger> service_logger_;
-	log::Logger& logger_;
 	bool running_;
 
 public:
-	ServiceRunner(ServiceHandle service, opts::variables_map args, log::Logger& logger);
+	ServiceRunner(ServiceContext context, opts::variables_map args);
 
-	void store_logger(std::unique_ptr<log::Logger> logger);
 	void run();
 	void stop();
-	bool is_stopped();
-	ServiceHandle handle();
+	bool is_stopped() const;
+	const ServiceContext& context() const;
 };
 
 } // fusion, ember

@@ -7,16 +7,12 @@
  */
 
 #include "CommandHelpers.h"
+#include "CreateHelpers.h"
 #include "Prototypes.h"
 #include "Library.h"
+#include "ServiceContext.h"
 #include "ServiceRunner.h"
-#include <account/Service.h>
 #include <banner/Banner.h>
-#include <character/Service.h>
-#include <realm/Service.h>
-#include <login/Service.h>
-#include <mdns/Service.h>
-#include <world/Service.h>
 #include <logger/Logger.h>
 #include <thread/Utility.h>
 #include <shared/utility/cstring_view.hpp>
@@ -36,28 +32,15 @@ namespace opts = boost::program_options;
 using Registries = std::unordered_map<std::string, commands::Registry>;
 
 constexpr cstring_view app_name { "Fusion" };
-std::unordered_map<std::string, std::unique_ptr<ServiceRunner>> runners;
+std::unordered_map<std::string, ServiceRunner> runners;
 
 opts::variables_map parse_arguments(int, const char*[]);
-opts::variables_map load_options(const std::string&, const opts::options_description&);
-int launch(const opts::variables_map&, Registries&, bool, log::Logger&);
+int launch(const opts::variables_map&, log::Logger&);
+void register_service_commands(commands::Registry& registry, log::Logger& logger);
 void stop_services();
 
-template<ServiceIndex idx, auto fn>
-std::unique_ptr<ServiceRunner> create_runner(const opts::variables_map& args, Registries& registry,
-                                             bool share_logger, log::Logger& logger,
-                                             const opts::options_description& opt_descs);
-
-void register_service_commands(commands::Registry& registry, log::Logger& logger);
-
-struct Context {
-	bool share_logger;
-	Registries* registries;
-	opts::variables_map* args;
-	log::Logger* logger;
-};
-
-std::unique_ptr<Context> context;
+Registries registries;
+Params glob_params{};
 
 int main(int argc, const char* argv[]) try {
 	thread::set_name("Main");
@@ -81,14 +64,13 @@ int main(int argc, const char* argv[]) try {
 	register_shared_commands(registries, logger);
 	register_service_commands(registries.at("root"), logger);
 
-	context = std::make_unique<Context>(Context {
-		.share_logger = share_logger,
-		.registries = &registries,
+	glob_params = Params {
 		.args = &args,
-		.logger = &logger
-	});
+		.logger = &logger,
+		.share_logger = share_logger,
+	};
 
-	const auto ret = launch(args, registries, share_logger, logger);
+	const auto ret = launch(args, logger);
 	LOG_INFO_SYNC(logger, "{} terminated", app_name);
 	return ret;
 } catch(const std::exception& e) {
@@ -96,159 +78,13 @@ int main(int argc, const char* argv[]) try {
 	return EXIT_FAILURE;
 }
 
-template<typename func_type>
-auto locate_symbol(const cstring_view lib_name, const cstring_view func_name) {
-	auto library = fusion::library::open(lib_name);
-
-	if(!library) {
-		throw std::runtime_error(
-			std::format("Unable to load library, {}", func_name)
-		);
-	}
-
-	auto result = fusion::library::find_symbol<func_type>(*library, func_name);
-
-	if(!result) {
-		throw std::runtime_error(
-			std::format("Unable to find function, {}", func_name)
-		);
-	}
-
-	return std::pair(*library, *result);
-}
-
-template<ServiceIndex idx, auto fn>
-auto create_service(log::Logger& logger, commands::Registry& registry) {
-#ifdef BUILD_SHARED_SERVICES
-	auto [library, create_func] = locate_symbol<decltype(fn)>(
-		lib_props[idx].libname, lib_props[idx].create_fn
-	);
-
-	return Wrapped {
-		.service = (create_func)(logger, registry),
-		.lib_handle = library
+Params create_params(commands::Registry* registry) {
+	return Params{
+		.registry = registry,
+		.args = glob_params.args,
+		.logger = glob_params.logger,
+		.share_logger = glob_params.share_logger
 	};
-#else
-	return fn(logger, registry);
-#endif
-}
-
-std::unique_ptr<log::Logger> configure_logger(std::string_view name,
-                                              opts::variables_map& opts,
-                                              bool shared) {
-	if(!opts.contains("console_log.prefix")) {
-		boost::any prefix = std::string(std::format("[{}]", name));
-		opts.try_emplace("console_log.prefix", opts::variable_value(prefix, false));
-	}
-
-	// disable console input option
-	opts.insert_or_assign("console_log.enable_input", opts::variable_value(boost::any(false), false));
-
-	if(!shared) {
-		auto service_logger = std::make_unique<log::Logger>();
-		utility::configure_logger(*service_logger, opts);
-		return service_logger;
-	} else {
-		return nullptr;
-	}
-}
-
-log::Logger* log_select(std::unique_ptr<log::Logger>& dynlog, log::Logger& logger) {
-	return dynlog? dynlog.get() : &logger;
-}
-
-// this genuinely might be the worst bit of code I've ever written 
-template<ServiceIndex idx, auto fn>
-std::unique_ptr<ServiceRunner> create_runner(const opts::variables_map& args, Registries& registry,
-                                             bool share_logger, log::Logger& logger,
-                                             const opts::options_description& opt_descs) {
-	const std::string name(lib_props[idx].name);
-	const auto conf_name = std::format("{}.config", name);
-	const auto& conf_path = args[conf_name].as<std::string>();
-	auto opts = load_options(conf_path, opt_descs);
-	auto logptr = configure_logger(name, opts, share_logger);
-	auto use_logger = log_select(logptr, logger);
-	auto result = create_service<idx, fn>(*use_logger, registry[name]);
-	auto runner = std::make_unique<fusion::ServiceRunner>(result, std::move(opts), *use_logger);
-	runner->store_logger(std::move(logptr));
-	return runner;
-}
-
-std::unique_ptr<ServiceRunner> create_mdns_runner(const opts::variables_map& args,
-                                                  Registries& registry,
-                                                  bool share_logger,
-                                                  log::Logger& logger) {
-	return create_runner<service_mdns, ember::dns::create_mdns>(
-		args, registry, share_logger, logger, dns::Service::options()
-	);
-}
-
-std::unique_ptr<ServiceRunner> create_login_runner(const opts::variables_map& args,
-                                                   Registries& registry,
-                                                   bool share_logger,
-                                                   log::Logger& logger) {
-	return create_runner<service_login, ember::login::create_login>(
-		args, registry, share_logger, logger, login::Service::options()
-	);
-}
-
-std::unique_ptr<ServiceRunner> create_realm_runner(const opts::variables_map& args,
-                                                   Registries& registry,
-                                                   bool share_logger,
-                                                   log::Logger& logger) {
-	return create_runner<service_realm, ember::realm::create_realm>(
-		args, registry, share_logger, logger, realm::Service::options()
-	);
-}
-
-std::unique_ptr<ServiceRunner> create_account_runner(const opts::variables_map& args,
-                                                     Registries& registry,
-                                                     bool share_logger,
-                                                     log::Logger& logger) {
-	return create_runner<service_account, ember::account::create_account>(
-		args, registry, share_logger, logger, account::Service::options()
-	);
-}
-
-std::unique_ptr<ServiceRunner> create_character_runner(const opts::variables_map& args,
-												       Registries& registry,
-												       bool share_logger,
-												       log::Logger& logger) {
-	return create_runner<service_character, ember::character::create_character>(
-		args, registry, share_logger, logger, character::Service::options()
-	);
-}
-
-std::unique_ptr<ServiceRunner> create_world_runner(const opts::variables_map& args,
-												   Registries& registry,
-												   bool share_logger,
-												   log::Logger& logger) {
-	return create_runner<service_world, ember::world::create_world>(
-		args, registry, share_logger, logger, world::Service::options()
-	);
-}
-
-std::unique_ptr<ServiceRunner> create_runner(ServiceIndex service,
-											 const opts::variables_map& args,
-											 Registries& registry,
-											 bool share_logger,
-											 log::Logger& logger) {
-	switch(service) {
-		case ServiceIndex::service_mdns:
-			return create_mdns_runner(args, registry, share_logger, logger);
-		case ServiceIndex::service_login:
-			return create_login_runner(args, registry, share_logger, logger);
-		case ServiceIndex::service_realm:
-			return create_realm_runner(args, registry, share_logger, logger);
-		case ServiceIndex::service_world:
-			return create_world_runner(args, registry, share_logger, logger);
-		case ServiceIndex::service_account:
-			return create_account_runner(args, registry, share_logger, logger);
-		case ServiceIndex::service_character:
-			return create_character_runner(args, registry, share_logger, logger);
-		default:
-			std::unreachable();
-	}
 }
 
 void service_start(const std::string& service, log::Logger& logger) {
@@ -262,18 +98,18 @@ void service_start(const std::string& service, log::Logger& logger) {
 	if(auto it = runners.find(service); it != runners.end()) {
 		auto& [_, runner] = *it;
 
-		if(!runner->is_stopped()) {
+		if(!runner.is_stopped()) {
 			LOG_CONSOLE_ERROR_ASYNC(logger, "Service is already running", service);
 			return;
 		}
 	}
 
-	auto runner = create_runner(
-		idx, *context->args, *context->registries, context->share_logger, *context->logger
-	);
+	auto& registry = registries[service];
+	auto params = create_params(&registry);
+	auto runner = create_runner(idx, params);
 
 	LOG_CONSOLE_ASYNC(logger, "Starting {} service...", service);
-	runner->run();
+	runner.run();
 	runners.insert_or_assign(service, std::move(runner));
 }
 
@@ -287,19 +123,16 @@ void service_stop(const std::string& service, log::Logger& logger) {
 
 	auto& [_, runner] = *it;
 
-	if(runner->is_stopped()) {
+	if(runner.is_stopped()) {
 		LOG_CONSOLE_ERROR_ASYNC(logger, "Service is not running", service);
 		return;
 	}
 
 	LOG_CONSOLE_ASYNC(logger, "Waiting for {} service to stop...", service);
-	runner->stop();
+	runner.stop();
 	LOG_CONSOLE_ASYNC(logger, "Service stopped");
 
-#ifdef BUILD_SHARED_SERVICES
-	library::close(runner->handle().lib_handle);
-#endif
-
+	destroy_service(runner.context());
 }
 
 void service_restart(std::string service, log::Logger& logger) {
@@ -333,7 +166,7 @@ void register_service_commands(commands::Registry& registry, log::Logger& logger
 		});
 }
 
-int launch(const opts::variables_map& args, Registries& registry, bool share_logger, log::Logger& logger) try {
+int launch(const opts::variables_map& args, log::Logger& logger) try {
 	boost::asio::io_context service;
 	boost::asio::signal_set signals(service, SIGINT, SIGTERM);
 
@@ -350,55 +183,49 @@ int launch(const opts::variables_map& args, Registries& registry, bool share_log
 
 	// Start initial specified services
 	if(args["mdns.active"].as<bool>()) {
-		auto runner = create_runner<service_mdns, ember::dns::create_mdns>(
-			args, registry, share_logger, logger, dns::Service::options()
-		);
-
+		auto& registry = registries["mdns"];
+		auto params = create_params(&registry);
+		auto runner = create_runner(ServiceIndex::service_mdns, params);
 		runners.emplace("mdns", std::move(runner));
 	}
 
 	if(args["account.active"].as<bool>()) {
-		auto runner = create_runner<service_account, ember::account::create_account>(
-			args, registry, share_logger, logger, account::Service::options()
-		);
-
+		auto& registry = registries["account"];
+		auto params = create_params(&registry);
+		auto runner = create_runner(ServiceIndex::service_account, params);
 		runners.emplace("account", std::move(runner));
 	}
 
 	if(args["character.active"].as<bool>()) {
-		auto runner = create_runner<service_character, ember::character::create_character>(
-			args, registry, share_logger, logger, character::Service::options()
-		);
-
+		auto& registry = registries["character"];
+		auto params = create_params(&registry);
+		auto runner = create_runner(ServiceIndex::service_character, params);
 		runners.emplace("character", std::move(runner));
 	}
 
 	if(args["login.active"].as<bool>()) {
-		auto runner = create_runner<service_login, ember::login::create_login>(
-			args, registry, share_logger, logger, login::Service::options()
-		);
-
+		auto& registry = registries["login"];
+		auto params = create_params(&registry);
+		auto runner = create_runner(ServiceIndex::service_login, params);
 		runners.emplace("login", std::move(runner));
 	}
 
 	if(args["realm.active"].as<bool>()) {
-		auto runner = create_runner<service_realm, ember::realm::create_realm>(
-			args, registry, share_logger, logger, realm::Service::options()
-		);
-
+		auto& registry = registries["realm"];
+		auto params = create_params(&registry);
+		auto runner = create_runner(ServiceIndex::service_realm, params);
 		runners.emplace("realm", std::move(runner));
 	}
 
 	if(args["world.active"].as<bool>()) {
-		auto runner = create_runner<service_world, ember::world::create_world>(
-			args, registry, share_logger, logger, world::Service::options()
-		);
-
+		auto& registry = registries["world"];
+		auto params = create_params(&registry);
+		auto runner = create_runner(ServiceIndex::service_world, params);
 		runners.emplace("world", std::move(runner));
 	}
 
 	for(auto& runner : runners | std::views::values) {
-		runner->run();
+		runner.run();
 	}
 
 	service.run();
@@ -410,22 +237,8 @@ int launch(const opts::variables_map& args, Registries& registry, bool share_log
 
 void stop_services() {
 	for(auto& runner : runners | std::views::values) {
-		runner->stop();
+		runner.stop();
 	}
-}
-
-opts::variables_map load_options(const std::string& config_path, const opts::options_description& opt_desc) {
-	std::ifstream ifs(config_path);
-
-	if(!ifs) {
-		throw std::invalid_argument("Unable to open configuration file: " + config_path);
-	}
-
-	opts::variables_map options;
-	opts::store(opts::parse_config_file(ifs, opt_desc, true), options);
-	opts::notify(options);
-
-	return options;
 }
 
 opts::variables_map parse_arguments(const int argc, const char* argv[]) {
