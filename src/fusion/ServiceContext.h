@@ -9,13 +9,17 @@
 #pragma once
 
 #include "Library.h"
+#include "Prototypes.h"
+#include <logger/Logger.h>
 #include <service/Service.h>
 
 namespace ember::fusion {
 
-struct Wrapped {
+struct ServiceContext {
 	IService* service;
 	library::Handle lib_handle;
+	std::unique_ptr<log::Logger> logger;
+	ServiceIndex index;
 };
 
 } // fusion, ember

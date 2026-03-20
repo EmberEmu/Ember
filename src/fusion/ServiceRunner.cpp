@@ -12,34 +12,27 @@
 
 namespace ember::fusion {
 
-ServiceRunner::ServiceRunner(ServiceHandle service, opts::variables_map options, log::Logger& logger)
-	: service_(service)
+ServiceRunner::ServiceRunner(ServiceContext context, opts::variables_map options)
+	: context_(std::move(context))
 	, opts_(std::move(options))
-	, logger_(logger)
 	, running_(false) {}
 
 void ServiceRunner::run() {
 	running_ = true;
 
-	worker_ = std::jthread([&] {
-#ifdef BUILD_SHARED_SERVICES
-		service_.service->run(opts_);
-#else
-		service_->run(opts_);
-#endif
+	// the copies are required to ensure that this object is safe to move
+	// after run has already been called
+	worker_ = std::jthread([service = context_.service, opts = opts_] {
+		service->run(opts);
 	});
 }
 
-void ServiceRunner::store_logger(std::unique_ptr<log::Logger> logger) {
-	service_logger_ = std::move(logger);
-}
-
 void ServiceRunner::stop() {
-#ifdef BUILD_SHARED_SERVICES
-	service_.service->stop();
-#else
-	service_->stop();
-#endif
+	if(!running_) {
+		return;
+	}
+
+	context_.service->stop();
 	
 	if(worker_.joinable()) {
 		worker_.join();
@@ -48,12 +41,11 @@ void ServiceRunner::stop() {
 	running_ = false;
 }
 
-bool ServiceRunner::is_stopped() {
+bool ServiceRunner::is_stopped() const {
 	return !running_;
 }
-
-auto ServiceRunner::handle() -> ServiceHandle {
-	return service_;
+const ServiceContext& ServiceRunner::context() const{
+	return context_;
 }
 
 } // fusion, ember
