@@ -106,9 +106,7 @@ int run(const opts::variables_map& args, log::Logger& logger, commands::Registry
 void install_shutdown_callbacks(commands::Registry& registry,
                                 boost::asio::steady_timer& timer,
                                 log::Logger& logger) {
-	static bool pending_flag = false;
-
-	register_shutdown_command(registry, timer, pending_flag,
+	register_shutdown_command(registry, timer,
 		[&](auto time) {
 			LOG_CONSOLE_ASYNC(logger, "Server will shut down in {}", utility::time_duration_format(time));
 		}, [&] {

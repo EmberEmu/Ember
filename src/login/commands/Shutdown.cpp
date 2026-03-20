@@ -8,6 +8,8 @@
 
 #include "Shutdown.h"
 #include <shared/utility/Utility.h>
+#include <atomic>
+#include <memory>
 
 using namespace std::chrono_literals;
 
@@ -15,7 +17,7 @@ namespace ember {
 
 void handle_shutdown_command(commands::args::Map& arguments,
                              boost::asio::steady_timer& timer,
-                             bool& pending_flag,
+							 std::shared_ptr<std::atomic_bool> flag,
                              shutdown::OnInitiate on_initiate,
                              shutdown::OnExpire on_expire) {
 	if(arguments.empty()) {
@@ -32,39 +34,38 @@ void handle_shutdown_command(commands::args::Map& arguments,
 		}
 	});
 
-	pending_flag = true;
+	*flag = true;
 }
 
 void handle_cancel_command(boost::asio::steady_timer& timer,
-                           bool& pending_flag,
+                           std::shared_ptr<std::atomic_bool> flag,
                            shutdown::OnCancel on_cancel) {
-	if(pending_flag) {
+	bool expected = true;
+
+	if(flag->compare_exchange_strong(expected, false)) {
 		timer.cancel();
 		on_cancel();
 	}
-
-	pending_flag = false;
 }
 
 void register_shutdown_command(commands::Registry& registry,
                                boost::asio::steady_timer& timer,
-                               bool& pending_flag,
                                shutdown::OnInitiate on_initiate,
                                shutdown::OnCancel on_cancel,
                                shutdown::OnExpire on_expire) {
+	auto flag = std::make_shared<std::atomic_bool>(false);
+
 	registry.insert("shutdown")
 		->description("Shuts the service down")
 		->argument("seconds", commands::args::Type::at_uint32)
-		->handler([&, on_initiate, on_expire](auto arguments) {
-			handle_shutdown_command(arguments, timer, pending_flag, on_initiate, on_expire);
+		->handler([&, flag, on_initiate, on_expire](auto arguments) {
+			handle_shutdown_command(arguments, timer, flag, on_initiate, on_expire);
 		})->insert("cancel") // subcommand
 			->description("Cancels pending shutdown")
-			->handler([&, on_cancel](auto arguments) {
-				handle_cancel_command(timer, pending_flag, on_cancel);
+			->handler([&, flag, on_cancel](auto arguments) {
+				handle_cancel_command(timer, flag, on_cancel);
 			}
 		);
-
-	pending_flag = false;
 }
 
 } // ember
