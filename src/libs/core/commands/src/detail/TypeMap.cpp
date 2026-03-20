@@ -9,6 +9,7 @@
 #include <commands/detail/TypeMap.h>
 #include <commands/UserData.h>
 #include <string>
+#include <cstdint>
 
 namespace ember::commands::detail {
 
