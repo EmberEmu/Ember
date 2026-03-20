@@ -257,8 +257,7 @@ void Service::initialise(const opts::variables_map& args) try {
 	register_commands();
 
 	// All done setting up
-	boost::asio::dispatch(service, [&, time]() {
-		auto ctx = context.get();
+	boost::asio::dispatch(service, [&, time, ctx]() {
 		ctx->rpc_realm->set_online();
 
 		LOG_INFO_SYNC(logger, "{} started successfully in {}", app_name,
