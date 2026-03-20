@@ -26,13 +26,13 @@ RUN apt-get -y update \
  && apt-get install -y ccache
 
 RUN if [ -n "$USE_CLANG" ]; then                                        \
- apt-get -y install clang;                                              \
+ apt-get -y install clang-22;                                           \
 else                                                                    \
- apt-get -y install gcc-15 g++-15                                       \
- && update-alternatives --install /usr/bin/cc cc /usr/bin/gcc-15 100    \
- && update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++-15 100  \
- && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-15 100  \
- && update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-15 100; \
+ apt-get -y install gcc-16 g++-16                                       \
+ && update-alternatives --install /usr/bin/cc cc /usr/bin/gcc-16 100    \
+ && update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++-16 100  \
+ && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-16 100  \
+ && update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-16 100; \
 fi
 
 RUN wget -q https://archives.boost.io/release/1.90.0/source/boost_1_90_0.tar.gz \
