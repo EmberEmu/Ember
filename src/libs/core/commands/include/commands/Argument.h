@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <functional>
 #include <string>
 #include <typeinfo>
 #include <utility>
@@ -16,13 +17,13 @@ namespace ember::commands {
 
 struct Argument {
 	std::string name;
-	const std::type_info* type; // this is okay, type_info lives for the duration of the program
+	std::reference_wrapper<const std::type_info> type; // this is okay, type_info lives for the duration of the program
 	bool required;
 
-	Argument(std::string name, bool required, const std::type_info& type_info)
+	Argument(std::string name, bool required, const std::type_info& type_info) noexcept
 		: name(std::move(name))
 		, required(required)
-		, type(&type_info) {}
+		, type(type_info) {}
 };
 
 } // commands, ember
