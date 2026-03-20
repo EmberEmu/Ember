@@ -54,9 +54,6 @@ class Command : public std::enable_shared_from_this<Command> {
 	explicit Command(std::string name);
 
 public:
-	struct required {};
-	struct optional {};
-
 	static std::shared_ptr<Command> create(std::string name);
 
 	Command(Command&) = delete;
