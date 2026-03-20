@@ -102,7 +102,7 @@ void Handler::handle_read(spark::io::pmr::Buffer& buffer, std::size_t offset) tr
 	throw bad_packet(e.what());
 }
 
-auto Handler::process_buffer(spark::io::pmr::Buffer& buffer) -> std::optional<const PacketRef> {
+auto Handler::process_buffer(spark::io::pmr::Buffer& buffer) -> std::optional<const Packet&> {
 	switch(state_) {
 		case State::new_packet:
 			handle_new_packet(buffer);

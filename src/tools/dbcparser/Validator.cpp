@@ -24,7 +24,7 @@ namespace ember::dbc {
  * Searches DBC definitions for the given foreign key. 
  * Only child structs of the root node are considered for matches.
  */
-std::optional<std::reference_wrapper<const types::Field>> Validator::locate_fk_parent(const std::string_view parent) {
+std::optional<const types::Field&> Validator::locate_fk_parent(const std::string_view parent) {
 	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
 
 	for(auto& def : *definitions_) {

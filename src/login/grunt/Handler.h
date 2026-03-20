@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2024 Ember
+ * Copyright (c) 2015 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,7 +11,6 @@
 #include "Packets.h"
 #include <spark/buffers/pmr/Buffer.h>
 #include <logger/LoggerFwd.h>
-#include <functional>
 #include <optional>
 #include <type_traits>
 #include <variant>
@@ -49,11 +48,10 @@ class Handler final {
 	                     std::size_t offset);
 
 public:
-	using PacketRef = std::reference_wrapper<const Packet>;
+	explicit Handler(log::Logger& logger)
+		: logger_(logger) {}
 
-	explicit Handler(log::Logger& logger) : logger_(logger) { }
-
-	std::optional<const PacketRef> process_buffer(spark::io::pmr::Buffer& buffer);
+	std::optional<const Packet&> process_buffer(spark::io::pmr::Buffer& buffer);
 };
 
 } // grunt, ember
