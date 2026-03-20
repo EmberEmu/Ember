@@ -118,6 +118,12 @@ void install_shutdown_callbacks(commands::Registry& registry,
 		}, [&] {
 			LOG_CONSOLE_ASYNC(logger, "Server is shutting down now");
 			std::raise(SIGINT);
+		}, [&](auto state, auto time) {
+			if(state == shutdown::State::pending) {
+				LOG_CONSOLE_ASYNC(logger, "Server will shut down in {}", utility::time_duration_format(time));
+			} else {
+				LOG_CONSOLE_ASYNC(logger, "No shutdown is pending");
+			}
 		}
 	);
 }

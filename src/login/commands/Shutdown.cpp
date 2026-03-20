@@ -45,6 +45,17 @@ void handle_shutdown_command(commands::args::Map& arguments,
 	});
 }
 
+void handle_remaining_command(boost::asio::steady_timer& timer,
+                              std::shared_ptr<std::atomic_bool> flag,
+                              shutdown::OnRemaining on_remaining) {
+	const auto time = std::chrono::duration_cast<std::chrono::seconds>(
+		timer.expiry() - std::chrono::steady_clock::now()
+	);
+
+	auto state = *flag? shutdown::State::pending : shutdown::State::not_pending;
+	on_remaining(state, time);
+}
+
 void handle_cancel_command(boost::asio::steady_timer& timer,
                            std::shared_ptr<std::atomic_bool> flag,
                            shutdown::OnCancel on_cancel) {
@@ -62,20 +73,28 @@ void register_shutdown_command(commands::Registry& registry,
                                boost::asio::steady_timer& timer,
                                shutdown::OnInitiate on_initiate,
                                shutdown::OnCancel on_cancel,
-                               shutdown::OnExpire on_expire) {
+                               shutdown::OnExpire on_expire,
+                               shutdown::OnRemaining on_remaining) {
 	auto flag = std::make_shared<std::atomic_bool>(false);
 
-	registry.insert("shutdown")
+	auto root = registry.insert("shutdown")
 		->description("Shuts the service down")
 		->argument("seconds", commands::args::Type::at_uint32)
 		->handler([&, flag, on_initiate, on_expire](auto arguments) {
 			handle_shutdown_command(arguments, timer, flag, on_initiate, on_expire);
-		})->insert("cancel") // subcommand
-			->description("Cancels pending shutdown")
-			->handler([&, flag, on_cancel](auto arguments) {
-				handle_cancel_command(timer, flag, on_cancel);
-			}
-		);
+		});
+
+	root->insert("cancel") // subcommand
+		->description("Cancels pending shutdown")
+		->handler([&, flag, on_cancel](auto arguments) {
+			handle_cancel_command(timer, flag, on_cancel);
+		});
+
+	root->insert("remaining")
+		->description("View the time remaining until shutdown")
+		->handler([&, flag, on_remaining](auto arguments) {
+			handle_remaining_command(timer, flag, on_remaining);
+		});
 }
 
 } // ember

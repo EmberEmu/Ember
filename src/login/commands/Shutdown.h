@@ -25,6 +25,7 @@ enum State {
 using OnInitiate = std::function<void(std::chrono::seconds)>;
 using OnCancel = std::function<void(State)>;
 using OnExpire = std::function<void()>;
+using OnRemaining = std::function<void(State, std::chrono::seconds)>;
 
 } // shutdown
 
@@ -32,6 +33,7 @@ void register_shutdown_command(commands::Registry& registry,
                                boost::asio::steady_timer& timer,
                                shutdown::OnInitiate on_initiate,
                                shutdown::OnCancel on_cancel,
-                               shutdown::OnExpire handler);
+                               shutdown::OnExpire on_expire,
+							   shutdown::OnRemaining on_remaining);
 
 } // ember
