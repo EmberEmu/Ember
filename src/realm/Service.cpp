@@ -287,7 +287,7 @@ void Service::register_commands(boost::asio::io_context& ioc) {
 			std::string config_file;
 
 			if(arguments.contains("filename")) {
-				config_file = arguments["filename"].as<std::string>();
+				config_file = arguments["filename"].template as<std::string>(); // todo, why?
 			} else {
 				config_file = "realm.conf";
 			}
