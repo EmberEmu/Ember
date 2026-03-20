@@ -48,7 +48,7 @@ bool LoginSession::handle_packet(spark::io::pmr::Buffer& buffer) try {
 	auto result = grunt_handler_.process_buffer(buffer);
 
 	if(result) {
-		const auto& packet = result->get();
+		const auto& packet = *result;
 		LOG_TRACE_ASYNC(logger_, "{} -> {}", remote_address(), grunt::to_string(packet.opcode));
 		return handler_.update_state(packet);
 	}
