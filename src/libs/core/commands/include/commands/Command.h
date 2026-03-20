@@ -54,9 +54,6 @@ class Command : public std::enable_shared_from_this<Command> {
 	explicit Command(std::string name);
 
 public:
-	struct required {};
-	struct optional {};
-
 	static std::shared_ptr<Command> create(std::string name);
 
 	Command(Command&) = delete;
@@ -97,13 +94,6 @@ public:
 
 	Result execute();
 	Result execute(std::span<std::any> arg_values);
-
-	Command& operator()(CommandHandler handler);
-	Command& operator()(std::shared_ptr<Command> command);
-	Command& operator()(std::string description);
-	Command& operator()(const Flags& flags);
-	Command& operator()(std::string argument, const std::type_info& type, required);
-	Command& operator()(std::string argument, const std::type_info& type, optional);
 
 	friend class PrefixedRegistry; 
 };

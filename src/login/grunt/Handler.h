@@ -25,6 +25,7 @@ class Handler final {
 	};
 
 	std::variant<
+		std::monostate,
 		client::LoginChallenge,
 		client::LoginProof,
 		client::ReconnectProof,
@@ -48,10 +49,9 @@ class Handler final {
 	                     std::size_t offset);
 
 public:
-	explicit Handler(log::Logger& logger)
-		: logger_(logger) {}
+	explicit Handler(log::Logger& logger) : logger_(logger) { }
 
-	std::optional<const Packet&> process_buffer(spark::io::pmr::Buffer& buffer);
+	const Packet* process_buffer(spark::io::pmr::Buffer& buffer);
 };
 
 } // grunt, ember

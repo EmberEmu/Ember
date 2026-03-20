@@ -15,8 +15,7 @@
 namespace ember::commands {
 
 Command::Command(std::string name)
-	: name_(std::move(name))
-	, flags_{} {
+	: name_(std::move(name)) {
 	if(name_.empty()) {
 		throw exception("Command name cannot be empty");
 	}
@@ -254,36 +253,6 @@ std::size_t Command::argument_count() const {
 
 const Flags& Command::flags() const {
 	return flags_;
-}
-
-Command& Command::operator()(std::shared_ptr<Command> command) {
-	this->insert(command);
-	return *this;
-}
-
-Command& Command::operator()(CommandHandler handler) {
-	this->handler(handler);
-	return *this;
-}
-
-Command& Command::operator()(std::string description) {
-	this->description(description);
-	return *this;
-}
-
-Command& Command::operator()(const Flags& flags) {
-	this->flags(flags);
-	return *this;
-}
-
-Command& Command::operator()(std::string argument, const std::type_info& type, required) {
-	insert_argument(std::move(argument), type);
-	return *this;
-}
-
-Command& Command::operator()(std::string argument, const std::type_info& type, optional) {
-	insert_optional_argument(std::move(argument), type);
-	return *this;
 }
 
 } // commands, ember
