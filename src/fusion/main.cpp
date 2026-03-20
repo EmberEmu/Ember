@@ -105,7 +105,7 @@ void service_start(const std::string& service, log::Logger& logger) {
 	}
 
 	auto& registry = registries[service];
-	auto params = create_params(&registry);
+	const auto params = create_params(&registry);
 	auto runner = create_runner(idx, params);
 
 	LOG_CONSOLE_ASYNC(logger, "Starting {} service...", service);
@@ -167,6 +167,54 @@ void register_service_commands(commands::Registry& registry, log::Logger& logger
 }
 
 int launch(const opts::variables_map& args, log::Logger& logger) try {
+	// Start initial specified services
+	if(args["mdns.active"].as<bool>()) {
+		auto& registry = registries["mdns"];
+		const auto params = create_params(&registry);
+		auto runner = create_runner(ServiceIndex::service_mdns, params);
+		runners.emplace("mdns", std::move(runner));
+	}
+
+	if(args["account.active"].as<bool>()) {
+		auto& registry = registries["account"];
+		const auto params = create_params(&registry);
+		auto runner = create_runner(ServiceIndex::service_account, params);
+		runners.emplace("account", std::move(runner));
+	}
+
+	if(args["character.active"].as<bool>()) {
+		auto& registry = registries["character"];
+		const auto params = create_params(&registry);
+		auto runner = create_runner(ServiceIndex::service_character, params);
+		runners.emplace("character", std::move(runner));
+	}
+
+	if(args["login.active"].as<bool>()) {
+		auto& registry = registries["login"];
+		const auto params = create_params(&registry);
+		auto runner = create_runner(ServiceIndex::service_login, params);
+		runners.emplace("login", std::move(runner));
+	}
+
+	if(args["realm.active"].as<bool>()) {
+		auto& registry = registries["realm"];
+		const auto params = create_params(&registry);
+		auto runner = create_runner(ServiceIndex::service_realm, params);
+		runners.emplace("realm", std::move(runner));
+	}
+
+	if(args["world.active"].as<bool>()) {
+		auto& registry = registries["world"];
+		const auto params = create_params(&registry);
+		auto runner = create_runner(ServiceIndex::service_world, params);
+		runners.emplace("world", std::move(runner));
+	}
+
+	for(auto& runner : runners | std::views::values) {
+		runner.run();
+	}
+
+	// start signal handling
 	boost::asio::io_context service;
 	boost::asio::signal_set signals(service, SIGINT, SIGTERM);
 
@@ -175,58 +223,6 @@ int launch(const opts::variables_map& args, log::Logger& logger) try {
 		signals.clear();
 		stop_services();
 	});
-
-	std::jthread worker([&]() {
-		thread::set_name("Signal handler");
-		service.run_one();
-	});
-
-	// Start initial specified services
-	if(args["mdns.active"].as<bool>()) {
-		auto& registry = registries["mdns"];
-		auto params = create_params(&registry);
-		auto runner = create_runner(ServiceIndex::service_mdns, params);
-		runners.emplace("mdns", std::move(runner));
-	}
-
-	if(args["account.active"].as<bool>()) {
-		auto& registry = registries["account"];
-		auto params = create_params(&registry);
-		auto runner = create_runner(ServiceIndex::service_account, params);
-		runners.emplace("account", std::move(runner));
-	}
-
-	if(args["character.active"].as<bool>()) {
-		auto& registry = registries["character"];
-		auto params = create_params(&registry);
-		auto runner = create_runner(ServiceIndex::service_character, params);
-		runners.emplace("character", std::move(runner));
-	}
-
-	if(args["login.active"].as<bool>()) {
-		auto& registry = registries["login"];
-		auto params = create_params(&registry);
-		auto runner = create_runner(ServiceIndex::service_login, params);
-		runners.emplace("login", std::move(runner));
-	}
-
-	if(args["realm.active"].as<bool>()) {
-		auto& registry = registries["realm"];
-		auto params = create_params(&registry);
-		auto runner = create_runner(ServiceIndex::service_realm, params);
-		runners.emplace("realm", std::move(runner));
-	}
-
-	if(args["world.active"].as<bool>()) {
-		auto& registry = registries["world"];
-		auto params = create_params(&registry);
-		auto runner = create_runner(ServiceIndex::service_world, params);
-		runners.emplace("world", std::move(runner));
-	}
-
-	for(auto& runner : runners | std::views::values) {
-		runner.run();
-	}
 
 	service.run();
 	return EXIT_SUCCESS;

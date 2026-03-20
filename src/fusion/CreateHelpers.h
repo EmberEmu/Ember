@@ -173,7 +173,7 @@ opts::variables_map load_options(const std::string& config_path, const opts::opt
 
 // this genuinely might be the worst bit of code I've ever written 
 template<auto fn>
-ServiceRunner create_runner(const ServiceIndex idx, Params& params, const opts::options_description& descs) {
+ServiceRunner create_runner(const ServiceIndex idx, const Params& params, const opts::options_description& descs) {
 	// determine the path to the config file for this service and load it
 	const auto conf_section = std::format("{}.config", lib_props[idx].name);
 	const auto& conf_path = params.args->at(conf_section).as<std::string>();
@@ -194,43 +194,43 @@ ServiceRunner create_runner(const ServiceIndex idx, Params& params, const opts::
 	return ServiceRunner(std::move(service), std::move(opts));
 }
 
-inline ServiceRunner create_mdns_runner(Params& params) {
+inline ServiceRunner create_mdns_runner(const Params& params) {
 	return create_runner<dns::create_mdns>(
 		ServiceIndex::service_mdns, params, dns::Service::options()
 	);
 }
 
-inline ServiceRunner create_login_runner(Params& params) {
+inline ServiceRunner create_login_runner(const Params& params) {
 	return create_runner<login::create_login>(
 		ServiceIndex::service_login, params, login::Service::options()
 	);
 }
 
-inline ServiceRunner create_realm_runner(Params& params) {
+inline ServiceRunner create_realm_runner(const Params& params) {
 	return create_runner<realm::create_realm>(
 		ServiceIndex::service_realm, params, realm::Service::options()
 	);
 }
 
-inline ServiceRunner create_account_runner(Params& params) {
+inline ServiceRunner create_account_runner(const Params& params) {
 	return create_runner<account::create_account>(
 		ServiceIndex::service_account, params, account::Service::options()
 	);
 }
 
-inline ServiceRunner create_character_runner(Params& params) {
+inline ServiceRunner create_character_runner(const Params& params) {
 	return create_runner<character::create_character>(
 		ServiceIndex::service_character, params, character::Service::options()
 	);
 }
 
-inline ServiceRunner create_world_runner(Params& params) {
+inline ServiceRunner create_world_runner(const Params& params) {
 	return create_runner<world::create_world>(
 		ServiceIndex::service_world, params, world::Service::options()
 	);
 }
 
-inline ServiceRunner create_runner(ServiceIndex service, Params& params) {
+inline ServiceRunner create_runner(ServiceIndex service, const Params& params) {
 	switch(service) {
 		case ServiceIndex::service_mdns:
 			return create_mdns_runner(params);
