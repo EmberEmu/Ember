@@ -41,7 +41,7 @@ std::optional<std::reference_wrapper<const types::Field>> Validator::locate_fk_p
 		for(const auto& field : def_s->fields) {
 			for(const auto& key : field.keys) {
 				if(key.type == "primary") {
-					return std::optional<std::reference_wrapper<const types::Field>>(field);
+					return field;
 				}
 			}
 		}
