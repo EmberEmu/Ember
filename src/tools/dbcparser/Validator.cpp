@@ -63,13 +63,11 @@ void Validator::check_foreign_keys(const types::Field& field) {
 					std::format("{} references a primary key in {} that does not exist", field.name, key.parent)
 				);
 			}
-
-			const auto& pk_ref = pk->get();
 			
-			if(!key.ignore_type_mismatch && pk_ref.underlying_type != components.first) {
+			if(!key.ignore_type_mismatch && pk->underlying_type != components.first) {
 				throw exception(
 					std::format(":{} => {} types do not match. Expected {}, found {}",
-						field.name, key.parent, components.first, pk_ref.underlying_type)
+						field.name, key.parent, components.first, pk->underlying_type)
 				);
 			}
 		}
