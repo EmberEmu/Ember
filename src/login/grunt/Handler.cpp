@@ -112,11 +112,7 @@ const Packet* Handler::process_buffer(spark::io::pmr::Buffer& buffer) {
 			break;
 	}
 
-	if(state_ == State::new_packet) {
-		return curr_packet_;
-	} else {
-		return nullptr;
-	}
+	return state_ == State::new_packet? curr_packet_ : nullptr;
 }
 
 } // grunt, ember
