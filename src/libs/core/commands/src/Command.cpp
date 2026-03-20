@@ -8,7 +8,6 @@
 
 #include <commands/Command.h>
 #include <commands/Exception.h>
-#include <commands/detail/TypeMap.h>
 #include <algorithm>
 #include <ranges>
 #include <utility>
@@ -27,12 +26,6 @@ std::shared_ptr<Command> Command::create(std::string name) {
 	return std::shared_ptr<Command>(new Command(std::move(name))); // make_shared can't access ctor
 }
 
-const std::type_info& Command::arg_type(const args::Value& v) const {
-	return std::visit([](auto&&x)->decltype(auto){
-		return typeid(x); 
-	}, v);
-}
-
 auto Command::validate_arg_count(const std::size_t count) const -> Result {
 	if(count < required_arg_count()) {
 		return Result::missing_args;
@@ -43,27 +36,27 @@ auto Command::validate_arg_count(const std::size_t count) const -> Result {
 	return Result::success;
 }
 
-args::Map Command::build_argument_map(std::span<const args::Value> values) const {
-	args::Map arg_store;
+ArgMap Command::build_argument_map(std::span<std::any> values) const {
+	ArgMap args;
 
 	for(auto [value, arg] : std::views::zip(values, args_)) {
-		if(!validate_type(arg.type, value)) {
+		if(!validate_type(*arg.type, value)) {
 			throw invalid_type(arg.name);
 		}
 
-		arg_store.emplace(arg.name, value);
+		args.emplace(arg.name, std::move(value));
 	}
 
-	return arg_store;
+	return args;
 }
 
 Result Command::execute() {
 	return execute({});
 }
 
-Result Command::execute(std::span<const args::Value> arg_values) {
+Result Command::execute(std::span<std::any> arg_values) {
 	std::shared_ptr<CommandHandler> handler;
-	args::Map arg_map;
+	ArgMap args;
 
 	{
 		std::lock_guard guard(mutex_);
@@ -73,7 +66,7 @@ Result Command::execute(std::span<const args::Value> arg_values) {
 		}
 
 		try {
-			arg_map = std::move(build_argument_map(arg_values));
+			args = std::move(build_argument_map(arg_values));
 		} catch(invalid_type&) {
 			return Result::invalid_types;
 		}
@@ -88,7 +81,7 @@ Result Command::execute(std::span<const args::Value> arg_values) {
 	// handler copy is used to prevent potential deadlocks if a handler invokes its own command
 	// recursive mutex would still deadlock if the handler spawned a thread that subsequently called
 	// the command again while the handler waited
-	(*handler)(std::move(arg_map));
+	(*handler)(std::move(args));
 	return Result::success;
 }
 
@@ -100,21 +93,21 @@ auto Command::can_execute_handler() const -> Result {
 	}
 }
 
-std::shared_ptr<Command> Command::argument(std::string argument, args::Type type) {
+std::shared_ptr<Command> Command::insert_argument(std::string argument, const std::type_info& type_info) {
 	std::lock_guard guard(mutex_);
 
 	if(optional_arg_count() > 0) {
 		throw std::invalid_argument("Required arguments must be placed before optional arguments");
 	}
 		
-	args_.emplace_back(std::move(argument), true, type);
+	args_.emplace_back(std::move(argument), true, type_info);
 	return this->shared_from_this();
 }
 
-std::shared_ptr<Command> Command::optional_argument(std::string argument, args::Type type) {
+std::shared_ptr<Command> Command::insert_optional_argument(std::string argument, const std::type_info& type_info) {
 	std::lock_guard guard(mutex_);
 
-	args_.emplace_back(std::move(argument), false, type);
+	args_.emplace_back(std::move(argument), false, type_info);
 	return this->shared_from_this();
 }
 
@@ -251,14 +244,8 @@ void Command::clear_commands() {
 	commands_.clear();
 }
 
-bool Command::validate_type(args::Type type, const args::Value& value) const {
-	const auto index = std::to_underlying(type);
-
-	if(index < 0 || index >= detail::types.size()) {
-		return false;
-	}
-
-	return detail::types[index] == arg_type(value);
+bool Command::validate_type(const std::type_info& type, const std::any& value) const {
+	return type == value.type();
 }
 
 std::size_t Command::argument_count() const {
@@ -289,13 +276,13 @@ Command& Command::operator()(const Flags& flags) {
 	return *this;
 }
 
-Command& Command::operator()(std::string argument, args::Type type, required) {
-	this->argument(std::move(argument), type);
+Command& Command::operator()(std::string argument, const std::type_info& type, required) {
+	insert_argument(std::move(argument), type);
 	return *this;
 }
 
-Command& Command::operator()(std::string argument, args::Type type, optional) {
-	this->optional_argument(std::move(argument), type);
+Command& Command::operator()(std::string argument, const std::type_info& type, optional) {
+	insert_optional_argument(std::move(argument), type);
 	return *this;
 }
 

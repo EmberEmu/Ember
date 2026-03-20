@@ -231,6 +231,7 @@ void Service::initialise(const opts::variables_map& args) try {
 
 	const auto& nsd_host = args["nsd.host"].as<std::string>();
 	const auto nsd_port = args["nsd.port"].as<std::uint16_t>();
+
 	ctx->rpc_discovery = std::make_unique<NetworkServiceDiscovery>(*ctx->rpc, nsd_host, nsd_port, logger);
 	ctx->queue = std::make_unique<RealmQueue>(service);
 
@@ -280,13 +281,13 @@ void Service::register_commands(boost::asio::io_context& ioc) {
 	);
 
 	auto cmd = registry.scoped_insert(commands::Command::create("config_reload")
-		->optional_argument("filename", commands::args::Type::at_string)
+		->optional_argument<std::string>("filename")
 		->description("Reload the service configuration")
 		->handler(ctx->cmd_exec->wrap([&](auto arguments) {
 			std::string config_file;
 
-			if(auto it = arguments.find("filename"); it != arguments.end()) {
-				config_file = std::get<std::string>(it->second);
+			if(arguments.contains("filename")) {
+				config_file = arguments["filename"].template as<std::string>(); // todo, why?
 			} else {
 				config_file = "realm.conf";
 			}

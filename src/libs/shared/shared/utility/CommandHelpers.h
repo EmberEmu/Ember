@@ -9,6 +9,8 @@
 #pragma once
 
 #include <commands/Registry.h>
+#include <any>
+#include <typeinfo>
 
 namespace ember {
 
@@ -20,7 +22,7 @@ namespace log {
 
 namespace ember::utility {
 
-commands::args::Value convert_type(commands::args::Type type, std::string_view token);
+std::any convert_type(const std::type_info& type, std::string_view token);
 void register_shared_commands(commands::Registry& registry, log::Logger& logger);
 void register_command_handlers(commands::Registry& registry, log::Logger& logger);
 

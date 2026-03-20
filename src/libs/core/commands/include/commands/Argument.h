@@ -8,21 +8,21 @@
 
 #pragma once
 
-#include <commands/ArgumentType.h>
 #include <string>
+#include <typeinfo>
 #include <utility>
 
 namespace ember::commands {
 
 struct Argument {
 	std::string name;
-	args::Type type;
+	const std::type_info* type; // this is okay, type_info lives for the duration of the program
 	bool required;
 
-	Argument(std::string name, bool required, args::Type type)
+	Argument(std::string name, bool required, const std::type_info& type_info)
 		: name(std::move(name))
 		, required(required)
-		, type(type) {}
+		, type(&type_info) {}
 };
 
 } // commands, ember

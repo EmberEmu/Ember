@@ -8,15 +8,21 @@
 
 #pragma once
 
-#include <commands/AnyArg.h>
-#include <commands/detail/StringHash.h>
-#include <boost/unordered/unordered_flat_map.hpp>
-#include <string>
-#include <unordered_map>
-#include <utility>
+#include <any>
 
 namespace ember::commands {
 
-using ArgMap = boost::unordered_flat_map<std::string, AnyArg, StringHash, std::equal_to<>>;
+class AnyArg {
+	const std::any value_;
+
+public:
+	AnyArg(std::any value)
+		: value_(std::move(value)) {}
+
+	template<typename _ty>
+	const _ty as() const {
+		return std::any_cast<_ty>(value_);
+	}
+};
 
 } // commands, ember

@@ -145,24 +145,24 @@ void register_service_commands(commands::Registry& registry, log::Logger& logger
 		->description("Commands for service control");
 
 	svc_cmd->insert("start")
-		->argument("service", commands::args::Type::at_string)
+		->argument<std::string>("service")
 		->description("Start service (load library if shared)")
-		->handler([&](auto args) {
-			service_start(std::get<std::string>(args["service"]), logger);
+		->handler([&](const commands::Arguments& args) {
+			service_start(args["service"].as<std::string>(), logger);
 		});
 
 	svc_cmd->insert("stop")
-		->argument("service", commands::args::Type::at_string)
+		->argument<std::string>("service")
 		->description("Stop service (unload library if shared)")
-		->handler([&logger](auto args) {
-			service_stop(std::get<std::string>(args["service"]), logger);
+		->handler([&logger](const commands::Arguments& args) {
+			service_stop(args["service"].as<std::string>(), logger);
 		});
 
 	svc_cmd->insert("restart")
-		->argument("service", commands::args::Type::at_string)
+		->argument<std::string>("service")
 		->description("Restart service (reload library if shared)")
-		->handler([&logger](auto args) {
-			service_restart(std::get<std::string>(args["service"]), logger);
+		->handler([&logger](const commands::Arguments& args) {
+			service_restart(args["service"].as<std::string>(), logger);
 		});
 }
 

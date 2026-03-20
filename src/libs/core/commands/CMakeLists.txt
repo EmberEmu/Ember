@@ -10,7 +10,6 @@ add_library(${LIBRARY_NAME} STATIC
     src/Registry.cpp
     src/Command.cpp
     src/ScopedCommand.cpp
-	src/detail/TypeMap.cpp
     include/commands/Registry.h
     include/commands/Command.h
     include/commands/Argument.h
@@ -18,14 +17,13 @@ add_library(${LIBRARY_NAME} STATIC
     include/commands/Result.h
     include/commands/Suggestions.h
     include/commands/Exception.h
+    include/commands/Arguments.h
     include/commands/ArgumentMap.h
-    include/commands/ArgumentType.h
-    include/commands/ArgumentValue.h
+    include/commands/AnyArg.h
     include/commands/ScopedCommand.h
     include/commands/UserData.h
     include/commands/Flags.h
     include/commands/detail/StringHash.h
-    include/commands/detail/TypeMap.h
 )
 
 target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
