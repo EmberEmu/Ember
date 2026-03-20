@@ -13,18 +13,18 @@
 namespace ember::commands::detail {
 
 const std::array<std::type_index, 13> types {
-	typeid(std::string),    
-	typeid(std::uint8_t),   
-	typeid(std::uint16_t),  
-	typeid(std::uint32_t),  
-	typeid(std::uint64_t),  
-	typeid(std::int8_t),    
-	typeid(std::int16_t),   
-	typeid(std::int32_t),   
-	typeid(std::int64_t),   
-	typeid(float),          
-	typeid(double),         
-	typeid(char),           
+	typeid(std::string),
+	typeid(std::uint8_t),
+	typeid(std::uint16_t),
+	typeid(std::uint32_t),
+	typeid(std::uint64_t),
+	typeid(std::int8_t),
+	typeid(std::int16_t),
+	typeid(std::int32_t),
+	typeid(std::int64_t),
+	typeid(float),
+	typeid(double),
+	typeid(char),
 	typeid(args::UserData),
 };
 
