@@ -11,8 +11,8 @@
 namespace ember::commands {
 
 struct Flags {
-	unsigned int custom;
-	unsigned int security;
+	unsigned int custom = 0;
+	unsigned int security = 0;
 };
 
 } // commands, ember
