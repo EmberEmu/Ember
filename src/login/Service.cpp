@@ -29,6 +29,9 @@
 #include <boost/asio/executor_work_guard.hpp>
 #include <boost/version.hpp>
 #include <boost/program_options.hpp>
+#ifdef WITH_JEMALLOC
+#include <jemalloc/jemalloc.h>
+#endif
 #include <pcre.h>
 #include <zlib.h>
 #include <functional>
@@ -418,7 +421,11 @@ void print_lib_versions(log::Logger& logger) {
 		<< " - " << drivers::DriverType::name()
 	    << " ("  << drivers::DriverType::version() << ")" << "\n"
 		<< " - PCRE " << PCRE_MAJOR << "." << PCRE_MINOR << "\n"
-		<< " - Zlib " << ZLIB_VERSION << LOG_SYNC;
+		<< " - Zlib " << ZLIB_VERSION
+#ifdef WITH_JEMALLOC
+		<< "\n" << " - jemalloc " << JEMALLOC_VERSION
+#endif
+		<< LOG_SYNC;
 }
 
 extern "C" {
