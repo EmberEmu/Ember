@@ -9,8 +9,8 @@ set(LIBRARY_NAME commands)
 add_library(${LIBRARY_NAME} STATIC
     src/Registry.cpp
     src/Command.cpp
-	src/TypeMap.cpp
     src/ScopedCommand.cpp
+	src/detail/TypeMap.cpp
     include/commands/Registry.h
     include/commands/Command.h
     include/commands/Argument.h
@@ -25,7 +25,7 @@ add_library(${LIBRARY_NAME} STATIC
     include/commands/UserData.h
     include/commands/Flags.h
     include/commands/detail/StringHash.h
-    include/commands/TypeMap.h
+    include/commands/detail/TypeMap.h
 )
 
 target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)

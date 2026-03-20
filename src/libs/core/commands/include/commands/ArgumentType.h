@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <utility>
+
 namespace ember::commands::args {
 
 enum class Type {
@@ -25,5 +27,7 @@ enum class Type {
 	at_char,
 	at_user_data
 };
+
+constexpr static auto type_count = std::to_underlying(Type::at_user_data) + 1;
 
 } // args, commands, ember
