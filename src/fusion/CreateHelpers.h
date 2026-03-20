@@ -97,7 +97,10 @@ auto destroy_service(const ServiceContext& context) {
 	auto derived = static_cast<derived_type*>(context.service);
 
 #ifdef BUILD_SHARED_SERVICES
-	auto destroy_fn = locate_symbol<decltype(fn)>(context.lib_handle, lib_props[idx].destroy_fn);
+	auto destroy_fn = locate_symbol<decltype(fn)>(
+		context.lib_handle, lib_props[context.index].destroy_fn
+	);
+
 	(destroy_fn)(derived);
 #else
 	fn(derived);
