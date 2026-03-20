@@ -8,7 +8,7 @@
 
 #include <commands/Command.h>
 #include <commands/Exception.h>
-#include <commands/TypeMap.h>
+#include <commands/detail/TypeMap.h>
 #include <algorithm>
 #include <ranges>
 
@@ -251,12 +251,13 @@ void Command::clear_commands() {
 }
 
 bool Command::validate_type(args::Type type, const args::Value& value) const {
-	if(auto it = detail::types.find(type); it != detail::types.end()) {
-		auto& [_, typeinfo] = *it;
-		return typeinfo == arg_type(value);
+	const auto index = std::to_underlying(type);
+
+	if(index < 0 || index >= detail::types.size()) {
+		return false;
 	}
 
-	return false;
+	return detail::types[index] == arg_type(value);
 }
 
 std::size_t Command::argument_count() const {

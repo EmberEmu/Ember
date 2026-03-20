@@ -9,11 +9,11 @@
 #pragma once
 
 #include <commands/ArgumentType.h>
-#include <boost/unordered/unordered_flat_map.hpp>
+#include <array>
 #include <typeindex>
 
 namespace ember::commands::detail {
 
-extern const boost::unordered_flat_map<args::Type, std::type_index> types;
+extern const std::array<std::type_index, 13> types;
 
 } // detail, commands, ember
