@@ -46,7 +46,7 @@ int Service::run(const opts::variables_map& args) try {
 	service.run();
 	return EXIT_SUCCESS;
 } catch(const std::exception& e) {
-	LOG_FATAL_SYNC(logger, "{}", e.what());
+	LOG_FATAL_SYNC(logger, e.what());
 	return EXIT_FAILURE;
 }
 
@@ -86,7 +86,7 @@ void Service::initialise(const opts::variables_map& args) {
 	LOG_INFO_SYNC(logger, "Initialising database connection pool...");
 
 	const auto concurrency = thread::hardware_concurrency([&](auto msg) {
-		LOG_ERROR_SYNC(logger, "{}", msg);
+		LOG_ERROR_SYNC(logger, msg);
 	});
 
 	const auto min_conns = args["database.min_connections"].as<unsigned short>();

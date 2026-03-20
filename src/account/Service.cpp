@@ -40,7 +40,7 @@ int Service::run(const opts::variables_map& args) try {
 	service.run();
 	return EXIT_SUCCESS;
 } catch(const std::exception& e) {
-	LOG_FATAL_SYNC(logger, "{}", e.what());
+	LOG_FATAL_SYNC(logger, e.what());
 	return EXIT_FAILURE;
 }
 
@@ -58,7 +58,7 @@ void Service::initialise(const opts::variables_map& args) {
 	ctx->user_dao = std::make_unique<decltype(user_dao)>(std::move(user_dao));
 
 	const auto concurrency = thread::hardware_concurrency([&](auto msg) {
-		LOG_ERROR_SYNC(logger, "{}", msg);
+		LOG_ERROR_SYNC(logger, msg);
 	});
 
 	LOG_INFO_SYNC(logger, "Starting thread pool with {} threads...", concurrency);

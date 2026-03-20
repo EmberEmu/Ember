@@ -94,7 +94,7 @@ asio::awaitable<void> Server::accept(boost::asio::ip::tcp::socket socket) try {
 	peer->start();
 	peers_.add(key, std::move(peer));
 } catch(const std::exception& e) {
-	LOG_WARN_ASYNC(logger_, "{}", e.what());
+	LOG_WARN_ASYNC(logger_, e.what());
 }
 
 void Server::register_handler(gsl::not_null<Handler*> handler) {

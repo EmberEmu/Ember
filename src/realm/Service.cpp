@@ -73,7 +73,7 @@ int Service::run(const opts::variables_map& args) try {
 
 	if(!concurrency) {
 		concurrency = thread::hardware_concurrency([&](auto msg) {
-			LOG_ERROR_SYNC(logger, "{}", msg);
+			LOG_ERROR_SYNC(logger, msg);
 		});
 	}
 
@@ -95,7 +95,7 @@ int Service::run(const opts::variables_map& args) try {
 	LOG_INFO_SYNC(logger, "{} stopped", app_name);
 	return EXIT_SUCCESS;
 } catch(const std::exception& e) {
-	LOG_FATAL_SYNC(logger, "{}", e.what());
+	LOG_FATAL_SYNC(logger, e.what());
 	return EXIT_FAILURE;
 }
 

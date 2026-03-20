@@ -38,16 +38,26 @@ public:
 		finalise();
 	}
 
+	template<bool async>
+	void fmt_write(const Severity severity, const std::string_view str) {
+		*this << severity << str;
+
+		if constexpr(async) {
+			finalise();
+		} else {
+			finalise_sync();
+		}
+	}
+
 	template<bool async, typename ... Args>
+	requires (sizeof...(Args) > 0)
 	constexpr void fmt_write(const Severity severity, std::format_string<Args...> fmt, Args&&... args) {
 		*this << severity;
 		auto buffer = get_buffer();
 
-		std::format_to(std::back_inserter(*buffer),
-		               std::forward<std::format_string<Args...>>(fmt),
-		               std::forward<Args>(args)...);
+		std::format_to(std::back_inserter(*buffer), fmt, std::forward<Args>(args)...);
 
-		if constexpr (async) {
+		if constexpr(async) {
 			finalise();
 		} else {
 			finalise_sync();
