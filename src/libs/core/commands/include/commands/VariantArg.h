@@ -9,15 +9,20 @@
 #pragma once
 
 #include <commands/ArgumentValue.h>
-#include <commands/VariantArg.h>
-#include <commands/detail/StringHash.h>
-#include <boost/unordered/unordered_flat_map.hpp>
-#include <string>
-#include <unordered_map>
-#include <utility>
 
 namespace ember::commands {
 
-using ArgMap = boost::unordered_flat_map<std::string, VariantArg, StringHash, std::equal_to<>>;
+class VariantArg {
+	const commands::args::Value value_;
+
+public:
+	VariantArg(commands::args::Value value)
+		: value_(value) {}
+
+	template<typename _ty>
+	const _ty& as() const {
+		return std::get<_ty>(value_);
+	}
+};
 
 } // commands, ember

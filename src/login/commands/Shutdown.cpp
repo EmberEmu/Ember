@@ -15,7 +15,7 @@ using namespace std::chrono_literals;
 
 namespace ember {
 
-void handle_shutdown_command(commands::args::Map& arguments,
+void handle_shutdown_command(const commands::Arguments& arguments,
                              boost::asio::steady_timer& timer,
 							 std::shared_ptr<std::atomic_bool> flag,
                              shutdown::OnInitiate on_initiate,
@@ -25,7 +25,7 @@ void handle_shutdown_command(commands::args::Map& arguments,
 	if(arguments.empty()) {
 		timer.expires_after(0s);
 	} else {
-		auto time = std::chrono::seconds(std::get<std::uint32_t>(arguments["seconds"]));
+		auto time = std::chrono::seconds(arguments["seconds"].as<std::uint32_t>());
 		timer.expires_after(time);
 		on_initiate(time);
 	}

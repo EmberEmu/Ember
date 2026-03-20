@@ -9,6 +9,7 @@
 #pragma once
 
 #include <commands/Argument.h>
+#include <commands/Arguments.h>
 #include <commands/ArgumentMap.h>
 #include <commands/ArgumentValue.h>
 #include <commands/ArgumentType.h>
@@ -31,7 +32,7 @@ namespace ember::commands {
 
 class Command;
 
-using CommandHandler = std::function<void(const args::Map&)>;
+using CommandHandler = std::function<void(const Arguments&)>;
 using CommandMap = std::unordered_map<std::string, std::shared_ptr<Command>, StringHash, std::equal_to<>>;
 
 class Command : public std::enable_shared_from_this<Command> {
@@ -46,7 +47,7 @@ class Command : public std::enable_shared_from_this<Command> {
 
 	Result validate_arg_count(std::size_t count) const;
 	bool validate_type(args::Type type, const args::Value& value) const;
-	args::Map build_argument_map(std::span<const args::Value> values) const;
+	ArgMap build_argument_map(std::span<args::Value> values) const;
 	std::size_t required_arg_count() const;
 	std::size_t optional_arg_count() const;
 	Result can_execute_handler() const;
@@ -89,7 +90,7 @@ public:
 	const Flags& flags() const;
 
 	Result execute();
-	Result execute(std::span<const args::Value> arg_values);
+	Result execute(std::span<args::Value> arg_values);
 
 	Command& operator()(CommandHandler handler);
 	Command& operator()(std::shared_ptr<Command> command);

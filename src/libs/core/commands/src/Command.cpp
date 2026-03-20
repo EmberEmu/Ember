@@ -43,27 +43,27 @@ auto Command::validate_arg_count(const std::size_t count) const -> Result {
 	return Result::success;
 }
 
-args::Map Command::build_argument_map(std::span<const args::Value> values) const {
-	args::Map arg_store;
+ArgMap Command::build_argument_map(std::span<args::Value> values) const {
+	ArgMap args;
 
 	for(auto [value, arg] : std::views::zip(values, args_)) {
 		if(!validate_type(arg.type, value)) {
 			throw invalid_type(arg.name);
 		}
 
-		arg_store.emplace(arg.name, value);
+		args.emplace(arg.name, std::move(value));
 	}
 
-	return arg_store;
+	return args;
 }
 
 Result Command::execute() {
 	return execute({});
 }
 
-Result Command::execute(std::span<const args::Value> arg_values) {
+Result Command::execute(std::span<args::Value> arg_values) {
 	std::shared_ptr<CommandHandler> handler;
-	args::Map arg_map;
+	ArgMap args;
 
 	{
 		std::lock_guard guard(mutex_);
@@ -73,7 +73,7 @@ Result Command::execute(std::span<const args::Value> arg_values) {
 		}
 
 		try {
-			arg_map = std::move(build_argument_map(arg_values));
+			args = std::move(build_argument_map(arg_values));
 		} catch(invalid_type&) {
 			return Result::invalid_types;
 		}
@@ -88,7 +88,7 @@ Result Command::execute(std::span<const args::Value> arg_values) {
 	// handler copy is used to prevent potential deadlocks if a handler invokes its own command
 	// recursive mutex would still deadlock if the handler spawned a thread that subsequently called
 	// the command again while the handler waited
-	(*handler)(std::move(arg_map));
+	(*handler)(std::move(args));
 	return Result::success;
 }
 

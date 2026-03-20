@@ -124,7 +124,7 @@ void execute_command(const std::string_view input, const Registries& registries,
 	LOG_CONSOLE_ERROR_ASYNC(logger, R"(Error during command execution, "{}")", e.what());
 }
 
-void handle_help_command(const commands::args::Map& arguments,
+void handle_help_command(const commands::Arguments& arguments,
                          const Registries& registries,
                          log::Logger& logger) {
 	if(arguments.empty()) {
@@ -136,7 +136,7 @@ void handle_help_command(const commands::args::Map& arguments,
 		return;
 	}
 
-	const auto command = std::get<std::string>(arguments.at("command"));
+	const auto& command = arguments["command"].as<std::string>();
 	const auto tokens = commands::Registry::parse_input(command);
 
 	// figure out which registry to use

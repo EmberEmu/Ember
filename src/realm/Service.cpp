@@ -231,6 +231,7 @@ void Service::initialise(const opts::variables_map& args) try {
 
 	const auto& nsd_host = args["nsd.host"].as<std::string>();
 	const auto nsd_port = args["nsd.port"].as<std::uint16_t>();
+
 	ctx->rpc_discovery = std::make_unique<NetworkServiceDiscovery>(*ctx->rpc, nsd_host, nsd_port, logger);
 	ctx->queue = std::make_unique<RealmQueue>(service);
 
@@ -285,8 +286,8 @@ void Service::register_commands(boost::asio::io_context& ioc) {
 		->handler(ctx->cmd_exec->wrap([&](auto arguments) {
 			std::string config_file;
 
-			if(auto it = arguments.find("filename"); it != arguments.end()) {
-				config_file = std::get<std::string>(it->second);
+			if(arguments.contains("filename")) {
+				config_file = arguments["filename"].as<std::string>();
 			} else {
 				config_file = "realm.conf";
 			}

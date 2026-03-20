@@ -18,9 +18,11 @@ add_library(${LIBRARY_NAME} STATIC
     include/commands/Result.h
     include/commands/Suggestions.h
     include/commands/Exception.h
+    include/commands/Arguments.h
     include/commands/ArgumentMap.h
     include/commands/ArgumentType.h
     include/commands/ArgumentValue.h
+    include/commands/VariantArg.h
     include/commands/ScopedCommand.h
     include/commands/UserData.h
     include/commands/Flags.h
