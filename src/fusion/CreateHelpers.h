@@ -80,7 +80,7 @@ auto create_service(ServiceIndex idx, log::Logger& logger, commands::Registry& r
 	);
 
 	handle = library;
-	service = (create_func)(logger, registry);
+	service = create_func(logger, registry);
 #else
 	service = fn(logger, registry);
 #endif
@@ -101,7 +101,7 @@ auto destroy_service(const ServiceContext& context) {
 		context.lib_handle, lib_props[context.index].destroy_fn
 	);
 
-	(destroy_fn)(derived);
+	destroy_fn(derived);
 #else
 	fn(derived);
 #endif

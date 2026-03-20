@@ -31,10 +31,8 @@ void log_subcommands(log::Logger& logger, const std::string& path, const command
 	}
 }
 
-void handle_command_result(commands::Result result,
-                           const std::string& path,
-                           const commands::Command& command,
-                           log::Logger& logger) {
+void handle_command_result(commands::Result result, const std::string& path,
+                           const commands::Command& command, log::Logger& logger) {
     switch(result) {
         case commands::Result::missing_args:
 			[[fallthrough]];
