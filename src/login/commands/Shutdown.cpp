@@ -44,7 +44,9 @@ void handle_cancel_command(boost::asio::steady_timer& timer,
 
 	if(flag->compare_exchange_strong(expected, false)) {
 		timer.cancel();
-		on_cancel();
+		on_cancel(shutdown::State::pending);
+	} else {
+		on_cancel(shutdown::not_pending);
 	}
 }
 

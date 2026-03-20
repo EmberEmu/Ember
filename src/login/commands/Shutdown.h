@@ -17,8 +17,13 @@ namespace ember {
 
 namespace shutdown {
 
+enum State {
+	pending,
+	not_pending
+};
+
 using OnInitiate = std::function<void(std::chrono::seconds)>;
-using OnCancel = std::function<void()>;
+using OnCancel = std::function<void(State)>;
 using OnExpire = std::function<void()>;
 
 } // shutdown

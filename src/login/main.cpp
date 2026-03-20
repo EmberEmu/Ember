@@ -109,8 +109,12 @@ void install_shutdown_callbacks(commands::Registry& registry,
 	register_shutdown_command(registry, timer,
 		[&](auto time) {
 			LOG_CONSOLE_ASYNC(logger, "Server will shut down in {}", utility::time_duration_format(time));
-		}, [&] {
-			LOG_CONSOLE_ASYNC(logger, "Server shutdown has been cancelled");
+		}, [&](auto state) {
+			if(state == shutdown::State::pending) {
+				LOG_CONSOLE_ASYNC(logger, "Server shutdown has been cancelled");
+			} else {
+				LOG_CONSOLE_ASYNC(logger, "No shutdown is pending");
+			}
 		}, [&] {
 			LOG_CONSOLE_ASYNC(logger, "Server is shutting down now");
 			std::raise(SIGINT);
