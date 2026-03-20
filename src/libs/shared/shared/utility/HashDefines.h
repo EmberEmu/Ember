@@ -23,4 +23,4 @@ static constexpr auto md5    { 16u };
 static constexpr auto sha160 { 20u };
 static constexpr auto sha256 { 32u };
 
-} // ember
+} // hash_sizes, ember

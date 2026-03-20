@@ -25,6 +25,7 @@ add_library(${LIBRARY_NAME} STATIC
     include/commands/UserData.h
     include/commands/Flags.h
     include/commands/detail/StringHash.h
+    include/commands/TypeMap.h
 )
 
 target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)

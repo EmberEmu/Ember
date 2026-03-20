@@ -9,8 +9,8 @@
 #pragma once
 
 #include <commands/ArgumentType.h>
-#include <typeindex>
 #include <boost/unordered/unordered_flat_map.hpp>
+#include <typeindex>
 
 namespace ember::commands::detail {
 
