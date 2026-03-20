@@ -71,22 +71,25 @@ auto locate_symbol(const cstring_view lib_name, const cstring_view func_name) {
 
 template<auto fn>
 auto create_service(ServiceIndex idx, log::Logger& logger, commands::Registry& registry) {
+	library::Handle handle = nullptr;
+	IService* service = nullptr;
+
 #ifdef BUILD_SHARED_SERVICES
 	auto [library, create_func] = locate_symbol<decltype(fn)>(
 		lib_props[idx].libname, lib_props[idx].create_fn
 	);
 
-	return ServiceContext {
-		.service = (create_func)(logger, registry),
-		.lib_handle = library,
-		.index = idx
-	};
+	handle = library;
+	service = (create_func)(logger, registry);
 #else
-	return ServiceContext{
-		.service = fn(logger, registry),
+	service = fn(logger, registry);
+#endif
+
+	return ServiceContext {
+		.service = service,
+		.lib_handle = handle,
 		.index = idx
 	};
-#endif
 }
 
 template<auto fn, typename derived_type>
