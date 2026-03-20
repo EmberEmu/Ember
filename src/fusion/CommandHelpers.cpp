@@ -184,7 +184,7 @@ void register_shared_commands(Registries& registries, log::Logger& logger) {
 	root.insert("help")
 		->description("Display console command usage information")
 		->optional_argument<std::string>("command")
-		->handler([&](const auto& arguments) {
+		->handler([&](const commands::Arguments& arguments) {
 			handle_help_command(arguments, registries, logger);
 		});
 

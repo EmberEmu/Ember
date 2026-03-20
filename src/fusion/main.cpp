@@ -147,21 +147,21 @@ void register_service_commands(commands::Registry& registry, log::Logger& logger
 	svc_cmd->insert("start")
 		->argument<std::string>("service")
 		->description("Start service (load library if shared)")
-		->handler([&](auto args) {
+		->handler([&](const commands::Arguments& args) {
 			service_start(args["service"].as<std::string>(), logger);
 		});
 
 	svc_cmd->insert("stop")
 		->argument<std::string>("service")
 		->description("Stop service (unload library if shared)")
-		->handler([&logger](auto args) {
+		->handler([&logger](const commands::Arguments& args) {
 			service_stop(args["service"].as<std::string>(), logger);
 		});
 
 	svc_cmd->insert("restart")
 		->argument<std::string>("service")
 		->description("Restart service (reload library if shared)")
-		->handler([&logger](auto args) {
+		->handler([&logger](const commands::Arguments& args) {
 			service_restart(args["service"].as<std::string>(), logger);
 		});
 }
