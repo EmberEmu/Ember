@@ -104,11 +104,11 @@ void execute_command(const std::string_view input, const Registries& registries,
 	}
 
 	// argument type conversion
-	std::vector<commands::args::Value> arg_values;
+	std::vector<std::any> arg_values;
 	auto command_args = search.command->arguments();
 
 	for(auto [expected, argument] : std::views::zip(command_args, arguments)) {
-		arg_values.emplace_back(utility::convert_type(expected.type, argument));
+		arg_values.emplace_back(utility::convert_type(*expected.type, argument));
 	}
 
 	// execute the command handler
@@ -183,7 +183,7 @@ void register_shared_commands(Registries& registries, log::Logger& logger) {
 
 	root.insert("help")
 		->description("Display console command usage information")
-		->optional_argument("command", commands::args::Type::at_string)
+		->optional_argument<std::string>("command")
 		->handler([&](const auto& arguments) {
 			handle_help_command(arguments, registries, logger);
 		});

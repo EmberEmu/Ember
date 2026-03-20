@@ -281,7 +281,7 @@ void Service::register_commands(boost::asio::io_context& ioc) {
 	);
 
 	auto cmd = registry.scoped_insert(commands::Command::create("config_reload")
-		->optional_argument("filename", commands::args::Type::at_string)
+		->optional_argument<std::string>("filename")
 		->description("Reload the service configuration")
 		->handler(ctx->cmd_exec->wrap([&](auto arguments) {
 			std::string config_file;

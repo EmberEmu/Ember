@@ -11,8 +11,6 @@
 #include <commands/Argument.h>
 #include <commands/Arguments.h>
 #include <commands/ArgumentMap.h>
-#include <commands/ArgumentValue.h>
-#include <commands/ArgumentType.h>
 #include <commands/Flags.h>
 #include <commands/Result.h>
 #include <commands/ScopedCommand.h>
@@ -46,13 +44,13 @@ class Command : public std::enable_shared_from_this<Command> {
 	Flags flags_;
 
 	Result validate_arg_count(std::size_t count) const;
-	bool validate_type(args::Type type, const args::Value& value) const;
-	ArgMap build_argument_map(std::span<args::Value> values) const;
+	bool validate_type(const std::type_info& type, const std::any& value) const;
+	ArgMap build_argument_map(std::span<std::any> values) const;
 	std::size_t required_arg_count() const;
 	std::size_t optional_arg_count() const;
 	Result can_execute_handler() const;
-	const std::type_info& arg_type(const args::Value& v) const;
-
+	std::shared_ptr<Command> insert_argument(std::string argument, const std::type_info& type);
+	std::shared_ptr<Command> insert_optional_argument(std::string argument, const std::type_info& type);
 	explicit Command(std::string name);
 
 public:
@@ -68,10 +66,18 @@ public:
 
 	std::shared_ptr<Command> insert(std::string name);
 	std::shared_ptr<Command> description(std::string description);
-	std::shared_ptr<Command> argument(std::string argument, args::Type type);
-	std::shared_ptr<Command> optional_argument(std::string argument, args::Type type);
 	std::shared_ptr<Command> handler(CommandHandler handler);
 	std::shared_ptr<Command> flags(const Flags& flags);
+
+	template<typename _ty>
+	std::shared_ptr<Command> argument(std::string argument) {
+		return insert_argument(std::move(argument), typeid(_ty));
+	}
+
+	template<typename _ty>
+	std::shared_ptr<Command> optional_argument(std::string argument) {
+		return insert_optional_argument(std::move(argument), typeid(_ty));
+	}
 
 	void insert(std::shared_ptr<Command> command);
 	ScopedCommand scoped_insert(std::shared_ptr<Command> command);
@@ -90,14 +96,14 @@ public:
 	const Flags& flags() const;
 
 	Result execute();
-	Result execute(std::span<args::Value> arg_values);
+	Result execute(std::span<std::any> arg_values);
 
 	Command& operator()(CommandHandler handler);
 	Command& operator()(std::shared_ptr<Command> command);
 	Command& operator()(std::string description);
 	Command& operator()(const Flags& flags);
-	Command& operator()(std::string argument, args::Type type, required);
-	Command& operator()(std::string argument, args::Type type, optional);
+	Command& operator()(std::string argument, const std::type_info& type, required);
+	Command& operator()(std::string argument, const std::type_info& type, optional);
 
 	friend class PrefixedRegistry; 
 };

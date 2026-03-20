@@ -9,7 +9,7 @@
 #pragma once
 
 #include <commands/ArgumentMap.h>
-#include <commands/VariantArg.h>
+#include <commands/AnyArg.h>
 
 namespace ember::commands {
 
@@ -23,7 +23,7 @@ public:
 	Arguments(ArgMap map)
 		: map_(std::move(map)) {}
 
-	const VariantArg& operator[](const std::string_view key) const {
+	const AnyArg& operator[](const std::string_view key) const {
 		return map_.at(key);
 	}
 

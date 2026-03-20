@@ -79,7 +79,7 @@ void register_shutdown_command(commands::Registry& registry,
 
 	auto root = registry.insert("shutdown")
 		->description("Shuts the service down")
-		->argument("seconds", commands::args::Type::at_uint32)
+		->argument<std::uint32_t>("seconds")
 		->handler([&, flag, on_initiate, on_expire](auto arguments) {
 			handle_shutdown_command(arguments, timer, flag, on_initiate, on_expire);
 		});

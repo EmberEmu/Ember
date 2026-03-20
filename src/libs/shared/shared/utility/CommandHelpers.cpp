@@ -54,46 +54,33 @@ void handle_command_result(commands::Result result,
     }
 }
 
-commands::args::Value convert_type(commands::args::Type type, std::string_view token) {
-	switch(type) {
-		case commands::args::Type::at_char:
-			return boost::lexical_cast<char>(token);
-			break;
-		case commands::args::Type::at_string:
-			return boost::lexical_cast<std::string>(token);
-			break;
-		case commands::args::Type::at_uint8:
-			return boost::lexical_cast<std::uint8_t>(token);
-			break;
-		case commands::args::Type::at_uint16:
-			return boost::lexical_cast<std::uint16_t>(token);
-			break;
-		case commands::args::Type::at_uint32:
-			return boost::lexical_cast<std::uint32_t>(token);
-			break;
-		case commands::args::Type::at_uint64:
-			return boost::lexical_cast<std::uint64_t>(token);
-			break;
-		case commands::args::Type::at_int8:
-			return boost::lexical_cast<std::int8_t>(token);
-			break;
-		case commands::args::Type::at_int16:
-			return boost::lexical_cast<std::int16_t>(token);
-			break;
-		case commands::args::Type::at_int32:
-			return boost::lexical_cast<std::int32_t>(token);
-			break;
-		case commands::args::Type::at_int64:
-			return boost::lexical_cast<std::int64_t>(token);
-			break;
-		case commands::args::Type::at_float:
-			return boost::lexical_cast<float>(token);
-			break;
-		case commands::args::Type::at_double:
-			return boost::lexical_cast<double>(token);
-			break;
-		default:
-			throw std::runtime_error("Unhandled argument type");
+std::any convert_type(const std::type_info& info, std::string_view token) {
+	if(info == typeid(std::string)) {
+		return std::string(token);
+	} else if(info == typeid(char)) {
+		return boost::lexical_cast<char>(token);
+	} else if(info == typeid(std::uint8_t)) {
+		return boost::lexical_cast<std::uint8_t>(token);
+	} else if(info == typeid(std::uint16_t)) {
+		return boost::lexical_cast<std::uint16_t>(token);
+	} else if(info == typeid(std::uint32_t)) {
+		return boost::lexical_cast<std::uint32_t>(token);
+	} else if(info == typeid(std::uint64_t)) {
+		return boost::lexical_cast<std::uint64_t>(token);
+	} else if(info == typeid(std::int8_t)) {
+		return boost::lexical_cast<std::int8_t>(token);
+	} else if(info == typeid(std::int16_t)) {
+		return boost::lexical_cast<std::int16_t>(token);
+	} else if(info == typeid(std::int32_t)) {
+		return boost::lexical_cast<std::int32_t>(token);
+	} else if(info == typeid(std::int64_t)) {
+		return boost::lexical_cast<std::int64_t>(token);
+	} else if(info == typeid(float)) {
+		return boost::lexical_cast<float>(token);
+	} else if(info == typeid(double)) {
+		return boost::lexical_cast<std::uint8_t>(token);
+	} else {
+		throw std::runtime_error("Unhandled argument type");
 	}
 }
 
@@ -131,11 +118,11 @@ void execute_command(const std::string_view input, const commands::Registry& reg
 	}
 
 	// argument type conversion
-	std::vector<commands::args::Value> arg_values;
+	std::vector<std::any> arg_values;
 	auto command_args = search.command->arguments();
 
 	for(auto [expected, argument] : std::views::zip(command_args, arguments)) {
-		arg_values.emplace_back(convert_type(expected.type, argument));
+		arg_values.emplace_back(convert_type(*expected.type, argument));
 	}
 
 	// execute the command handler
@@ -194,7 +181,7 @@ void handle_cls_command(log::Logger& logger) {
 void register_shared_commands(commands::Registry& registry, log::Logger& logger) {
 	registry.insert("help")
 		->description("Display console command usage information")
-		->optional_argument("command", commands::args::Type::at_string)
+		->optional_argument<std::string>("command")
 		->handler([&](const auto& arguments) {
 			handle_help_command(arguments, registry, logger);
 		});

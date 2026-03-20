@@ -8,20 +8,20 @@
 
 #pragma once
 
-#include <commands/ArgumentValue.h>
+#include <any>
 
 namespace ember::commands {
 
-class VariantArg {
-	const commands::args::Value value_;
+class AnyArg {
+	const std::any value_;
 
 public:
-	VariantArg(commands::args::Value value)
+	AnyArg(std::any value)
 		: value_(std::move(value)) {}
 
 	template<typename _ty>
-	const _ty& as() const {
-		return std::get<_ty>(value_);
+	const _ty as() const {
+		return std::any_cast<_ty>(value_);
 	}
 };
 

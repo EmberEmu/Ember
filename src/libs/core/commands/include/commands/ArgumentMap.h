@@ -8,8 +8,7 @@
 
 #pragma once
 
-#include <commands/ArgumentValue.h>
-#include <commands/VariantArg.h>
+#include <commands/AnyArg.h>
 #include <commands/detail/StringHash.h>
 #include <boost/unordered/unordered_flat_map.hpp>
 #include <string>
@@ -18,6 +17,6 @@
 
 namespace ember::commands {
 
-using ArgMap = boost::unordered_flat_map<std::string, VariantArg, StringHash, std::equal_to<>>;
+using ArgMap = boost::unordered_flat_map<std::string, AnyArg, StringHash, std::equal_to<>>;
 
 } // commands, ember

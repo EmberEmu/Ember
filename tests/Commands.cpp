@@ -19,9 +19,9 @@ public:
 	virtual void SetUp() {
 		auto cmd = registry.insert("root")
 			->description("root command")
-			->argument("arg1", commands::args::Type::at_string)
-			->argument("arg2", commands::args::Type::at_string)
-			->optional_argument("arg3", commands::args::Type::at_uint32)
+			->argument<std::string>("arg1")
+			->argument<std::string>("arg2")
+			->optional_argument<std::uint32_t>("arg3")
 			->handler([&](auto /*args*/) {
 				success = true;
 			});
@@ -192,19 +192,19 @@ TEST_F(Commands, ArgumentCount) {
 
 TEST_F(Commands, AddArgument) {
 	auto cmd = registry.find("root").command;
-	cmd->optional_argument("arg4", commands::args::Type::at_char);
+	cmd->optional_argument<char>("arg4");
 	ASSERT_EQ(cmd->argument_count(), 4);
 }
 
 TEST_F(Commands, AddArgumentOutOfOrder) {
 	auto cmd = registry.find("root").command;
-	ASSERT_THROW(cmd->argument("arg4", commands::args::Type::at_char), std::invalid_argument);
+	ASSERT_THROW(cmd->argument<char>("arg4"), std::invalid_argument);
 }
 
 TEST_F(Commands, EraseInsertArgument) {
 	auto cmd = registry.find("root").command;
 	ASSERT_TRUE(cmd->erase_argument("arg3"));
-	cmd->argument("arg3", commands::args::Type::at_char);
+	cmd->argument<char>("arg3");
 	ASSERT_EQ(cmd->argument_count(), 3);
 }
 
@@ -232,7 +232,7 @@ TEST_F(Commands, ExecuteNoHandler) {
 TEST_F(Commands, Execute_InvalidTypes) {
 	auto cmd = registry.find("root").command;
 
-	std::array<commands::args::Value, 3> args {
+	std::array<std::any, 3> args {
 		"Are you sure that's the point, Doctor?",
 		"Of course. What else could it be?",
 		"That you should never tell the same lie twice."
@@ -254,7 +254,7 @@ TEST_F(Commands, Execute_MissingArgsEmpty) {
 TEST_F(Commands, Execute_TooManyArgs) {
 	auto cmd = registry.find("root").command;
 
-	std::array<commands::args::Value, 4> args {
+	std::array<std::any, 4> args {
 		"The", "quick", "brown", "fox"
 	};
 
@@ -264,7 +264,7 @@ TEST_F(Commands, Execute_TooManyArgs) {
 TEST_F(Commands, Execute_MissingArgs) {
 	auto cmd = registry.find("root").command;
 
-	std::array<commands::args::Value, 1> args {
+	std::array<std::any, 1> args {
 		"jumped",
 	};
 
@@ -274,8 +274,8 @@ TEST_F(Commands, Execute_MissingArgs) {
 TEST_F(Commands, Execute_RequiredArgs_Success) {
 	auto cmd = registry.find("root").command;
 
-	std::array<commands::args::Value, 2> args {
-		"over", "the",
+	std::array<std::any, 2> args {
+		std::string("over"), std::string("the"),
 	};
 
 	ASSERT_EQ(cmd->execute(args), commands::Result::success);
@@ -285,8 +285,8 @@ TEST_F(Commands, Execute_RequiredArgs_Success) {
 TEST_F(Commands, Execute_OptionalArgs_Success) {
 	auto cmd = registry.find("root").command;
 
-	std::array<commands::args::Value, 3> args {
-		"lazy", "dog", std::uint32_t(42)
+	std::array<std::any, 3> args {
+		std::string("lazy"), std::string("dog"), std::uint32_t(42)
 	};
 
 	ASSERT_EQ(cmd->execute(args), commands::Result::success);
@@ -297,34 +297,30 @@ TEST_F(Commands, Execute_AllArgTypes_Success) {
 	auto cmd = registry.find("root").command;
 	cmd->clear_arguments();
 
-	cmd->argument("arg1", commands::args::Type::at_string)
-		->argument("arg2", commands::args::Type::at_char)
-		->argument("arg3", commands::args::Type::at_double)
-		->argument("arg4", commands::args::Type::at_float)
-		->argument("arg5", commands::args::Type::at_int16)
-		->argument("arg6", commands::args::Type::at_int32)
-		->argument("arg7", commands::args::Type::at_int64)
-		->argument("arg8", commands::args::Type::at_int8)
-		->argument("arg9", commands::args::Type::at_uint16)
-		->argument("arg10", commands::args::Type::at_uint32)
-		->argument("arg11", commands::args::Type::at_uint64)
-		->argument("arg12", commands::args::Type::at_uint8)
-		->argument("arg13", commands::args::Type::at_user_data);
-
-	struct Data {
+	struct UserData {
 		int foo;
 		float bar;
-	} data;
+	} data{};
 
-	auto user_data = commands::args::UserData{
-		.data = data
-	};
+	cmd->argument<std::string>("arg1")
+		->argument<char>("arg2")
+		->argument<double>("arg3")
+		->argument<float>("arg4")
+		->argument<std::int16_t>("arg5")
+		->argument<std::int32_t>("arg6")
+		->argument<std::int64_t>("arg7")
+		->argument<std::int8_t>("arg8")
+		->argument<std::uint16_t>("arg9")
+		->argument<std::uint32_t>("arg10")
+		->argument<std::uint64_t>("arg11")
+		->argument<std::uint8_t>("arg12")
+		->argument<UserData>("arg13");
 
-	std::array<commands::args::Value, 13> args {
-		"Hello, world", 'c', 1.0, 1.0f,
+	std::array<std::any, 13> args {
+		std::string("Hello, world"), 'c', 1.0, 1.0f,
 		std::int16_t(0), std::int32_t(0), std::int64_t(0), std::int8_t(0),
 		std::uint16_t(0), std::uint32_t(0), std::uint64_t(0), std::uint8_t(0),
-		user_data
+		data
 	};
 
 	ASSERT_EQ(cmd->execute(args), commands::Result::success);
