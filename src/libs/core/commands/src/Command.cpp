@@ -40,7 +40,7 @@ ArgMap Command::build_argument_map(std::span<std::any> values) const {
 	ArgMap args;
 
 	for(auto [value, arg] : std::views::zip(values, args_)) {
-		if(!validate_type(*arg.type, value)) {
+		if(!validate_type(arg.type, value)) {
 			throw invalid_type(arg.name);
 		}
 

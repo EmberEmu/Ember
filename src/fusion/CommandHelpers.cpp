@@ -108,7 +108,7 @@ void execute_command(const std::string_view input, const Registries& registries,
 	auto command_args = search.command->arguments();
 
 	for(auto [expected, argument] : std::views::zip(command_args, arguments)) {
-		arg_values.emplace_back(utility::convert_type(*expected.type, argument));
+		arg_values.emplace_back(utility::convert_type(expected.type, argument));
 	}
 
 	// execute the command handler
