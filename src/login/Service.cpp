@@ -74,7 +74,7 @@ int Service::run(const opts::variables_map& args) try {
 
 	// Spawn worker threads for Asio
 	const auto concurrency = thread::hardware_concurrency([&](auto msg) {
-		LOG_ERROR_SYNC(logger, "{}", msg);
+		LOG_ERROR_SYNC(logger, msg);
 	});
 
 	std::vector<std::jthread> threads;
@@ -89,7 +89,7 @@ int Service::run(const opts::variables_map& args) try {
 
 	return EXIT_SUCCESS;
 } catch(const std::exception& e) {
-	LOG_FATAL_SYNC(logger, "{}", e.what());
+	LOG_FATAL_SYNC(logger, e.what());
 	return EXIT_FAILURE;
 }
 
@@ -129,7 +129,7 @@ void Service::initialise(const opts::variables_map& args) {
 	rng.randomize(reinterpret_cast<std::uint8_t*>(seed_bytes.data()), seed_bytes.size_bytes());
 
 	const auto concurrency = thread::hardware_concurrency([&](auto msg) {
-		LOG_ERROR_SYNC(logger, "{}", msg);
+		LOG_ERROR_SYNC(logger, msg);
 	});
 
 	LOG_INFO_SYNC(logger, "Initialising database connection pool...");

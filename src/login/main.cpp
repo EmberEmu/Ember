@@ -99,7 +99,7 @@ int run(const opts::variables_map& args, log::Logger& logger, commands::Registry
 	signals.cancel();
 	return ret;
 } catch(const std::exception& e) {
-	LOG_FATAL_SYNC(logger, "{}", e.what());
+	LOG_FATAL_SYNC(logger, e.what());
 	return EXIT_FAILURE;
 }
 

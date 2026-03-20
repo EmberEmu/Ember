@@ -227,7 +227,7 @@ int launch(const opts::variables_map& args, log::Logger& logger) try {
 	service.run();
 	return EXIT_SUCCESS;
 } catch(const std::exception& e) {
-	LOG_FATAL_SYNC(logger, "{}", e.what());
+	LOG_FATAL_SYNC(logger, e.what());
 	return EXIT_FAILURE;
 }
 
