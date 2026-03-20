@@ -17,7 +17,7 @@ class VariantArg {
 
 public:
 	VariantArg(commands::args::Value value)
-		: value_(value) {}
+		: value_(std::move(value)) {}
 
 	template<typename _ty>
 	const _ty& as() const {

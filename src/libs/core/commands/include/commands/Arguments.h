@@ -23,7 +23,7 @@ public:
 	Arguments(ArgMap map)
 		: map_(std::move(map)) {}
 
-	const auto operator[](const std::string_view key) const {
+	const VariantArg& operator[](const std::string_view key) const {
 		return map_.at(key);
 	}
 
