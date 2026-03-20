@@ -28,6 +28,10 @@ void ServiceRunner::run() {
 }
 
 void ServiceRunner::stop() {
+	if(!running_) {
+		return;
+	}
+
 	context_.service->stop();
 	
 	if(worker_.joinable()) {

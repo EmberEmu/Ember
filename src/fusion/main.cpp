@@ -23,7 +23,6 @@
 #include <boost/program_options.hpp>
 #include <fstream>
 #include <iostream>
-#include <thread>
 #include <utility>
 
 using namespace ember;
@@ -133,6 +132,7 @@ void service_stop(const std::string& service, log::Logger& logger) {
 	LOG_CONSOLE_ASYNC(logger, "Service stopped");
 
 	destroy_service(runner.context());
+	runners.erase(it);
 }
 
 void service_restart(std::string service, log::Logger& logger) {
