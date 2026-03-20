@@ -66,7 +66,7 @@ public:
 	}
 
 	void copy(void* destination, size_type length) const {
-		assert(!region_overlap(buffer_.data(), buffer_.size(), destination, length));
+		assert(!detail::region_overlap(buffer_.data(), buffer_.size(), destination, length));
 
 		if(length > size()) {
 			throw buffer_underrun(length, read_, size());
@@ -149,7 +149,7 @@ public:
 	}
 
 	void write(const void* source, size_type length) {
-		assert(!region_overlap(source, length, buffer_.data(), buffer_.size()));
+		assert(!detail::region_overlap(source, length, buffer_.data(), buffer_.size()));
 
 		if(free() < length) {
 			throw buffer_overflow(length, write_, free());

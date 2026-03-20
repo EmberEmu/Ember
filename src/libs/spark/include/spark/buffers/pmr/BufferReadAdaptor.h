@@ -40,7 +40,7 @@ public:
 	}
 
 	void read(void* destination, std::size_t length) override {
-		assert(destination && !region_overlap(buffer_.data(), buffer_.size(), destination, length));
+		assert(destination && !detail::region_overlap(buffer_.data(), buffer_.size(), destination, length));
 		std::memcpy(destination, buffer_.data() + read_, length);
 		read_ += length;
 	}
@@ -51,7 +51,7 @@ public:
 	}
 
 	void copy(void* destination, std::size_t length) const override {
-		assert(destination && !region_overlap(buffer_.data(), buffer_.size(), destination, length));
+		assert(destination && !detail::region_overlap(buffer_.data(), buffer_.size(), destination, length));
 		std::memcpy(destination, buffer_.data() + read_, length);
 	}
 
