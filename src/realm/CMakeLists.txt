@@ -61,6 +61,7 @@ set(LIBRARY_HDR
     ServiceContext.h
     ServiceContextImpl.h
     ConfigStore.h
+    MessageView.h
 )
 
 set(LIBRARY_SRC
@@ -106,7 +107,7 @@ add_dependencies(${LIBRARY_NAME}
 )
 
 if(BUILD_SHARED)
-	target_compile_definitions(${LIBRARY_NAME} PUBLIC EXPORT_SERVICE)
+    target_compile_definitions(${LIBRARY_NAME} PUBLIC EXPORT_SERVICE)
 endif()
 
 target_compile_definitions(${LIBRARY_NAME} PUBLIC EXPORT_SERVICE)

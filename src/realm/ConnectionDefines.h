@@ -19,9 +19,9 @@ static constexpr auto inbound_size  { 8192 };
 static constexpr auto outbound_size { 8192 };
 
 #if defined TARGET_PLAYER_COUNT && defined TARGET_WORKER_COUNT
-static constexpr std::size_t PREALLOC_NODES {  TARGET_PLAYER_COUNT / TARGET_WORKER_COUNT };
+static constexpr std::size_t prealloc_nodes {  TARGET_PLAYER_COUNT / TARGET_WORKER_COUNT };
 #else
-static constexpr std::size_t PREALLOC_NODES {  16 };
+static constexpr std::size_t prealloc_nodes {  16 };
 #endif
 
 using StaticBuffer  = spark::io::StaticBuffer<std::uint8_t, inbound_size>;
@@ -33,7 +33,7 @@ using BinaryStream = spark::io::BinaryStream<
 >;
 
 using DynamicTLSBuffer = spark::io::DynamicTLSBuffer<
-	outbound_size, PREALLOC_NODES, spark::io::NoRefCounting, spark::io::UnsafeEntrant
+	outbound_size, prealloc_nodes, spark::io::NoRefCounting, spark::io::UnsafeEntrant
 >;
 
 } // realm, ember

@@ -17,7 +17,7 @@ namespace ember::realm {
 
 [[nodiscard]]
 bool ClientHandler::deserialise(protocol::is_packet<BinaryStream> auto& packet, BinaryStream& stream) {
-	if(auto result = packet->read_from_stream(stream); result) {
+	if(auto result = packet.read_payload_from_stream(stream); result) {
 		if(stream.read_limit() != stream.total_read()) {
 			LOG_DEBUG_ASYNC(
 				logger_, "Skipping unprocessed data in message {} from {}",

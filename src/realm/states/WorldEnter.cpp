@@ -10,6 +10,7 @@
 #include "ClientContext.h"
 #include "../ClientConnection.h"
 #include "../Events.h"
+#include "../MessageView.h"
 #include <protocol/Packets.h>
 
 #include <chrono>
@@ -89,7 +90,7 @@ void enter(ClientContext& ctx) {
 }
 
 void handle_name_query(ClientContext& ctx) {
-	protocol::cmsg_name_query packet;
+	message_view<protocol::cmsg_name_query> packet;
 
 	if(!ctx.handler.deserialise(packet, *ctx.stream)) {
 		return;
@@ -102,7 +103,7 @@ void handle_name_query(ClientContext& ctx) {
 }
 
 void handle_active_mover(ClientContext& ctx) {
-	protocol::cmsg_set_active_mover packet;
+	message_view<protocol::cmsg_set_active_mover> packet;
 
 	if(!ctx.handler.deserialise(packet, *ctx.stream)) {
 		return;
@@ -133,7 +134,7 @@ void handle_request_raid_info(ClientContext& ctx) {
 }
 
 void handle_item_query(ClientContext& ctx) {
-	protocol::cmsg_item_query_single packet;
+	message_view<protocol::cmsg_item_query_single> packet;
 
 	if(!ctx.handler.deserialise(packet, *ctx.stream)) {
 		return;
@@ -182,7 +183,7 @@ void handle_battlefield_status(ClientContext& ctx) {
 }
 
 void handle_meetingstone_info(ClientContext& ctx) {
-	protocol::cmsg_meetingstone_info packet;
+	message_view<protocol::cmsg_meetingstone_info> packet;
 
 	if(!ctx.handler.deserialise(packet, *ctx.stream)) {
 		return;
@@ -197,7 +198,7 @@ void handle_meetingstone_info(ClientContext& ctx) {
 std::uint64_t packed_guid = 0;
 
 void handle_move_time_skipped(ClientContext& ctx) {
-	protocol::cmsg_move_time_skipped packet;
+	message_view<protocol::cmsg_move_time_skipped> packet;
 
 	if(!ctx.handler.deserialise(packet, *ctx.stream)) {
 		return;
@@ -239,7 +240,7 @@ void handle_move_set_facing(ClientContext& ctx) {
 }
 
 void handle_zone_update(ClientContext& ctx) {
-	protocol::cmsg_zone_update packet;
+	message_view<protocol::cmsg_zone_update> packet;
 
 	if(!ctx.handler.deserialise(packet, *ctx.stream)) {
 		return;
@@ -247,7 +248,7 @@ void handle_zone_update(ClientContext& ctx) {
 }
 
 void handle_update_account_data(ClientContext& ctx) {
-	protocol::cmsg_update_account_data packet;
+	message_view<protocol::cmsg_update_account_data> packet;
 
 	if(!ctx.handler.deserialise(packet, *ctx.stream)) {
 		return;
@@ -255,7 +256,7 @@ void handle_update_account_data(ClientContext& ctx) {
 }
 
 void handle_join_channel(ClientContext& ctx) {
-	protocol::cmsg_join_channel packet;
+	message_view<protocol::cmsg_join_channel> packet;
 
 	if(!ctx.handler.deserialise(packet, *ctx.stream)) {
 		return;
@@ -278,7 +279,7 @@ void handle_tutorial_flag(ClientContext& ctx) {
 }
 
 void handle_messagechat(ClientContext& ctx) {
-	protocol::cmsg_messagechat packet;
+	message_view<protocol::cmsg_messagechat> packet;
 
 	if(!ctx.handler.deserialise(packet, *ctx.stream)) {
 		return;

@@ -19,14 +19,14 @@ template<typename HeaderType, typename HeaderType::OpcodeType op_, typename Payl
 struct Packet final {
 	using OpcodeType = typename HeaderType::OpcodeType;
 	using SizeType = protocol::SizeType;
+	using PayloadType = Payload;
 
 	static constexpr OpcodeType opcode = op_;
 	static constexpr std::size_t header_wire_size = HeaderType::wire_size;
 
 	Payload payload;
 
-	StreamResult read_from_stream(auto& stream) {
-		stream >> SizeType{} >> OpcodeType{};
+	StreamResult read_payload_from_stream(auto& stream) {
 		return payload.read_from_stream(stream);
 	}
 
