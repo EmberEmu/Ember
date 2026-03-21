@@ -224,13 +224,12 @@ void Service::initialise(const opts::variables_map& args) {
 	const auto port = args["network.port"].as<std::uint16_t>();
 	const auto tcp_no_delay = args["network.tcp_no_delay"].as<bool>();
 
-	LOG_INFO_SYNC(logger, "Starting network service...");
+	LOG_INFO_SYNC(logger, "Starting network service on {}:{}...", interface, ctx->server->port());
 	ctx->server = std::make_unique<NetworkListener>(
 		io_context, interface, port, tcp_no_delay, *ctx->login_session_builder,
 		*ctx->ip_ban_cache, logger, *ctx->metrics
 	);
 
-	LOG_INFO_SYNC(logger, "Started network service on {}:{}", interface, ctx->server->port());
 
 	// Start monitoring service
 	if(args["monitor.enabled"].as<bool>()) {

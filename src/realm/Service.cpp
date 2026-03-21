@@ -249,9 +249,8 @@ void Service::initialise(const opts::variables_map& args) try {
 	LOG_INFO_SYNC(logger, "Max allowed sockets: {}", max_socks);
 
 	// Start network listener
-	LOG_INFO_SYNC(logger, "Starting network service...");
+	LOG_INFO_SYNC(logger, "Starting network service on {}:{}...", interface, ctx->server->port());
 	ctx->server = std::make_unique<NetworkListener>(*ctx->service_pool, interface, port, tcp_no_delay, logger);
-	LOG_INFO_SYNC(logger, "Started network service on {}:{}", interface, ctx->server->port());
 	
 	// Install service command handlers
 	LOG_INFO_SYNC(logger, "Registering command handlers...");
