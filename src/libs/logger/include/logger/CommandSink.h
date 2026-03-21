@@ -44,9 +44,12 @@ class CommandSink final : public Sink {
 	static constexpr auto sv_reserve = 256u;
 	static constexpr auto max_buf_size = 4096u;
 	static constexpr auto reserve_buf_size = 1024u;
-	static constexpr auto history_size = 5u;
-	static constexpr auto table_name_cols = 25u;
-	static constexpr auto table_desc_cols = 52u;
+	static constexpr auto history_size = 10u;
+	static constexpr auto table_name_min_cols = 20u;
+	static constexpr auto table_desc_min_cols = 10u;
+	static constexpr auto table_min_cols = 35u;
+	static constexpr auto table_max_cols = 100u;
+	static constexpr auto table_padding = 3u;
 
 	CommandHandler handler_;
 	Autocomplete autocomplete_;
@@ -59,6 +62,7 @@ class CommandSink final : public Sink {
 	std::jthread event_handler_;
 	std::atomic_bool stopped_;
 	bool colour_;
+	unsigned int max_cols_;
 
 	std::deque<std::string> cmd_history_;
 	std::size_t history_idx_;
@@ -66,7 +70,7 @@ class CommandSink final : public Sink {
 	Colour severity_colour(Severity severity);
 	boost::container::small_vector<char, sv_reserve> out_buf_;
 	void print_command_table(std::span<const commands::Suggestions::Record> matches);
-	std::string truncate_description(const std::string_view description);
+	std::string truncate_description(int cols, const std::string_view description);
 
 	void clear_line();
 	void redraw_prompt();
@@ -99,6 +103,7 @@ public:
 	void register_autocomplete(Autocomplete handler);
 
 	void clear_console();
+	void set_max_table_cols(unsigned int cols);
 
 	bool unique() override { return true; }
 };

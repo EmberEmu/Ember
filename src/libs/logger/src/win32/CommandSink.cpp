@@ -21,6 +21,7 @@
 #include <iostream>
 #include <iterator>
 #include <string_view>
+#include <cassert>
 #include <cstdio>
 #include <cstring>
 
@@ -31,11 +32,12 @@ using namespace detail;
 static constexpr auto prompt_colour = FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE; // white
 
 CommandSink::CommandSink(Severity severity, Filter filter, std::string prompt)
-	: Sink(severity, filter, sink_name),
-	  prompt_(std::move(prompt)),
-	  colour_(false),
-	  stopped_(false),
-	  history_idx_(0) {
+	: Sink(severity, filter, sink_name)
+	, prompt_(std::move(prompt))
+	, colour_(false)
+	, stopped_(false)
+	, history_idx_(0)
+	, max_cols_(table_max_cols) {
 	if(exists_) {
 		throw std::runtime_error("A process cannot have multiple CommandSinks!");
 	} else {
@@ -74,7 +76,7 @@ void CommandSink::do_batch_write(const std::span<std::pair<RecordDetail, std::ve
 	bool matches = false;
 
 	for(auto&& [detail, data] : records) {
-		if(sink_sev <= detail.severity && !(sink_filter &detail.type)) {
+		if(sink_sev <= detail.severity && !(sink_filter & detail.type)) {
 			size += data.size();
 			matches = true;
 		}
@@ -180,6 +182,10 @@ Colour CommandSink::severity_colour(Severity severity) {
 		default:
 			return Colour::default_colour;
 	}
+}
+
+void CommandSink::set_max_table_cols(const unsigned int cols) {
+	max_cols_ = cols;
 }
 
 void CommandSink::clear_line() {
@@ -437,10 +443,10 @@ void CommandSink::autocomplete() {
 	redraw_prompt();
 }
 
-std::string CommandSink::truncate_description(const std::string_view description) {
+std::string CommandSink::truncate_description(const int cols, const std::string_view description) {
 	constexpr std::string_view ellipsis { "..." };
-	static_assert(table_desc_cols >= ellipsis.size());
-	const auto ellipsis_space = table_desc_cols - ellipsis.size();
+	assert(cols >= ellipsis.size());
+	const auto ellipsis_space = cols - ellipsis.size();
 	return std::string(description.substr(0, ellipsis_space)) + "...";
 }
 
@@ -448,6 +454,14 @@ void CommandSink::print_command_table(std::span<const commands::Suggestions::Rec
 	boost::container::small_vector<char, max_buf_size> buffer;
 	StreamBuffer stream_buffer(buffer);
 	std::ostream stream(&stream_buffer);
+
+	auto handle = GetStdHandle(STD_OUTPUT_HANDLE);
+	CONSOLE_SCREEN_BUFFER_INFO info{};
+	GetConsoleScreenBufferInfo(handle, &info);
+
+	const int columns = max(min(info.dwSize.X, max_cols_) - table_padding, table_min_cols - table_padding);
+	const int table_name_cols = max(columns / 3, table_name_min_cols);
+	const int table_desc_cols = max(columns - table_name_cols, table_desc_min_cols);
 
 	bprinter::TablePrinter printer(&stream);
 	printer.AddColumn("Command", table_name_cols);
@@ -458,7 +472,7 @@ void CommandSink::print_command_table(std::span<const commands::Suggestions::Rec
 		printer << match.name;
 
 		if(match.desc.size() > table_desc_cols) {
-			printer << truncate_description(match.desc);
+			printer << truncate_description(table_desc_cols, match.desc);
 		} else {
 			printer << match.desc;
 		}

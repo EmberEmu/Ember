@@ -1,7 +1,7 @@
 #ifndef BPRINTER_TABLE_PRINTER_H_
 #define BPRINTER_TABLE_PRINTER_H_
 
-#include <ostream>
+#include <iostream>
 #include <iomanip>
 #include <vector>
 #include <string>
@@ -31,12 +31,14 @@ class endl{};
   */
 class TablePrinter{
 public:
-  TablePrinter(std::ostream * output, std::string separator = "|");
+  TablePrinter(std::ostream * output, const std::string & separator = "|");
   ~TablePrinter();
 
   int get_num_columns() const;
   int get_table_width() const;
   void set_separator(const std::string & separator);
+  void set_flush_left();
+  void set_flush_right();
 
   void AddColumn(const std::string & header_name, int column_width);
   void PrintHeader();
@@ -56,6 +58,11 @@ public:
   template<typename T> TablePrinter& operator<<(T input){
     if (j_ == 0)
       *out_stream_ << "|";
+
+    if(flush_left_)
+      *out_stream_ << std::left;
+    else
+      *out_stream_ << std::right; 
 
     // Leave 3 extra space: One for negative sign, one for zero, one for decimal
     *out_stream_ << std::setw(column_widths_.at(j_))
@@ -87,6 +94,7 @@ private:
   int j_; // index of current column
 
   int table_width_;
+  bool flush_left_;
 };
 
 }
