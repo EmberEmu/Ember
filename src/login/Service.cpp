@@ -132,18 +132,15 @@ void Service::initialise(const opts::variables_map& args) {
 		LOG_ERROR_SYNC(logger, msg);
 	});
 
-	LOG_INFO_SYNC(logger, "Initialising database connection pool...");
 	auto max_conns = args["database.max_connections"].as<unsigned short>();
 
 	if(!max_conns) {
 		max_conns = concurrency;
-	} else if(max_conns != concurrency) {
-		LOG_WARN_SYNC(
-			logger, "Max. database connection count may be non-optimal for local database, "
-			"use {} to match logical core count", concurrency
-		);
 	}
+	
+	LOG_INFO_SYNC(logger, "Max. database connections set to {} ({} cores)", max_conns, concurrency);
 
+	LOG_INFO_SYNC(logger, "Initialising database connection pool...");
 	ctx->conn_pool = std::make_unique<connection_pool::Pool<drivers::AutoSelect>>(
 		init_database(args, logger)
 	);
