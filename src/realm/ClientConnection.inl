@@ -46,7 +46,7 @@ void ClientConnection::send(const protocol::is_packet<BinaryStream> auto& packet
 	LOG_TRACE_ASYNC(logger_,"{} <- {}", remote_address(), protocol::to_string(packet.opcode));
 
 	if(outbound_back_->size() > max_outbound_size) {
-		LOG_WARN_ASYNC(logger_, "Outbound buffer too large, dropping client");
+		LOG_DEBUG_ASYNC(logger_, "Outbound buffer too large, dropping client");
 		close_session();
 		return;
 	}
