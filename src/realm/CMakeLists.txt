@@ -61,7 +61,6 @@ set(LIBRARY_HDR
     ServiceContext.h
     ServiceContextImpl.h
     ConfigStore.h
-    MessageView.h
 )
 
 set(LIBRARY_SRC

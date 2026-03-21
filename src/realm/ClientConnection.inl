@@ -13,7 +13,7 @@
 
 namespace ember::realm {
 
-template<protocol::is_packet<BinaryStream> PacketType>
+template<is_packet PacketType>
 bool ClientConnection::write_packet_stream(const PacketType& packet) {
 	using SizeType = typename PacketType::SizeType;
 
@@ -42,7 +42,7 @@ bool ClientConnection::write_packet_stream(const PacketType& packet) {
 	return true;
 }
 
-void ClientConnection::send(const protocol::is_packet<BinaryStream> auto& packet) {
+void ClientConnection::send(const is_packet auto& packet) {
 	LOG_TRACE_ASYNC(logger_,"{} <- {}", remote_address(), protocol::to_string(packet.opcode));
 
 	// we're in a bad state if writing fails, we can't recover

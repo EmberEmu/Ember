@@ -10,7 +10,6 @@
 #include "ClientContext.h"
 #include "../ClientConnection.h"
 #include "../Events.h"
-#include "../MessageView.h"
 #include <protocol/Packets.h>
 
 #include <chrono>

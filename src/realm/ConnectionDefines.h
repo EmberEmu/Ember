@@ -9,6 +9,8 @@
 #pragma once
 
 #include "SocketType.h"
+#include <protocol/Concepts.h>
+#include <protocol/MessageView.h>
 #include <spark/buffers/BinaryStream.h>
 #include <spark/buffers/DynamicTLSBuffer.h>
 #include <spark/buffers/StaticBuffer.h>
@@ -36,5 +38,11 @@ using BinaryStream = spark::io::BinaryStream<
 using DynamicTLSBuffer = spark::io::DynamicTLSBuffer<
 	outbound_size, prealloc_nodes, spark::io::NoRefCounting, spark::io::UnsafeEntrant
 >;
+
+template<typename _ty>
+using message_view = protocol::message_view<_ty, BinaryStream>;
+
+template<typename _ty>
+concept is_packet = protocol::is_packet<_ty, BinaryStream>;
 
 } // realm, ember

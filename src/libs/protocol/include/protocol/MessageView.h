@@ -13,6 +13,7 @@
 #include <shared/utility/polyfill/start_lifetime_as>
 #include <type_traits>
 
+#include <spark/buffers/BinaryStream.h> // temp
 #include <spark/buffers/NullBuffer.h> // temp
 
 namespace ember::protocol {

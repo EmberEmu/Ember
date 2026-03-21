@@ -16,7 +16,7 @@
 namespace ember::realm {
 
 [[nodiscard]]
-bool ClientHandler::deserialise(protocol::is_packet<BinaryStream> auto& packet, BinaryStream& stream) {
+bool ClientHandler::deserialise(is_packet auto& packet, BinaryStream& stream) {
 	if(auto result = packet.read_payload_from_stream(stream); result) {
 		if(stream.read_limit() != stream.total_read()) {
 			LOG_DEBUG_ASYNC(
@@ -73,7 +73,7 @@ bool ClientHandler::deserialise(protocol::is_packet<BinaryStream> auto& packet, 
 	return false;
 }
 
-template<protocol::is_packet<BinaryStream> T>
+template<is_packet T>
 std::optional<T> ClientHandler::deserialise(BinaryStream& stream) {
 	T packet;
 	const auto result = deserialise(packet, stream);

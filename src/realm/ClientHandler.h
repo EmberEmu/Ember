@@ -51,10 +51,10 @@ public:
 	void close();
 	std::string_view client_identify() const;
 
-	template<protocol::is_packet<BinaryStream> T>
+	template<is_packet T>
 	std::optional<T> deserialise(BinaryStream& stream);
 
-	bool deserialise(protocol::is_packet<BinaryStream> auto& packet, BinaryStream& stream);
+	bool deserialise(is_packet auto& packet, BinaryStream& stream);
 	void skip(BinaryStream& stream);
 
 	void state_update(ClientState new_state);
