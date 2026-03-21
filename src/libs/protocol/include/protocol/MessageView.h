@@ -53,7 +53,6 @@ class message_view final {
 
 	constexpr static bool allow_unaligned = true; // todo, temp
 
-	template<typename stream_type>
 	consteval static bool use_view() {
 		return std::is_same_v<stream_type::contiguous_type, spark::io::is_contiguous>
 			/*&& std::is_same_v<typename PacketType::aligned, is_aligned>*/
@@ -62,7 +61,7 @@ class message_view final {
 	}
 
 	using packet_view = std::conditional_t<
-		use_view<stream_type>(), packet_type*, packet_type
+		use_view(), packet_type*, packet_type
 	>;
 
 	packet_view packet;
