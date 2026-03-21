@@ -12,7 +12,6 @@
 #include <spark/buffers/BinaryStream.h>
 #include <spark/buffers/DynamicTLSBuffer.h>
 #include <spark/buffers/StaticBuffer.h>
-#include <protocol/MessageView.h>
 
 namespace ember::realm {
 
@@ -36,8 +35,5 @@ using BinaryStream = spark::io::BinaryStream<
 using DynamicTLSBuffer = spark::io::DynamicTLSBuffer<
 	outbound_size, prealloc_nodes, spark::io::NoRefCounting, spark::io::UnsafeEntrant
 >;
-
-template<typename _ty>
-using message_view = protocol::message_view<_ty, BinaryStream>;
 
 } // realm, ember
