@@ -96,8 +96,6 @@ opts::variables_map parse_arguments(const int argc, const char* argv[]) {
 	opts::options_description cmdline_opts("Generic options");
 	cmdline_opts.add_options()
 		("help,h", "Displays a list of available options")
-		("database.config_path,d", opts::value<std::string>(),
-			"Path to the database configuration file")
 		("config,c", opts::value<std::string>()->default_value("world.conf"),
 			"Path to the configuration file");
 
