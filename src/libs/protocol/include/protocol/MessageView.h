@@ -54,7 +54,7 @@ class message_view final {
 	constexpr static bool allow_unaligned = true; // todo, temp
 
 	consteval static bool use_view() {
-		return std::is_same_v<stream_type::contiguous_type, spark::io::is_contiguous>
+		return std::is_same_v<typename stream_type::contiguous_type, spark::io::is_contiguous>
 			/*&& std::is_same_v<typename PacketType::aligned, is_aligned>*/
 			&& std::is_standard_layout_v<packet_type>
 			&& std::is_trivial_v<packet_type>;
