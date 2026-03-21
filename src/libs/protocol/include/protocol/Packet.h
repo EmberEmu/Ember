@@ -19,7 +19,7 @@ template<typename HeaderType, typename HeaderType::OpcodeType op_, typename Payl
 struct Packet final {
 	using OpcodeType = typename HeaderType::OpcodeType;
 	using SizeType = protocol::SizeType;
-	using PayloadType = typename Payload;
+	using PayloadType = Payload;
 
 	static constexpr OpcodeType opcode = op_;
 	static constexpr std::size_t header_wire_size = HeaderType::wire_size;
