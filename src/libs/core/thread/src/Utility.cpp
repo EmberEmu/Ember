@@ -25,8 +25,12 @@
 #include <pthread.h>
 #endif
 
-constexpr auto BUFFER_LEN   = 32u;
+constexpr auto BUFFER_LEN   = 128u;
+#ifdef TARGET_OS_MAC
+constexpr auto MAX_NAME_LEN = 64u; // includes null term
+#else
 constexpr auto MAX_NAME_LEN = 16u; // includes null term
+#endif
 
 namespace ember::thread {
 
