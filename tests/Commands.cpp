@@ -21,7 +21,7 @@ public:
 			->description("root command")
 			->argument<std::string>("arg1")
 			->argument<std::string>("arg2")
-			->optional_argument<std::uint32_t>("arg3")
+			->argument<std::uint32_t>("arg3", commands::optional)
 			->handler([&](auto /*args*/) {
 				success = true;
 			});
@@ -192,7 +192,7 @@ TEST_F(Commands, ArgumentCount) {
 
 TEST_F(Commands, AddArgument) {
 	auto cmd = registry.find("root").command;
-	cmd->optional_argument<char>("arg4");
+	cmd->argument<char>("arg4", commands::optional);
 	ASSERT_EQ(cmd->argument_count(), 4);
 }
 

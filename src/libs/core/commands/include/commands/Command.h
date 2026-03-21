@@ -67,12 +67,12 @@ public:
 	std::shared_ptr<Command> flags(const Flags& flags);
 
 	template<typename _ty>
-	std::shared_ptr<Command> argument(std::string argument) {
+	std::shared_ptr<Command> argument(std::string argument, required_t = required) {
 		return insert_argument(std::move(argument), typeid(_ty));
 	}
 
 	template<typename _ty>
-	std::shared_ptr<Command> optional_argument(std::string argument) {
+	std::shared_ptr<Command> argument(std::string argument, optional_t) {
 		return insert_optional_argument(std::move(argument), typeid(_ty));
 	}
 

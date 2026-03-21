@@ -181,7 +181,7 @@ void handle_cls_command(log::Logger& logger) {
 void register_shared_commands(commands::Registry& registry, log::Logger& logger) {
 	registry.insert("help")
 		->description("Display console command usage information")
-		->optional_argument<std::string>("command")
+		->argument<std::string>("command", commands::optional)
 		->handler([&](const auto& arguments) {
 			handle_help_command(arguments, registry, logger);
 		});

@@ -15,6 +15,12 @@
 
 namespace ember::commands {
 
+struct required_t{};
+struct optional_t{};
+
+inline constexpr required_t required = required_t();
+inline constexpr optional_t optional = optional_t();
+
 struct Argument {
 	std::string name;
 	std::reference_wrapper<const std::type_info> type; // this is okay, type_info lives for the duration of the program
