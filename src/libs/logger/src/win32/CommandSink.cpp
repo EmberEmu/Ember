@@ -185,7 +185,11 @@ Colour CommandSink::severity_colour(Severity severity) {
 }
 
 void CommandSink::set_max_table_cols(const unsigned int cols) {
-	max_cols_ = cols;
+	if(cols < table_min_cols) {
+		max_cols_ = table_min_cols;
+	} else {
+		max_cols_ = cols;
+	}
 }
 
 void CommandSink::clear_line() {
@@ -396,6 +400,7 @@ void CommandSink::read_console_input() {
 
 		ReadConsoleInput(handle, events.data(), events.size(), &event_count);
 		
+		// not splitting this out because I don't want Windows.h leaking (without splitting impl)
 		for(const auto& e : std::span(events.data(), event_count)) {
 			if(e.EventType == KEY_EVENT && e.Event.KeyEvent.bKeyDown) {
 				if(isprint(e.Event.KeyEvent.uChar.AsciiChar)) {
