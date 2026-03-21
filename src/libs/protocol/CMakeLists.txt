@@ -69,7 +69,7 @@ set(CORE_HEADERS
     include/protocol/Packets.h
     include/protocol/ResultCodes.h
     include/protocol/PacketHeaders.h
-    include/protocol/SmartMessage.h
+    include/protocol/MessageView.h
     include/protocol/Concepts.h
     include/protocol/StreamResult.h
     include/protocol/MovementInfo.h

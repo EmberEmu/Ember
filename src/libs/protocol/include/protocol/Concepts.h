@@ -16,7 +16,6 @@ template<typename T, typename stream_type>
 concept is_packet = requires(T s, stream_type& stream) {
 	T::opcode;
 	{ s.write_to_stream(stream) } -> std::same_as<StreamResult>;
-	{ s.read_from_stream(stream) } -> std::same_as<StreamResult>;
 };
 
 } // protocol, ember
