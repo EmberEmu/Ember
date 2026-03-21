@@ -63,6 +63,6 @@ bool page_unlock(void* address, std::size_t length);
 std::uint32_t to_u32bit(const Botan::BigInt& value);
 
 std::string time_duration_format(std::chrono::nanoseconds uptime);
-std::string start_time_format(std::chrono::steady_clock::time_point start_time);
+std::string time_elapsed_format(std::chrono::steady_clock::time_point start_time);
 
 } // utility, ember

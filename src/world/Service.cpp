@@ -72,7 +72,7 @@ int Service::run(const boost::program_options::variables_map& args) {
 	// end of temporary bits
 
 	// All done setting up
-	LOG_INFO_SYNC(logger, "{} started successfully in {}", app_name, utility::start_time_format(time));
+	LOG_INFO_SYNC(logger, "{} started successfully in {}", app_name, utility::time_elapsed_format(time));
 	start_time = time;
 
 	map::run(logger, stop_flag);

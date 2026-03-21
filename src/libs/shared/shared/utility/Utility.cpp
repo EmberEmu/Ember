@@ -223,7 +223,7 @@ std::string time_duration_format(std::chrono::nanoseconds uptime) {
 		minutes, (minutes != 1)? "s" : "", seconds, (seconds != 1)? "s" : "");
 }
 
-std::string start_time_format(std::chrono::steady_clock::time_point start_time) {
+std::string time_elapsed_format(std::chrono::steady_clock::time_point start_time) {
 	const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
 		std::chrono::steady_clock::now() - start_time
 	);

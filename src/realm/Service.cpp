@@ -262,7 +262,7 @@ void Service::initialise(const opts::variables_map& args) try {
 		ctx->rpc_realm->set_online();
 
 		LOG_INFO_SYNC(logger, "{} started successfully in {}", app_name,
-			utility::start_time_format(time));
+			utility::time_elapsed_format(time));
 
 		start_time = std::chrono::steady_clock::now();
 	});

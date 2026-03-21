@@ -136,7 +136,7 @@ void Service::initialise(const opts::variables_map& args) {
 	// All done setting up
 	boost::asio::dispatch(service, [&, time]() {
 		LOG_INFO_SYNC(logger, "{} started successfully in {}", app_name,
-			utility::start_time_format(time));
+			utility::time_elapsed_format(time));
 
 		start_time = std::chrono::steady_clock::now();
 	});
