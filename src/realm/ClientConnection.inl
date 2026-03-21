@@ -45,15 +45,16 @@ bool ClientConnection::write_packet_stream(const PacketType& packet) {
 void ClientConnection::send(const protocol::is_packet<BinaryStream> auto& packet) {
 	LOG_TRACE_ASYNC(logger_,"{} <- {}", remote_address(), protocol::to_string(packet.opcode));
 
-	if(outbound_back_->size() > max_outbound_size) {
-		LOG_DEBUG_ASYNC(logger_, "Outbound buffer too large, dropping client");
+	// we're in a bad state if writing fails, we can't recover
+	if(!write_packet_stream(packet)) [[unlikely]] {
+		LOG_WARN_ASYNC(logger_, "Failed to write packet to stream");
 		close_session();
 		return;
 	}
 
-	// we're in a bad state if writing fails, we can't recover
-	if(!write_packet_stream(packet)) [[unlikely]] {
-		LOG_WARN_ASYNC(logger_, "Failed to write packet to stream");
+	// the buffer size is dynamic, so ensure it isn't growing too large
+	if(outbound_back_->size() > max_outbound_size) {
+		LOG_DEBUG_ASYNC(logger_, "Outbound buffer too large, dropping client");
 		close_session();
 		return;
 	}
