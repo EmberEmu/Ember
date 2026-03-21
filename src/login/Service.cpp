@@ -294,7 +294,7 @@ void Service::initialise(const opts::variables_map& args) {
 void Service::register_commands() {
 	auto ctx = context.get();
 
-	ctx->cmd_exec = std::make_unique<utility::CommandExecutor>(io_context, [&](auto reason) {
+	ctx->cmd_exec = std::make_unique<utility::CommandExecutor>(io_context, [&](const auto& reason) {
 		LOG_CONSOLE_ERROR_ASYNC(logger, "Command could not be executed, {}", reason);
 	});
 	
