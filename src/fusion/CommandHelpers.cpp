@@ -221,7 +221,7 @@ std::string shortest_common_substring(std::span<const std::string> candidates) {
 	return match;
 }
 
-commands::Suggestions handle_autocomplete(Registries& registries, const std::string_view command) {
+commands::Suggestions handle_autocomplete(const Registries& registries, const std::string_view command) {
 	auto tokens = commands::Registry::parse_input(command);
 
 	// figure out which registry this command could belong to
@@ -292,6 +292,16 @@ commands::Suggestions handle_autocomplete(Registries& registries, const std::str
 	};
 }
 
+std::string suggest_command(const Registries& registries, const std::string_view cmd) {
+	auto results = handle_autocomplete(registries, cmd);
+
+	if(!results.substring.empty()) {
+		return results.substring;
+	} else {
+		return {};
+	}
+}
+
 void register_command_handlers(Registries& registries, log::Logger& logger) {
 #ifdef _WIN32
 	auto sinks = logger.fetch_sink(log::CommandSink::sink_name);
@@ -312,6 +322,10 @@ void register_command_handlers(Registries& registries, log::Logger& logger) {
 
 	sink->register_handler([&](auto input) {
 		execute_command(input, registries, logger);
+	});
+
+	sink->register_suggestion([&](auto cmd) {
+		return suggest_command(registries, cmd);
 	});
 #endif
 }

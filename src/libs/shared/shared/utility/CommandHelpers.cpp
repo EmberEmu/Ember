@@ -165,6 +165,16 @@ void handle_help_command(const commands::Arguments& arguments,
 	}
 }
 
+std::string suggest_command(const commands::Registry& registry, const std::string_view cmd) {
+	auto results = registry.autocomplete(cmd);
+
+	if(!results.substring.empty()) {
+		return results.substring;
+	} else {
+		return {};
+	}
+}
+
 #ifdef _WIN32
 void handle_cls_command(log::Logger& logger) {
 	auto sinks = logger.fetch_sink(log::CommandSink::sink_name);
@@ -198,7 +208,7 @@ void register_shared_commands(commands::Registry& registry, log::Logger& logger)
 #endif
 }
 
-void register_command_handlers(commands::Registry& registry, log::Logger& logger) {
+void register_command_handlers(commands::Registry& registry, log::Logger& logger, const bool allow_suggest) {
 #ifdef _WIN32
 	auto sinks = logger.fetch_sink(log::CommandSink::sink_name);
 
@@ -219,6 +229,12 @@ void register_command_handlers(commands::Registry& registry, log::Logger& logger
 	sink->register_handler([&](auto input) {
 		execute_command(input, registry, logger);
 	});
+
+	if(allow_suggest) {
+		sink->register_suggestion([&](auto cmd) {
+			return suggest_command(registry, cmd);
+		});
+	}
 #endif
 }
 

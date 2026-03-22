@@ -39,6 +39,7 @@ class CommandSink final : public Sink {
 
 	using CommandHandler = std::function<void(const std::string_view)>;
 	using Autocomplete = std::function<commands::Suggestions(const std::string&)>;
+	using Suggestion = std::function<std::string(const std::string_view)>;
 
 	inline static std::atomic_bool exists_ = false;
 	static constexpr auto sv_reserve = 256u;
@@ -53,10 +54,12 @@ class CommandSink final : public Sink {
 
 	CommandHandler handler_;
 	Autocomplete autocomplete_;
+	Suggestion suggestion_;
 
 	std::mutex handler_lock_;
 	std::recursive_mutex console_lock_;
 	std::string command_;
+	std::string suggested_;
 	std::string prompt_;
 	std::string prefix_;
 	std::jthread event_handler_;
@@ -67,6 +70,7 @@ class CommandSink final : public Sink {
 	std::deque<std::string> cmd_history_;
 	std::size_t history_idx_;
 
+	std::string_view suggestion_substring();
 	Colour severity_colour(Severity severity);
 	boost::container::small_vector<char, sv_reserve> out_buf_;
 	void print_command_table(std::span<const commands::Suggestions::Record> matches);
@@ -80,7 +84,7 @@ class CommandSink final : public Sink {
 	void delete_character(bool after);
 	void cursor_reposition(CursorPosition position);
 	void insert_history(const std::string& command);
-
+	void update_suggestion();
 	void read_console_input();
 	void dispatch_command();
 	void write_buffer(std::span<const char> buffer, bool redraw = true);
@@ -102,6 +106,7 @@ public:
 
 	void register_handler(CommandHandler handler);
 	void register_autocomplete(Autocomplete handler);
+	void register_suggestion(Suggestion handler);
 
 	void clear_console();
 	void set_max_table_cols(unsigned int cols);
