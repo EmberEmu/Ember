@@ -268,6 +268,7 @@ opts::variables_map parse_arguments(const int argc, const char* argv[]) {
 		("console_log.filter-mask", opts::value<std::uint32_t>()->default_value(0))
 		("console_log.colours", opts::value<bool>()->required())
 		("console_log.prefix", opts::value<std::string>()->default_value(""))
+		("console_log.suggestions", opts::value<bool>()->required())
 		("remote_log.verbosity", opts::value<log::Severity>()->required())
 		("remote_log.filter-mask", opts::value<std::uint32_t>()->default_value(0))
 		("remote_log.service_name", opts::value<std::string>()->required())

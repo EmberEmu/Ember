@@ -116,6 +116,7 @@ opts::options_description Service::options() {
 		("console_log.verbosity", opts::value<log::Severity>()->required())
 		("console_log.filter-mask", opts::value<std::uint32_t>()->default_value(0))
 		("console_log.colours", opts::bool_switch()->required())
+		("console_log.suggestions", opts::value<bool>()->required())
 		("remote_log.verbosity", opts::value<log::Severity>()->required())
 		("remote_log.filter-mask", opts::value<std::uint32_t>()->default_value(0))
 		("remote_log.service_name", opts::value<std::string>()->required())

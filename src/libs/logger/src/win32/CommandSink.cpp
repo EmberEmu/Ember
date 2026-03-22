@@ -29,7 +29,8 @@ namespace ember::log {
 
 using namespace detail;
 
-static constexpr auto prompt_colour = FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE; // white
+static constexpr auto text_white = FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE; 
+static constexpr auto text_grey = FOREGROUND_INTENSITY; 
 
 CommandSink::CommandSink(Severity severity, Filter filter, std::string prompt)
 	: Sink(severity, filter, sink_name)
@@ -210,6 +211,14 @@ void CommandSink::clear_line() {
 	FillConsoleOutputAttribute(handle, info.wAttributes, window_width, startPos, &written);
 }
 
+std::string_view CommandSink::suggestion_substring() {
+	if(auto pos = suggested_.find(command_); pos != std::string::npos) {
+		return std::string_view(suggested_).substr(pos + command_.length());
+	} else {
+		return {};
+	}
+}
+
 void CommandSink::redraw_prompt() {
     std::lock_guard guard(console_lock_);
 
@@ -219,9 +228,12 @@ void CommandSink::redraw_prompt() {
     GetConsoleScreenBufferInfo(handle, &info);
 
     const SHORT width = info.dwSize.X;
-    std::string_view subcmd(command_);
-    const auto clamp = min(width - prompt_.size() - 1, command_.size());
-    std::string full = prompt_ + std::string(subcmd.substr(0, clamp));
+
+	// process command
+	const auto suggested = suggestion_substring();
+	const auto clamp = min(width - prompt_.size() - 1, command_.size());
+	const auto user_input = std::format("{}{}", command_, suggested);
+    const std::string full_input = std::format("{}{}", prompt_, user_input);
 
 	boost::container::small_vector<CHAR_INFO, reserve_buf_size> buffer(width);
 
@@ -230,13 +242,17 @@ void CommandSink::redraw_prompt() {
         buffer[i].Attributes = info.wAttributes;
     }
 
-    for(size_t i = 0; i < full.size() && i < width; ++i) {
-        buffer[i].Char.AsciiChar = full[i];
-    }
-
-	if(colour_) {
-		for(size_t i = 0; i < prompt_.size() && i < width; ++i) {
-			buffer[i].Attributes = prompt_colour;
+	for(std::size_t i = 0; i < full_input.size() && i < width; ++i) {
+		buffer[i].Char.AsciiChar = full_input[i];
+	
+		if(colour_) {
+			if(i < prompt_.size()) {
+				buffer[i].Attributes = text_grey;
+			} else if(i < prompt_.size() + command_.size()) {
+				buffer[i].Attributes = text_white;
+			} else {
+				buffer[i].Attributes = text_grey;
+			}
 		}
 	}
 
@@ -249,7 +265,7 @@ void CommandSink::redraw_prompt() {
 		.Bottom = bottom
     };
 
-    const COORD buf_size{ 
+    const COORD buf_size { 
 		.X = width, 
 		.Y = 1
 	};
@@ -281,6 +297,8 @@ void CommandSink::insert_history(const std::string& command) {
 
 void CommandSink::dispatch_command() {
 	boost::trim(command_);
+
+	suggested_.clear();
 	
 	// if the string was just whitespace
 	if(command_.empty()) {
@@ -340,6 +358,7 @@ void CommandSink::delete_character(const bool current) {
 		command_.erase(--rel_pos, 1);
 	}
 
+	update_suggestion();
 	redraw_prompt();
 	info.dwCursorPosition.X = gsl::narrow_cast<SHORT>(prompt_.size() + rel_pos);
 	SetConsoleCursorPosition(handle, info.dwCursorPosition);
@@ -387,7 +406,18 @@ void CommandSink::insert_character(char ch) {
 
 	++rel_pos;
 
+	auto suggest_view = suggestion_substring();
+
+	// prevent calling the handler for every key stroke if we
+	// know the result wouldn't change
+	if((suggest_view.empty() && !suggested_.empty())
+	   || command_.size() == 1
+	   || rel_pos != command_.size()) {
+		update_suggestion();
+	}
+
 	redraw_prompt();
+
 	info.dwCursorPosition.X = gsl::narrow_cast<SHORT>(prompt_.size() + rel_pos);
 	SetConsoleCursorPosition(handle, info.dwCursorPosition);
 }
@@ -643,6 +673,13 @@ void CommandSink::write_buffer(std::span<const char> buffer, bool redraw) {
 	}
 }
 
+void CommandSink::update_suggestion() {
+	std::lock_guard lock(handler_lock_);
+
+	if(suggestion_) {
+		suggested_ = suggestion_(command_);
+	}
+}
 void CommandSink::register_handler(CommandHandler handler) {
 	std::lock_guard lock(handler_lock_);
 	handler_ = std::move(handler);
@@ -651,6 +688,11 @@ void CommandSink::register_handler(CommandHandler handler) {
 void CommandSink::register_autocomplete(Autocomplete handler) {
 	std::lock_guard lock(handler_lock_);
 	autocomplete_ = std::move(handler);
+}
+
+void CommandSink::register_suggestion(Suggestion handler) {
+	std::lock_guard lock(handler_lock_);
+	suggestion_ = std::move(handler);
 }
 
 bool CommandSink::invoke_handler(const std::string_view command) {
