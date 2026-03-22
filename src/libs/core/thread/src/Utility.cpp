@@ -14,6 +14,10 @@
 #include <string>
 #include <cstring>
 
+#if defined __APPLE__
+#include <TargetConditionals.h>
+#endif
+
 #ifdef _WIN32
 #include <Windows.h>
 #include <cwchar>
