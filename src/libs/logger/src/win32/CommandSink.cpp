@@ -449,7 +449,10 @@ void CommandSink::autocomplete() {
 }
 
 std::string CommandSink::truncate_description(const int cols, const std::string_view description) {
-	assert(description.size() > cols);
+	if(description.size() <= cols) {
+		return std::string(description);
+	}
+
 	constexpr std::string_view ellipsis { "..." };
 	const auto ellipsis_space = cols - ellipsis.size();
 	return std::string(description.substr(0, ellipsis_space)) + "...";
