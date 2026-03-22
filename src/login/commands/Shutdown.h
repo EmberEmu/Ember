@@ -9,13 +9,11 @@
 #pragma once
 
 #include <commands/Registry.h>
-#include <boost/asio/steady_timer.hpp>
+#include <boost/asio/io_context.hpp>
 #include <chrono>
 #include <functional>
 
-namespace ember {
-
-namespace shutdown {
+namespace ember::shutdown {
 
 enum State {
 	pending,
@@ -27,13 +25,13 @@ using OnCancel = std::function<void(State)>;
 using OnExpire = std::function<void()>;
 using OnRemaining = std::function<void(State, std::chrono::seconds)>;
 
-} // shutdown
+struct Handlers {
+	OnInitiate on_initiate;
+	OnCancel on_cancel;
+	OnExpire on_expire;
+	OnRemaining on_remaining;
+};
 
-void register_shutdown_command(commands::Registry& registry,
-                               boost::asio::steady_timer& timer,
-                               shutdown::OnInitiate on_initiate,
-                               shutdown::OnCancel on_cancel,
-                               shutdown::OnExpire on_expire,
-							   shutdown::OnRemaining on_remaining);
+void register_command(commands::Registry& registry, boost::asio::io_context& ioc, Handlers handlers);
 
-} // ember
+} // shutdown, ember

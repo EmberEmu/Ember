@@ -12,6 +12,7 @@
 #include <commands/Registry.h>
 #include <commands/Utility.h>
 #include <boost/lexical_cast.hpp>
+#include <chrono>
 #include <ranges>
 #include <span>
 #include <string>
@@ -79,6 +80,8 @@ std::any convert_type(const std::type_info& info, std::string_view token) {
 		return boost::lexical_cast<float>(token);
 	} else if(info == typeid(double)) {
 		return boost::lexical_cast<double>(token);
+	} else if(info == typeid(std::chrono::seconds)) {
+		return std::chrono::seconds(boost::lexical_cast<int>(token));
 	} else {
 		throw std::runtime_error("Unhandled argument type");
 	}
