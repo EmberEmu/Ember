@@ -38,10 +38,10 @@ CommandSink::CommandSink(Severity severity, Filter filter, std::string prompt)
 	, stopped_(false)
 	, history_idx_(0)
 	, max_cols_(table_max_cols) {
-	if(exists_) {
+	bool expected = false;
+
+	if(!exists_.compare_exchange_strong(expected, true)) {
 		throw std::runtime_error("A process cannot have multiple CommandSinks!");
-	} else {
-		exists_ = true;
 	}
 
 	event_handler_ = std::jthread([&]() {
