@@ -194,7 +194,7 @@ public:
 #endif
 	}
 
-	const char* tag() {
+	const char* tag() const {
 		return tag_;
 	}
 
