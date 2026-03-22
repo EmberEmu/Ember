@@ -35,10 +35,7 @@ namespace opts = boost::program_options;
 
 opts::variables_map parse_arguments(int argc, const char* argv[]);
 int run(const opts::variables_map& args, log::Logger& logger, commands::Registry& registry);
-
-void install_shutdown_callbacks(commands::Registry& registry,
-                                boost::asio::steady_timer& timer,
-                                log::Logger& logger);
+void register_shutdown(commands::Registry& registry, boost::asio::io_context& ioc, log::Logger& logger);
 
 /*
  * We want to do the minimum amount of work required to get 
@@ -72,8 +69,8 @@ int main(int argc, const char* argv[]) try {
 }
 
 int run(const opts::variables_map& args, log::Logger& logger, commands::Registry& registry) try {
-	boost::asio::io_context io_ctx;
-	boost::asio::signal_set signals(io_ctx, SIGINT, SIGTERM);
+	boost::asio::io_context ioc;
+	boost::asio::signal_set signals(ioc, SIGINT, SIGTERM);
 
 	login::Service service(logger, registry);
 
@@ -89,11 +86,10 @@ int run(const opts::variables_map& args, log::Logger& logger, commands::Registry
 
 	std::jthread worker([&]() {
 		thread::set_name("Signal handler");
-		io_ctx.run();
+		ioc.run();
 	});
 
-	boost::asio::steady_timer timer(io_ctx);
-	install_shutdown_callbacks(registry, timer, logger);
+	register_shutdown(registry, ioc, logger);
 
 	const auto ret = service.run(args);
 	signals.cancel();
@@ -103,29 +99,35 @@ int run(const opts::variables_map& args, log::Logger& logger, commands::Registry
 	return EXIT_FAILURE;
 }
 
-void install_shutdown_callbacks(commands::Registry& registry,
-                                boost::asio::steady_timer& timer,
-                                log::Logger& logger) {
-	register_shutdown_command(registry, timer,
-		[&](auto time) {
+void register_shutdown(commands::Registry& registry, boost::asio::io_context& ioc, log::Logger& logger) {
+	shutdown::Handlers handlers {
+		.on_initiate = [&](auto time) {
 			LOG_CONSOLE_ASYNC(logger, "Server will shut down in {}", utility::time_duration_format(time));
-		}, [&](auto state) {
+		},
+			
+		.on_cancel = [&](auto state) {
 			if(state == shutdown::State::pending) {
 				LOG_CONSOLE_ASYNC(logger, "Server shutdown has been cancelled");
 			} else {
 				LOG_CONSOLE_ASYNC(logger, "No shutdown is pending");
 			}
-		}, [&] {
+		},
+			
+		.on_expire = [&] {
 			LOG_CONSOLE_ASYNC(logger, "Server is shutting down now");
 			std::raise(SIGINT);
-		}, [&](auto state, auto time) {
+		}, 
+			
+		.on_remaining = [&](auto state, auto time) {
 			if(state == shutdown::State::pending) {
 				LOG_CONSOLE_ASYNC(logger, "Server will shut down in {}", utility::time_duration_format(time));
 			} else {
 				LOG_CONSOLE_ASYNC(logger, "No shutdown is pending");
 			}
 		}
-	);
+	};
+
+	shutdown::register_command(registry, ioc, std::move(handlers));
 }
 
 opts::variables_map parse_arguments(const int argc, const char* argv[]) {
