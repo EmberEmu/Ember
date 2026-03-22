@@ -58,7 +58,8 @@ class message_view final {
 		return std::is_same_v<typename stream_type::contiguous_type, spark::io::is_contiguous>
 			/*&& std::is_same_v<typename PacketType::aligned, is_aligned>*/
 			&& std::is_standard_layout_v<packet_type>
-			&& std::is_trivial_v<packet_type>;
+			&& std::is_trivially_default_constructible_v<packet_type>
+			&& std::is_trivially_copyable_v<packet_type>;
 	}
 
 	using packet_view = std::conditional_t<

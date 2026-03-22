@@ -44,7 +44,9 @@ template<typename T>
 concept byte_oriented = byte_type<typename T::value_type>;
 
 template<typename T>
-concept pod = std::is_standard_layout_v<T> && std::is_trivial_v<T>;
+concept pod = std::is_standard_layout_v<T>
+	&& std::is_trivially_default_constructible_v<T>
+	&& std::is_trivially_copyable_v<T>;
 
 template<typename T>
 concept has_resize_overwrite =
