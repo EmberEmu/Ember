@@ -24,6 +24,8 @@ struct ConnectionStats;
 #endif
 
 class SessionManager final {
+	constexpr inline static auto allocator_tag = "session_manager";
+
 	using SessionAllocator = spark::io::TLSBlockAllocator<
 		ClientConnection,
 		PREALLOCATED_SESSIONS_PER_THREAD,
@@ -68,6 +70,7 @@ class SessionManager final {
 	mutable std::mutex sessions_lock_;
 
 public:
+	SessionManager() : allocator_(allocator_tag) {}
 	~SessionManager();
 
 	template<typename... Args>
