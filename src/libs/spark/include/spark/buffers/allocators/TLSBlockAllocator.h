@@ -73,8 +73,8 @@ public:
 	std::size_t active_allocs = 0;
 #endif
 
-	TLSBlockAllocator() {
-		thread_enter();
+	TLSBlockAllocator(const char* tag = nullptr) {
+		thread_enter(tag);
 	}
 
 	/*
@@ -82,9 +82,9 @@ public:
 	 * to be executed on another thread without paying for checks on every
 	 * allocation
 	 */
-	inline void thread_enter() {
+	inline void thread_enter(const char* tag) {
 		if(!allocator_) {
-			allocator_ = std::make_unique<AllocatorType>();
+			allocator_ = std::make_unique<AllocatorType>(tag);
 		}
 
 		if constexpr(std::is_same_v<EntrantPolicy, UnsafeEntrant>) {

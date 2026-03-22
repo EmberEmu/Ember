@@ -81,6 +81,7 @@ class BlockAllocator {
 	Block* head_ = nullptr;
 	[[no_unique_address]] tid_type thread_id_;
 	std::array<Block, _elements> storage_;
+	const char* tag_;
 
 	void page_lock_conditional() {
 		if constexpr(std::is_same_v<PageLockPolicy, PageLock>) {
@@ -125,13 +126,13 @@ public:
 	std::size_t total_deallocs = 0;
 #endif
 
-	BlockAllocator() requires std::same_as<ValidatePolicy, ValidateDealloc>
-		: thread_id_(std::this_thread::get_id()) {
+	BlockAllocator(const char* tag = nullptr) requires std::same_as<ValidatePolicy, ValidateDealloc>
+		: tag_(tag), thread_id_(std::this_thread::get_id()) {
 		page_lock_conditional();
 		initialise_free_list();
 	}
 
-	BlockAllocator() {
+	BlockAllocator(const char* tag = nullptr) : tag_(tag) {
 		page_lock_conditional();
 		initialise_free_list();
 	}
@@ -191,6 +192,10 @@ public:
 		++total_deallocs;
 		--active_count;
 #endif
+	}
+
+	const char* tag() {
+		return tag_;
 	}
 
 	~BlockAllocator() {
