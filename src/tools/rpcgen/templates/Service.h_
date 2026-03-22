@@ -90,6 +90,8 @@ public:
 				dispatch_{{handler.request_sn}}(verifier, *fb->message_as_{{handler.request}}(), link, token);
 				break;
 ## endfor
+			default:
+				break;
 		}
 	}
 

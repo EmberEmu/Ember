@@ -116,6 +116,8 @@ public:
 				dispatch_{{handler.response_sn}}(verifier, *fb->message_as_{{handler.response}}(), link);
 				break;
 ## endfor
+			default:
+				break;
 		}
 	}
 
