@@ -21,19 +21,20 @@ void handle_shutdown_command(const commands::Arguments& arguments,
 							 std::shared_ptr<std::atomic_bool> flag,
                              OnInitiate on_initiate,
                              OnExpire on_expire) {
-	*flag = true;
+	const bool previous = flag->exchange(true);
 
 	if(arguments.empty()) {
 		timer->expires_after(0s);
 	} else {
-		auto time = arguments["seconds"].as<std::chrono::seconds>();
+		const auto seconds = arguments["seconds"].as<std::chrono::seconds>();
 
-		if(time < 0s) {
+		if(seconds < 0s) {
+			*flag = previous;
 			return;
 		}
 
-		timer->expires_after(time);
-		on_initiate(time);
+		timer->expires_after(seconds);
+		on_initiate(seconds);
 	}
 
 	timer->async_wait([flag, on_expire = std::move(on_expire)](const auto& ec) {
