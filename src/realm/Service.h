@@ -39,6 +39,7 @@ class EMBER_EXPORT_SERVICE Service final : public IService {
 	std::binary_semaphore stop_flag;
 	std::atomic_bool stopped;
 
+	void seed_xorshift_rng();
 	void register_commands(boost::asio::io_context& ioc);
 	void update_config(const Config& config, bool post_only = false);
 	boost::program_options::variables_map reload_args(const std::string& filename);

@@ -36,17 +36,19 @@
 #include <boost/asio/io_context.hpp>
 #include <boost/program_options.hpp>
 #include <boost/version.hpp>
-#include <botan/auto_rng.h>
 #include <botan/version.h>
 #ifdef WITH_JEMALLOC
 #include <jemalloc/jemalloc.h>
 #endif
 #include <pcre.h>
 #include <zlib.h>
+#include <algorithm>
 #include <chrono>
 #include <fstream>
 #include <format>
+#include <limits>
 #include <memory>
+#include <random>
 #include <ranges>
 #include <string>
 #include <string_view>
@@ -130,9 +132,7 @@ void Service::initialise(const opts::variables_map& args) try {
 	}
 
 	LOG_INFO_SYNC(logger, "Seeding xorshift RNG...");
-	Botan::AutoSeeded_RNG rng;
-	auto seed_bytes = std::as_writable_bytes(std::span(rng::xorshift::seed));
-	rng.randomize(reinterpret_cast<std::uint8_t*>(seed_bytes.data()), seed_bytes.size_bytes());
+	seed_xorshift_rng();
 
 	LOG_INFO_SYNC(logger, "Loading DBC data...");
 	dbc::DiskLoader loader(args["dbc.path"].as<std::string>(), [&](auto message) {
@@ -368,6 +368,11 @@ std::optional<Realm> load_realm(const opts::variables_map& args, log::Logger& lo
 	return realm_dao.get_realm(args["realm.id"].as<unsigned int>());
 }
 
+void Service::seed_xorshift_rng() {
+	constexpr auto bits = std::numeric_limits<std::uint64_t>::digits;
+	std::independent_bits_engine<std::default_random_engine, bits, std::uint64_t> engine;
+	std::ranges::generate(rng::xorshift::seed, engine);
+}
 
 void Service::stop() {
 	bool expected = false;

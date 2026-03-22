@@ -34,8 +34,11 @@
 #endif
 #include <pcre.h>
 #include <zlib.h>
+#include <algorithm>
 #include <functional>
+#include <limits>
 #include <memory>
+#include <random>
 #include <ranges>
 #include <string>
 #include <span>
@@ -123,9 +126,7 @@ void Service::initialise(const opts::variables_map& args) {
 	}
 
 	LOG_INFO_SYNC(logger, "Seeding xorshift RNG...");
-	Botan::AutoSeeded_RNG rng;
-	auto seed_bytes = std::as_writable_bytes(std::span(rng::xorshift::seed));
-	rng.randomize(reinterpret_cast<std::uint8_t*>(seed_bytes.data()), seed_bytes.size_bytes());
+	seed_xorshift_rng();
 
 	const auto concurrency = thread::hardware_concurrency([&](auto msg) {
 		LOG_ERROR_SYNC(logger, msg);
@@ -327,6 +328,12 @@ std::unique_ptr<Metrics> Service::start_metrics(boost::asio::io_context& service
 	}
 
 	return metrics;
+}
+
+void Service::seed_xorshift_rng() {
+	constexpr auto bits = std::numeric_limits<std::uint64_t>::digits;
+	std::independent_bits_engine<std::default_random_engine, bits, std::uint64_t> engine;
+	std::ranges::generate(rng::xorshift::seed, engine);
 }
 
 void Service::stop() {

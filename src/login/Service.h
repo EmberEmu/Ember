@@ -41,6 +41,7 @@ class EMBER_EXPORT_SERVICE Service final : public IService {
 		const boost::program_options::variables_map& args
 	);
 
+	void seed_xorshift_rng();
 	void register_commands();
 	void initialise(const boost::program_options::variables_map& args);
 
