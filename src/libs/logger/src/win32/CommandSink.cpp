@@ -266,6 +266,19 @@ void CommandSink::redraw_prompt() {
     SetConsoleCursorPosition(handle, cursor);
 }
 
+void CommandSink::insert_history(const std::string& command) {
+	// don't insert duplicates of the previous command
+	if(!cmd_history_.empty() && cmd_history_.back() == command) {
+		return;
+	}
+
+	cmd_history_.emplace_back(command);
+
+	if(cmd_history_.size() > history_size) {
+		cmd_history_.pop_front();
+	}
+}
+
 void CommandSink::dispatch_command() {
 	boost::trim(command_);
 	
@@ -286,11 +299,7 @@ void CommandSink::dispatch_command() {
 		}
 	}
 
-	cmd_history_.emplace_back(command_);
-
-	if(cmd_history_.size() > history_size) {
-		cmd_history_.pop_front();
-	}
+	insert_history(command_);
 
 	history_idx_ = cmd_history_.size();
 	command_.clear();

@@ -79,6 +79,7 @@ class CommandSink final : public Sink {
 	void insert_character(char ch);
 	void delete_character(bool after);
 	void cursor_reposition(CursorPosition position);
+	void insert_history(const std::string& command);
 
 	void read_console_input();
 	void dispatch_command();
