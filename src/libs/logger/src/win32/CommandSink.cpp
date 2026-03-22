@@ -327,10 +327,8 @@ void CommandSink::delete_character(const bool current) {
 
 	if(current) {
 		command_.erase(rel_pos, 1);
-	} else {
-		if(rel_pos) {
-			command_.erase(--rel_pos, 1);
-		}
+	} else if(rel_pos) {
+		command_.erase(--rel_pos, 1);
 	}
 
 	redraw_prompt();
@@ -349,10 +347,8 @@ void CommandSink::buffer_scroll(CursorDirection dir) {
 
 	auto rel_pos = info.dwCursorPosition.X - prompt_.size();
 
-	if(dir == CursorDirection::back) {
-		if(rel_pos) {
-			--rel_pos;
-		}
+	if(dir == CursorDirection::back && rel_pos) {
+		--rel_pos;
 	} else if(dir == CursorDirection::forward) {
 		++rel_pos;
 	}
