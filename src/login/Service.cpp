@@ -65,9 +65,8 @@ Service::Service(log::Logger& logger, commands::Registry& registry)
  * Starts Asio worker threads, blocking until the launch thread exits
  * upon error or signal handling.
  * 
- * io_context is only stopped after the thread joins to ensure that all
- * services can cleanly shut down upon destruction without requiring
- * explicit shutdown() calls in a signal handler.
+ * io_context will only return once service stop has been requested and
+ * the worker threads finish.
  */
 int Service::run(const opts::variables_map& args) try {
 	initialise(args);
