@@ -175,11 +175,11 @@ opts::options_description Service::options() {
 extern "C" {
 
 EMBER_EXPORT_SERVICE Service* create_character(log::Logger& logger, commands::Registry& registry) {
-	return Service::create(logger, registry).release();
+	return new Service(logger, registry);
 }
 
 EMBER_EXPORT_SERVICE void destroy_character(Service* service) {
-	std::unique_ptr<Service>{service};
+	delete service;
 }
 
 } // extern "C"

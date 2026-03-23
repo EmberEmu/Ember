@@ -54,10 +54,6 @@ public:
 
 	int run(const boost::program_options::variables_map& args);
 	void stop();
-
-	static auto create(log::Logger& logger, commands::Registry& registry) {
-		return std::make_unique<Service>(logger, registry);
-	}
 };
 
 extern "C" EMBER_EXPORT_SERVICE Service* create_realm(log::Logger& logger, commands::Registry& registry);

@@ -415,11 +415,11 @@ void print_lib_versions(log::Logger& logger) {
 extern "C" {
 
 EMBER_EXPORT_SERVICE Service* create_login(log::Logger& logger, commands::Registry& registry) {
-	return Service::create(logger, registry).release();
+	return new Service(logger, registry);
 }
 
 EMBER_EXPORT_SERVICE void destroy_login(Service* service) {
-	std::unique_ptr<Service>{service};
+	delete service;
 }
 
 } // extern "C"
