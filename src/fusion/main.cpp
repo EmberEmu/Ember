@@ -106,7 +106,6 @@ void service_start(const std::string& service, log::Logger& logger) {
 	const auto params = create_params(&registry);
 	auto runner = create_runner(idx, params);
 
-	LOG_CONSOLE_ERROR_ASYNC(log::global_logger(), "Size: {}", registry.root()->commands().size());
 	LOG_CONSOLE_ASYNC(logger, "Starting {} service...", service);
 	runner.run();
 	runners.insert_or_assign(service, std::move(runner));
