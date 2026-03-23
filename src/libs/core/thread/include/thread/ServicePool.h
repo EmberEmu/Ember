@@ -66,9 +66,9 @@ public:
 	void stop();
 
 	/*
-	 * Begins pool shutdown but wait until all work has been completed. This should
-	 * be used for a graceful shutdown where all components using this pool have 
-	 * also been told to stop/shutdown. If is not the case, it could block indefinitely.
+	 * Begins pool shutdown but waits until all work has been completed. This should
+	 * be used for a graceful shutdown where all components using the pool have 
+	 * also been told to stop/shutdown. If this is not the case, it could block indefinitely.
 	 */
 	void shutdown();
 
