@@ -65,10 +65,6 @@ void ClientConnection::send(const is_packet auto& packet) {
 		write();
 	}
 
-	if(packet_logger_) [[unlikely]] {
-		packet_logger_->log(packet, PacketDirection::outbound);
-	}
-
 	++stats_.messages_out;
 }
 

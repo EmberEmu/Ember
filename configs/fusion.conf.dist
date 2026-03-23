@@ -4,26 +4,38 @@
 [mdns]
 active = true
 config = mdns.conf
+prefix = [mdns]
+file = logs/mdns_fusion_%d_%m_%Y.log
 
 [account]
 active = true
 config = account.conf
+prefix = [account]
+file = logs/fusion_account_%d_%m_%Y.log
 
 [character]
 active = true
 config = character.conf
+prefix = [character]
+file = logs/fusion_character_%d_%m_%Y.log
 
 [login]
 active = true
 config = login.conf
+prefix = [login]
+file = logs/fusion_login_%d_%m_%Y.log
 
 [realm]
 active = true
 config = realm.conf
+prefix = [realm]
+file = logs/fusion_realm_%d_%m_%Y.log
 
 [world]
 active = true
 config = world.conf
+prefix = [world]
+file = logs/fusion_world_%d_%m_%Y.log
 
 [remote_log]
 service_name = fusion

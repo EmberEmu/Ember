@@ -115,7 +115,7 @@ opts::variables_map parse_arguments(const int argc, const char* argv[]) {
 	pos.add("config", 1);
 
 	//Config file options
-	opts::options_description config_opts("Login configuration options");
+	opts::options_description config_opts("Social configuration options");
 	config_opts.add_options()
 		("social.server_group", opts::value<unsigned int>()->required())
 		("spark.address", opts::value<std::string>()->required())

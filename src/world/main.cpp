@@ -104,8 +104,28 @@ opts::variables_map parse_arguments(const int argc, const char* argv[]) {
 	pos.add("config", 1);
 
 	// Config file options
-	opts::options_description config_opts("World configuration options");
-	config_opts.add(world::Service::options());
+	opts::options_description opts("World configuration options");
+	opts.add(world::Service::options());
+	opts.add_options()
+		("console_log.enable_input", opts::value<bool>()->required())
+		("console_log.verbosity", opts::value<log::Severity>()->required())
+		("console_log.filter-mask", opts::value<std::uint32_t>()->default_value(0))
+		("console_log.colours", opts::value<bool>()->required())
+		("console_log.suggestions", opts::value<bool>()->required())
+		("remote_log.verbosity", opts::value<log::Severity>()->required())
+		("remote_log.filter-mask", opts::value<std::uint32_t>()->default_value(0))
+		("remote_log.service_name", opts::value<std::string>()->required())
+		("remote_log.host", opts::value<std::string>()->required())
+		("remote_log.port", opts::value<std::uint16_t>()->required())
+		("file_log.verbosity", opts::value<log::Severity>()->required())
+		("file_log.filter-mask", opts::value<std::uint32_t>()->default_value(0))
+		("file_log.path", opts::value<std::string>()->default_value("world.log"))
+		("file_log.timestamp_format", opts::value<std::string>())
+		("file_log.mode", opts::value<std::string>()->required())
+		("file_log.size_rotate", opts::value<std::uint32_t>()->required())
+		("file_log.midnight_rotate", opts::bool_switch()->required())
+		("file_log.log_timestamp", opts::value<bool>()->required())
+		("file_log.log_severity", opts::value<bool>()->required());
 
 	opts::variables_map options;
 	opts::store(opts::command_line_parser(argc, argv).positional(pos).options(cmdline_opts).run(), options);
@@ -123,7 +143,7 @@ opts::variables_map parse_arguments(const int argc, const char* argv[]) {
 		throw std::invalid_argument("Unable to open configuration file: " + config_path);
 	}
 
-	opts::store(opts::parse_config_file(ifs, config_opts), options);
+	opts::store(opts::parse_config_file(ifs, opts), options);
 	opts::notify(options);
 
 	return options;
