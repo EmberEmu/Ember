@@ -25,12 +25,12 @@ struct Handle__ { int unused; }; typedef struct Handle__ *Handle;
 
 std::expected<void*, Result> find_symbol_base(Handle handle, const cstring_view name);
 
-template<typename type>
-std::expected<type, Result> find_symbol(Handle handle, const cstring_view name) {
+template<typename _fn>
+std::expected<_fn, Result> find_symbol(Handle handle, const cstring_view name) {
 	auto result = find_symbol_base(handle, name);
 
 	if(result) {
-		return reinterpret_cast<type>(*result);
+		return reinterpret_cast<_fn>(*result);
 	} else {
 		return std::unexpected(result.error());
 	}

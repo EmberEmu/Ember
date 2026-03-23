@@ -97,7 +97,7 @@ void service_start(const std::string& service, log::Logger& logger) {
 		auto& [_, runner] = *it;
 
 		if(!runner.is_stopped()) {
-			LOG_CONSOLE_ERROR_ASYNC(logger, "Service is already running", service);
+			LOG_CONSOLE_ERROR_ASYNC(logger, "Service ({}) is already running", service);
 			return;
 		}
 	}
