@@ -34,13 +34,47 @@ public:
 	explicit ServicePool(std::size_t pool_size, int hint = asio_concurrency_hint);
 	~ServicePool();
 
-	boost::asio::io_context& get();
+	/*
+	 * Begins running the pool. This function is non-blocking and cannot be called again
+	 * without first calling 'stop' or 'shutdown'.
+	 */
+	void run(unsigned int concurrency = std::thread::hardware_concurrency());
+
+	/*
+	 * Requests a worker from the pool. This selects a worker using round-robin. 
+	 */
+	boost::asio::io_context& get_next();
+
+	/*
+	 * Requests a specific worker from the pool. 
+	 * 
+	 * If the requested index is invalid, an exception will be thrown.
+	 */
 	boost::asio::io_context& get(std::size_t index) const;
+
+	/*
+	 * Requests a specific worker from the pool. 
+	 * 
+	 * If the requested index is invalid, a nullptr will be returned.
+	 */
 	boost::asio::io_context* get_if(std::size_t index) const;
 
-	void run();
+	/*
+	 * Requests that the pool stops running immediately. Any outstanding work will
+	 * be cancelled.
+	 */
 	void stop();
+
+	/*
+	 * Begins pool shutdown but wait until all work has been completed. This should
+	 * be used for a graceful shutdown where all components using this pool have 
+	 * also been told to stop/shutdown. If is not the case, it could block indefinitely.
+	 */
 	void shutdown();
+
+	/*
+	 * Returns the number of workers and threads in this pool.
+	 */
 	std::size_t size() const;
 
 	auto begin() const {

@@ -42,7 +42,7 @@ void ServicePool::initialise_pool() {
 	}
 }
 
-boost::asio::io_context& ServicePool::get() {
+boost::asio::io_context& ServicePool::get_next() {
 	auto& service = *services_[next_service_++];
 	next_service_ %= pool_size_;
 	return service;
@@ -64,16 +64,14 @@ boost::asio::io_context* ServicePool::get_if(const std::size_t index) const {
 	return services_[index].get();
 }
 
-void ServicePool::run() {
+void ServicePool::run(const unsigned int concurrency) {
 	if(!threads_.empty()) {
 		throw std::runtime_error("Service pool already running");
 	}
 
-	const auto core_count = std::thread::hardware_concurrency();
-
 	for(std::size_t i = 0; i < pool_size_; ++i) {
 		threads_.emplace_back(&boost::asio::io_context::run, services_[i].get());
-		thread::set_affinity(threads_[i], i % (core_count? core_count : 1));
+		thread::set_affinity(threads_[i], i % (concurrency? concurrency : 1));
 		thread::set_name(threads_[i], "Service Pool");
 	}
 }
@@ -84,6 +82,7 @@ void ServicePool::shutdown() {
 	threads_.clear();
 }
 
+// requests io_contexts to stop, remaining work will not be completed
 void ServicePool::stop() {
  	for(auto& service : services_) {
 		if(!service->stopped()) {
@@ -91,8 +90,7 @@ void ServicePool::stop() {
 		}
 	}
 
-	work_.clear();
-	threads_.clear();
+	shutdown();
 }
 
 std::size_t ServicePool::size() const {
