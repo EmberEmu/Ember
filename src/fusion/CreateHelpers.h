@@ -143,13 +143,20 @@ inline void destroy_service(const ServiceContext& context) {
 #endif
 }
 
-inline std::unique_ptr<log::Logger> configure_logger(const std::string_view name, opts::variables_map& opts) {
-	if(!opts.contains("console_log.prefix")) {
-		boost::any prefix = std::string(std::format("[{}]", name));
-		opts.try_emplace("console_log.prefix", opts::variable_value(prefix, false));
+inline std::unique_ptr<log::Logger> configure_logger(const std::string_view name, const Params& params) {
+	opts::variables_map opts = *params.args;
+
+	{ // set prefix for this service
+		const auto option = std::format("{}.prefix", name);
+		opts.insert_or_assign("console_log.prefix", opts.at(option));
 	}
 
-	// disable console input option
+	{ // give this service its own log file, if file logging is enabled
+		const auto option = std::format("{}.file", name);
+		opts.insert_or_assign("file_log.path", opts.at(option));
+	}
+
+	// disable console input
 	opts.insert_or_assign("console_log.enable_input", opts::variable_value(boost::any(false), false));
 
 	auto service_logger = std::make_unique<log::Logger>();
@@ -173,7 +180,8 @@ opts::variables_map load_options(const std::string& config_path, const opts::opt
 
 // this genuinely might be the worst bit of code I've ever written 
 template<auto fn>
-ServiceRunner create_runner(const ServiceIndex idx, const Params& params, const opts::options_description& descs) {
+ServiceRunner create_runner(const ServiceIndex idx, const Params& params,
+                            const opts::options_description& descs) {
 	// determine the path to the config file for this service and load it
 	const auto conf_section = std::format("{}.config", lib_props[idx].name);
 	const auto& conf_path = params.args->at(conf_section).as<std::string>();
@@ -184,7 +192,7 @@ ServiceRunner create_runner(const ServiceIndex idx, const Params& params, const 
 	log::Logger* logger_handle = params.logger;
 
 	if(!params.share_logger) {
-		service_logger = configure_logger(lib_props[idx].name, opts);
+		service_logger = configure_logger(lib_props[idx].name, params);
 		logger_handle = service_logger.get();
 	}
 

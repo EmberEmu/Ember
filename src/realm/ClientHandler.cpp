@@ -86,7 +86,7 @@ void ClientHandler::skip(BinaryStream& stream) {
 void ClientHandler::handle_ping(BinaryStream& stream) {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 
-	protocol::cmsg_ping packet;
+	message_view<protocol::cmsg_ping> packet;
 
 	if(!deserialise(packet, stream)) {
 		return;
