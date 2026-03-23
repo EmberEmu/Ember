@@ -55,8 +55,7 @@ std::optional<Realm> RealmList::get_realm(const std::uint32_t id) const {
 }
 
 auto RealmList::realms() const -> std::shared_ptr<const RealmMap> {
-	auto realms = realms_.load();
-	return realms;
+	return realms_.load();
 }
 
 } // ember
