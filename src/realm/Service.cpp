@@ -177,7 +177,7 @@ void Service::initialise(const opts::variables_map& args) try {
 		realm.address = std::format("{}:{}", realm.ip, realm.port);
 	};
 
-	// If the database port differs from the config file port, use the config file port
+	// If the port specified in the database differs from the config file, use the config file
 	if(port != ctx->realm->port) {
 		LOG_WARN_SYNC(
 			logger, "Configured port {} differs from database entry port {}, using {}",
@@ -282,17 +282,17 @@ void Service::register_commands(boost::asio::io_context& ioc) {
 	auto cmd = registry.scoped_insert(commands::Command::create("config_reload")
 		->argument<std::string>("filename", commands::optional)
 		->description("Reload the service configuration")
-		->handler(ctx->cmd_exec->wrap([&](auto arguments) {
+		->handler(ctx->cmd_exec->wrap([&](const commands::Arguments& arguments) {
 			std::string config_file;
 
 			if(arguments.contains("filename")) {
-				config_file = arguments["filename"].template as<std::string>(); // todo, why?
+				config_file = arguments["filename"].as<std::string>();
 			} else {
 				config_file = "realm.conf";
 			}
 
 			try {
-				const auto config = generate_config(reload_args(config_file));
+				const auto config = generate_config(reload_options(config_file));
 				update_config(config);
 				LOG_CONSOLE_ASYNC(logger, "Configuration file successfully reloaded");
 			} catch(const std::exception& e) {
@@ -307,7 +307,7 @@ void Service::register_commands(boost::asio::io_context& ioc) {
 void Service::update_config(const Config& config, bool post_only) {
 	auto ctx = context.get();
 
-	if(post_only) {
+	if(!post_only) {
 		ctx->config_store->update_default_config(config);
 	}
 
@@ -413,7 +413,7 @@ void print_lib_versions(log::Logger& logger) {
 		<< LOG_SYNC;
 }
 
-opts::variables_map Service::reload_args(const std::string& filename) {
+opts::variables_map Service::reload_options(const std::string& filename) {
 	opts::options_description config_opts;
 	config_opts.add(options());
 	std::ifstream stream(filename);

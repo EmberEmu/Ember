@@ -63,6 +63,10 @@ public:
 	/*
 	 * Retrieves the cached config copy for the calling thread, falling back to the
 	 * base/default config if the calling thread has never called update_thead_config.
+	 * 
+	 * Threads that do not have a thread local copy do not create one here as it'd be
+	 * out of date upon update, unless they later start calling 'update_thread_config'.
+	 * If it doesn't already exist, we have to assume that they won't.
 	 */
 	const Config& config() const {
 		if(tls_config_) [[likely]] {

@@ -58,15 +58,15 @@ auto locate_symbol(const cstring_view lib_name, const cstring_view func_name) {
 		);
 	}
 
-	auto result = fusion::library::find_symbol<func_type>(*library, func_name);
+	auto symbol = fusion::library::find_symbol<func_type>(*library, func_name);
 
-	if(!result) {
+	if(!symbol) {
 		throw std::runtime_error(
 			std::format("Unable to find function, {}", func_name)
 		);
 	}
 
-	return std::pair(*library, *result);
+	return std::pair(*library, *symbol);
 }
 
 template<auto fn>
