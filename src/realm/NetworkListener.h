@@ -11,7 +11,7 @@
 #include "SessionManager.h"
 #include "SocketType.h"
 #include <logger/LoggerFwd.h>
-#include <shared/ClientRef.h>
+#include <shared/ClientIdent.h>
 #include <shared/memory/AsioAllocator.h>
 #include <thread/ServicePool.h>
 #include <boost/asio/io_context.hpp>

@@ -17,7 +17,7 @@
 #include "SocketType.h"
 #include <logger/LoggerFwd.h>
 #include <spark/buffers/DynamicBuffer.h>
-#include <shared/ClientRef.h>
+#include <shared/ClientIdent.h>
 #include <shared/memory/AsioAllocator.h>
 #include <botan/bigint.h>
 #include <boost/asio/ip/tcp.hpp>
@@ -89,7 +89,7 @@ class ClientConnection final {
 	std::size_t minimum_transfer() const;
 
 public:
-	ClientConnection(SessionManager& sessions, tcp_socket socket, ClientRef uuid, log::Logger& logger)
+	ClientConnection(SessionManager& sessions, tcp_socket socket, ClientIdent uuid, log::Logger& logger)
 		: sessions_(sessions)
 		, socket_(std::move(socket))
 		, remote_ep_(socket_.remote_endpoint())

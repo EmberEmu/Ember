@@ -107,7 +107,7 @@ set(LIBRARY_SRC
     ${MEMORY_SRC}
     ${UTIL_SRC}
     ${METRICS_SRC}
-    shared/ClientRef.h
+    shared/ClientIdent.h
     shared/CompilerWarn.h
     shared/IPBanCache.h
     shared/Realm.h

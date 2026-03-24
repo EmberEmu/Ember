@@ -51,7 +51,7 @@ void NetworkListener::dispatch_socket() {
 	
 		boost::asio::dispatch(socket_.get_executor(),
 		                      [&, socket = std::move(socket_), i = index_]() mutable {
-			sessions_.emplace(sessions_, std::move(socket), ClientRef(i), logger_);
+			sessions_.emplace(sessions_, std::move(socket), ClientIdent(i), logger_);
 		});
 	} else {
 		LOG_DEBUG_ASYNC(logger_, "Aborted connection, remote peer disconnected");

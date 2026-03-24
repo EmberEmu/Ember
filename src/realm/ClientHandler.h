@@ -15,7 +15,7 @@
 #include <logger/LoggerFwd.h>
 #include <protocol/Packet.h>
 #include <spark/buffers/BinaryStream.h>
-#include <shared/ClientRef.h>
+#include <shared/ClientIdent.h>
 #include <boost/asio/steady_timer.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
@@ -31,7 +31,7 @@ class ClientConnection;
 class ClientHandler final {
 	ClientConnection& connection_;
 	ClientContext context_;
-	const ClientRef uuid_;
+	const ClientIdent uuid_;
 	boost::asio::steady_timer timer_;
 	log::Logger& logger_;
 
@@ -41,7 +41,7 @@ class ClientHandler final {
 	void handle_ping(BinaryStream& stream);
 
 public:
-	ClientHandler(ClientConnection& connection, ClientRef uuid,
+	ClientHandler(ClientConnection& connection, ClientIdent uuid,
 	              executor executor, log::Logger& logger);
 
 	~ClientHandler();
@@ -65,7 +65,7 @@ public:
 	void start_timer(const std::chrono::milliseconds& time);
 	void cancel_timer();
 
-	const ClientRef& uuid() const {
+	const ClientIdent& uuid() const {
 		return uuid_;
 	}
 };

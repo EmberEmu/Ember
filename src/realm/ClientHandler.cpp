@@ -131,7 +131,7 @@ std::string_view ClientHandler::client_identify() const {
 	return client_id_;
 }
 
-ClientHandler::ClientHandler(ClientConnection& connection, ClientRef uuid,
+ClientHandler::ClientHandler(ClientConnection& connection, ClientIdent uuid,
 							 executor executor, log::Logger& logger)
 	: context_ {
 		.handler = *this,

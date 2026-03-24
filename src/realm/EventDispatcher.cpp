@@ -15,7 +15,7 @@
 
 namespace ember::realm {
 
-void EventDispatcher::post_event(const ClientRef& client, std::unique_ptr<Event> event) const {
+void EventDispatcher::post_event(const ClientIdent& client, std::unique_ptr<Event> event) const {
 	auto service = pool_.get_if(client.service());
 
 	// bad service index encoded in the UUID
@@ -41,7 +41,7 @@ void EventDispatcher::post_event(const ClientRef& client, std::unique_ptr<Event>
  *
  * Callers should move the client UUID vector into this function.
  */
-void EventDispatcher::broadcast_event(std::vector<ClientRef> clients, std::shared_ptr<const Event> event) const {
+void EventDispatcher::broadcast_event(std::vector<ClientIdent> clients, std::shared_ptr<const Event> event) const {
 	std::ranges::sort(clients, [](auto& lhs, auto& rhs) {
 		return lhs.service() < rhs.service();
 	});
@@ -53,7 +53,7 @@ void EventDispatcher::broadcast_event(std::vector<ClientRef> clients, std::share
 		const auto service_id = gsl::narrow<std::uint8_t>(i);
 
 		const auto found = std::ranges::binary_search(
-			*clients_ptr, service_id, std::ranges::less{}, &ClientRef::service
+			*clients_ptr, service_id, std::ranges::less{}, &ClientIdent::service
 		);
 
 		if(!found) {
@@ -61,7 +61,7 @@ void EventDispatcher::broadcast_event(std::vector<ClientRef> clients, std::share
 		}
 
 		const auto range = std::ranges::equal_range(
-			*clients_ptr, service_id, std::ranges::greater{}, &ClientRef::service
+			*clients_ptr, service_id, std::ranges::greater{}, &ClientIdent::service
 		);
 
 		auto& service = pool_.get(i);

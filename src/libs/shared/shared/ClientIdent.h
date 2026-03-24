@@ -14,21 +14,21 @@
 #include <gsl/narrow>
 #include <algorithm>
 #include <array>
-#include <span>
 #include <iomanip>
-#include <string>
+#include <span>
 #include <sstream>
 #include <stdexcept>
-#include <cstdint>
+#include <string>
 #include <cstddef>
+#include <cstdint>
 
 namespace ember {
 
-class ClientRef final {
-	static constexpr std::size_t UUID_SIZE = 16;
-	static constexpr std::size_t SERVICE_INDEX = 0;
+class ClientIdent final {
+	static constexpr std::size_t uuid_size = 16;
+	static constexpr std::size_t service_offset = 0;
 
-	std::array<std::uint64_t, UUID_SIZE / sizeof(std::uint64_t)> data_;
+	std::array<std::uint64_t, uuid_size / sizeof(std::uint64_t)> data_;
 
 	void generate(const std::size_t service_index) {
 		for(auto& val : data_) {
@@ -36,15 +36,15 @@ class ClientRef final {
 		}
 
 		auto bytes = std::as_writable_bytes(std::span(data_));
-		bytes[SERVICE_INDEX] = gsl::narrow<std::byte>(service_index);
+		bytes[service_index] = gsl::narrow<std::byte>(service_index);
 	}
 
 public:
-	explicit ClientRef(std::size_t service_index) {
+	explicit ClientIdent(std::size_t service_index) {
 		generate(service_index);
 	}
 
-	explicit ClientRef(std::span<const std::uint8_t, UUID_SIZE> data) {
+	explicit ClientIdent(std::span<const std::uint8_t, uuid_size> data) {
 		std::ranges::copy(data, data_.data());
 	}
 
@@ -60,7 +60,7 @@ public:
 	}
 
 	inline std::uint8_t service() const {
-		return data_[SERVICE_INDEX];
+		return data_[service_offset];
 	}
 
 	// don't really care about efficiency here, it's for debugging
@@ -68,7 +68,7 @@ public:
 		std::stringstream stream;
 		stream << std::hex;
 
-		auto bytes = std::as_bytes(std::span(data_));
+		const auto bytes = std::as_bytes(std::span(data_));
 
 		for(auto byte : bytes) {
 			stream << std::setw(2) << std::setfill('0') << static_cast<int>(byte);
@@ -78,25 +78,25 @@ public:
 	}
 
 	static constexpr auto size() {
-		return UUID_SIZE;
+		return uuid_size;
 	}
 
-	friend bool operator==(const ClientRef& rhs, const ClientRef& lhs);
+	friend bool operator==(const ClientIdent& rhs, const ClientIdent& lhs);
 };
 
-inline bool operator==(const ClientRef& rhs, const ClientRef& lhs) {
+inline bool operator==(const ClientIdent& rhs, const ClientIdent& lhs) {
 	return rhs.hash() == lhs.hash();
 }
 
-inline std::size_t hash_value(const ClientRef& uuid) {
+inline std::size_t hash_value(const ClientIdent& uuid) {
 	return uuid.hash();
 }
 
 } // ember
 
 template<>
-struct std::hash<ember::ClientRef> {
-	std::size_t operator()(const ember::ClientRef& uuid) const {
+struct std::hash<ember::ClientIdent> {
+	std::size_t operator()(const ember::ClientIdent& uuid) const {
 		return uuid.hash();
 	}
 };
