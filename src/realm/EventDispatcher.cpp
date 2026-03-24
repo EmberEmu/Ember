@@ -10,6 +10,7 @@
 #include <logger/Logger.h>
 #include <boost/asio/dispatch.hpp>
 #include <boost/asio/post.hpp>
+#include <ranges>
 #include <type_traits>
 
 namespace ember::realm {
