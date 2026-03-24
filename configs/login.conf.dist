@@ -4,6 +4,9 @@
 builds = 1, 12, 1, 5875
 builds = 1, 12, 2, 6005
 
+[dbc]
+path = dbcs/
+
 [integrity]
 enabled = 0    # validate the client's integrity
 bin_path = ""  # path to binaries needed for integrity validation

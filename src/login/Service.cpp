@@ -7,10 +7,12 @@
  */
 
 #include "Service.h"
+#include "DBCRequired.h"
 #include "FilterTypes.h"
 #include "InitHelpers.h"
 #include "MonitorCallbacks.h"
 #include "ServiceContextImpl.h"
+#include <dbcreader/DiskLoader.h>
 #include <logger/Logger.h>
 #include <ports/Utility.h>
 #include <shared/database/daos/IPBanDAO.h>
@@ -57,6 +59,8 @@ namespace ep = ember::connection_pool;
 namespace ember::login {
 
 void print_lib_versions(log::Logger& logger);
+bool validate_realm(const Realm& realm, const dbc::Store<dbc::Cfg_Categories>& dbc);
+void validate_realms(const RealmList& realmlist, log::Logger& logger, const opts::variables_map& args);
 
 Service::Service(log::Logger& logger, commands::Registry& registry)
 	: logger(logger)
@@ -183,11 +187,14 @@ void Service::initialise(const opts::variables_map& args) {
 	LOG_INFO_SYNC(logger, "Loading realm list...");
 	ctx->realm_list = std::make_unique<RealmList>(realm_dao.get_realms());
 
-	LOG_INFO_SYNC(logger, "Added {} realm(s)", ctx->realm_list->realms()->size());
+	const auto realm_count = ctx->realm_list->realms()->size();
+	LOG_INFO_SYNC(logger, "Added {} realm{}", realm_count, (!realm_count || realm_count > 1? "s" : ""));
 
 	for(const auto& realm : *ctx->realm_list->realms() | std::views::values) {
 		LOG_DEBUG_SYNC(logger, "#{} {}", realm.id, realm.name);
 	}
+
+	validate_realms(*ctx->realm_list, logger, args);
 
 	const auto& s_address = args["spark.address"].as<std::string>();
 	auto s_port = args["spark.port"].as<std::uint16_t>();
@@ -227,7 +234,6 @@ void Service::initialise(const opts::variables_map& args) {
 		ioc, interface, port, tcp_no_delay, *ctx->login_session_builder,
 		*ctx->ip_ban_cache, logger, *ctx->metrics
 	);
-
 
 	// Start monitoring service
 	if(args["monitor.enabled"].as<bool>()) {
@@ -337,6 +343,22 @@ void Service::seed_xorshift_rng() {
 	std::ranges::generate(rng::xorshift::seed, engine);
 }
 
+void validate_realms(const RealmList& realmlist, log::Logger& logger, const opts::variables_map& args) {
+	LOG_INFO_SYNC(logger, "Loading DBC data...");
+
+	dbc::DiskLoader loader(args["dbc.path"].as<std::string>(), [&](auto message) {
+		LOG_DEBUG(logger) << message << LOG_SYNC;
+	});
+
+	const auto dbcs = loader.load(dbcs_required);
+
+	for(const auto& realm : *realmlist.realms() | std::views::values) {
+		if(!validate_realm(realm, dbcs.cfg_categories)) {
+			LOG_WARN_SYNC(logger, "Validation failed for {} - client may not display this realm", realm.name);
+		}
+	}
+}
+
 void Service::stop() {
 	bool expected = false;
 
@@ -361,6 +383,7 @@ Service::~Service() {
 opts::options_description Service::options() {
 	opts::options_description opts;
 	opts.add_options()
+		("dbc.path", opts::value<std::string>()->required())
 		("login.builds", opts::value<std::vector<GameVersion>>()->composing()->required())
 		("misc.locales", opts::value<bool>()->required())
 		("misc.verified_emails", opts::value<bool>()->required())
@@ -394,6 +417,16 @@ opts::options_description Service::options() {
 		("monitor.port", opts::value<std::uint16_t>()->required());
 
 	return opts;
+}
+
+bool validate_realm(const Realm& realm, const dbc::Store<dbc::Cfg_Categories>& dbc) {
+	for(auto& record : dbc | std::views::values) {
+		if(record.category == realm.category && record.region == realm.region) {
+			return true;
+		}
+	}
+
+	return false;
 }
 
 void print_lib_versions(log::Logger& logger) {
