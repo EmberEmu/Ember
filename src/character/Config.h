@@ -12,6 +12,8 @@ namespace ember {
 
 struct Config {
 	bool defer_zone_placement;
+	unsigned int max_chars_slots_account;
+	unsigned int max_chars_slots_server;
 };
 
 } // ember

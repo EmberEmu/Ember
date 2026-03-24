@@ -3,6 +3,12 @@
 # Defers placing the character in a zone until entering the world, following original server behaviour
 defer_zone_placement = 0
 
+# Maximum number of characters an account is allowed, across all servers
+max_chars_slots_account = 100
+
+# Maximum number of characters an account is allowed on a single realm
+max_chars_slots_server = 10
+
 [dbc]
 path = dbcs/
 

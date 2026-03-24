@@ -18,4 +18,4 @@ inline const std::array<std::string_view, 2> dbcs_required {
 	"Cfg_Categories"
 };
 
-} // realm
+} // realm, ember

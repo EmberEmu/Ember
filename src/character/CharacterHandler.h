@@ -37,15 +37,13 @@ class CharacterHandler final {
 	const std::size_t MAX_NAME_LENGTH = 12;
 	const std::size_t MIN_NAME_LENGTH = 2;
 	const std::size_t MAX_CONSECUTIVE_LETTERS = 2;
-	const std::size_t MAX_CHARACTER_SLOTS_SERVER = 10;
-	const std::size_t MAX_CHARACTER_SLOTS_ACCOUNT = 100; // todo, allow config
 
 	const std::vector<utility::pcre::Result> profane_names_;
 	const std::vector<utility::pcre::Result> reserved_names_;
 	const std::vector<utility::pcre::Result> spam_names_;
 	const dbc::Storage& dbc_;
 	const dal::CharacterDAO& dao_;
-	const Config& config_;
+	const Config config_;
 	const std::locale locale_;
 
 	thread::ThreadPool& pool_;
@@ -91,7 +89,7 @@ public:
 	                 std::vector<utility::pcre::Result> spam_names,
 	                 const dbc::Storage& dbc,
 	                 const dal::CharacterDAO& dao,
-	                 const Config& config,
+	                 const Config config,
                      thread::ThreadPool& pool,
                      log::Logger& logger)
 		: profane_names_(std::move(profane_names))
@@ -99,7 +97,7 @@ public:
 		, spam_names_(std::move(spam_names))
 		, dbc_(dbc)
 		, dao_(dao)
-	    , config_(config)
+	    , config_(std::move(config))
 		, pool_(pool)
 		, logger_(logger) {}
 

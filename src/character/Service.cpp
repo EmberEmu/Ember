@@ -106,7 +106,9 @@ void Service::initialise(const opts::variables_map& args) {
 	ctx->character_dao = std::make_unique<decltype(character_dao)>(std::move(character_dao));
 
 	const Config config {
-		.defer_zone_placement = args["defer_zone_placement"].as<bool>()
+		.defer_zone_placement = args["defer_zone_placement"].as<bool>(),
+		.max_chars_slots_account = args["max_chars_slots_account"].as<unsigned int>(),
+		.max_chars_slots_server = args["max_chars_slots_server"].as<unsigned int>()
 	};
 
 	LOG_INFO_SYNC(logger, "Starting thread pool with {} threads...", concurrency);
@@ -165,6 +167,8 @@ opts::options_description Service::options() {
 	opts::options_description opts;
 	opts.add_options()
 		("defer_zone_placement", opts::value<bool>()->required())
+		("max_chars_slots_account", opts::value<unsigned int>()->required())
+		("max_chars_slots_server", opts::value<unsigned int>()->required())
 		("dbc.path", opts::value<std::string>()->required())
 		("spark.address", opts::value<std::string>()->required())
 		("spark.port", opts::value<std::uint16_t>()->required())

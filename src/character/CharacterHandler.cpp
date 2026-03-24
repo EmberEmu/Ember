@@ -110,16 +110,16 @@ void CharacterHandler::do_create(std::uint32_t account_id, std::uint32_t realm_i
 	// query database for further validation steps
 	const auto total_chars = dao_.count(account_id);
 
-	if(total_chars >= MAX_CHARACTER_SLOTS_ACCOUNT) {
+	if(total_chars >= config_.max_chars_slots_account) {
 		callback(protocol::Result::char_create_account_limit);
 		return;
 	}
 
 	// avoid an additional query if there's no need for it
-	if(total_chars >= MAX_CHARACTER_SLOTS_SERVER) {
+	if(total_chars >= config_.max_chars_slots_server) {
 		const auto count = dao_.count(account_id, realm_id);
 
-		if(count >= MAX_CHARACTER_SLOTS_SERVER) {
+		if(count >= config_.max_chars_slots_server) {
 			callback(protocol::Result::char_create_server_limit);
 			return;
 		}
@@ -332,7 +332,7 @@ void CharacterHandler::do_restore(std::uint64_t id, const ResultCB& callback) co
 	auto character = dao_.character(id);
 	auto characters = dao_.characters(character->account_id);
 
-	if(characters.size() >= MAX_CHARACTER_SLOTS_ACCOUNT) {
+	if(characters.size() >= config_.max_chars_slots_account) {
 		LOG_WARN_ASYNC(logger_, "Cannot restore character - would exceed max account slots");
 		callback(protocol::Result::char_create_account_limit);
 		return;
@@ -342,7 +342,7 @@ void CharacterHandler::do_restore(std::uint64_t id, const ResultCB& callback) co
 		return c.realm_id == character->realm_id;
 	});
 
-	if(realm_chars >= MAX_CHARACTER_SLOTS_SERVER) {
+	if(realm_chars >= config_.max_chars_slots_server) {
 		LOG_WARN_ASYNC(logger_, "Cannot restore character - would exceed max server slots");
 		callback(protocol::Result::char_create_server_limit);
 		return;
