@@ -27,8 +27,8 @@ namespace ember::realm {
 namespace asio = boost::asio;
 
 class NetworkListener final {
+	SessionManager& sessions_;
 	ClientBuilder builder_;
-	SessionManager sessions_;
 	tcp_acceptor acceptor_;
 	tcp_socket socket_;
 	thread::ServicePool& pool_;
@@ -39,9 +39,10 @@ class NetworkListener final {
 	void dispatch_socket();
 
 public:
-	NetworkListener(thread::ServicePool& pool, std::string_view interface, std::uint16_t port,
-	                bool tcp_no_delay, log::Logger& logger)
-		: builder_(sessions_, logger)
+	NetworkListener(thread::ServicePool& pool, SessionManager& sessions, std::string_view interface,
+	                std::uint16_t port, bool tcp_no_delay, log::Logger& logger)
+		: sessions_(sessions)
+		, builder_(sessions_, logger)
 		, acceptor_(
 			pool.get_next(),
 			asio::ip::tcp::endpoint(asio::ip::make_address(interface), port)

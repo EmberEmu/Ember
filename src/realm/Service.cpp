@@ -250,7 +250,9 @@ void Service::initialise(const opts::variables_map& args) try {
 
 	// Start network listener
 	LOG_INFO_SYNC(logger, "Starting network service on {}:{}...", interface, port);
-	ctx->server = std::make_unique<NetworkListener>(*ctx->service_pool, interface, port, tcp_no_delay, logger);
+	ctx->server = std::make_unique<NetworkListener>(
+		*ctx->service_pool, ctx->sessions, interface, port, tcp_no_delay, logger
+	);
 	
 	// Install service command handlers
 	LOG_INFO_SYNC(logger, "Registering command handlers...");
