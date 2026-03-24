@@ -48,8 +48,9 @@ void NetworkListener::dispatch_socket() {
 
 	if(!ec) {
 		LOG_DEBUG_ASYNC(logger_, "Accepted connection from {}", ep.address().to_string());
-	
-		boost::asio::dispatch(socket_.get_executor(),
+		auto executor = socket_.get_executor();
+
+		boost::asio::dispatch(executor,
 		                      [&, socket = std::move(socket_), i = index_]() mutable {
 			sessions_.emplace(sessions_, std::move(socket), ClientIdent(i), logger_);
 		});
