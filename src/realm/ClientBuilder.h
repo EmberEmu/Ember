@@ -31,18 +31,16 @@ class ClientBuilder {
 	constexpr inline static auto allocator_tag = "client_allocator";
 
 	SessionAllocator allocator_;
-	SessionManager& sessions_;
 	log::Logger& logger_;
 
 public:
-	ClientBuilder(SessionManager& sessions, log::Logger& logger)
+	ClientBuilder(log::Logger& logger)
 		: allocator_(allocator_tag)
-		, sessions_(sessions)
 		, logger_(logger) {}
 
 	ClientPtr create(tcp_socket socket, ClientIdent ident) {
 		auto client = ClientPtr(
-			allocator_.allocate(sessions_, std::move(socket), std::move(ident), logger_), [&](auto ptr) {
+			allocator_.allocate(std::move(socket), std::move(ident), logger_), [&](auto ptr) {
 				allocator_.deallocate(ptr);
 			}
 		);

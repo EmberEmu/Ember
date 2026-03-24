@@ -10,7 +10,6 @@
 
 #include "ClientConnection.h"
 #include "ClientHandler.h"
-#include "SessionManager.h"
 #include "SocketType.h"
 #include <logger/Logger.h>
 #include <shared/ClientIdent.h>
@@ -27,9 +26,9 @@ private:
 	ClientConnection connection_;
 
 public:
-	Client(SessionManager& sessions, tcp_socket socket, ClientIdent ident, log::Logger& logger)
+	Client(tcp_socket socket, ClientIdent ident, log::Logger& logger)
 		: handler_(std::move(ident), socket.get_executor(), logger) 
-		, connection_(sessions, std::move(socket), logger) {
+		, connection_(std::move(socket), logger) {
 		handler_.set_connection(&connection_);
 		connection_.set_handler(&handler_);
 	}

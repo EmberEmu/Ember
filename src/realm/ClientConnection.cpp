@@ -7,7 +7,6 @@
  */
 
 #include "ClientConnection.h"
-#include "SessionManager.h"
 #include "packet_log/FBSink.h"
 #include "packet_log/LogSink.h"
 #include <logger/Logger.h>

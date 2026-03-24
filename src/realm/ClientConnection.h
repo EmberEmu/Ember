@@ -36,14 +36,11 @@
 
 namespace ember::realm {
 
-class SessionManager;
-
 class ClientConnection final {
 public:
 	using OnDisconnect = std::function<void()>;
 
 private:
-
 	enum class ReadState {
 		header,
 		body,
@@ -62,7 +59,6 @@ private:
 	ConnectionStats stats_;
 	std::optional<PacketCrypto> crypt_;
 	protocol::SizeType msg_size_;
-	SessionManager& sessions_;
 	AsioAllocator<thread_safe> allocator_; // todo - should be shared & passed in
 	log::Logger& logger_;
 	bool write_in_progress_;
@@ -90,9 +86,8 @@ private:
 	std::size_t minimum_transfer() const;
 
 public:
-	ClientConnection(SessionManager& sessions, tcp_socket socket, log::Logger& logger)
-		: sessions_(sessions)
-		, socket_(std::move(socket))
+	ClientConnection(tcp_socket socket, log::Logger& logger)
+		: socket_(std::move(socket))
 		, remote_ep_(socket_.remote_endpoint())
 		, stats_{}
 		, msg_size_{0}
