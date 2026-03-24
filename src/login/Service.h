@@ -32,7 +32,7 @@ class EMBER_EXPORT_SERVICE Service final : public IService {
 	log::Logger& logger;
 	commands::Registry& registry;
 	std::chrono::steady_clock::time_point start_time;
-	boost::asio::io_context io_context;
+	boost::asio::io_context ioc;
 	ServiceContext context;
 	std::atomic_bool stopped;
 

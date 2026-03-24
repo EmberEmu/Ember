@@ -65,10 +65,10 @@ int Service::run(const boost::program_options::variables_map& args) {
 	const auto interface = args["spark.address"].as<std::string>();
 	const auto port = args["spark.port"].as<std::uint16_t>();
 
-	ctx->spark = std::make_unique<spark::Server>(service, app_name, interface, port, logger);
+	ctx->spark = std::make_unique<spark::Server>(ioc, app_name, interface, port, logger);
 	ctx->world_rpc_service = std::make_unique<WorldRPCServer>(*ctx->spark, logger);
 
-	std::jthread thread(&boost::asio::io_context::run, &service);
+	std::jthread thread(&boost::asio::io_context::run, &ioc);
 	// end of temporary bits
 
 	// All done setting up

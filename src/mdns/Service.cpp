@@ -34,7 +34,7 @@ Service::Service(log::Logger& logger, commands::Registry& registry)
 
 int Service::run(const opts::variables_map& args) try {
 	initialise(args);
-	service.run();
+	ioc.run();
 
 	LOG_INFO_SYNC(logger, "{} shutting down...", app_name);
 	return EXIT_SUCCESS;
@@ -53,7 +53,7 @@ void Service::initialise(const opts::variables_map& args) {
 
 	// start multicast DNS services
 	LOG_INFO_SYNC(logger, "Starting multicaster...");
-	auto socket = std::make_unique<dns::MulticastSocket>(service, iface, group, port, logger);
+	auto socket = std::make_unique<dns::MulticastSocket>(ioc, iface, group, port, logger);
 
 	LOG_INFO_SYNC(logger, "Starting DNS server handler...");
 	ctx->server = std::make_unique<Server>(std::move(socket), logger);
@@ -63,11 +63,11 @@ void Service::initialise(const opts::variables_map& args) {
 
 	// start RPC services
 	LOG_INFO_SYNC(logger, "Starting RPC services...");
-	ctx->spark = std::make_unique<spark::Server>(service, app_name, spark_iface, spark_port, logger);
+	ctx->spark = std::make_unique<spark::Server>(ioc, app_name, spark_iface, spark_port, logger);
 	ctx->nsd_service = std::make_unique<NSDService>(*ctx->spark, logger);
 
 	// All done setting up
-	boost::asio::dispatch(service, [&, time]() {
+	boost::asio::dispatch(ioc, [&, time]() {
 		LOG_INFO_SYNC(logger, "{} started successfully in {}", app_name,
 			utility::time_elapsed_format(time));
 
@@ -84,7 +84,7 @@ void Service::stop() {
 
 	LOG_TRACE_SYNC(logger, "Service termination requested");
 
-	boost::asio::post(service, [&] {
+	boost::asio::post(ioc, [&] {
 		auto ctx = context.get();
 		ctx->server->shutdown();
 	});

@@ -62,7 +62,7 @@ Service::Service(log::Logger& logger, commands::Registry& registry)
 	: logger(logger)
 	, registry(registry)
 	, start_time(std::chrono::steady_clock::now())
-	, io_context(thread::hardware_concurrency())
+	, ioc(thread::hardware_concurrency())
 	, stopped(false) {}
 
 /*
@@ -84,11 +84,11 @@ int Service::run(const opts::variables_map& args) try {
 	threads.reserve(concurrency);
 
 	for(unsigned int i = 0; i < concurrency; ++i) {
-		threads.emplace_back(&boost::asio::io_context::run, &io_context);
+		threads.emplace_back(&boost::asio::io_context::run, &ioc);
 		thread::set_name(threads[i], "Asio Worker");
 	}
 
-	io_context.run();
+	ioc.run();
 
 	return EXIT_SUCCESS;
 } catch(const std::exception& e) {
@@ -193,12 +193,12 @@ void Service::initialise(const opts::variables_map& args) {
 	auto s_port = args["spark.port"].as<std::uint16_t>();
 
 	LOG_INFO_SYNC(logger, "Starting RPC services...");
-	ctx->rpc = std::make_unique<spark::Server>(io_context, app_name, s_address, s_port, logger);
+	ctx->rpc = std::make_unique<spark::Server>(ioc, app_name, s_address, s_port, logger);
 	ctx->rpc_account = std::make_unique<AccountClient>(*ctx->rpc, logger);
 	ctx->rpc_realm = std::make_unique<RealmClient>(*ctx->rpc, *ctx->realm_list, logger);
 
 	// Start metrics service
-	ctx->metrics = start_metrics(io_context, args);
+	ctx->metrics = start_metrics(ioc, args);
 
 	LOG_INFO_SYNC(logger, "Starting thread pool with {} threads...", concurrency);
 	ctx->thread_pool = std::make_unique<thread::ThreadPool>(concurrency);
@@ -224,7 +224,7 @@ void Service::initialise(const opts::variables_map& args) {
 
 	LOG_INFO_SYNC(logger, "Starting network service on {}:{}...", interface, port);
 	ctx->server = std::make_unique<NetworkListener>(
-		io_context, interface, port, tcp_no_delay, *ctx->login_session_builder,
+		ioc, interface, port, tcp_no_delay, *ctx->login_session_builder,
 		*ctx->ip_ban_cache, logger, *ctx->metrics
 	);
 
@@ -234,7 +234,7 @@ void Service::initialise(const opts::variables_map& args) {
 		LOG_INFO_SYNC(logger, "Starting monitoring service...");
 
 		ctx->monitor = std::make_unique<Monitor>(	
-			io_context, args["monitor.interface"].as<std::string>(),
+			ioc, args["monitor.interface"].as<std::string>(),
 			args["monitor.port"].as<std::uint16_t>()
 		);
 
@@ -243,7 +243,7 @@ void Service::initialise(const opts::variables_map& args) {
 	}
 
 	// Start metrics polling
-	ctx->metrics_poll = std::make_unique<MetricsPoll>(io_context, *ctx->metrics);
+	ctx->metrics_poll = std::make_unique<MetricsPoll>(ioc, *ctx->metrics);
 
 	ctx->metrics_poll->add_source([&pool = *ctx->conn_pool](Metrics& metrics) {
 		metrics.gauge("db_connections", pool->size());
@@ -270,7 +270,7 @@ void Service::initialise(const opts::variables_map& args) {
 		const auto gateway = args["forward.gateway"].as<std::string>();
 
 		ctx->port_daemon = std::make_unique<ports::Forward>(
-			io_context, mode, interface, gateway, port, [&](auto severity, auto message) {
+			ioc, mode, interface, gateway, port, [&](auto severity, auto message) {
 				forward_log_callback(severity, message, logger);
 			}
 		);
@@ -281,7 +281,7 @@ void Service::initialise(const opts::variables_map& args) {
 	register_commands();
 
 	// All done setting up
-	boost::asio::dispatch(io_context, [this, time]() {
+	boost::asio::dispatch(ioc, [this, time]() {
 		LOG_INFO_SYNC(logger, "{} started successfully in {}", app_name,
 			utility::time_elapsed_format(time));
 
@@ -292,7 +292,7 @@ void Service::initialise(const opts::variables_map& args) {
 void Service::register_commands() {
 	auto ctx = context.get();
 
-	ctx->cmd_exec = std::make_unique<utility::CommandExecutor>(io_context, [&](const auto& reason) {
+	ctx->cmd_exec = std::make_unique<utility::CommandExecutor>(ioc, [&](const auto& reason) {
 		LOG_CONSOLE_ERROR_ASYNC(logger, "Command could not be executed, {}", reason);
 	});
 	
@@ -346,7 +346,7 @@ void Service::stop() {
 
 	LOG_TRACE_SYNC(logger, "Service termination requested");
 
-	boost::asio::post(io_context, [&] {
+	boost::asio::post(ioc, [&] {
 		auto ctx = context.get();
 		ctx->cmd_exec->signal_stop();
 		ctx->thread_pool->shutdown();

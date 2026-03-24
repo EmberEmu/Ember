@@ -33,12 +33,12 @@ namespace ember::account {
 Service::Service(log::Logger& logger, commands::Registry& registry)
 	: logger(logger)
 	, registry(registry)
-	, service(BOOST_ASIO_CONCURRENCY_HINT_UNSAFE_IO)
+	, ioc(BOOST_ASIO_CONCURRENCY_HINT_UNSAFE_IO)
 	, stopped(false) {}
 
 int Service::run(const opts::variables_map& args) try {
 	initialise(args);
-	service.run();
+	ioc.run();
 	return EXIT_SUCCESS;
 } catch(const std::exception& e) {
 	LOG_FATAL_SYNC(logger, e.what());
@@ -79,7 +79,7 @@ void Service::initialise(const opts::variables_map& args) {
 	auto s_port = args["spark.port"].as<std::uint16_t>();
 
 	ctx->spark = std::make_unique<spark::Server>(
-		service, "account", s_address, s_port, logger
+		ioc, "account", s_address, s_port, logger
 	);
 
 	ctx->account_service = std::make_unique<AccountService>(
@@ -87,7 +87,7 @@ void Service::initialise(const opts::variables_map& args) {
 	);
 
 	// All done setting up
-	boost::asio::dispatch(service, [&, time]() {
+	boost::asio::dispatch(ioc, [&, time]() {
 		LOG_INFO_SYNC(logger, "{} started successfully in {}", app_name,
 			utility::time_elapsed_format(time));
 
@@ -105,7 +105,7 @@ void Service::stop() {
 	LOG_TRACE_SYNC(logger, "Service termination requested");
 	auto ctx = context.get();
 
-	boost::asio::post(service, [&] {
+	boost::asio::post(ioc, [&] {
 		auto ctx = context.get();
 		ctx->thread_pool->shutdown();
 		ctx->conn_pool->get().close();
