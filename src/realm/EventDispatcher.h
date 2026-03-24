@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2025 Ember
+ * Copyright (c) 2016 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -33,8 +33,8 @@ class EventDispatcher final {
 
 public:
 	explicit EventDispatcher(const thread::ServicePool& pool, log::Logger& logger)
-		: pool_(pool),
-		  logger_(logger) {}
+		: pool_(pool)
+		, logger_(logger) {}
 
 	void exec(const ClientRef& client, auto work) const {
 		auto service = pool_.get_if(client.service());
@@ -75,6 +75,8 @@ public:
 	}
 
 	void post_event(const ClientRef& client, std::unique_ptr<Event> event) const;
+	void broadcast_event(const Event& event) const;
+	void broadcast_event(std::shared_ptr<const Event> event) const;
 	void broadcast_event(std::vector<ClientRef> clients, std::shared_ptr<const Event> event) const;
 	void register_handler(ClientHandler* handler);
 	void remove_handler(const ClientHandler* handler);

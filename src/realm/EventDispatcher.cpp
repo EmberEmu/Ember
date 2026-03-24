@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2025 Ember
+ * Copyright (c) 2016 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -74,6 +74,26 @@ void EventDispatcher::broadcast_event(std::vector<ClientRef> clients, std::share
 				} else {
 					LOG_DEBUG_ASYNC(logger_, "Client disconnected, event discarded");
 				}
+			}
+		});
+	}
+}
+
+void EventDispatcher::broadcast_event(const Event& event) const {
+	for(auto& ioc : pool_) {
+		boost::asio::dispatch(*ioc, [event]() {
+			for(auto& handler : handlers_ | std::views::values) {
+				handler->handle_event(&event);
+			}
+		});
+	}
+}
+
+void EventDispatcher::broadcast_event(std::shared_ptr<const Event> event) const {
+	for(auto& ioc : pool_) {
+		boost::asio::dispatch(*ioc, [event]() {
+			for(auto& handler : handlers_ | std::views::values) {
+				handler->handle_event(event.get());
 			}
 		});
 	}
