@@ -23,8 +23,6 @@ struct ConnectionStats;
 class SessionManager final {
 	using ClientPtr = std::unique_ptr<Client, std::function<void(Client*)>>;
 
-	constexpr inline static auto allocator_tag = "session_manager";
-
 	struct Hasher {
 		using is_transparent = void;
 

@@ -28,13 +28,16 @@ using SessionAllocator = spark::io::TLSBlockAllocator<
 using ClientPtr = std::unique_ptr<Client, std::function<void(Client*)>>;
 
 class ClientBuilder {
+	constexpr inline static auto allocator_tag = "client_allocator";
+
+	SessionAllocator allocator_;
 	SessionManager& sessions_;
 	log::Logger& logger_;
-	SessionAllocator allocator_;
 
 public:
 	ClientBuilder(SessionManager& sessions, log::Logger& logger)
-		: sessions_(sessions)
+		: allocator_(allocator_tag)
+		, sessions_(sessions)
 		, logger_(logger) {}
 
 	ClientPtr create(tcp_socket socket, ClientIdent ident) {
