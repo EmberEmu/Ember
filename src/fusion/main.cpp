@@ -214,8 +214,8 @@ int launch(const opts::variables_map& args, log::Logger& logger) try {
 	}
 
 	// start signal handling
-	boost::asio::io_context service;
-	boost::asio::signal_set signals(service, SIGINT, SIGTERM);
+	boost::asio::io_context ioc;
+	boost::asio::signal_set signals(ioc, SIGINT, SIGTERM);
 
 	signals.async_wait([&](auto error, auto signal) {
 		LOG_DEBUG_SYNC(logger, "Received signal {}({})", utility::sig_str(signal), signal);
@@ -223,7 +223,7 @@ int launch(const opts::variables_map& args, log::Logger& logger) try {
 		stop_services();
 	});
 
-	service.run();
+	ioc.run();
 	return EXIT_SUCCESS;
 } catch(const std::exception& e) {
 	LOG_FATAL_SYNC(logger, e.what());
