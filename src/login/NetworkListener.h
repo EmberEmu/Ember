@@ -20,6 +20,7 @@
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/strand.hpp>
 #include <boost/asio/ip/tcp.hpp>
+#include <atomic>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -39,6 +40,7 @@ class NetworkListener final {
 	Metrics& metrics_;
 	IPBanCache& ban_list_;
 	std::size_t peak_connections_;
+	std::atomic_bool stopped_;
 
 	void accept_connection() {
 		LOG_TRACE(logger_) << log_func << LOG_ASYNC;
@@ -89,15 +91,15 @@ public:
 	NetworkListener(boost::asio::io_context& io_context, std::string_view interface, std::uint16_t port,
 	                bool tcp_no_delay, const NetworkSessionBuilder& session_create, IPBanCache& bans,
 	                log::Logger& logger, Metrics& metrics)
-		: acceptor_(io_context, boost::asio::ip::tcp::endpoint(
-		  boost::asio::ip::make_address(interface), port)),
-		  io_context_(io_context),
-		  socket_(boost::asio::make_strand(io_context)),
-		  session_builder_(session_create),
-		  logger_(logger),
-		  metrics_(metrics),
-		  ban_list_(bans),
-		  peak_connections_(0) {
+		: acceptor_(io_context, boost::asio::ip::tcp::endpoint(boost::asio::ip::make_address(interface), port))
+		, io_context_(io_context)
+		, socket_(boost::asio::make_strand(io_context))
+		, session_builder_(session_create)
+		, logger_(logger)
+		, metrics_(metrics)
+		, ban_list_(bans)
+		, peak_connections_(0)
+		, stopped_(false) {
 		acceptor_.set_option(boost::asio::ip::tcp::no_delay(tcp_no_delay));
 		acceptor_.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
 		accept_connection();
@@ -108,9 +110,16 @@ public:
 	}
 
 	void shutdown() {
+		bool expected = false;
+
+		if(!stopped_.compare_exchange_strong(expected, true)) {
+			return;
+		}
+
 		LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 		acceptor_.close();
 		sessions_.stop_all();
+		stopped_ = true;
 	}
 
 	std::size_t connection_count() const {

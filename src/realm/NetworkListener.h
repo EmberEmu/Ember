@@ -16,6 +16,7 @@
 #include <thread/ServicePool.h>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/tcp.hpp>
+#include <atomic>
 #include <string>
 #include <string_view>
 #include <cstddef>
@@ -33,6 +34,7 @@ class NetworkListener final {
 	thread::ServicePool& pool_;
 	std::size_t index_;
 	log::Logger& logger_;
+	std::atomic_bool stopped_;
 
 	void accept_connection();
 	void dispatch_socket();
@@ -46,10 +48,11 @@ public:
 			pool.get_next(),
 			asio::ip::tcp::endpoint(asio::ip::make_address(interface), port)
 		  )
-		 , socket_(pool.get_next())
-		 , pool_(pool)
-		 , index_(0)
-		 , logger_(logger) {
+		, socket_(pool.get_next())
+		, pool_(pool)
+		, index_(0)
+		, logger_(logger)
+		, stopped_(false) {
 		acceptor_.set_option(asio::ip::tcp::no_delay(tcp_no_delay));
 		acceptor_.set_option(asio::ip::tcp::acceptor::reuse_address(true));
 		accept_connection();
