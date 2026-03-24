@@ -61,6 +61,8 @@ set(LIBRARY_HDR
     ServiceContext.h
     ServiceContextImpl.h
     ConfigStore.h
+    ClientBuilder.h
+    Client.h
 )
 
 set(LIBRARY_SRC

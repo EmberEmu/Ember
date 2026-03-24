@@ -16,6 +16,7 @@
 #include "NetworkListener.h"
 #include "RealmService.h"
 #include "RealmQueue.h"
+#include "SessionManager.h"
 #include "WorldRPCClient.h"
 #include <commands/ScopedCommand.h>
 #include <dbcreader/Storage.h>
@@ -31,6 +32,7 @@
 namespace ember::realm {
 
 struct ServiceContext::Impl {
+	SessionManager sessions;
 	std::unique_ptr<utility::CommandExecutor> cmd_exec;
 	std::unique_ptr<thread::ServicePool> service_pool;
 	std::unique_ptr<Realm> realm;

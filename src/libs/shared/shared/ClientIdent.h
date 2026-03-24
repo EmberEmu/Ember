@@ -36,7 +36,7 @@ class ClientIdent final {
 		}
 
 		auto bytes = std::as_writable_bytes(std::span(data_));
-		bytes[service_index] = gsl::narrow<std::byte>(service_index);
+		bytes[service_offset] = gsl::narrow<std::byte>(service_index);
 	}
 
 public:

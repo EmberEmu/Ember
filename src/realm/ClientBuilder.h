@@ -1,0 +1,54 @@
+/*
+ * Copyright (c) 2026 Ember
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
+
+#pragma once
+
+#include "Client.h"
+#include <spark/buffers/allocators/TLSBlockAllocator.h>
+#include <memory>
+
+namespace ember::realm {
+
+#ifndef PREALLOCATED_CLIENTS_PER_THREAD
+	#define PREALLOCATED_CLIENTS_PER_THREAD 32
+#endif
+
+using SessionAllocator = spark::io::TLSBlockAllocator<
+	Client,
+	PREALLOCATED_CLIENTS_PER_THREAD,
+	spark::io::NoRefCounting,
+	spark::io::SafeEntrant
+>;
+
+using ClientPtr = std::unique_ptr<Client, std::function<void(Client*)>>;
+
+class ClientBuilder {
+	constexpr inline static auto allocator_tag = "client_allocator";
+
+	SessionAllocator allocator_;
+	SessionManager& sessions_;
+	log::Logger& logger_;
+
+public:
+	ClientBuilder(SessionManager& sessions, log::Logger& logger)
+		: allocator_(allocator_tag)
+		, sessions_(sessions)
+		, logger_(logger) {}
+
+	ClientPtr create(tcp_socket socket, ClientIdent ident) {
+		auto client = ClientPtr(
+			allocator_.allocate(sessions_, std::move(socket), std::move(ident), logger_), [&](auto ptr) {
+				allocator_.deallocate(ptr);
+			}
+		);
+
+		return client;
+	}
+};
+
+} // realm, ember

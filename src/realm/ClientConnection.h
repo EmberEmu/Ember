@@ -24,6 +24,7 @@
 #include <array>
 #include <atomic>
 #include <condition_variable>
+#include <functional>
 #include <memory>
 #include <mutex>
 #include <optional>
@@ -38,6 +39,11 @@ namespace ember::realm {
 class SessionManager;
 
 class ClientConnection final {
+public:
+	using OnDisconnect = std::function<void()>;
+
+private:
+
 	enum class ReadState {
 		header,
 		body,
@@ -52,7 +58,7 @@ class ClientConnection final {
 	DynamicTLSBuffer* outbound_front_;
 	DynamicTLSBuffer* outbound_back_;
 
-	ClientHandler handler_;
+	ClientHandler* handler_;
 	ConnectionStats stats_;
 	std::optional<PacketCrypto> crypt_;
 	protocol::SizeType msg_size_;
@@ -62,6 +68,7 @@ class ClientConnection final {
 	bool write_in_progress_;
 	unsigned int compression_level_;
 	std::unique_ptr<PacketLogger> packet_logger_;
+	OnDisconnect on_disconnect_;
 
 	std::condition_variable stop_condvar_;
 	std::mutex stop_lock_;
@@ -71,12 +78,6 @@ class ClientConnection final {
 	// socket I/O
 	void read();
 	void write();
-
-	// session management
-	void start();
-	void stop();
-	void close_session_sync();
-	void terminate();
 
 	// message reading & dispatching
 	void process_buffered_data();
@@ -89,7 +90,7 @@ class ClientConnection final {
 	std::size_t minimum_transfer() const;
 
 public:
-	ClientConnection(SessionManager& sessions, tcp_socket socket, ClientIdent uuid, log::Logger& logger)
+	ClientConnection(SessionManager& sessions, tcp_socket socket, log::Logger& logger)
 		: sessions_(sessions)
 		, socket_(std::move(socket))
 		, remote_ep_(socket_.remote_endpoint())
@@ -99,13 +100,17 @@ public:
 		, read_state_(ReadState::header)
 		, stopped_(false)
 		, write_in_progress_(false)
-		, handler_(*this, uuid, socket_.get_executor(), logger)
+		, handler_(nullptr)
 		, compression_level_(0)
 		, outbound_front_(&outbound_buffers_.front())
 		, outbound_back_(&outbound_buffers_.back())
-		, stopping_(false) { 
-		start();
-	}
+		, stopping_(false) {}
+
+	~ClientConnection();
+
+	// session management
+	void start();
+	void stop();
 
 	void set_key(std::span<const std::uint8_t> key);
 	void compression_level(unsigned int level);
@@ -116,8 +121,10 @@ public:
 	void log_packets(bool enable);
 
 	void send(const is_packet auto& packet);
+	void set_handler(ClientHandler* handler);
+	void set_on_disconnect(OnDisconnect on_disconnect);
 
-	static void async_shutdown(std::shared_ptr<ClientConnection> client);
+	//static void async_shutdown(std::shared_ptr<Client> client);
 	void close_session(); // should be made private
 };
 

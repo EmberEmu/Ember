@@ -55,7 +55,7 @@ void ClientConnection::completion_check() {
 }
 
 void ClientConnection::dispatch_message() {
-	handler_.handle_message(inbound_buffer_, msg_size_);
+	handler_->handle_message(inbound_buffer_, msg_size_);
 }
 
 void ClientConnection::process_buffered_data() {
@@ -93,15 +93,15 @@ void ClientConnection::write() {
 
 	socket_.async_send(sequence, create_alloc_handler(allocator_,
 		[this](const boost::system::error_code& ec, const std::size_t size) {
-			stats_.bytes_out += size;
-			++stats_.async_sends;
-
-			outbound_front_->skip(size);
-
 			if(!ec) {
+				stats_.bytes_out += size;
+				++stats_.async_sends;
+
+				outbound_front_->skip(size);
+
 				if(outbound_front_->empty()) {
 					std::swap(outbound_front_, outbound_back_);
-
+	
 					if(outbound_front_->empty()) { // all done!
 						write_in_progress_ = false;
 					} else {
@@ -171,59 +171,34 @@ void ClientConnection::start() {
 	// when using DynamicTLSBuffer, we need to ensure the first write
 	// (triggered by handler_) is invoked from the service thread
 	boost::asio::dispatch(socket_.get_executor(), [&] {
-		handler_.start();
 		read();
 	});
 }
 
 void ClientConnection::stop() {
-	LOG_DEBUG_ASYNC(logger_, "Closing connection to {}", remote_address());
+	if(stopped_) {
+		return;
+	}
 
-	handler_.stop();
+	LOG_DEBUG_ASYNC(logger_, "Closing connection to {}", remote_address());
 	boost::system::error_code ec; // we don't care about any errors
 	socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
 	socket_.close(ec);
 	stopped_ = true;
 }
 
-/* 
- * This function must only be called from the io_context responsible for
- * this object. This function will initiate the following:
- * 1) Remove the connection from the session manager - multiple calls to
- *    this function will have no effect. The 'stopping' check is only
- *    to prevent unnecessary locking & lookups.
- * 2) Ownership of the object will be passed to async_shutdown, which in
- *    turn will stop the handler and shutdown/close the socket. This function
- *    blocks until complete.
- * 3) Ownership of the object will be moved into a lambda and one final post
- *    will be made to the associated io_context. Once this final completion handler
- *    is invoked, the object will be destroyed. This should ensure that the
- *    object outlives any aborted completion handlers.
- */
 void ClientConnection::close_session() {
 	if(stopping_) {
 		return;
 	}
 
 	stopping_ = true;
+	stop();
 
-	boost::asio::post(socket_.get_executor(), [this] {
-		sessions_.stop(this);
-	});
-}
-
-/*
- * This function is used by the destructor to ensure that all current processing
- * has finished before it returns. It uses dispatch rather than post to ensure
- * that if the calling thread happens to be the owner of this connection, that
- * it will be closed immediately, 'in line', rather than blocking indefinitely.
- */
-void ClientConnection::close_session_sync() {
-	boost::asio::dispatch(socket_.get_executor(), [&] {
-		stop();
-
-		std::unique_lock ul(stop_lock_);
-		stop_condvar_.notify_all();
+	boost::asio::post(socket_.get_executor(), [&] {
+		if(on_disconnect_) {
+			on_disconnect_();
+		}
 	});
 }
 
@@ -241,29 +216,6 @@ void ClientConnection::latency(std::size_t latency) {
 
 void ClientConnection::compression_level(unsigned int level) {
 	compression_level_ = level;
-}
-
-void ClientConnection::terminate() {
-	if(!stopped_) {
-		close_session_sync();
-
-		std::unique_lock guard(stop_lock_);
-		stop_condvar_.wait(guard, [&] { return stopped_.load(); });
-	}
-}
-
-/*
- * Closes the socket and then posts a final event that keeps the client alive
- * until all pending handlers are executed with 'operation_aborted'.
- * That's the theory anyway.
- */
-void ClientConnection::async_shutdown(std::shared_ptr<ClientConnection> client) {
-	auto executor = client->socket_.get_executor();
-	client->terminate();
-
-	boost::asio::post(executor, [client = std::move(client)]() {
-		LOG_TRACE_ASYNC(client->logger_, "Handler for {} destroyed", client->remote_address());
-	});
 }
 
 void ClientConnection::log_packets(bool enable) {
@@ -290,6 +242,20 @@ inline std::size_t ClientConnection::minimum_transfer() const {
 	} else {
 		return msg_size_ - inbound_buffer_.size();
 	}
+}
+
+void ClientConnection::set_handler(ClientHandler* handler) {
+	assert(handler);
+	handler_ = handler;
+}
+
+void ClientConnection::set_on_disconnect(OnDisconnect on_disconnect) {
+	on_disconnect_ = std::move(on_disconnect);
+}
+
+ClientConnection::~ClientConnection() {
+	boost::system::error_code ec; // we don't care about any errors
+	socket_.cancel(ec);
 }
 
 } // realm, ember
