@@ -85,6 +85,7 @@ set(BUILD_SHARED_MSG "Builds the services as shared libraries - generated code m
 
 option(BUILD_SHARED ${BUILD_SHARED_MSG} OFF)
 set(CMAKE_POSITION_INDEPENDENT_CODE ${BUILD_SHARED})
+set(PREALLOC_CLIENTS 4)
 
 if (BUILD_SHARED)
 	add_compile_definitions(BUILD_SHARED_SERVICES)

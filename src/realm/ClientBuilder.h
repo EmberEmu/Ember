@@ -15,7 +15,7 @@
 namespace ember::realm {
 
 #ifndef PREALLOCATED_CLIENTS_PER_THREAD
-	#define PREALLOCATED_CLIENTS_PER_THREAD 32
+	#define PREALLOCATED_CLIENTS_PER_THREAD 4
 #endif
 
 using ClientAllocator = spark::io::TLSBlockAllocator<
