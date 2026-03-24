@@ -66,12 +66,12 @@ public:
 	// don't really care about efficiency here, it's for debugging
 	inline std::string to_string() const {
 		std::stringstream stream;
-		stream << std::hex;
+		stream << std::hex << std::setfill('0');
 
 		const auto bytes = std::as_bytes(std::span(data_));
 
 		for(auto byte : bytes) {
-			stream << std::setw(2) << std::setfill('0') << static_cast<int>(byte);
+			stream << std::setw(2) << static_cast<int>(byte);
 		}
 
 		return stream.str();

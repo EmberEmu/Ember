@@ -87,9 +87,10 @@ void plaintext_output(const std::string_view username, const Botan::BigInt& veri
 	std::cout << "Username: " << username << "\n";
 	std::cout << "Verifier: " << verifier.to_hex_string() << "\n";
 	std::cout << "Salt: ";
+	std::cout << std::hex << std::setfill('0');
 
 	for(auto byte : salt) {
-		std::cout << std::hex << std::setfill('0') << std::setw(2) << static_cast<int>(byte);
+		std::cout << std::setw(2) << static_cast<int>(byte);
 	}
 }
 

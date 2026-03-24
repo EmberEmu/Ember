@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2025 Ember
+ * Copyright (c) 2016 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -10,8 +10,8 @@
 
 #include <gsl/narrow>
 #include <iomanip>
-#include <sstream>
 #include <span>
+#include <sstream>
 #include <cstddef>
 #include <cctype>
 
@@ -23,13 +23,12 @@ inline std::string format_packet(const auto* packet, std::size_t size, unsigned 
 
 	std::stringstream buffer;
 	std::size_t offset { 0 };
+	buffer << std::hex << std::setfill('0');
 
 	for(auto i = 0u; i != rows; ++i) {
-		buffer << std::hex << std::setw(4) << std::setfill('0') << i * columns << "   ";
+		buffer << std::setw(4) << i * columns << "   ";
 
 		for(auto j = 0u; j < columns; ++j) {
-			buffer << std::setfill('0');
-
 			if(j + offset < size) {
 				buffer << std::setw(2) << gsl::narrow_cast<unsigned>(data[j + offset]) << " ";
 			} else {
