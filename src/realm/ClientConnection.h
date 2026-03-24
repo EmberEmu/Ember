@@ -52,7 +52,7 @@ class ClientConnection final {
 	DynamicTLSBuffer* outbound_front_;
 	DynamicTLSBuffer* outbound_back_;
 
-	ClientHandler handler_;
+	ClientHandler* handler_;
 	ConnectionStats stats_;
 	std::optional<PacketCrypto> crypt_;
 	protocol::SizeType msg_size_;
@@ -73,7 +73,6 @@ class ClientConnection final {
 	void write();
 
 	// session management
-	void start();
 	void stop();
 	void close_session_sync();
 	void terminate();
@@ -89,7 +88,7 @@ class ClientConnection final {
 	std::size_t minimum_transfer() const;
 
 public:
-	ClientConnection(SessionManager& sessions, tcp_socket socket, ClientIdent uuid, log::Logger& logger)
+	ClientConnection(SessionManager& sessions, tcp_socket socket, log::Logger& logger)
 		: sessions_(sessions)
 		, socket_(std::move(socket))
 		, remote_ep_(socket_.remote_endpoint())
@@ -99,13 +98,14 @@ public:
 		, read_state_(ReadState::header)
 		, stopped_(false)
 		, write_in_progress_(false)
-		, handler_(*this, uuid, socket_.get_executor(), logger)
+		, handler_(nullptr)
 		, compression_level_(0)
 		, outbound_front_(&outbound_buffers_.front())
 		, outbound_back_(&outbound_buffers_.back())
 		, stopping_(false) { 
-		start();
 	}
+
+	void start();
 
 	void set_key(std::span<const std::uint8_t> key);
 	void compression_level(unsigned int level);
@@ -116,8 +116,9 @@ public:
 	void log_packets(bool enable);
 
 	void send(const is_packet auto& packet);
+	void set_handler(ClientHandler* handler);
 
-	static void async_shutdown(std::shared_ptr<ClientConnection> client);
+	//static void async_shutdown(std::shared_ptr<Client> client);
 	void close_session(); // should be made private
 };
 

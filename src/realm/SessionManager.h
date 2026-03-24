@@ -9,6 +9,7 @@
 #pragma once
 
 #include "ClientConnection.h"
+#include "Client.h"
 #include <spark/buffers/allocators/TLSBlockAllocator.h>
 #include <boost/unordered/unordered_flat_set.hpp>
 #include <memory>
@@ -19,31 +20,20 @@ namespace ember::realm {
 
 struct ConnectionStats;
 
-#ifndef PREALLOCATED_SESSIONS_PER_THREAD
-	#define PREALLOCATED_SESSIONS_PER_THREAD 32
-#endif
-
 class SessionManager final {
+	using ClientPtr = std::unique_ptr<Client, std::function<void(Client*)>>;
+
 	constexpr inline static auto allocator_tag = "session_manager";
-
-	using SessionAllocator = spark::io::TLSBlockAllocator<
-		ClientConnection,
-		PREALLOCATED_SESSIONS_PER_THREAD,
-		spark::io::NoRefCounting,
-		spark::io::SafeEntrant
-	>;
-
-	using ClientConnPtr = std::unique_ptr<ClientConnection, std::function<void(ClientConnection*)>>;
 
 	struct Hasher {
 		using is_transparent = void;
 
-		std::size_t operator()(ClientConnection* p) const {
-			return std::hash<ClientConnection*>{}(p);
+		std::size_t operator()(Client* p) const {
+			return std::hash<Client*>{}(p);
 		}
 
-		std::size_t operator()(const ClientConnPtr& p) const {
-			return std::hash<const ClientConnection*>{}(p.get()); 
+		std::size_t operator()(const ClientPtr& p) const {
+			return std::hash<const Client*>{}(p.get()); 
 		}
 	};
 
@@ -56,36 +46,28 @@ class SessionManager final {
 		}
 
 	private:
-		static const ClientConnection* to_ptr(const ClientConnection* p) {
+		static const Client* to_ptr(const Client* p) {
 			return p; 
 		}
 
-		static const ClientConnection* to_ptr(const ClientConnPtr& p) {
+		static const Client* to_ptr(const ClientPtr& p) {
 			return p.get(); 
 		}
 	};
-
-	SessionAllocator allocator_;
-	boost::unordered_flat_set<ClientConnPtr, Hasher, KeyEqual> sessions_;
+	boost::unordered_flat_set<ClientPtr, Hasher, KeyEqual> sessions_;
 	mutable std::mutex sessions_lock_;
 
 public:
-	SessionManager() : allocator_(allocator_tag) {}
+	SessionManager() = default;
 	~SessionManager();
 
-	template<typename... Args>
-	void emplace(Args&&... args) {
-		auto client = ClientConnPtr(
-			allocator_.allocate(std::forward<Args>(args)...), [&](auto ptr) {
-				allocator_.deallocate(ptr);
-			}
-		);
-
+	void emplace(ClientPtr client) {
+		client->start();
 		std::lock_guard guard(sessions_lock_);
 		sessions_.emplace(std::move(client));
 	}
 
-	void stop(ClientConnection* session);
+	void stop(Client* session);
 	void stop_all();
 	std::size_t count() const;
 	ConnectionStats aggregate_stats() const;

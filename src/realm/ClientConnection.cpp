@@ -55,7 +55,7 @@ void ClientConnection::completion_check() {
 }
 
 void ClientConnection::dispatch_message() {
-	handler_.handle_message(inbound_buffer_, msg_size_);
+	handler_->handle_message(inbound_buffer_, msg_size_);
 }
 
 void ClientConnection::process_buffered_data() {
@@ -171,7 +171,6 @@ void ClientConnection::start() {
 	// when using DynamicTLSBuffer, we need to ensure the first write
 	// (triggered by handler_) is invoked from the service thread
 	boost::asio::dispatch(socket_.get_executor(), [&] {
-		handler_.start();
 		read();
 	});
 }
@@ -179,7 +178,7 @@ void ClientConnection::start() {
 void ClientConnection::stop() {
 	LOG_DEBUG_ASYNC(logger_, "Closing connection to {}", remote_address());
 
-	handler_.stop();
+	handler_->stop();
 	boost::system::error_code ec; // we don't care about any errors
 	socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
 	socket_.close(ec);
@@ -208,7 +207,7 @@ void ClientConnection::close_session() {
 	stopping_ = true;
 
 	boost::asio::post(socket_.get_executor(), [this] {
-		sessions_.stop(this);
+		//sessions_.stop(this);
 	});
 }
 
@@ -257,14 +256,14 @@ void ClientConnection::terminate() {
  * until all pending handlers are executed with 'operation_aborted'.
  * That's the theory anyway.
  */
-void ClientConnection::async_shutdown(std::shared_ptr<ClientConnection> client) {
-	auto executor = client->socket_.get_executor();
-	client->terminate();
-
-	boost::asio::post(executor, [client = std::move(client)]() {
-		LOG_TRACE_ASYNC(client->logger_, "Handler for {} destroyed", client->remote_address());
-	});
-}
+//void ClientConnection::async_shutdown(std::shared_ptr<Client> client) {
+//	auto executor = client->connection().socket_.get_executor();
+//	client->connection().terminate();
+//
+//	boost::asio::post(executor, [client = std::move(client)]() {
+//		LOG_TRACE_ASYNC(client->connection().logger_, "Handler for {} destroyed", client->connection().remote_address());
+//	});
+//}
 
 void ClientConnection::log_packets(bool enable) {
 	// temp - make logger non-ptr and add enable flag?
@@ -290,6 +289,11 @@ inline std::size_t ClientConnection::minimum_transfer() const {
 	} else {
 		return msg_size_ - inbound_buffer_.size();
 	}
+}
+
+void ClientConnection::set_handler(ClientHandler* handler) {
+	assert(handler);
+	handler_ = handler;
 }
 
 } // realm, ember

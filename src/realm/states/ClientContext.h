@@ -45,7 +45,7 @@ struct ClientID {
 
 struct ClientContext {
 	ClientHandler& handler;
-	ClientConnection& connection;
+	ClientConnection* connection;
 	log::Logger& logger;
 	BinaryStream* stream;
 	ClientState state;

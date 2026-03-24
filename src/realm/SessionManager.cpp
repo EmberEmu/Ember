@@ -11,7 +11,7 @@
 
 namespace ember::realm {
 
-void SessionManager::stop(ClientConnection* session) {
+void SessionManager::stop(Client* session) {
 	std::lock_guard guard(sessions_lock_);
 
 	auto it = sessions_.find(session);
@@ -21,7 +21,7 @@ void SessionManager::stop(ClientConnection* session) {
 	}
 
 	auto client = sessions_.pull(it);
-	ClientConnection::async_shutdown(std::move(client));
+	//ClientConnection::async_shutdown(std::move(client));
 }
 
 void SessionManager::stop_all() {
@@ -29,7 +29,7 @@ void SessionManager::stop_all() {
 
 	while(!sessions_.empty()) {
 		auto client = sessions_.pull(sessions_.begin());
-		ClientConnection::async_shutdown(std::move(client));
+		//ClientConnection::async_shutdown(std::move(client));
 	}
 }
 
@@ -43,7 +43,7 @@ ConnectionStats SessionManager::aggregate_stats() const {
 	ConnectionStats ag_stats {};
 
 	for(const auto& session : sessions_) {
-		const auto& stats = session->stats();
+		const auto& stats = session->connection().stats();
 		ag_stats.bytes_in += stats.bytes_in;
 		ag_stats.bytes_out += stats.bytes_out;
 		ag_stats.latency += stats.latency;

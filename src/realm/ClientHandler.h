@@ -29,7 +29,7 @@ namespace ember::realm {
 class ClientConnection;
 
 class ClientHandler final {
-	ClientConnection& connection_;
+	ClientConnection* connection_;
 	ClientContext context_;
 	const ClientIdent uuid_;
 	boost::asio::steady_timer timer_;
@@ -41,10 +41,14 @@ class ClientHandler final {
 	void handle_ping(BinaryStream& stream);
 
 public:
-	ClientHandler(ClientConnection& connection, ClientIdent uuid,
-	              executor executor, log::Logger& logger);
-
+	ClientHandler(ClientIdent uuid, executor executor, log::Logger& logger);
 	~ClientHandler();
+
+	void set_connection(ClientConnection* connection) {
+		assert(connection);
+		connection_ = connection;
+		context_.connection = connection;
+	}
 
 	void start();
 	void stop();

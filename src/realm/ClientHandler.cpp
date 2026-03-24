@@ -31,7 +31,7 @@ void ClientHandler::stop() {
 }
 
 void ClientHandler::close() {
-	connection_.close_session();
+	connection_->close_session();
 }
 
 void ClientHandler::handle_message(StaticBuffer& buffer, const protocol::SizeType msg_size) {
@@ -89,8 +89,8 @@ void ClientHandler::handle_ping(BinaryStream& stream) {
 
 	protocol::smsg_pong response;
 	response->sequence_id = packet->sequence_id;
-	connection_.latency(packet->latency);
-	connection_.send(response);
+	connection_->latency(packet->latency);
+	connection_->send(response);
 }
 
 void ClientHandler::start_timer(const std::chrono::milliseconds& time) {
@@ -125,22 +125,21 @@ std::string_view ClientHandler::client_identify() const {
 	}
 
 	if(client_id_.empty()) [[unlikely]] {
-		client_id_ = connection_.remote_address();
+		client_id_ = connection_->remote_address();
 	}
 
 	return client_id_;
 }
 
-ClientHandler::ClientHandler(ClientConnection& connection, ClientIdent uuid,
-							 executor executor, log::Logger& logger)
+ClientHandler::ClientHandler(ClientIdent uuid, executor executor, log::Logger& logger)
 	: context_ {
 		.handler = *this,
-		.connection = connection,
+		.connection = nullptr,
 		.logger = logger,
 		.state = ClientState::cs_authenticating,
 		.prev_state = ClientState::cs_authenticating,
 	  },
-	  connection_(connection),
+	  connection_(nullptr),
 	  logger_(logger),
 	  uuid_(uuid),
 	  timer_(executor) {
