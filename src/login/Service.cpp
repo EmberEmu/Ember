@@ -62,7 +62,8 @@ Service::Service(log::Logger& logger, commands::Registry& registry)
 	: logger(logger)
 	, registry(registry)
 	, start_time(std::chrono::steady_clock::now())
-	, io_context(thread::hardware_concurrency()) {}
+	, io_context(thread::hardware_concurrency())
+	, stopped(false) {}
 
 /*
  * Starts Asio worker threads, blocking until the launch thread exits

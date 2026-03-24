@@ -16,6 +16,7 @@
 #include <boost/asio/io_context.hpp>
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/variables_map.hpp>
+#include <atomic>
 #include <chrono>
 #include <memory>
 
@@ -29,6 +30,7 @@ class EMBER_EXPORT_SERVICE Service final : public IService {
 	std::chrono::steady_clock::time_point start_time;
 	boost::asio::io_context service;
 	ServiceContext context;
+	std::atomic_bool stopped;
 
 	void initialise(const boost::program_options::variables_map& args);
 

@@ -384,7 +384,7 @@ void Service::stop() {
 	LOG_TRACE_SYNC(logger, "{} shutting down...", app_name);
 	auto ctx = context.get();
 
-	boost::asio::post(ctx->service_pool->get(0), [this] {
+	boost::asio::post(ctx->service_pool->get(0), [&] {
 		auto ctx = context.get();
 		ctx->cmd_exec->signal_stop();
 		context.reset();

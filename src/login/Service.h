@@ -33,8 +33,8 @@ class EMBER_EXPORT_SERVICE Service final : public IService {
 	commands::Registry& registry;
 	std::chrono::steady_clock::time_point start_time;
 	boost::asio::io_context io_context;
-	std::atomic_bool stopped;
 	ServiceContext context;
+	std::atomic_bool stopped;
 
 	std::unique_ptr<Metrics> start_metrics(
 		boost::asio::io_context& service,

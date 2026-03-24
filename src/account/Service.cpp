@@ -33,7 +33,8 @@ namespace ember::account {
 Service::Service(log::Logger& logger, commands::Registry& registry)
 	: logger(logger)
 	, registry(registry)
-	, service(BOOST_ASIO_CONCURRENCY_HINT_UNSAFE_IO) {}
+	, service(BOOST_ASIO_CONCURRENCY_HINT_UNSAFE_IO)
+	, stopped(false) {}
 
 int Service::run(const opts::variables_map& args) try {
 	initialise(args);
@@ -95,10 +96,20 @@ void Service::initialise(const opts::variables_map& args) {
 }
 
 void Service::stop() {
+	bool expected = false;
+
+	if(!stopped.compare_exchange_strong(expected, true)) {
+		return;
+	}
+
 	LOG_TRACE_SYNC(logger, "Service termination requested");
 	auto ctx = context.get();
-	ctx->thread_pool->shutdown();
-	ctx->conn_pool->get().close();
+
+	boost::asio::post(service, [&] {
+		auto ctx = context.get();
+		ctx->thread_pool->shutdown();
+		ctx->conn_pool->get().close();
+	});
 }
 
 Service::~Service() {
