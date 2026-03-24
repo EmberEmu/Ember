@@ -80,7 +80,7 @@ void handle_authentication(ClientContext& ctx) {
 		<< auth_ctx.packet->username
 		<< LOG_ASYNC;
 	
-	const auto& config = Locator::config_store()->config();
+	const auto& config = Locator::config_store()->config_tls();
 
 	const bool build_res = std::ranges::any_of(config.allowed_builds, [&](auto& version) {
 		return version.build == auth_ctx.packet->build;
@@ -204,7 +204,7 @@ void prove_session(ClientContext& ctx, const Botan::BigInt& key) {
 	 // todo, allowing for multiple realms to connect to a single world server
 	 // will require an external service to keep track of available slots
 	unsigned int active_players = 0;
-	const auto& config = Locator::config_store()->config();
+	const auto& config = Locator::config_store()->config_tls();
 
 	if(active_players < config.max_slots) {
 		auth_success(ctx);
@@ -310,7 +310,7 @@ void handle_timeout(ClientContext& ctx) {
 
 void enter(ClientContext& ctx) {
 	ctx.state_ctx = Context{};
-	const auto& config = Locator::config_store()->config();
+	const auto& config = Locator::config_store()->config_tls();
 	ctx.handler.start_timer(config.auth_timeout);
 	send_auth_challenge(ctx);
 }

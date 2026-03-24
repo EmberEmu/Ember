@@ -172,7 +172,7 @@ void handle_timeout(ClientContext& ctx) {
 } // unnamed
 
 void enter(ClientContext& ctx) {
-	const auto& config = Locator::config_store()->config();
+	const auto& config = Locator::config_store()->config_tls();
 
 	if(auto timeout = config.char_list_timeout; timeout != 0s) {
 		ctx.handler.start_timer(timeout);

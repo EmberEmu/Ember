@@ -68,13 +68,17 @@ public:
 	 * out of date upon update, unless they later start calling 'update_thread_config'.
 	 * If it doesn't already exist, we have to assume that they won't.
 	 */
-	const Config& config() const {
+	const Config config() const {
 		if(tls_config_) [[likely]] {
 			return *tls_config_;
 		} else {
 			std::lock_guard guard(lock);
 			return base_config_;
 		}
+	}
+
+	const Config& config_tls() const {
+		return *tls_config_;
 	}
 };
 

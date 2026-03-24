@@ -40,8 +40,7 @@ void EventDispatcher::post_event(const ClientRef& client, std::unique_ptr<Event>
  *
  * Callers should move the client UUID vector into this function.
  */
-void EventDispatcher::broadcast_event(std::vector<ClientRef> clients,
-                                      std::shared_ptr<const Event> event) const {
+void EventDispatcher::broadcast_event(std::vector<ClientRef> clients, std::shared_ptr<const Event> event) const {
 	std::ranges::sort(clients, [](auto& lhs, auto& rhs) {
 		return lhs.service() < rhs.service();
 	});
