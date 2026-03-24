@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include "ClientConnection.h"
 #include "Client.h"
 #include <spark/buffers/allocators/TLSBlockAllocator.h>
 #include <boost/unordered/unordered_flat_set.hpp>
@@ -21,8 +20,6 @@ namespace ember::realm {
 struct ConnectionStats;
 
 class SessionManager final {
-	using ClientPtr = std::unique_ptr<Client, std::function<void(Client*)>>;
-
 	struct Hasher {
 		using is_transparent = void;
 

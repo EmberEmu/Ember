@@ -25,8 +25,6 @@ using SessionAllocator = spark::io::TLSBlockAllocator<
 	spark::io::SafeEntrant
 >;
 
-using ClientPtr = std::unique_ptr<Client, std::function<void(Client*)>>;
-
 class ClientBuilder {
 	constexpr inline static auto allocator_tag = "client_allocator";
 
