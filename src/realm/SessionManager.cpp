@@ -29,13 +29,9 @@ void SessionManager::start(ClientPtr client) {
 void SessionManager::stop(Client* session) {
 	std::lock_guard guard(sessions_lock_);
 
-	auto it = sessions_.find(session);
-	
-	if(it == sessions_.end()) {
-		return;
+	if(auto it = sessions_.find(session); it != sessions_.end()) {
+		sessions_.erase(it);
 	}
-
-	auto client = sessions_.pull(it);
 }
 
 void SessionManager::stop_all() {
