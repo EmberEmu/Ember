@@ -52,6 +52,7 @@ class SessionManager final {
 			return p.get(); 
 		}
 	};
+
 	boost::unordered_flat_set<ClientPtr, Hasher, KeyEqual> sessions_;
 	mutable std::mutex sessions_lock_;
 
@@ -60,6 +61,10 @@ public:
 	~SessionManager();
 
 	void emplace(ClientPtr client) {
+		client->on_close([&, ptr = client.get()]() {
+			stop(ptr);
+		});
+
 		client->start();
 		std::lock_guard guard(sessions_lock_);
 		sessions_.emplace(std::move(client));

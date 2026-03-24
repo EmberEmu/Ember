@@ -48,13 +48,12 @@ void NetworkListener::dispatch_socket() {
 
 	if(!ec) {
 		LOG_DEBUG_ASYNC(logger_, "Accepted connection from {}", ep.address().to_string());
-	
-		boost::asio::dispatch(
-			socket_.get_executor(), [&, socket = std::move(socket_), i = index_]() mutable {
-				auto client = builder_.create(std::move(socket), ClientIdent(i));
-				sessions_.emplace(std::move(client));
-			}
-		);
+		auto executor = socket_.get_executor();
+
+		boost::asio::dispatch(executor, [&, socket = std::move(socket_), i = index_]() mutable {
+			auto client = builder_.create(std::move(socket), ClientIdent(i));
+			sessions_.emplace(std::move(client));
+		});
 	} else {
 		LOG_DEBUG_ASYNC(logger_, "Aborted connection, remote peer disconnected");
 	}

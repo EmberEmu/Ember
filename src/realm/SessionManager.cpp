@@ -21,7 +21,6 @@ void SessionManager::stop(Client* session) {
 	}
 
 	auto client = sessions_.pull(it);
-	//ClientConnection::async_shutdown(std::move(client));
 }
 
 void SessionManager::stop_all() {
@@ -29,7 +28,7 @@ void SessionManager::stop_all() {
 
 	while(!sessions_.empty()) {
 		auto client = sessions_.pull(sessions_.begin());
-		//ClientConnection::async_shutdown(std::move(client));
+		client->stop();
 	}
 }
 
