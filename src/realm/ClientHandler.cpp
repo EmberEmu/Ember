@@ -42,15 +42,10 @@ void ClientHandler::handle_message(StaticBuffer& buffer, const protocol::SizeTyp
 
 	CLIENT_TRACE(logger_, context_) << " -> " << protocol::to_string(opcode) << LOG_ASYNC;
 
-	// handle ping & keep-alive as special cases
-	switch(opcode) {
-		case protocol::ClientOpcode::cmsg_ping:
-			handle_ping(stream);
-			return;
-		case protocol::ClientOpcode::cmsg_keep_alive: // no response required
-			return;
-		default:
-			break;
+	// handle ping as a special case
+	if(opcode == protocol::ClientOpcode::cmsg_ping) {
+		handle_ping(stream);
+		return;
 	}
 
 	update_packet[context_.state](context_, opcode);
