@@ -61,7 +61,6 @@ void NetworkListener::dispatch_socket() {
 void NetworkListener::shutdown() {
 	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
 	acceptor_.close();
-	sessions_.stop_all();
 }
 
 std::uint16_t NetworkListener::port() const {

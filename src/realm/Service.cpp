@@ -388,6 +388,7 @@ void Service::stop() {
 
 	boost::asio::post(ctx->service_pool->get(0), [&] {
 		auto ctx = context.get();
+		ctx->sessions.stop_all();
 		ctx->cmd_exec->signal_stop();
 		context.reset();
 		stop_flag.release();
