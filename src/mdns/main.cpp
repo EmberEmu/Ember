@@ -64,8 +64,8 @@ int main(int argc, const char* argv[]) try {
 }
 
 int run(const opts::variables_map& args, log::Logger& logger, commands::Registry& registry) {
-	boost::asio::io_context io_ctx;
-	boost::asio::signal_set signals(io_ctx, SIGINT, SIGTERM);
+	boost::asio::io_context ioc;
+	boost::asio::signal_set signals(ioc, SIGINT, SIGTERM);
 
 	dns::Service service(logger, registry);
 
@@ -80,7 +80,7 @@ int run(const opts::variables_map& args, log::Logger& logger, commands::Registry
 
 	std::jthread worker([&]() {
 		thread::set_name("Signal handler");
-		io_ctx.run();
+		ioc.run();
 	});
 
 	thread::set_name("Service runner");

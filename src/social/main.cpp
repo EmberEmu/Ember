@@ -68,7 +68,7 @@ int main(int argc, const char* argv[]) try {
 }
 
 int launch(const opts::variables_map& args, log::Logger& logger) try {
-	boost::asio::io_context service;
+	boost::asio::io_context ioc;
 
 	// Start metrics service
 	auto metrics = std::make_unique<ember::Metrics>();
@@ -76,7 +76,7 @@ int launch(const opts::variables_map& args, log::Logger& logger) try {
 	if(args["metrics.enabled"].as<bool>()) {
 		LOG_INFO(logger) << "Starting metrics service..." << LOG_SYNC;
 		metrics = std::make_unique<ember::MetricsImpl>(
-			service, args["metrics.statsd_host"].as<std::string>(),
+			ioc, args["metrics.statsd_host"].as<std::string>(),
 			args["metrics.statsd_port"].as<std::uint16_t>()
 		);
 	}
@@ -88,12 +88,12 @@ int launch(const opts::variables_map& args, log::Logger& logger) try {
 		LOG_INFO(logger) << "Starting monitoring service..." << LOG_SYNC;
 
 		monitor = std::make_unique<ember::Monitor>(
-			service, args["monitor.interface"].as<std::string>(),
+			ioc, args["monitor.interface"].as<std::string>(),
 			args["monitor.port"].as<std::uint16_t>()
 		);
 	}
 
-	boost::asio::dispatch(service, [&]() {
+	boost::asio::dispatch(ioc, [&]() {
 		LOG_INFO(logger) << "Social daemon started successfully" << LOG_SYNC;
 	});
 
