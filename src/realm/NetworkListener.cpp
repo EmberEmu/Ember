@@ -7,9 +7,8 @@
  */
 
 #include "NetworkListener.h"
-#include <logger/Logger.h>
 #include "FilterTypes.h"
-#include "ClientConnection.h"
+#include <logger/Logger.h>
 #include <boost/asio/dispatch.hpp>
 #include <functional>
 #include <memory>
@@ -52,7 +51,7 @@ void NetworkListener::dispatch_socket() {
 
 		boost::asio::dispatch(executor, [&, socket = std::move(socket_), i = index_]() mutable {
 			auto client = builder_.create(std::move(socket), ClientIdent(i));
-			sessions_.emplace(std::move(client));
+			sessions_.start(std::move(client));
 		});
 	} else {
 		LOG_DEBUG_ASYNC(logger_, "Aborted connection, remote peer disconnected");

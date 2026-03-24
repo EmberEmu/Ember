@@ -60,16 +60,7 @@ public:
 	SessionManager() = default;
 	~SessionManager();
 
-	void emplace(ClientPtr client) {
-		client->on_close([&, ptr = client.get()]() {
-			stop(ptr);
-		});
-
-		client->start();
-		std::lock_guard guard(sessions_lock_);
-		sessions_.emplace(std::move(client));
-	}
-
+	void start(ClientPtr client);
 	void stop(Client* session);
 	void stop_all();
 	std::size_t count() const;

@@ -11,6 +11,21 @@
 
 namespace ember::realm {
 
+void SessionManager::start(ClientPtr client) {
+	auto ptr = client.get();
+
+	client->on_close([&, ptr]() {
+		stop(ptr);
+	});
+
+	{
+		std::lock_guard guard(sessions_lock_);
+		sessions_.emplace(std::move(client));
+	}
+
+	ptr->start();
+}
+
 void SessionManager::stop(Client* session) {
 	std::lock_guard guard(sessions_lock_);
 

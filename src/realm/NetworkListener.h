@@ -9,10 +9,10 @@
 #pragma once
 
 #include "SessionManager.h"
+#include "ClientBuilder.h"
 #include "SocketType.h"
 #include <logger/LoggerFwd.h>
 #include <shared/ClientIdent.h>
-#include <shared/memory/AsioAllocator.h>
 #include <thread/ServicePool.h>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/tcp.hpp>
@@ -20,7 +20,6 @@
 #include <string_view>
 #include <cstddef>
 
-#include "ClientBuilder.h"
 
 namespace ember::realm {
 
