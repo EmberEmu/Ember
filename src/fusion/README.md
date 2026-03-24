@@ -10,7 +10,9 @@ Configuration via the config file is fairly straightforward and allows the devel
 Various commands are available to control which services are active.
 
 > service start [name]
+
 > service stop [name]
+
 > service restart [name]
 
 Stopping/starting or restarting a service when the services have been built as shared libraries will cause the new binaries to be loaded into Fusion.
