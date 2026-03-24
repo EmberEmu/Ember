@@ -18,7 +18,7 @@ namespace ember::realm {
 	#define PREALLOCATED_CLIENTS_PER_THREAD 32
 #endif
 
-using SessionAllocator = spark::io::TLSBlockAllocator<
+using ClientAllocator = spark::io::TLSBlockAllocator<
 	Client,
 	PREALLOCATED_CLIENTS_PER_THREAD,
 	spark::io::NoRefCounting,
@@ -28,7 +28,7 @@ using SessionAllocator = spark::io::TLSBlockAllocator<
 class ClientBuilder {
 	constexpr inline static auto allocator_tag = "client_allocator";
 
-	SessionAllocator allocator_;
+	ClientAllocator allocator_;
 	log::Logger& logger_;
 
 public:
