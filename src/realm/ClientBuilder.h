@@ -37,13 +37,11 @@ public:
 		, logger_(logger) {}
 
 	ClientPtr create(tcp_socket socket, ClientIdent ident) {
-		auto client = ClientPtr(
+		return ClientPtr(
 			allocator_.allocate(std::move(socket), std::move(ident), logger_), [&](auto ptr) {
 				allocator_.deallocate(ptr);
 			}
 		);
-
-		return client;
 	}
 };
 
