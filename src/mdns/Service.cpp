@@ -36,10 +36,10 @@ int Service::run(const opts::variables_map& args) try {
 	initialise(args);
 	ioc.run();
 
-	LOG_INFO_SYNC(logger, "{} shutting down...", app_name);
+	SLOG_INFO(logger, "{} shutting down...", app_name);
 	return EXIT_SUCCESS;
 } catch(const std::exception& e) {
-	LOG_FATAL_SYNC(logger, e.what());
+	SLOG_FATAL(logger, e.what());
 	return EXIT_FAILURE;
 }
 
@@ -52,23 +52,23 @@ void Service::initialise(const opts::variables_map& args) {
 	const auto port = args["mdns.port"].as<std::uint16_t>();
 
 	// start multicast DNS services
-	LOG_INFO_SYNC(logger, "Starting multicaster...");
+	SLOG_INFO(logger, "Starting multicaster...");
 	auto socket = std::make_unique<dns::MulticastSocket>(ioc, iface, group, port, logger);
 
-	LOG_INFO_SYNC(logger, "Starting DNS server handler...");
+	SLOG_INFO(logger, "Starting DNS server handler...");
 	ctx->server = std::make_unique<Server>(std::move(socket), logger);
 
 	const auto& spark_iface = args["spark.address"].as<std::string>();
 	const auto spark_port = args["spark.port"].as<std::uint16_t>();
 
 	// start RPC services
-	LOG_INFO_SYNC(logger, "Starting RPC services...");
+	SLOG_INFO(logger, "Starting RPC services...");
 	ctx->spark = std::make_unique<spark::Server>(ioc, app_name, spark_iface, spark_port, logger);
 	ctx->nsd_service = std::make_unique<NSDService>(*ctx->spark, logger);
 
 	// All done setting up
 	boost::asio::dispatch(ioc, [&, time]() {
-		LOG_INFO_SYNC(logger, "{} started successfully in {}", app_name,
+		SLOG_INFO(logger, "{} started successfully in {}", app_name,
 			utility::time_elapsed_format(time));
 
 		start_time = std::chrono::steady_clock::now();
@@ -82,7 +82,7 @@ void Service::stop() {
 		return;
 	}
 
-	LOG_TRACE_SYNC(logger, "Service termination requested");
+	SLOG_TRACE(logger, "Service termination requested");
 
 	boost::asio::post(ioc, [&] {
 		auto ctx = context.get();

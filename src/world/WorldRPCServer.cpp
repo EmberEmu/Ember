@@ -20,11 +20,11 @@ WorldRPCServer::WorldRPCServer(spark::Server& spark, log::Logger& logger)
 }
 
 void WorldRPCServer::on_link_up(const spark::Link& link) {
-	LOG_DEBUG_ASYNC(logger_, "Link up: {}", link.peer_banner);
+	LOG_DEBUG(logger_, "Link up: {}", link.peer_banner);
 }
 
 void WorldRPCServer::on_link_down(const spark::Link& link) {
-	LOG_DEBUG_ASYNC(logger_, "Link down: {}", link.peer_banner);
+	LOG_DEBUG(logger_, "Link down: {}", link.peer_banner);
 }
 
 std::optional<StatusT>

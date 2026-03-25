@@ -22,17 +22,17 @@ RealmClient::RealmClient(spark::Server& server, RealmList& realmlist, log::Logge
 }
 
 void RealmClient::on_link_up(const spark::Link& link) {
-	LOG_DEBUG_ASYNC(logger_, "Link up: {}", link.peer_banner);
+	LOG_DEBUG(logger_, "Link up: {}", link.peer_banner);
 	request_realm_status(link);
 }
 
 void RealmClient::on_link_down(const spark::Link& link) {
-	LOG_DEBUG_ASYNC(logger_, "Link closed: {}", link.peer_banner);
+	LOG_DEBUG(logger_, "Link closed: {}", link.peer_banner);
 	mark_realm_offline(link);
 }
 
 void RealmClient::connect_failed(const std::string_view ip, const std::uint16_t port) {
-	LOG_DEBUG_ASYNC(logger_, "Failed to connect to realm on {}:{}", ip, port);
+	LOG_DEBUG(logger_, "Failed to connect to realm on {}:{}", ip, port);
 }
 
 void RealmClient::request_realm_status(const spark::Link& link) {
@@ -54,7 +54,7 @@ void RealmClient::mark_realm_offline(const spark::Link& link) {
 	std::optional<Realm> realm = realmlist_.get_realm(realm_id);
 	assert(realm);
 	realm->flags |= Realm::Flags::offline;
-	LOG_INFO_ASYNC(logger_, "Setting realm {} to offline", realm->name);
+	LOG_INFO(logger_, "Setting realm {} to offline", realm->name);
 	realmlist_.add_realm(std::move(*realm));
 }
 
@@ -77,22 +77,22 @@ void RealmClient::update_realm(const Status& msg) {
 		.region = static_cast<dbc::Cfg_Categories::Region>(msg.region())
 	};
 
-	LOG_INFO_ASYNC(logger_, "Updating status for realm {} ({}, {})", realm.id, realm.name, realm.address);
+	LOG_INFO(logger_, "Updating status for realm {} ({}, {})", realm.id, realm.name, realm.address);
 	realmlist_.add_realm(std::move(realm));
 }
 
 void RealmClient::handle_get_status_response(const spark::Link& link, const Status& msg) {
-	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	LOG_TRACE(logger_, log_func);
 
 	if(!validate_status(msg)) {
-		LOG_WARN_ASYNC(logger_, "Incompatible realm update from {}", link.peer_banner);
+		LOG_WARN(logger_, "Incompatible realm update from {}", link.peer_banner);
 		return;
 	}
 
 	// realm may have gone down unexpectedly and restarted before the prior link has terminated
 	if(auto it = realms_.find(msg.id()); it != realms_.end()) {
 		if(link.peer_banner != it->second) {
-			LOG_WARN_ASYNC(logger_, "Realm associated with {} will now be associated with {}",
+			LOG_WARN(logger_, "Realm associated with {} will now be associated with {}",
 			               it->second, link.peer_banner);
 		}
 	}

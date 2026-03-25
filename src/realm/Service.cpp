@@ -75,11 +75,11 @@ int Service::run(const opts::variables_map& args) try {
 
 	if(!concurrency) {
 		concurrency = thread::hardware_concurrency([&](auto msg) {
-			LOG_ERROR_SYNC(logger, msg);
+			SLOG_ERROR(logger, msg);
 		});
 	}
 
-	LOG_INFO_SYNC(logger, "Starting service pool with {} threads", concurrency);
+	SLOG_INFO(logger, "Starting service pool with {} threads", concurrency);
 	auto ctx = context.get();
 	ctx->service_pool = std::make_unique<thread::ServicePool>(
 		concurrency, BOOST_ASIO_CONCURRENCY_HINT_UNSAFE_IO
@@ -94,10 +94,10 @@ int Service::run(const opts::variables_map& args) try {
 	ctx->service_pool->run();
 	runner.join();
 
-	LOG_INFO_SYNC(logger, "{} stopped", app_name);
+	SLOG_INFO(logger, "{} stopped", app_name);
 	return EXIT_SUCCESS;
 } catch(const std::exception& e) {
-	LOG_FATAL_SYNC(logger, e.what());
+	SLOG_FATAL(logger, e.what());
 	return EXIT_FAILURE;
 }
 
@@ -114,7 +114,7 @@ void Service::initialise(const opts::variables_map& args) try {
 		builds += to_string(client) + " ";
 	}
 
-	LOG_INFO_SYNC(logger, "Allowed client builds: {}", builds);
+	SLOG_INFO(logger, "Allowed client builds: {}", builds);
 
 	auto stun = create_stun_client(args);
 	const auto stun_enabled = args["stun.enabled"].as<bool>();
@@ -127,25 +127,25 @@ void Service::initialise(const opts::variables_map& args) try {
 			stun_log_callback(severity, reason, logger);
 		});
 
-		LOG_INFO_SYNC(logger, "Starting STUN query...");
+		SLOG_INFO(logger, "Starting STUN query...");
 		stun_res = stun.external_address();
 	}
 
-	LOG_INFO_SYNC(logger, "Seeding xorshift RNG...");
+	SLOG_INFO(logger, "Seeding xorshift RNG...");
 	seed_xorshift_rng();
 
-	LOG_INFO_SYNC(logger, "Loading DBC data...");
+	SLOG_INFO(logger, "Loading DBC data...");
 	dbc::DiskLoader loader(args["dbc.path"].as<std::string>(), [&](auto message) {
-		LOG_DEBUG(logger) << message << LOG_SYNC;
+		SLOG_DEBUG(logger, message);
 	});
 
 	ctx->dbcs = std::make_unique<dbc::Storage>(std::move(loader.load(dbcs_required)));
 
-	LOG_INFO_SYNC(logger, "Resolving DBC references...");
+	SLOG_INFO(logger, "Resolving DBC references...");
 	dbc::link(*ctx->dbcs);
 
 	const auto realm_id = args["realm.id"].as<unsigned int>();
-	LOG_INFO_SYNC(logger, "Loading configuration for realm ID {}", realm_id);
+	SLOG_INFO(logger, "Loading configuration for realm ID {}", realm_id);
 
 	if(auto realm = load_realm(args, logger)) {
 		ctx->realm = std::make_unique<Realm>(std::move(*realm));
@@ -160,12 +160,12 @@ void Service::initialise(const opts::variables_map& args) try {
 
 	// Validate category & region
 	const auto& cat_name = category_name(*ctx->realm, ctx->dbcs->cfg_categories);
-	LOG_INFO_SYNC(logger, "Serving as realm for {} ({})", ctx->realm->name, cat_name);
+	SLOG_INFO(logger, "Serving as realm for {} ({})", ctx->realm->name, cat_name);
 
-	LOG_INFO_SYNC(logger, "Starting event dispatcher...");
+	SLOG_INFO(logger, "Starting event dispatcher...");
 	ctx->dispatcher = std::make_unique<EventDispatcher>(*ctx->service_pool, logger);
 
-	LOG_INFO_SYNC(logger, "Starting Spark service...");
+	SLOG_INFO(logger, "Starting Spark service...");
 	const auto& s_address = args["spark.address"].as<std::string>();
 	auto s_port = args["spark.port"].as<std::uint16_t>();
 
@@ -179,7 +179,7 @@ void Service::initialise(const opts::variables_map& args) try {
 
 	// If the port specified in the database differs from the config file, use the config file
 	if(port != ctx->realm->port) {
-		LOG_WARN_SYNC(
+		SLOG_WARN(
 			logger, "Configured port {} differs from database entry port {}, using {}",
 			port, ctx->realm->port, port
 		);
@@ -190,7 +190,7 @@ void Service::initialise(const opts::variables_map& args) try {
 
 	// Retrieve STUN result
 	if(stun_enabled) {
-		LOG_INFO_SYNC(logger, "Waiting on STUN result...");
+		SLOG_INFO(logger, "Waiting on STUN result...");
 
 		const auto result = stun_res.get();
 		log_stun_result(stun, result, port, logger);
@@ -201,7 +201,7 @@ void Service::initialise(const opts::variables_map& args) try {
 		}
 	}
 
-	LOG_INFO_SYNC(logger, "Realm will be advertised on {}", ctx->realm->address);
+	SLOG_INFO(logger, "Realm will be advertised on {}", ctx->realm->address);
 
 	// Start port forwarding
 	auto& service = ctx->service_pool->get(0);
@@ -222,7 +222,7 @@ void Service::initialise(const opts::variables_map& args) try {
 	ctx->config_store = std::make_unique<ConfigStore>(config);
 	update_config(config, true);
 
-	LOG_INFO_SYNC(logger, "Starting RPC services...");
+	SLOG_INFO(logger, "Starting RPC services...");
 	ctx->rpc = std::make_unique<spark::Server>(service, app_name, s_address, s_port, logger);
 	ctx->rpc_realm = std::make_unique<RealmService>(*ctx->rpc, *ctx->realm, logger);
 	ctx->rpc_account= std::make_unique<AccountClient>(*ctx->rpc, logger);
@@ -246,23 +246,23 @@ void Service::initialise(const opts::variables_map& args) try {
 
 	// Misc. information
 	const auto max_socks = utility::max_sockets_desc();
-	LOG_INFO_SYNC(logger, "Max allowed sockets: {}", max_socks);
+	SLOG_INFO(logger, "Max allowed sockets: {}", max_socks);
 
 	// Start network listener
-	LOG_INFO_SYNC(logger, "Starting network service on {}:{}...", interface, port);
+	SLOG_INFO(logger, "Starting network service on {}:{}...", interface, port);
 	ctx->server = std::make_unique<NetworkListener>(
 		*ctx->service_pool, ctx->sessions, interface, port, tcp_no_delay, logger
 	);
 	
 	// Install service command handlers
-	LOG_INFO_SYNC(logger, "Registering command handlers...");
+	SLOG_INFO(logger, "Registering command handlers...");
 	register_commands(service);
 
 	// All done setting up
 	boost::asio::dispatch(service, [&, time, ctx]() {
 		ctx->rpc_realm->set_online();
 
-		LOG_INFO_SYNC(logger, "{} started successfully in {}", app_name,
+		SLOG_INFO(logger, "{} started successfully in {}", app_name,
 			utility::time_elapsed_format(time));
 
 		start_time = std::chrono::steady_clock::now();
@@ -277,7 +277,7 @@ void Service::register_commands(boost::asio::io_context& ioc) {
 
 	ctx->cmd_exec = std::make_unique<utility::CommandExecutor>(
 		ioc, [&](auto reason) {
-			LOG_CONSOLE_ERROR_ASYNC(logger, "Command could not be executed, {}", reason);
+			LOG_CONERR(logger, "Command could not be executed, {}", reason);
 		}
 	);
 
@@ -296,9 +296,9 @@ void Service::register_commands(boost::asio::io_context& ioc) {
 			try {
 				const auto config = generate_config(reload_options(config_file));
 				update_config(config);
-				LOG_CONSOLE_ASYNC(logger, "Configuration file successfully reloaded");
+				LOG_CONSOLE(logger, "Configuration file successfully reloaded");
 			} catch(const std::exception& e) {
-				LOG_CONSOLE_ERROR_ASYNC(logger, "Could not reload configuration, '{}'", e.what());
+				LOG_CONERR(logger, "Could not reload configuration, '{}'", e.what());
 			}
 		})
 	));
@@ -349,11 +349,11 @@ Config Service::generate_config(const opts::variables_map& args) {
  * connections elsewhere in the future, this should be merged back.
  */
 std::optional<Realm> load_realm(const opts::variables_map& args, log::Logger& logger) {
-	LOG_INFO_SYNC(logger, "Initialising database driver...");
+	SLOG_INFO(logger, "Initialising database driver...");
 	const auto& db_config_path = args["database.config_path"].as<std::string>();
 	auto driver(drivers::init_db_driver(db_config_path, "login"));
 
-	LOG_INFO_SYNC(logger, "Initialising database connection pool...");
+	SLOG_INFO(logger, "Initialising database connection pool...");
 
 	connection_pool::PoolImpl<drivers::AutoSelect, connection_pool::CheckinClean, connection_pool::ExponentialGrowth> pool(
 		std::move(driver), 1, 1, 30s
@@ -363,10 +363,10 @@ std::optional<Realm> load_realm(const opts::variables_map& args, log::Logger& lo
 		pool_log_callback(severity, message, logger);
 	});
 
-	LOG_INFO_SYNC(logger, "Initialising DAOs...");
+	SLOG_INFO(logger, "Initialising DAOs...");
 	auto realm_dao = dal::realm_dao(pool);
 
-	LOG_INFO_SYNC(logger, "Retrieving realm information...");
+	SLOG_INFO(logger, "Retrieving realm information...");
 	return realm_dao.get_realm(args["realm.id"].as<unsigned int>());
 }
 
@@ -383,7 +383,7 @@ void Service::stop() {
 		return;
 	}
 
-	LOG_TRACE_SYNC(logger, "{} shutting down...", app_name);
+	SLOG_TRACE(logger, "{} shutting down...", app_name);
 	auto ctx = context.get();
 
 	boost::asio::post(ctx->service_pool->get(0), [&] {
@@ -400,7 +400,7 @@ Service::~Service() {
 }
 
 void print_lib_versions(log::Logger& logger) {
-	LOG_DEBUG(logger)
+	LOG_DEBUG_STREAM(logger)
 		<< "Compiled with library versions: " << "\n"
 		<< " - Boost " << BOOST_VERSION / 100000 << "."
 		<< BOOST_VERSION / 100 % 1000 << "."

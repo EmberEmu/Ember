@@ -56,11 +56,11 @@ int main(int argc, const char* argv[]) try {
 	log::Logger logger;
 	utility::configure_logger(logger, args);
 	log::global_logger(logger);
-	LOG_INFO(logger) << "Logger configured successfully" << LOG_SYNC;
+	SLOG_INFO(logger, "Logger configured successfully");
 
 	print_lib_versions(logger);
 	const auto ret = launch(args, logger);
-	LOG_INFO(logger) << "Social daemon terminated" << LOG_SYNC;
+	SLOG_INFO(logger, "Social daemon terminated");
 	return ret;
 } catch(const std::exception& e) {
 	std::cerr << e.what();
@@ -74,7 +74,8 @@ int launch(const opts::variables_map& args, log::Logger& logger) try {
 	auto metrics = std::make_unique<ember::Metrics>();
 
 	if(args["metrics.enabled"].as<bool>()) {
-		LOG_INFO(logger) << "Starting metrics service..." << LOG_SYNC;
+		SLOG_INFO(logger, "Starting metrics service...");
+
 		metrics = std::make_unique<ember::MetricsImpl>(
 			ioc, args["metrics.statsd_host"].as<std::string>(),
 			args["metrics.statsd_port"].as<std::uint16_t>()
@@ -85,7 +86,7 @@ int launch(const opts::variables_map& args, log::Logger& logger) try {
 	std::unique_ptr<ember::Monitor> monitor;
 
 	if(args["monitor.enabled"].as<bool>()) {
-		LOG_INFO(logger) << "Starting monitoring service..." << LOG_SYNC;
+		SLOG_INFO(logger, "Starting monitoring service...");
 
 		monitor = std::make_unique<ember::Monitor>(
 			ioc, args["monitor.interface"].as<std::string>(),
@@ -94,12 +95,12 @@ int launch(const opts::variables_map& args, log::Logger& logger) try {
 	}
 
 	boost::asio::dispatch(ioc, [&]() {
-		LOG_INFO(logger) << "Social daemon started successfully" << LOG_SYNC;
+		SLOG_INFO(logger, "Social daemon started successfully");
 	});
 
 	return EXIT_SUCCESS;
 } catch(const std::exception& e) {
-	LOG_FATAL_SYNC(logger, e.what());
+	SLOG_FATAL(logger, e.what());
 	return EXIT_FAILURE;
 }
 
@@ -177,7 +178,7 @@ opts::variables_map parse_arguments(const int argc, const char* argv[]) {
 
 
 void print_lib_versions(log::Logger& logger) {
-	LOG_DEBUG(logger)
+	LOG_DEBUG_STREAM(logger)
 		<< "Compiled with library versions: " << "\n"
 		<< " - Boost " << BOOST_VERSION / 100000 << "."
 		<< BOOST_VERSION / 100 % 1000 << "."

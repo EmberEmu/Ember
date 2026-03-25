@@ -21,20 +21,20 @@ AccountClient::AccountClient(spark::Server& spark, log::Logger& logger)
 }
 
 void AccountClient::on_link_up(const spark::Link& link) {
-	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	LOG_TRACE(logger_, log_func);
 	link_ = link;
 }
 
 void AccountClient::on_link_down(const spark::Link& link) {
-	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	LOG_TRACE(logger_, log_func);
 }
 
 void AccountClient::connect_failed(const std::string_view ip, const std::uint16_t port) {
-	LOG_INFO_ASYNC(logger_, "Failed to connect to account service on {}:{}", ip, port);
+	LOG_INFO(logger_, "Failed to connect to account service on {}:{}", ip, port);
 }
 
 void AccountClient::locate_session(const std::uint32_t account_id, LocateCB cb) const {
-	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	LOG_TRACE(logger_, log_func);
 
 	SessionLookupT msg {
 		.account_id = account_id
@@ -46,7 +46,7 @@ void AccountClient::locate_session(const std::uint32_t account_id, LocateCB cb) 
 }
 
 void AccountClient::locate_account_id(const std::string& username, AccountCB cb) const {
-	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	LOG_TRACE(logger_, log_func);
 
 	LookupIDT msg {
 		.account_name = username
@@ -59,8 +59,8 @@ void AccountClient::locate_account_id(const std::string& username, AccountCB cb)
 
 void AccountClient::handle_lookup_response(
 	std::expected<const AccountFetchResponse*, spark::Result> res,
-	const AccountCB& cb) const {
-	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+const AccountCB& cb) const {
+	LOG_TRACE(logger_, log_func);
 
 	if(!res) {
 		cb(Status::rpc_error, {});
@@ -73,7 +73,7 @@ void AccountClient::handle_lookup_response(
 
 void AccountClient::handle_locate_response(std::expected<const SessionResponse*, spark::Result> res,
                                            const LocateCB& cb) const {
-	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	LOG_TRACE(logger_, log_func);
 
 	if(!res) {
 		cb(Status::rpc_error, {});

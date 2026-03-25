@@ -69,7 +69,7 @@ int main(int argc, const char* argv[]) try {
 	};
 
 	const auto ret = launch(args, logger);
-	LOG_INFO_SYNC(logger, "{} terminated", app_name);
+	SLOG_INFO(logger, "{} terminated", app_name);
 	return ret;
 } catch(const std::exception& e) {
 	std::cerr << e.what();
@@ -89,7 +89,7 @@ void service_start(const std::string& service, log::Logger& logger) {
 	auto idx = string_to_idx(service);
 
 	if(idx == ServiceIndex::service_invalid) {
-		LOG_CONSOLE_ERROR_ASYNC(logger, "Unrecognised service name, {}", service);
+		LOG_CONERR(logger, "Unrecognised service name, {}", service);
 		return;
 	}
 
@@ -97,7 +97,7 @@ void service_start(const std::string& service, log::Logger& logger) {
 		auto& [_, runner] = *it;
 
 		if(!runner.is_stopped()) {
-			LOG_CONSOLE_ERROR_ASYNC(logger, "Service ({}) is already running", service);
+			LOG_CONERR(logger, "Service ({}) is already running", service);
 			return;
 		}
 	}
@@ -106,7 +106,7 @@ void service_start(const std::string& service, log::Logger& logger) {
 	const auto params = create_params(&registry);
 	auto runner = create_runner(idx, params);
 
-	LOG_CONSOLE_ASYNC(logger, "Starting {} service...", service);
+	LOG_CONSOLE(logger, "Starting {} service...", service);
 	runner.run();
 	runners.insert_or_assign(service, std::move(runner));
 }
@@ -115,20 +115,20 @@ void service_stop(const std::string& service, log::Logger& logger) {
 	auto it = runners.find(service);
 
 	if(it == runners.end()) {
-		LOG_CONSOLE_ERROR_ASYNC(logger, R"(Service "{}" not found or not running)", service);
+		LOG_CONERR(logger, R"(Service "{}" not found or not running)", service);
 		return;
 	}
 
 	auto& [_, runner] = *it;
 
 	if(runner.is_stopped()) {
-		LOG_CONSOLE_ERROR_ASYNC(logger, "Service is not running", service);
+		LOG_CONERR(logger, "Service is not running", service);
 		return;
 	}
 
-	LOG_CONSOLE_ASYNC(logger, "Waiting for {} service to stop...", service);
+	LOG_CONSOLE(logger, "Waiting for {} service to stop...", service);
 	runner.stop();
-	LOG_CONSOLE_ASYNC(logger, "Service stopped");
+	LOG_CONSOLE(logger, "Service stopped");
 
 	destroy_service(runner.context());
 	runners.erase(it);
@@ -218,7 +218,7 @@ int launch(const opts::variables_map& args, log::Logger& logger) try {
 	boost::asio::signal_set signals(ioc, SIGINT, SIGTERM);
 
 	signals.async_wait([&](auto error, auto signal) {
-		LOG_DEBUG_SYNC(logger, "Received signal {}({})", utility::sig_str(signal), signal);
+		SLOG_DEBUG(logger, "Received signal {}({})", utility::sig_str(signal), signal);
 		signals.clear();
 		stop_services();
 	});
@@ -226,7 +226,7 @@ int launch(const opts::variables_map& args, log::Logger& logger) try {
 	ioc.run();
 	return EXIT_SUCCESS;
 } catch(const std::exception& e) {
-	LOG_FATAL_SYNC(logger, e.what());
+	SLOG_FATAL(logger, e.what());
 	return EXIT_FAILURE;
 }
 

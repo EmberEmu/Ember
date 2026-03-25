@@ -41,13 +41,13 @@ public:
 
 		// bad service index encoded in the UUID
 		if(service == nullptr) {
-			LOG_ERROR_ASYNC(logger_, "Invalid service index, {}", client.service());
+			LOG_ERROR(logger_, "Invalid service index, {}", client.service());
 			return;
 		}
 
 		boost::asio::post(*service, [&, client, work = std::move(work)] {
 			if(!handlers_.contains(client)) {
-				LOG_DEBUG_ASYNC(logger_, "Client disconnected, work discarded");
+				LOG_DEBUG(logger_, "Client disconnected, work discarded");
 				return;
 			}
 
@@ -60,7 +60,7 @@ public:
 
 		// bad service index encoded in the UUID
 		if(service == nullptr) {
-			LOG_ERROR_ASYNC(logger_, "Invalid service index, {}", client.service());
+			LOG_ERROR(logger_, "Invalid service index, {}", client.service());
 			return;
 		}
 
@@ -69,7 +69,7 @@ public:
 				auto& [_, handler] = *it;
 				handler->handle_event(&event);
 			} else {
-				LOG_DEBUG_ASYNC(logger_, "Client disconnected, event discarded");
+				LOG_DEBUG(logger_, "Client disconnected, event discarded");
 			}
 		});
 	}

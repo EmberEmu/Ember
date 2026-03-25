@@ -266,7 +266,7 @@ void handle_join_channel(ClientContext& ctx) {
 	response->name = packet->name;
 	ctx.connection->send(response);
 
-	LOG_DEBUG_ASYNC(ctx.logger, "{}", response->name);
+	LOG_DEBUG(ctx.logger, "{}", response->name);
 }
 
 void handle_tutorial_flag(ClientContext& ctx) {
@@ -284,7 +284,7 @@ void handle_messagechat(ClientContext& ctx) {
 		return;
 	}
 
-	LOG_DEBUG_ASYNC(ctx.logger, "{}: {}", packet->destination, packet->message);
+	LOG_DEBUG(ctx.logger, "{}: {}", packet->destination, packet->message);
 
 	protocol::smsg_messagechat response;
 	response->type = (decltype(response->type))packet->type; // kek

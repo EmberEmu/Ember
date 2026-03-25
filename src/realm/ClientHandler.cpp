@@ -79,7 +79,7 @@ void ClientHandler::skip(BinaryStream& stream) {
 }
 
 void ClientHandler::handle_ping(BinaryStream& stream) {
-	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	LOG_TRACE(logger_, log_func);
 
 	protocol::cmsg_ping packet;
 

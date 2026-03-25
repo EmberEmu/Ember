@@ -20,14 +20,14 @@ RealmService::RealmService(Server& server, Realm realm, log::Logger& logger)
 	  logger_(logger) { }
 
 void RealmService::on_link_up(const Link& link) {
-	LOG_DEBUG_ASYNC(logger_, "Link up: {}", link.peer_banner);
+	LOG_DEBUG(logger_, "Link up: {}", link.peer_banner);
 
 	std::lock_guard guard(mutex);
 	links_.emplace_back(link);
 }
 
 void RealmService::on_link_down(const Link& link) {
-	LOG_DEBUG_ASYNC(logger_, "Link closed: {}", link.peer_banner);
+	LOG_DEBUG(logger_, "Link closed: {}", link.peer_banner);
 
 	std::lock_guard guard(mutex);
 

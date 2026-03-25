@@ -79,7 +79,7 @@ asio::awaitable<std::size_t> Connection::read_until(const std::size_t offset,
 }
 
 void Connection::buffer_resize(const std::uint32_t size) {
-	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	LOG_TRACE(logger_, log_func);
 
 	if(size > MAXIMUM_BUFFER_SIZE) {
 		const auto log_msg = std::format(
@@ -89,7 +89,7 @@ void Connection::buffer_resize(const std::uint32_t size) {
 		throw exception(log_msg);
 	}
 
-	LOG_TRACE_ASYNC(logger_, "Resizing RPC buffer to {}b", size);
+	LOG_TRACE(logger_, "Resizing RPC buffer to {}b", size);
 	buffer_.resize(size);
 }
 
@@ -121,7 +121,7 @@ asio::awaitable<void> Connection::begin_receive(ReceiveHandler handler) try {
 		handler(view);
 	}
 } catch(const std::exception& e) {
-	LOG_WARN(logger_) << e.what() << LOG_ASYNC;
+	LOG_WARN(logger_, e.what());
 	close();
 }
 
@@ -154,12 +154,12 @@ asio::awaitable<void> Connection::send(Message& msg) {
 
 // start full-duplex send/receive
 void Connection::start(ReceiveHandler handler) {
-	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	LOG_TRACE(logger_, log_func);
 	asio::co_spawn(strand_, begin_receive(handler), asio::detached);
 }
 
 void Connection::close() {
-	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	LOG_TRACE(logger_, log_func);
 
 	socket_.close();
 

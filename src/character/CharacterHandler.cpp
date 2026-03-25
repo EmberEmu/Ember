@@ -18,7 +18,7 @@ namespace ember {
 void CharacterHandler::create(std::uint32_t account_id, std::uint32_t realm_id,
                               const rpc::Character::CharacterTemplate& options,
                               ResultCB callback) const {
-	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	LOG_TRACE(logger_, log_func);
 
 	Character character{};
 	character.race = options.race();
@@ -44,7 +44,7 @@ void CharacterHandler::create(std::uint32_t account_id, std::uint32_t realm_id,
 }
 
 void CharacterHandler::restore(std::uint64_t id, ResultCB callback) const {
-	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	LOG_TRACE(logger_, log_func);
 
 	pool_.run([=, this] {
 		do_restore(id, callback);
@@ -53,7 +53,7 @@ void CharacterHandler::restore(std::uint64_t id, ResultCB callback) const {
 
 void CharacterHandler::erase(std::uint32_t account_id, std::uint32_t realm_id,
                              std::uint64_t character_id, ResultCB callback) const {
-	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	LOG_TRACE(logger_, log_func);
 
 	pool_.run([=, this] {
 		do_erase(account_id, realm_id, character_id, callback);
@@ -62,7 +62,7 @@ void CharacterHandler::erase(std::uint32_t account_id, std::uint32_t realm_id,
 
 void CharacterHandler::enumerate(std::uint32_t account_id, std::uint32_t realm_id,
                                  EnumResultCB callback) const {
-	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	LOG_TRACE(logger_, log_func);
 
 	pool_.run([=, this] {
 		do_enumerate(account_id, realm_id, callback);
@@ -71,7 +71,7 @@ void CharacterHandler::enumerate(std::uint32_t account_id, std::uint32_t realm_i
 
 void CharacterHandler::rename(std::uint32_t account_id, std::uint64_t character_id,
                               const utf8_string& name, RenameCB callback) const {
-	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	LOG_TRACE(logger_, log_func);
 
 	pool_.run([=, this] {
 		do_rename(account_id, character_id, name, callback);
@@ -80,7 +80,7 @@ void CharacterHandler::rename(std::uint32_t account_id, std::uint64_t character_
 
 void CharacterHandler::do_create(std::uint32_t account_id, std::uint32_t realm_id,
                                  Character character, const ResultCB& callback) const try {
-	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	LOG_TRACE(logger_, log_func);
 
 	// class, race and visual customisation validation
 	const bool success = validate_options(character, account_id);
@@ -138,7 +138,7 @@ void CharacterHandler::do_create(std::uint32_t account_id, std::uint32_t realm_i
 		auto current = pvp_faction(*dbc_.chr_races[characters.front().race]->faction);
 		auto opposing = pvp_faction(*dbc_.chr_races[character.race]->faction);
 
-		LOG_DEBUG_ASYNC(logger_, "Cannot create {} characters with existing {} characters on a PvP realm",
+		LOG_DEBUG(logger_, "Cannot create {} characters with existing {} characters on a PvP realm",
 		                opposing->internal_name, current->internal_name);
 
 		callback(protocol::Result::char_create_pvp_teams_violation);
@@ -155,7 +155,7 @@ void CharacterHandler::do_create(std::uint32_t account_id, std::uint32_t realm_i
 	});
 
 	if(base_info == dbc_.char_start_base.end()) {
-		LOG_ERROR_ASYNC(logger_, "Unable to find base data for {} {}",
+		LOG_ERROR(logger_, "Unable to find base data for {} {}",
 		                race->name.en_gb, class_->name.en_gb);
 		callback(protocol::Result::char_create_error);
 		return;
@@ -165,7 +165,7 @@ void CharacterHandler::do_create(std::uint32_t account_id, std::uint32_t realm_i
 	const auto zone = base_info->second.zone;
 
 	if(!zone) {
-		LOG_ERROR_ASYNC(logger_, "Unable to find zone data for {} {}",
+		LOG_ERROR(logger_, "Unable to find zone data for {} {}",
 		                race->name.en_gb, class_->name.en_gb);
 		callback(protocol::Result::char_create_error);
 		return;
@@ -184,7 +184,7 @@ void CharacterHandler::do_create(std::uint32_t account_id, std::uint32_t realm_i
 	if(items != dbc_.char_start_outfit.end()) {
 		populate_items(character, items->second);
 	} else { // could be intentional, so we'll keep going
-		LOG_DEBUG_ASYNC(logger_, "No starting item data found for {}, {}",
+		LOG_DEBUG(logger_, "No starting item data found for {}, {}",
 		                race->name.en_gb, class_->name.en_gb);
 	}
 
@@ -196,7 +196,7 @@ void CharacterHandler::do_create(std::uint32_t account_id, std::uint32_t realm_i
 	if(spells != dbc_.char_start_spells.end()) {
 		populate_spells(character, spells->second);
 	} else { // could be intentional, so we'll keep going
-		LOG_DEBUG_ASYNC(logger_, "No starting spell data found for {} {}",
+		LOG_DEBUG(logger_, "No starting spell data found for {} {}",
 		                race->name.en_gb, class_->name.en_gb);
 	}
 
@@ -209,7 +209,7 @@ void CharacterHandler::do_create(std::uint32_t account_id, std::uint32_t realm_i
 	if(skills != dbc_.char_start_skills.end()) {
 		populate_skills(character, skills->second);
 	} else { // could be intentional, so we'll keep going
-		LOG_DEBUG_ASYNC(logger_, "No starting skill data found for {} {}",
+		LOG_DEBUG(logger_, "No starting skill data found for {} {}",
 		                race->name.en_gb, class_->name.en_gb);
 	}
 
@@ -219,7 +219,7 @@ void CharacterHandler::do_create(std::uint32_t account_id, std::uint32_t realm_i
 		subzone = zone->area->parent_area_table->area_name.en_gb.c_str();
 	}
 
-	LOG_DEBUG_ASYNC(logger_, "Creating {} {} at {}{} {}", 
+	LOG_DEBUG(logger_, "Creating {} {} at {}{} {}", 
 	                race->name.en_gb,
 	                class_->name.en_gb,
 	                zone->area->area_name.en_gb,
@@ -229,19 +229,19 @@ void CharacterHandler::do_create(std::uint32_t account_id, std::uint32_t realm_i
 	dao_.create(character);
 	callback(protocol::Result::char_create_success);
 } catch(const dal::exception& e) {
-	LOG_ERROR(logger_) << e.what() << LOG_ASYNC;
+	LOG_ERROR(logger_, e.what());
 	callback(protocol::Result::char_create_error);
 }
 
 void CharacterHandler::do_erase(std::uint32_t account_id, std::uint32_t realm_id,
                                 std::uint64_t character_id, const ResultCB& callback) const try {
-	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	LOG_TRACE(logger_, log_func);
 
 	auto character = dao_.character(character_id);
 	
 	// character must exist, belong to the same account and be on the same realm
 	if(!character || character->account_id != account_id || character->realm_id != realm_id) {
-		LOG_DEBUG_ASYNC(logger_, "Account {} attempted an invalid delete on character ", account_id, character_id);
+		LOG_DEBUG(logger_, "Account {} attempted an invalid delete on character ", account_id, character_id);
 		callback(protocol::Result::char_delete_failed);
 		return;
 	}
@@ -257,29 +257,29 @@ void CharacterHandler::do_erase(std::uint32_t account_id, std::uint32_t realm_id
 		return;
 	}
 
-	LOG_DEBUG_ASYNC(logger_, "Deleting {}, #{}", character->name, character->id);
+	LOG_DEBUG(logger_, "Deleting {}, #{}", character->name, character->id);
 
 	dao_.delete_character(character_id, true);
 	callback(protocol::Result::char_delete_success);
 } catch(const dal::exception& e) {
-	LOG_ERROR(logger_) << e.what() << LOG_ASYNC;
+	LOG_ERROR(logger_, e.what());
 	callback(protocol::Result::char_delete_failed);
 }
 
 void CharacterHandler::do_enumerate(std::uint32_t account_id, std::uint32_t realm_id,
                                     const EnumResultCB& callback) const try {
-	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	LOG_TRACE(logger_, log_func);
 
 	auto characters = dao_.characters(account_id, realm_id);
 	callback(true, std::move(characters));
 } catch(const dal::exception& e) {
-	LOG_ERROR(logger_) << e.what() << LOG_ASYNC;
+	LOG_ERROR(logger_, e.what());
 	callback(false, {});
 }
 
 void CharacterHandler::do_rename(std::uint32_t account_id, std::uint64_t character_id,
                                  const utf8_string& name, const RenameCB& callback) const try {
-	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	LOG_TRACE(logger_, log_func);
 
 	auto character = dao_.character(character_id);
 	
@@ -314,7 +314,7 @@ void CharacterHandler::do_rename(std::uint32_t account_id, std::uint64_t charact
 		return;
 	}
 	
-	LOG_DEBUG_ASYNC(logger_, "Renaming {} => {}, #{}", character->name, name, character->id);
+	LOG_DEBUG(logger_, "Renaming {} => {}, #{}", character->name, name, character->id);
 
 	character->internal_name = character->name;
 	character->flags ^= Character::Flags::rename;
@@ -322,18 +322,18 @@ void CharacterHandler::do_rename(std::uint32_t account_id, std::uint64_t charact
 	dao_.update(*character);
 	callback(protocol::Result::response_success, *character);
 } catch(const dal::exception& e) {
-	LOG_ERROR(logger_) << e.what() << LOG_ASYNC;
+	LOG_ERROR(logger_, e.what());
 	callback(protocol::Result::char_name_failure, std::nullopt);
 }
 
 void CharacterHandler::do_restore(std::uint64_t id, const ResultCB& callback) const try {
-	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	LOG_TRACE(logger_, log_func);
 
 	auto character = dao_.character(id);
 	auto characters = dao_.characters(character->account_id);
 
 	if(characters.size() >= config_.max_chars_slots_account) {
-		LOG_WARN_ASYNC(logger_, "Cannot restore character - would exceed max account slots");
+		LOG_WARN(logger_, "Cannot restore character - would exceed max account slots");
 		callback(protocol::Result::char_create_account_limit);
 		return;
 	}
@@ -343,7 +343,7 @@ void CharacterHandler::do_restore(std::uint64_t id, const ResultCB& callback) co
 	});
 
 	if(realm_chars >= config_.max_chars_slots_server) {
-		LOG_WARN_ASYNC(logger_, "Cannot restore character - would exceed max server slots");
+		LOG_WARN(logger_, "Cannot restore character - would exceed max server slots");
 		callback(protocol::Result::char_create_server_limit);
 		return;
 	}
@@ -357,18 +357,18 @@ void CharacterHandler::do_restore(std::uint64_t id, const ResultCB& callback) co
 		character->internal_name = character->name;
 	}
 
-	LOG_DEBUG_ASYNC(logger_, "Restoring {}, #{}", character->name, character->id);
+	LOG_DEBUG(logger_, "Restoring {}, #{}", character->name, character->id);
 
 	dao_.update(*character);
 	dao_.restore(id);
 	callback(protocol::Result::response_success);
 } catch(const dal::exception& e) {
-	LOG_ERROR(logger_) << e.what() << LOG_ASYNC;
+	LOG_ERROR(logger_, e.what());
 	callback(protocol::Result::response_failure);
 }
 
 bool CharacterHandler::validate_options(const Character& character, std::uint32_t account_id) const {
-	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	LOG_TRACE(logger_, log_func);
 
 	// validate the race/class combination
 	auto found = std::ranges::find_if(dbc_.char_base_info, [&](auto val) {
@@ -376,7 +376,7 @@ bool CharacterHandler::validate_options(const Character& character, std::uint32_
 	});
 
 	if(found == dbc_.char_base_info.end()) {
-		LOG_DEBUG_ASYNC(logger_, "Invalid race/class combination of {} {} from account ID {}",
+		LOG_DEBUG(logger_, "Invalid race/class combination of {} {} from account ID {}",
 		                character.race, character.class_, account_id);
 		return false;
 	}
@@ -434,7 +434,7 @@ bool CharacterHandler::validate_options(const Character& character, std::uint32_
 	}
 
 	if(!facial_feature_match || !skin_match || !face_match || !hair_match) {
-		LOG_DEBUG_ASYNC(logger_, "Invalid visual customisation options, account {} - "
+		LOG_DEBUG(logger_, "Invalid visual customisation options, account {} - "
 		               "Face ID: {}, facial feature ID: {}, hair style ID: {}, hair colour ID: {}",
 			            account_id, character.face, character.facialhair, character.hairstyle, character.haircolour);
 		return false;
@@ -444,7 +444,7 @@ bool CharacterHandler::validate_options(const Character& character, std::uint32_
 }
 
 protocol::Result CharacterHandler::validate_name(const utf8_string& name) const {
-	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	LOG_TRACE(logger_, log_func);
 
 	if(name.empty()) {
 		return protocol::Result::char_name_no_name;
@@ -482,7 +482,7 @@ protocol::Result CharacterHandler::validate_name(const utf8_string& name) const 
 		if(ret >= 0) {
 			return protocol::Result::char_name_reserved;
 		} else if(ret != PCRE_ERROR_NOMATCH) {
-			LOG_ERROR_ASYNC(logger_, "PCRE error encountered: {}", ret);
+			LOG_ERROR(logger_, "PCRE error encountered: {}", ret);
 			return protocol::Result::char_name_failure;
 		}
 	}
@@ -493,7 +493,7 @@ protocol::Result CharacterHandler::validate_name(const utf8_string& name) const 
 		if(ret >= 0) {
 			return protocol::Result::char_name_profane;
 		} else if(ret != PCRE_ERROR_NOMATCH) {
-			LOG_ERROR_ASYNC(logger_, "PCRE error encountered: {}", ret);
+			LOG_ERROR(logger_, "PCRE error encountered: {}", ret);
 			return protocol::Result::char_name_failure;
 		}
 	}
@@ -504,7 +504,7 @@ protocol::Result CharacterHandler::validate_name(const utf8_string& name) const 
 		if(ret >= 0) {
 			return protocol::Result::char_name_reserved;
 		} else if(ret != PCRE_ERROR_NOMATCH) {
-			LOG_ERROR_ASYNC(logger_, "PCRE error encountered: {}", ret);
+			LOG_ERROR(logger_, "PCRE error encountered: {}", ret);
 			return protocol::Result::char_name_failure;
 		}
 	}

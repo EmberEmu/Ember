@@ -21,16 +21,16 @@ AccountService::AccountService(Server& spark, AccountHandler& handler, Sessions&
 	  logger_(logger) {}
 
 void AccountService::on_link_up(const Link& link) {
-	LOG_DEBUG_ASYNC(logger_, "Link up from {}", link.peer_banner);
+	LOG_DEBUG(logger_, "Link up from {}", link.peer_banner);
 }
 
 void AccountService::on_link_down(const Link& link) {
-	LOG_DEBUG_ASYNC(logger_, "Link down from {}", link.peer_banner);
+	LOG_DEBUG(logger_, "Link down from {}", link.peer_banner);
 }
 
 std::optional<SessionResponseT>
 AccountService::handle_session_fetch(const SessionLookup& msg, const Link& link, const Token& token) {
-	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	LOG_TRACE(logger_, log_func);
 
 	SessionResponseT response;
 
@@ -56,7 +56,7 @@ AccountService::handle_session_fetch(const SessionLookup& msg, const Link& link,
 
 std::optional<RegisterResponseT>
 AccountService::handle_register_session(const RegisterSession& msg,	const Link& link, const Token& token) {
-	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	LOG_TRACE(logger_, log_func);
 
 	RegisterResponseT response {
 		.status = Status::ok
@@ -77,7 +77,7 @@ AccountService::handle_register_session(const RegisterSession& msg,	const Link& 
 
 std::optional<AccountFetchResponseT>
 AccountService::handle_account_id_fetch(const LookupID& msg, const Link& link, const Token& token) {
-	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	LOG_TRACE(logger_, log_func);
 	
 	if(!msg.account_name()) {
 		return AccountFetchResponseT {
@@ -110,13 +110,13 @@ AccountService::handle_account_id_fetch(const LookupID& msg, const Link& link, c
 
 std::optional<DisconnectSessionResponseT>
 AccountService::handle_disconnect_by_session(const DisconnectSession& msg, const Link& link, const Token& token) {
-	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	LOG_TRACE(logger_, log_func);
 	return std::nullopt;
 }
 
 std::optional<DisconnectResponseT>
 AccountService::handle_disconnect_by_id(const DisconnectID& msg, const Link& link, const Token& token) {
-	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	LOG_TRACE(logger_, log_func);
 	return std::nullopt; 
 }
 
