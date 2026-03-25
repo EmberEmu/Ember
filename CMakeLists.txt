@@ -83,7 +83,7 @@ endif()
 
 set(BUILD_SHARED_MSG "Builds the services as shared libraries - generated code may be slower but Fusion service reloading is enabled")
 set(CMAKE_POSITION_INDEPENDENT_CODE ${BUILD_SHARED})
-set(PREALLOC_CLIENTS 4) # Preallocate memory for the specified number of clients
+set(PREALLOC_CLIENTS_THREAD 4) # Preallocate memory for the specified number of clients per thread
 
 option(BUILD_SHARED ${BUILD_SHARED_MSG} OFF)
 option(ENABLE_HUGE_PAGES "When running on Linux, enable huge page support (disable if memory constrained)" ON)

@@ -21,8 +21,8 @@ static constexpr auto inbound_size      { 8192  };
 static constexpr auto outbound_size     { 8192  };
 static constexpr auto max_outbound_size { 65536 };
 
-#if defined TARGET_PLAYER_COUNT && defined TARGET_WORKER_COUNT
-static constexpr std::size_t prealloc_nodes {  TARGET_PLAYER_COUNT / TARGET_WORKER_COUNT };
+#if defined PREALLOCATED_CLIENTS_PER_THREAD
+static constexpr std::size_t prealloc_nodes { PREALLOCATED_CLIENTS_PER_THREAD };
 #else
 static constexpr std::size_t prealloc_nodes {  16 };
 #endif
