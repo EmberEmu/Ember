@@ -49,6 +49,14 @@ void NetworkListener::dispatch_socket() {
 		LOG_DEBUG(logger_, "Accepted connection from {}", ep.address().to_string());
 		auto executor = socket_.get_executor();
 
+		/*
+		 * This dispatch ensures that the client is created on the same thread that it will live on,
+		 * allowing the thread local allocators to operate in 'unsafe entrant' mode, meaning they
+		 * can forego ensuring that the calling thread has previously initialised the allocator.
+		 * 
+		 * It's fine to construct the client on another thread as long as safe entrant is specified,
+		 * but it'll come at the cost of an additional check per allocation.
+		 */
 		boost::asio::dispatch(executor, [&, socket = std::move(socket_), i = index_]() mutable {
 			auto client = builder_.create(std::move(socket), ClientIdent(i));
 			sessions_.start(std::move(client));
