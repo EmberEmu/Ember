@@ -87,9 +87,15 @@ set(PREALLOC_CLIENTS 4) # Preallocate memory for the specified number of clients
 
 option(BUILD_SHARED ${BUILD_SHARED_MSG} OFF)
 option(ENABLE_HUGE_PAGES "When running on Linux, enable huge page support (disable if memory constrained)" ON)
+option(ENABLE_PAGE_LOCKING "Allow the allocator to lock pages (disable if memory constrained)" ON)
+
 
 if (ENABLE_HUGE_PAGES)
 	add_compile_definitions(ENABLE_HUGE_PAGES)
+endif()
+
+if (ENABLE_PAGE_LOCKING)
+	add_compile_definitions(ENABLE_PAGE_LOCKING)
 endif()
 
 if (BUILD_SHARED)
