@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <protocol/Concepts.h>
 #include <protocol/StreamResult.h>
 #include <protocol/ResultCodes.h>
 #include <array>
@@ -19,14 +20,14 @@ namespace ember::protocol::server {
 struct SplineMoveSetWalkMode final {
 	std::uint64_t guid;
 
-	StreamResult read_from_stream(auto& stream) try {
+	StreamResult read_from_stream(le_stream auto& stream) try {
 		stream >> guid;
 		return stream? StreamResult::success : StreamResult::failed;
 	} catch(const std::exception&) {
 		return StreamResult::caught_exception;
 	}
 
-	StreamResult write_to_stream(auto& stream) const try {
+	StreamResult write_to_stream(le_stream auto& stream) const try {
 		stream << guid;
 		return stream? StreamResult::success : StreamResult::failed;
 	} catch(const std::exception&) {

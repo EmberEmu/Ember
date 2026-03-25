@@ -96,7 +96,7 @@ public:
 			 * It's all just testing, anyway.
 			 */
 			spark::io::NullBuffer buffer;
-			spark::io::BinaryStream null_stream(buffer);
+			spark::io::BinaryStream null_stream(buffer, spark::io::endian::little);
 			packet_type dummy;
 			dummy.write_to_stream(null_stream);
 			const auto written = null_stream.total_write();

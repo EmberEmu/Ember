@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <protocol/Concepts.h>
 #include <protocol/StreamResult.h>
 #include <protocol/ResultCodes.h>
 #include <stdexcept>
@@ -22,7 +23,7 @@ struct LoginVerifyWorld final {
 		float x, y, z, o;
 	} position;
 
-	StreamResult read_from_stream(auto& stream) try {
+	StreamResult read_from_stream(le_stream auto& stream) try {
 		stream >> map_id;
 		stream >> position;
 		return stream? StreamResult::success : StreamResult::failed;
@@ -30,7 +31,7 @@ struct LoginVerifyWorld final {
 		return StreamResult::caught_exception;
 	}
 
-	StreamResult write_to_stream(auto& stream) const try {
+	StreamResult write_to_stream(le_stream auto& stream) const try {
 		stream << map_id;
 		stream << position;
 		return stream? StreamResult::success : StreamResult::failed;

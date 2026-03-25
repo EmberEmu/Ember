@@ -26,11 +26,11 @@ struct Packet final {
 
 	Payload payload;
 
-	StreamResult read_payload_from_stream(auto& stream) {
+	StreamResult read_payload_from_stream(le_stream auto& stream) {
 		return payload.read_from_stream(stream);
 	}
 
-	StreamResult write_to_stream(auto& stream) const {
+	StreamResult write_to_stream(le_stream auto& stream) const {
 		stream << SizeType{} << OpcodeType{};
 		return payload.write_to_stream(stream);
 	}

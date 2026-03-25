@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <protocol/Concepts.h>
 #include <protocol/StreamResult.h>
 #include <protocol/ResultCodes.h>
 #include <array>
@@ -24,7 +25,7 @@ struct NameQueryResponse final {
 	std::uint32_t gender;
 	std::uint32_t _class;
 
-	StreamResult read_from_stream(auto& stream) try {
+	StreamResult read_from_stream(le_stream auto& stream) try {
 		stream >> guid;
 		stream >> spark::io::null_terminated(name);
 		stream >> spark::io::null_terminated(realm);
@@ -36,7 +37,7 @@ struct NameQueryResponse final {
 		return StreamResult::caught_exception;
 	}
 
-	StreamResult write_to_stream(auto& stream) const try {
+	StreamResult write_to_stream(le_stream auto& stream) const try {
 		stream << guid;
 		stream << spark::io::null_terminated(name);
 		stream << spark::io::null_terminated(realm);

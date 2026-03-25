@@ -28,6 +28,9 @@ set(CLIENT_MESSAGES
     include/protocol/client/JoinChannel.h
     include/protocol/client/GenericMove.h
     include/protocol/client/MessageChat.h
+    include/protocol/client/TutorialFlag.h
+    include/protocol/client/RequestRaidInfo.h
+    include/protocol/client/GMTicketGetTicket.h
 )
 
 set(SERVER_MESSAGES
@@ -61,6 +64,8 @@ set(SERVER_MESSAGES
     include/protocol/server/GenericMove.h
     include/protocol/server/MessageChat.h
     include/protocol/server/TriggerCinematic.h
+    include/protocol/server/GMTicketGetTicket.h
+    include/protocol/server/ChannelNotify.h
 )
 
 set(CORE_HEADERS

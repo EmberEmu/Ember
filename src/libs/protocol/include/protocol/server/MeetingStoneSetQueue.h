@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <protocol/Concepts.h>
 #include <protocol/StreamResult.h>
 #include <protocol/ResultCodes.h>
 #include <stdexcept>
@@ -19,7 +20,7 @@ struct MeetingStoneSetQueue final {
 	std::uint32_t area;
 	std::uint8_t status;
 
-	StreamResult read_from_stream(auto& stream) try {
+	StreamResult read_from_stream(le_stream auto& stream) try {
 		stream >> area;
 		stream >> status;
 		return StreamResult::success;
@@ -27,7 +28,7 @@ struct MeetingStoneSetQueue final {
 		return StreamResult::caught_exception;
 	}
 
-	StreamResult write_to_stream(auto& stream) const try {
+	StreamResult write_to_stream(le_stream auto& stream) const try {
 		stream << area;
 		stream << status;
 		return StreamResult::success;

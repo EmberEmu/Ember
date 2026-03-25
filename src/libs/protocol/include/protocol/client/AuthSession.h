@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <protocol/Concepts.h>
 #include <protocol/StreamResult.h>
 #include <spark/buffers/BinaryStream.h>
 #include <spark/buffers/BufferAdaptor.h>
@@ -42,7 +43,7 @@ struct AuthSession final {
 	utf8_string username;
 	boost::container::small_vector<AddonData, 64> addons;
 
-	StreamResult read_from_stream(auto& stream) try {
+	StreamResult read_from_stream(le_stream auto& stream) try {
 		const auto initial_stream_size = stream.size();
 
 		stream >> build;
@@ -101,7 +102,7 @@ struct AuthSession final {
 		return StreamResult::caught_exception;
 	}
 
-	StreamResult write_to_stream(auto& stream) const try {
+	StreamResult write_to_stream(le_stream auto& stream) const try {
 		stream << build;
 		stream << server_id;
 		stream << spark::io::null_terminated(username);

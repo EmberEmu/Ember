@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <protocol/Concepts.h>
 #include <protocol/StreamResult.h>
 #include <spark/buffers/Shared.h>
 #include <spark/buffers/StringAdaptors.h>
@@ -21,7 +22,7 @@ namespace ember::protocol::server {
 struct CharacterEnum final {
 	std::vector<Character> characters;
 
-	StreamResult read_from_stream(auto& stream) try {
+	StreamResult read_from_stream(le_stream auto& stream) try {
 		std::uint8_t char_count;
 		stream >> char_count;
 
@@ -60,7 +61,7 @@ struct CharacterEnum final {
 		return StreamResult::caught_exception;
 	}
 
-	StreamResult write_to_stream(auto& stream) const try {
+	StreamResult write_to_stream(le_stream auto& stream) const try {
 		stream << std::uint8_t(characters.size());
 
 		for(auto& c : characters) {

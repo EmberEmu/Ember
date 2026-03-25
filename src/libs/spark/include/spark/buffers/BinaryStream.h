@@ -57,7 +57,8 @@ public:
 	using offset_type        = typename buf_type::offset_type;
 	using value_type         = typename buf_type::value_type;
 	using contiguous_type    = typename buf_type::contiguous;
-	
+	using endian_type        = typename endianness;
+
 	static constexpr endianness byte_order{};
 
 private:
