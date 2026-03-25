@@ -56,11 +56,9 @@ struct ValidateDealloc final : NoValidateDealloc {};
  * implementing the functionality there is messier (and slower).
  */
 template<typename _ty, 
-	std::size_t _elements,
 	std::derived_from<NoPageLock> PageLockPolicy = NoPageLock,
 	std::derived_from<NoValidateDealloc> ValidatePolicy = NoValidateDealloc
 >
-requires (_elements > 0)
 class BlockAllocator {
 	using tid_type = std::conditional_t<
 		std::is_same_v<ValidatePolicy, ValidateDealloc>, std::thread::id, std::monostate
@@ -82,30 +80,27 @@ class BlockAllocator {
 		} meta;
 	};
 
-	static constexpr auto block_size = sizeof(Block);
-
-	using StorageType = std::array<Block, _elements>;
-
 	Block* head_ = nullptr;
 	[[no_unique_address]] tid_type thread_id_;
-	StorageType* storage_ = nullptr;
-	const char* tag_;
+	Block* storage_ = nullptr;
+	const char* tag_ = nullptr;
+	std::size_t elements_ = 0;
 
 	void page_lock_conditional() {
 		if constexpr(std::is_same_v<PageLockPolicy, PageLock>) {
-			utility::page_lock(storage_->data(), storage_->size());
+			utility::page_lock(storage_, sizeof(Block) * elements_);
 		}
 	}
 
 	void page_unlock_conditional() {
 		if constexpr(std::is_same_v<PageLockPolicy, PageLock>) {
-			utility::page_unlock(storage_->data(), storage_->size());
+			utility::page_unlock(storage_, sizeof(Block) * elements_);
 		}
 	}
 
 	void initialise_free_list() {
-		for(auto& element : *storage_) {
-			push(&element);
+		for(std::size_t i = 0; i < elements_; ++i) {
+			push(&storage_[i]);
 		}
 	}
 
@@ -125,16 +120,21 @@ class BlockAllocator {
 		return block;
 	}
 
-	void allocate_storage() {
+	void allocate_storage(const std::size_t elements) {
+		constexpr auto block_size = sizeof(Block);
+		const auto storage_size = block_size * elements;
+
 #if (defined __linux__ || defined __unix__) && defined ENABLE_HUGE_PAGES
 		constexpr std::size_t align_to = HUGE_PAGE_MINIMUM;
-		constexpr auto rem = sizeof(StorageType) % align_to;
-		constexpr auto alloc_size = rem == 0? sizeof(StorageType) : sizeof(StorageType) + (align_to - rem);
+		const auto rem = storage_size % align_to;
+		const auto alloc_size = rem == 0? storage_size : storage_size + (align_to - rem);
 
-		storage_ = static_cast<StorageType*>(std::aligned_alloc(alloc_size, HUGE_PAGE_MINIMUM));
+		storage_ = static_cast<Block*>(std::aligned_alloc(alloc_size, HUGE_PAGE_MINIMUM));
 		madvise(storage_->data(), alloc_size, MADV_HUGEPAGE);
+		elements_ = alloc_size / block_size;
 #else
-		storage_ = static_cast<StorageType*>(std::malloc(sizeof(StorageType)));
+		storage_ = static_cast<Block*>(std::malloc(storage_size));
+		elements_ = elements;
 #endif
 	}
 
@@ -151,17 +151,17 @@ public:
 	std::size_t total_deallocs = 0;
 #endif
 
-	BlockAllocator(const char* tag = nullptr) requires std::same_as<ValidatePolicy, ValidateDealloc>
+	BlockAllocator(std::size_t elements, const char* tag = nullptr) requires std::same_as<ValidatePolicy, ValidateDealloc>
 		: tag_(tag)
 		, thread_id_(std::this_thread::get_id()) {
-		allocate_storage();
+		allocate_storage(elements);
 		page_lock_conditional();
 		initialise_free_list();
 	}
 
-	BlockAllocator(const char* tag = nullptr)
+	BlockAllocator(std::size_t elements, const char* tag = nullptr)
 		: tag_(tag) {
-		allocate_storage();
+		allocate_storage(elements);
 		page_lock_conditional();
 		initialise_free_list();
 	}
