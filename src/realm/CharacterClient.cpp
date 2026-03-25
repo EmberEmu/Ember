@@ -23,20 +23,20 @@ CharacterClient::CharacterClient(spark::Server& server, const ConfigStore& confi
 }
 
 void CharacterClient::on_link_up(const spark::Link& link) {
-	LOG_DEBUG_ASYNC(logger_, "Link up: {}", link.peer_banner);
+	LOG_DEBUG(logger_, "Link up: {}", link.peer_banner);
 	link_ = link;
 }
 
 void CharacterClient::on_link_down(const spark::Link& link) {
-	LOG_DEBUG_ASYNC(logger_, "Link down: {}", link.peer_banner);
+	LOG_DEBUG(logger_, "Link down: {}", link.peer_banner);
 }
 
 void CharacterClient::connect_failed(const std::string_view ip, const std::uint16_t port) {
-	LOG_INFO_ASYNC(logger_, "Failed to connect to character service on {}:{}", ip, port);
+	LOG_INFO(logger_, "Failed to connect to character service on {}:{}", ip, port);
 }
 
 void CharacterClient::retrieve_characters(const std::uint32_t account_id, RetrieveCB cb) const {
-	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	LOG_TRACE(logger_, log_func);
 
 	const auto& config = config_store_.config();
 
@@ -53,7 +53,7 @@ void CharacterClient::retrieve_characters(const std::uint32_t account_id, Retrie
 void CharacterClient::create_character(const std::uint32_t account_id,
 									   const CharacterTemplateT& character,
 									   ResponseCB cb) const {
-	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	LOG_TRACE(logger_, log_func);
 
 	const auto& config = config_store_.config();
 
@@ -70,7 +70,7 @@ void CharacterClient::create_character(const std::uint32_t account_id,
 void CharacterClient::delete_character(std::uint32_t account_id,
 									   std::uint64_t id,
 									   ResponseCB cb) const {
-	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	LOG_TRACE(logger_, log_func);
 
 	const auto& config = config_store_.config();
 
@@ -89,7 +89,7 @@ void CharacterClient::rename_character(std::uint32_t account_id,
 									   std::uint64_t character_id,
 									   const utf8_string& name,
 									   RenameCB cb) const {
-	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	LOG_TRACE(logger_, log_func);
 	const auto& config = config_store_.config();
 
 	RenameT msg {
@@ -107,7 +107,7 @@ void CharacterClient::rename_character(std::uint32_t account_id,
 void CharacterClient::handle_create_reply(const spark::Link& link,
                                           std::expected<const CreateResponse*, spark::Result> res,
                                           ResponseCB cb) const {
-	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	LOG_TRACE(logger_, log_func);
 
 	if(!res) {
 		cb(protocol::Result::char_create_error);
@@ -121,7 +121,7 @@ void CharacterClient::handle_create_reply(const spark::Link& link,
 void CharacterClient::handle_rename_reply(const spark::Link& link,
                                           std::expected<const RenameResponse*, spark::Result> res,
                                           RenameCB cb) const {
-	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	LOG_TRACE(logger_, log_func);
 
 	if(!res) {
 		cb(protocol::Result::char_name_failure, 0, "");
@@ -141,7 +141,7 @@ void CharacterClient::handle_rename_reply(const spark::Link& link,
 void CharacterClient::handle_retrieve_reply(const spark::Link& link,
                                             std::expected<const RetrieveResponse*, spark::Result> res,
                                             RetrieveCB cb) const {
-	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	LOG_TRACE(logger_, log_func);
 
 	if(!res) {
 		cb(Status::unknown_error, {});
@@ -196,7 +196,7 @@ void CharacterClient::handle_retrieve_reply(const spark::Link& link,
 void CharacterClient::handle_delete_reply(const spark::Link& link,
                                           std::expected<const DeleteResponse*, spark::Result> res,
                                           ResponseCB cb) const {
-	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	LOG_TRACE(logger_, log_func);
 
 	if(!res) {
 		cb(protocol::Result::char_delete_failed);
@@ -204,7 +204,7 @@ void CharacterClient::handle_delete_reply(const spark::Link& link,
 	}
 
 	const auto msg = *res;
-	LOG_TRACE_ASYNC(logger_, "Result: {}", msg->result());
+	LOG_TRACE(logger_, "Result: {}", msg->result());
 	cb(protocol::Result(msg->result()));
 }
 

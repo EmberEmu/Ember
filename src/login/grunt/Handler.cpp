@@ -39,10 +39,11 @@ void Handler::dump_bad_packet(const spark::io::buffer_underrun& e,
 
 	auto output = utility::format_packet(contig_buff.data(), contig_buff.size());
 
-	LOG_ERROR(logger_) << "Buffer stream underrun! \nRead request: "
-	                   << e.read_size << " bytes \nBuffer size: " << e.buff_size
-	                   << " bytes \nError triggered by first "
-	                   << valid_bytes << " bytes \n" << output << LOG_ASYNC;
+	LOG_ERROR_STREAM(logger_)
+		<< "Buffer stream underrun! \nRead request: "
+	    << e.read_size << " bytes \nBuffer size: " << e.buff_size
+	    << " bytes \nError triggered by first "
+	    << valid_bytes << " bytes \n" << output << LOG_ASYNC;
 }
 
 void Handler::handle_new_packet(spark::io::pmr::Buffer& buffer) {

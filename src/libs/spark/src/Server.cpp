@@ -44,7 +44,7 @@ Server::Server(boost::asio::io_context& context, std::string_view name,
 }
 
 asio::awaitable<void> Server::listen() {
-	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	LOG_TRACE(logger_, log_func);
 
 	while(acceptor_.is_open()) {
 		co_await accept_connection();
@@ -52,7 +52,7 @@ asio::awaitable<void> Server::listen() {
 }
 
 asio::awaitable<void> Server::accept_connection() {
-	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	LOG_TRACE(logger_, log_func);
 
 	asio::ip::tcp::socket socket(ctx_);
 	auto [ec] = co_await acceptor_.async_accept(socket, boost::asio::as_tuple);
@@ -64,16 +64,16 @@ asio::awaitable<void> Server::accept_connection() {
 	const auto ep = socket.remote_endpoint(ec);
 
 	if(ec) {
-		LOG_DEBUG_ASYNC(logger_, "[spark] Unable to obtain endpoint, remote peer disconnected");
+		LOG_DEBUG(logger_, "[spark] Unable to obtain endpoint, remote peer disconnected");
 		co_return;
 	}
 
-	LOG_DEBUG_ASYNC(logger_, "[spark] Accepted connection from {}:{}", ep.address().to_string(), ep.port());
+	LOG_DEBUG(logger_, "[spark] Accepted connection from {}:{}", ep.address().to_string(), ep.port());
 	co_await accept(std::move(socket));
 }
 
 asio::awaitable<void> Server::accept(boost::asio::ip::tcp::socket socket) try {
-	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	LOG_TRACE(logger_, log_func);
 
 	auto ep = socket.remote_endpoint();
 	const auto key = std::format("{}:{}", ep.address().to_string(), std::to_string(ep.port()));
@@ -85,7 +85,7 @@ asio::awaitable<void> Server::accept(boost::asio::ip::tcp::socket socket) try {
 	auto banner = co_await receive_banner(connection);
 	co_await send_banner(connection, name_);
 
-	LOG_INFO_ASYNC(logger_, "[spark] Connected to {}", banner);
+	LOG_INFO(logger_, "[spark] Connected to {}", banner);
 
 	auto peer = std::make_shared<RemotePeer>(
 		ctx_, std::move(connection), name_, banner, handlers_, logger_
@@ -94,25 +94,25 @@ asio::awaitable<void> Server::accept(boost::asio::ip::tcp::socket socket) try {
 	peer->start();
 	peers_.add(key, std::move(peer));
 } catch(const std::exception& e) {
-	LOG_WARN_ASYNC(logger_, e.what());
+	LOG_WARN(logger_, e.what());
 }
 
 void Server::register_handler(gsl::not_null<Handler*> handler) {
 	handlers_.register_service(handler);
 
-	LOG_TRACE_ASYNC(logger_, "[spark] Registered handler for {}", handler->type());
+	LOG_TRACE(logger_, "[spark] Registered handler for {}", handler->type());
 }
 
 void Server::deregister_handler(gsl::not_null<Handler*> handler) {
 	handlers_.deregister_service(handler);
 	peers_.notify_remove_handler(handler);
 
-	LOG_TRACE_ASYNC(logger_, "[spark] Removed handler for {}", handler->type());
+	LOG_TRACE(logger_, "[spark] Removed handler for {}", handler->type());
 }
 
 asio::awaitable<std::shared_ptr<RemotePeer>>
 Server::connect(const std::string_view host, const std::uint16_t port) try {
-	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	LOG_TRACE(logger_, log_func);
 
 	auto results = co_await resolver_.async_resolve(host, std::to_string(port));
 
@@ -128,7 +128,7 @@ Server::connect(const std::string_view host, const std::uint16_t port) try {
 	co_await send_banner(connection, name_);
 	auto banner = co_await receive_banner(connection);
 
-	LOG_INFO_ASYNC(logger_, "[spark] Connected to {}", banner);
+	LOG_INFO(logger_, "[spark] Connected to {}", banner);
 
 	auto peer = std::make_shared<RemotePeer>(
 		ctx_, std::move(connection), name_, banner, handlers_, logger_
@@ -136,13 +136,13 @@ Server::connect(const std::string_view host, const std::uint16_t port) try {
 
 	co_return peer;
 } catch(const std::exception& e) {
-	LOG_DEBUG_ASYNC(logger_, "[spark] Could not connect to {}:{} ({})", host, port, e.what());
+	LOG_DEBUG(logger_, "[spark] Could not connect to {}:{} ({})", host, port, e.what());
 	co_return nullptr;
 }
 
 asio::awaitable<void> Server::try_open(std::string host, std::uint16_t port,
                                      std::string service, gsl::not_null<Handler*> handler) {
-	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	LOG_TRACE(logger_, log_func);
 
 	const auto key = std::format("{}:{}", host, port);
 
@@ -172,7 +172,7 @@ void Server::connect(const std::string_view host, const std::uint16_t port,
 
 void Server::connect(std::string host, const std::uint16_t port,
                      std::string service, gsl::not_null<Handler*> handler) {
-	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	LOG_TRACE(logger_, log_func);
 
 	asio::co_spawn(ctx_, try_open(
 		std::move(host), port, std::move(service), handler), asio::detached
@@ -180,7 +180,7 @@ void Server::connect(std::string host, const std::uint16_t port,
 }
 
 asio::awaitable<void> Server::send_banner(Connection& conn, const std::string& banner) {
-	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	LOG_TRACE(logger_, log_func);
 
 	core::HelloT hello {
 		.description = banner
@@ -194,7 +194,7 @@ asio::awaitable<void> Server::send_banner(Connection& conn, const std::string& b
 
 
 asio::awaitable<std::string> Server::receive_banner(Connection& conn) {
-	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	LOG_TRACE(logger_, log_func);
 
 	auto msg = co_await conn.receive_msg();
 	spark::io::BufferAdaptor adaptor(msg);
@@ -223,7 +223,7 @@ asio::awaitable<std::string> Server::receive_banner(Connection& conn) {
 
 // todo, need to link down to all channels, error code
 void Server::close_peer(const std::string& key) {
-	//LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	//LOG_TRACE_ASYNC(logger_, log_func);
 	//peers_.remove(key);
 
 	//LOG_DEBUG_FILTER(logger_, LF_SPARK)
@@ -235,7 +235,7 @@ void Server::shutdown() {
 		return;
 	}
 
-	LOG_DEBUG_ASYNC(logger_, "[spark] Service shutting down...");
+	LOG_DEBUG(logger_, "[spark] Service shutting down...");
 
 	acceptor_.close();
 	stopped_ = true;

@@ -54,16 +54,16 @@ int main(int argc, const char* argv[]) try {
 	log::Logger logger;
 	utility::configure_logger(logger, args);
 	log::global_logger(logger);
-	LOG_INFO_SYNC(logger, "Logger configured successfully");
+	SLOG_INFO(logger, "Logger configured successfully");
 
-	LOG_DEBUG_SYNC(logger, "Registering command handlers...");
+	SLOG_DEBUG(logger, "Registering command handlers...");
 	const auto suggestions = args["console_log.suggestions"].as<bool>();
 	commands::Registry registry;
 	utility::register_command_handlers(registry, logger, suggestions);
 	utility::register_shared_commands(registry, logger);
 
 	const auto ret = run(args, logger, registry);
-	LOG_INFO_SYNC(logger, "{} terminated (returned '{}')", login::app_name, ret);
+	SLOG_INFO(logger, "{} terminated (returned '{}')", login::app_name, ret);
 	return ret;
 } catch(const std::exception& e) {
 	std::cerr << e.what();
@@ -80,7 +80,7 @@ int run(const opts::variables_map& args, log::Logger& logger, commands::Registry
 			return;
 		}
 
-		LOG_DEBUG_SYNC(logger, "Received signal {}({})", utility::sig_str(signal), signal);
+		SLOG_DEBUG(logger, "Received signal {}({})", utility::sig_str(signal), signal);
 		signals.clear();
 		service.stop();
 	});
@@ -96,34 +96,34 @@ int run(const opts::variables_map& args, log::Logger& logger, commands::Registry
 	signals.cancel();
 	return ret;
 } catch(const std::exception& e) {
-	LOG_FATAL_SYNC(logger, e.what());
+	SLOG_FATAL(logger, e.what());
 	return EXIT_FAILURE;
 }
 
 void register_shutdown(commands::Registry& registry, boost::asio::io_context& ioc, log::Logger& logger) {
 	shutdown::Handlers handlers {
 		.on_initiate = [&](auto time) {
-			LOG_CONSOLE_ASYNC(logger, "Server will shut down in {}", utility::time_duration_format(time));
+			LOG_CONSOLE(logger, "Server will shut down in {}", utility::time_duration_format(time));
 		},
 			
 		.on_cancel = [&](auto state) {
 			if(state == shutdown::State::pending) {
-				LOG_CONSOLE_ASYNC(logger, "Server shutdown has been cancelled");
+				LOG_CONSOLE(logger, "Server shutdown has been cancelled");
 			} else {
-				LOG_CONSOLE_ASYNC(logger, "No shutdown is pending");
+				LOG_CONSOLE(logger, "No shutdown is pending");
 			}
 		},
 			
 		.on_expire = [&] {
-			LOG_CONSOLE_ASYNC(logger, "Server is shutting down now");
+			LOG_CONSOLE(logger, "Server is shutting down now");
 			std::raise(SIGINT);
 		}, 
 			
 		.on_remaining = [&](auto state, auto time) {
 			if(state == shutdown::State::pending) {
-				LOG_CONSOLE_ASYNC(logger, "Server will shut down in {}", utility::time_duration_format(time));
+				LOG_CONSOLE(logger, "Server will shut down in {}", utility::time_duration_format(time));
 			} else {
-				LOG_CONSOLE_ASYNC(logger, "No shutdown is pending");
+				LOG_CONSOLE(logger, "No shutdown is pending");
 			}
 		}
 	};

@@ -39,7 +39,7 @@ void RemotePeer::send(Message&& msg) {
 }
 
 void RemotePeer::receive(std::span<const std::uint8_t> data) {
-	LOG_TRACE(log_) << log_func << LOG_ASYNC;
+	LOG_TRACE(log_, log_func);
 
 	spark::io::BufferAdaptor adaptor(data);
 	spark::io::BinaryStream stream(adaptor);
@@ -48,7 +48,7 @@ void RemotePeer::receive(std::span<const std::uint8_t> data) {
 
 	if(header.read_from_stream(stream) != MessageHeader::State::ok
 	   || header.size <= stream.total_read()) {
-		LOG_WARN_ASYNC(log_, "[spark] Bad message from {}", conn_->address());
+		LOG_WARN(log_, "[spark] Bad message from {}", conn_->address());
 		return;
 	}
 
@@ -63,11 +63,11 @@ void RemotePeer::receive(std::span<const std::uint8_t> data) {
 }
 
 void RemotePeer::handle_open_channel_response(const core::OpenChannelResponse& msg) {
-	LOG_TRACE(log_) << log_func << LOG_ASYNC;
+	LOG_TRACE(log_, log_func);
 
 	if(msg.result() != core::Result::ok) {
 		auto& channel = channels_[msg.requested_id()];
-		LOG_ERROR_ASYNC(log_, "[spark] Remote peer could not open channel ({}:{})",
+		LOG_ERROR(log_, "[spark] Remote peer could not open channel ({}:{})",
 		                channel->handler()->type(), msg.requested_id());
 		channels_[msg.requested_id()].reset();
 		return;
@@ -78,14 +78,14 @@ void RemotePeer::handle_open_channel_response(const core::OpenChannelResponse& m
 	auto& channel = channels_[id];
 
 	if(id == 0) {
-		LOG_ERROR_ASYNC(log_, "[spark] Reserved channel ID returned by {}", remote_banner_);
+		LOG_ERROR(log_, "[spark] Reserved channel ID returned by {}", remote_banner_);
 		channels_[msg.requested_id()].reset();
 		return;
 	}
 
 	if(msg.actual_id() != msg.requested_id()) {
 		if(channel) {
-			LOG_ERROR_ASYNC(log_, "[spark] Channel open ({}) failed due to ID collision",
+			LOG_ERROR(log_, "[spark] Channel open ({}) failed due to ID collision",
 			                msg.actual_id());
 			send_close_channel(msg.actual_id());
 			channels_[msg.requested_id()].reset();
@@ -105,12 +105,12 @@ void RemotePeer::handle_open_channel_response(const core::OpenChannelResponse& m
 
 	channel->open();
 
-	LOG_DEBUG_ASYNC(log_, "[spark] Remote channel open, {}:{}",
+	LOG_DEBUG(log_, "[spark] Remote channel open, {}:{}",
 	                channel->handler()->name(), msg.actual_id());
 }
 
 void RemotePeer::send_close_channel(const std::uint8_t id) {
-	LOG_TRACE(log_) << log_func << LOG_ASYNC;
+	LOG_TRACE(log_, log_func);
 
 	core::CloseChannelT body {
 		.channel = id
@@ -147,19 +147,19 @@ Handler* RemotePeer::find_handler(const core::OpenChannel& msg) {
 }
 
 void RemotePeer::handle_open_channel(const core::OpenChannel& msg) {
-	LOG_TRACE(log_) << log_func << LOG_ASYNC;
+	LOG_TRACE(log_, log_func);
 
 	auto handler = find_handler(msg);
 
 	if(!handler) {
-		LOG_DEBUG_ASYNC(log_, "[spark] Requested service handler ({}) does not exist",
+		LOG_DEBUG(log_, "[spark] Requested service handler ({}) does not exist",
 		                msg.service_type()->str());
 		open_channel_response(core::Result::error_unk, 0, msg.id());
 		return;
 	}
 
 	if(msg.id() == 0 || msg.id() >= channels_.size()) {
-		LOG_DEBUG_ASYNC(log_, "[spark] Bad channel ID ({}) specified", msg.id());
+		LOG_DEBUG(log_, "[spark] Bad channel ID ({}) specified", msg.id());
 		open_channel_response(core::Result::error_unk, 0, msg.id());
 		return;
 	}
@@ -168,7 +168,7 @@ void RemotePeer::handle_open_channel(const core::OpenChannel& msg) {
 
 	if(channels_[id]) {
 		if(id = next_empty_channel(); id == 0) {
-			LOG_ERROR_ASYNC(log_, "[spark] Exhausted channel IDs");
+			LOG_ERROR(log_, "[spark] Exhausted channel IDs");
 			open_channel_response(core::Result::error_unk, 0, msg.id());
 			return;
 		}
@@ -181,7 +181,7 @@ void RemotePeer::handle_open_channel(const core::OpenChannel& msg) {
 	channel->open();
 	channels_[id] = std::move(channel);
 	open_channel_response(core::Result::ok, id, msg.id());
-	LOG_DEBUG_ASYNC(log_, "[spark] Remote channel open, {}:{}", handler->name(), id);
+	LOG_DEBUG(log_, "[spark] Remote channel open, {}:{}", handler->name(), id);
 }
 
 std::uint8_t RemotePeer::next_empty_channel() {
@@ -219,7 +219,7 @@ void RemotePeer::handle_control_message(std::span<const std::uint8_t> data) {
 	auto fb = core::GetHeader(data.data());
 	
 	if(!fb->Verify(verifier)) {
-		LOG_WARN_ASYNC(log_, "[spark] Bad Flatbuffer message");
+		LOG_WARN(log_, "[spark] Bad Flatbuffer message");
 		return;
 	}
 
@@ -240,7 +240,7 @@ void RemotePeer::handle_control_message(std::span<const std::uint8_t> data) {
 			handle_pong(*fb->message_as_Pong());
 			break;
 		default:
-			LOG_WARN_ASYNC(log_, "[spark] Unknown control message type");
+			LOG_WARN(log_, "[spark] Unknown control message type");
 	}
 }
 
@@ -257,7 +257,7 @@ void RemotePeer::handle_ping(const core::Ping& ping) {
 
 void RemotePeer::handle_pong(const core::Pong& pong) {
 	if(pong.sequence() != ping_sequence_) {
-		LOG_DEBUG_ASYNC(log_, "[spark] Bad pong sequence");
+		LOG_DEBUG(log_, "[spark] Bad pong sequence");
 		return;
 	}
 
@@ -265,33 +265,33 @@ void RemotePeer::handle_pong(const core::Pong& pong) {
 	
 	if(delta > latency_warn_threshold) {
 		const auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(delta);
-		LOG_WARN_ASYNC(log_, "[spark] Remote peer is slow to respond {} ({})", ms, remote_banner_);
+		LOG_WARN(log_, "[spark] Remote peer is slow to respond {} ({})", ms, remote_banner_);
 	}
 }
 
 void RemotePeer::handle_close_channel(const core::CloseChannel& msg) {
-	LOG_TRACE(log_) << log_func << LOG_ASYNC;
+	LOG_TRACE(log_, log_func);
 
 	auto id = gsl::narrow<std::uint8_t>(msg.channel());
 
 	if(!channels_[id]) {
-		LOG_WARN_ASYNC(log_, "[spark] Request to close empty channel ({})", id);
+		LOG_WARN(log_, "[spark] Request to close empty channel ({})", id);
 		return;
 	}
 
 	channels_[id]->close();
 	channels_[id].reset();
-	LOG_DEBUG_ASYNC(log_, "[spark] Closed channel ({}), requested by remote peer", id);
+	LOG_DEBUG(log_, "[spark] Closed channel ({}), requested by remote peer", id);
 }
 
 void RemotePeer::handle_channel_message(const MessageHeader& header,
                                         std::span<const std::uint8_t> data) {
-	LOG_TRACE(log_) << log_func << LOG_ASYNC;
+	LOG_TRACE(log_, log_func);
 
 	auto& channel = channels_[header.channel];
 
 	if(!channel || !channel->is_open()) {
-		LOG_WARN_ASYNC(log_, "[spark] Received message for closed channel ({})", header.channel);
+		LOG_WARN(log_, "[spark] Received message for closed channel ({})", header.channel);
 		return;
 	}
 
@@ -312,10 +312,10 @@ void RemotePeer::send_open_channel(std::string name, std::string type, const std
 }
 
 void RemotePeer::open_channel(std::string type, gsl::not_null<Handler*> handler) {
-	LOG_TRACE(log_) << log_func << LOG_ASYNC;
+	LOG_TRACE(log_, log_func);
 
 	const auto id = next_empty_channel();
-	LOG_DEBUG_ASYNC(log_, "[spark] Requesting channel {} for {}", id, type);
+	LOG_DEBUG(log_, "[spark] Requesting channel {} for {}", id, type);
 
 	auto channel = std::make_shared<Channel>(
 		ctx_, id, remote_banner_, handler->name(), handler, conn_, log_

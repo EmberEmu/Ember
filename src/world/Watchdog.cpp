@@ -34,7 +34,7 @@ Watchdog::Watchdog(std::chrono::seconds max_idle, log::Logger& logger)
 }
 
 void Watchdog::run(const std::stop_token token) {
-	LOG_DEBUG_ASYNC(logger_, "Watchdog active ({} frequency)", max_idle_);
+	LOG_DEBUG(logger_, "Watchdog active ({} frequency)", max_idle_);
 
 	std::mutex mutex;
 	auto cond_var = std::condition_variable_any();
@@ -51,7 +51,7 @@ void Watchdog::run(const std::stop_token token) {
 		}
 	}
 
-	LOG_DEBUG_ASYNC(logger_, "Watchdog stopped");
+	LOG_DEBUG(logger_, "Watchdog stopped");
 }
 
 bool Watchdog::check_timeout() {
@@ -68,7 +68,7 @@ bool Watchdog::check_timeout() {
 }
 
 void Watchdog::terminate() const {
-	LOG_FATAL_SYNC(logger_, "Watchdog triggered after {}, terminating...",
+	SLOG_FATAL(logger_, "Watchdog triggered after {}, terminating...",
 	               std::chrono::duration_cast<std::chrono::seconds>(delta_));
 	std::abort();
 }

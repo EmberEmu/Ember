@@ -18,7 +18,7 @@ namespace ember::dns {
 
 Server::Server(std::unique_ptr<Socket> socket, log::Logger& logger)
                : socket_(std::move(socket)), logger_(logger) {
-	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	LOG_TRACE(logger_, log_func);
     socket_->register_handler(this);
 }
 
@@ -27,16 +27,16 @@ Server::~Server() {
 }
 
 void Server::handle_datagram(std::span<const std::uint8_t> datagram) {
-	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	LOG_TRACE(logger_, log_func);
 
 	const auto result = deserialise(datagram);
 
 	if(!result) {
-		LOG_WARN_ASYNC(logger_, "DNS query deserialising failed: {}", to_string(result.error()));
+		LOG_WARN(logger_, "DNS query deserialising failed: {}", to_string(result.error()));
 		return;
 	}
 
-	LOG_TRACE(logger_) << to_string(result.value()) << LOG_ASYNC;
+	LOG_TRACE(logger_, to_string(result.value()));
 
 	if(result->header.flags.qr == 0) {
 		handle_question(result.value());
@@ -46,7 +46,7 @@ void Server::handle_datagram(std::span<const std::uint8_t> datagram) {
 }
 
 void Server::handle_question(const Query& query) {
-	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	LOG_TRACE(logger_, log_func);
 
 	Query out{};
 	out.questions = query.questions;
@@ -104,7 +104,7 @@ void Server::handle_question(const Query& query) {
 }
 
 void Server::handle_response(const Query& query) {
-	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	LOG_TRACE(logger_, log_func);
 }
 
 void Server::shutdown() {

@@ -20,7 +20,7 @@ void EventDispatcher::post_event(const ClientIdent& client, std::unique_ptr<Even
 
 	// bad service index encoded in the UUID
 	if(service == nullptr) {
-		LOG_ERROR_ASYNC(logger_, "Invalid service index, {}", client.service());
+		LOG_ERROR(logger_, "Invalid service index, {}", client.service());
 		return;
 	}
 
@@ -28,7 +28,7 @@ void EventDispatcher::post_event(const ClientIdent& client, std::unique_ptr<Even
 		if(auto handler = handlers_.find(client); handler != handlers_.end()) {
 			handler->second->handle_event(event.get());
 		} else {
-			LOG_DEBUG_ASYNC(logger_, "Client disconnected, event discarded");
+			LOG_DEBUG(logger_, "Client disconnected, event discarded");
 		}
 	});
 }
@@ -73,7 +73,7 @@ void EventDispatcher::broadcast_event(std::vector<ClientIdent> clients, std::sha
 				if(auto handler = handlers_.find(*beg++); handler != handlers_.end()) {
 					handler->second->handle_event(event.get());
 				} else {
-					LOG_DEBUG_ASYNC(logger_, "Client disconnected, event discarded");
+					LOG_DEBUG(logger_, "Client disconnected, event discarded");
 				}
 			}
 		});

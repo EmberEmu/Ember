@@ -24,10 +24,10 @@
 namespace ember::fusion {
 
 void log_subcommands(log::Logger& logger, const std::string& path, const commands::CommandMap& subcommands) {
-	LOG_CONSOLE_ASYNC(logger, R"(Available subcomands for "{}": )", path);
+	LOG_CONSOLE(logger, R"(Available subcomands for "{}": )", path);
 
 	for(auto& subcommand : subcommands | std::views::values) {
-		LOG_CONSOLE_ASYNC(logger, "{} : {}", subcommand->name(), subcommand->description());
+		LOG_CONSOLE(logger, "{} : {}", subcommand->name(), subcommand->description());
 	}
 }
 
@@ -37,19 +37,19 @@ void handle_command_result(commands::Result result, const std::string& path,
         case commands::Result::missing_args:
 			[[fallthrough]];
         case commands::Result::too_many_args:
-			LOG_CONSOLE_ERROR_ASYNC(logger, "Usage: {} {}", path, command.usage_string());
+			LOG_CONERR(logger, "Usage: {} {}", path, command.usage_string());
             break;
         case commands::Result::subcommands:
 			log_subcommands(logger, path, command.commands());
             break;
         case commands::Result::unavailable:
-			LOG_CONSOLE_ERROR_ASYNC(logger, R"(Command "{}" is currently unavailable.)", path);
+			LOG_CONERR(logger, R"(Command "{}" is currently unavailable.)", path);
             break;
 		case commands::Result::invalid_types:
-			LOG_CONSOLE_ERROR_ASYNC(logger, R"(Bad argument types when attempting to execute "{}")", path);
+			LOG_CONERR(logger, R"(Bad argument types when attempting to execute "{}")", path);
 			break;
         default:
-			LOG_CONSOLE_ERROR_ASYNC(logger, R"(An unhandled error occurred while executing "{}")", path);
+			LOG_CONERR(logger, R"(An unhandled error occurred while executing "{}")", path);
             break;
     }
 }
@@ -73,7 +73,7 @@ void execute_command(const std::string_view input, const Registries& registries,
 	const auto search = registry.find(token_view);
 
 	if(!search.command) {
-		LOG_CONSOLE_ERROR_ASYNC(
+		LOG_CONERR(
 			logger,
 			R"(Command "{}" not found)",
 			token_view.front()
@@ -90,7 +90,7 @@ void execute_command(const std::string_view input, const Registries& registries,
 	 * trigger from here. This check is only for user feedback, it is not required for correct behaviour.
 	 */
 	if(arguments.size() > search.command->argument_count()) {
-		LOG_CONSOLE_ERROR_ASYNC(
+		LOG_CONERR(
 			logger,
 			R"(Too many arguments passed to "{}" (takes {}, got {}))",
 			token_view.front(),
@@ -115,18 +115,18 @@ void execute_command(const std::string_view input, const Registries& registries,
 		handle_command_result(result, path, *search.command, logger);
 	}
 } catch(const commands::parse_error& e) {
-	LOG_CONSOLE_ERROR_ASYNC(logger, R"(Error parsing command arguments, "{}")", e.what());
+	LOG_CONERR(logger, R"(Error parsing command arguments, "{}")", e.what());
 } catch(const boost::bad_lexical_cast&) {
-	LOG_CONSOLE_ERROR_ASYNC(logger, R"(Unable to execute command, invalid argument types provided)");
+	LOG_CONERR(logger, R"(Unable to execute command, invalid argument types provided)");
 } catch(const std::exception& e) {
-	LOG_CONSOLE_ERROR_ASYNC(logger, R"(Error during command execution, "{}")", e.what());
+	LOG_CONERR(logger, R"(Error during command execution, "{}")", e.what());
 }
 
 void handle_help_command(const commands::Arguments& arguments,
                          const Registries& registries,
                          log::Logger& logger) {
 	if(arguments.empty()) {
-		LOG_CONSOLE_ASYNC(
+		LOG_CONSOLE(
 			logger,
 			R"(Type "help "<command>" (quoted) to display command usage or press tab for autocompletion)"
 		);
@@ -153,10 +153,10 @@ void handle_help_command(const commands::Arguments& arguments,
 	const auto result = registry.find(token_view);
 
 	if(result.command) {
-		LOG_CONSOLE_ASYNC(logger, "Usage: {} {}", command, result.command->usage_string());
-		LOG_CONSOLE_ASYNC(logger, "Description: {}", result.command->description());
+		LOG_CONSOLE(logger, "Usage: {} {}", command, result.command->usage_string());
+		LOG_CONSOLE(logger, "Description: {}", result.command->description());
 	} else {
-		LOG_CONSOLE_ERROR_ASYNC(logger, R"(Command "{}" not found)", command);
+		LOG_CONERR(logger, R"(Command "{}" not found)", command);
 	}
 }
 
@@ -165,7 +165,7 @@ void handle_cls_command(log::Logger& logger) {
 	auto sinks = logger.fetch_sink(log::CommandSink::sink_name);
 
 	if(sinks.empty()) {
-		LOG_ERROR_SYNC(logger, "Could not locate a command sink, cannot execute command");
+		SLOG_ERROR(logger, "Could not locate a command sink, cannot execute command");
 	}
 
 	assert(sinks.size() == 1 && "multiple command sinks?");
@@ -307,10 +307,10 @@ void register_command_handlers(Registries& registries, log::Logger& logger) {
 	auto sinks = logger.fetch_sink(log::CommandSink::sink_name);
 
 	if(sinks.empty()) {
-		LOG_INFO_SYNC(logger, "Console commands disabled, no suitable logging sink found");
+		SLOG_INFO(logger, "Console commands disabled, no suitable logging sink found");
 		return;
 	} else if(sinks.size() > 1) {
-		LOG_ERROR_SYNC(logger, "Console commands disabled, multiple command logging sinks found");
+		SLOG_ERROR(logger, "Console commands disabled, multiple command logging sinks found");
 		return;
 	}
 

@@ -19,7 +19,7 @@ namespace ember::realm {
 bool ClientHandler::deserialise(is_packet auto& packet, BinaryStream& stream) {
 	if(auto result = packet.read_payload_from_stream(stream); result) {
 		if(stream.read_limit() != stream.total_read()) {
-			LOG_DEBUG_ASYNC(
+			LOG_DEBUG(
 				logger_, "Skipping unprocessed data in message {} from {}",
 				protocol::to_string(packet.opcode), client_identify()
 			);
@@ -29,7 +29,7 @@ bool ClientHandler::deserialise(is_packet auto& packet, BinaryStream& stream) {
 
 		return true;
 	} else {
-		LOG_TRACE_ASYNC(logger_, "Unexpected stream result: {} ({})", result.value(), result.what());
+		LOG_TRACE(logger_, "Unexpected stream result: {} ({})", result.value(), result.what());
 	}
 
 	/*
@@ -46,7 +46,7 @@ bool ClientHandler::deserialise(is_packet auto& packet, BinaryStream& stream) {
 	 */
 	switch(stream.state()) {
 		case spark::io::StreamState::read_limit_error:
-			LOG_DEBUG_ASYNC(
+			LOG_DEBUG(
 				logger_, "Deserialisation of {} failed, skipping any remaining data",
 				protocol::to_string(packet.opcode)
 			);
@@ -54,7 +54,7 @@ bool ClientHandler::deserialise(is_packet auto& packet, BinaryStream& stream) {
 			stream.skip(stream.read_limit() - stream.total_read());
 			break;
 		case spark::io::StreamState::buffer_limit_error:
-			LOG_ERROR_ASYNC(
+			LOG_ERROR(
 				logger_, "Message framing lost for {} from {}",
 				protocol::to_string(packet.opcode), client_identify()
 			);
@@ -62,7 +62,7 @@ bool ClientHandler::deserialise(is_packet auto& packet, BinaryStream& stream) {
 			close();
 			break;
 		default:
-			LOG_ERROR_ASYNC(logger_,
+			LOG_ERROR(logger_,
 				"Deserialisation failed, stream state {}, unhandled error for {} from {}",
 				std::to_underlying(stream.state()), protocol::to_string(packet.opcode), client_identify()
 			);

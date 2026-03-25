@@ -33,19 +33,19 @@ void NetworkServiceDiscovery::connect() {
 }
 
 void NetworkServiceDiscovery::on_link_up(const spark::Link& link) {
-	LOG_TRACE_ASYNC(logger_, "Established connection to NSD service");
+	LOG_TRACE(logger_, "Established connection to NSD service");
 	link_ = link;
 	connected_ = true;
 	retry_interval_ = RETRY_INTERVAL_MIN;
 }
 
 void NetworkServiceDiscovery::on_link_down(const spark::Link& link) {
-	LOG_TRACE_ASYNC(logger_, "Lost connection to NSD service");
+	LOG_TRACE(logger_, "Lost connection to NSD service");
 	connected_ = false;
 }
 
 void NetworkServiceDiscovery::connect_failed(const std::string_view ip, std::uint16_t port) {
-	LOG_WARN_ASYNC(logger_, "Unable to connect to NSD service, retrying in {}", retry_interval_);
+	LOG_WARN(logger_, "Unable to connect to NSD service, retrying in {}", retry_interval_);
 
 	timer_.expires_after(retry_interval_);
 	increase_interval();

@@ -43,24 +43,24 @@ LoginSession::LoginSession(SessionManager& sessions,
 }
 
 bool LoginSession::handle_packet(spark::io::pmr::Buffer& buffer) try {
-	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	LOG_TRACE(logger_, log_func);
 
 	auto result = grunt_handler_.process_buffer(buffer);
 
 	if(result) {
 		const auto& packet = *result;
-		LOG_TRACE_ASYNC(logger_, "{} -> {}", remote_address(), grunt::to_string(packet.opcode));
+		LOG_TRACE(logger_, "{} -> {}", remote_address(), grunt::to_string(packet.opcode));
 		return handler_.update_state(packet);
 	}
 
 	return true;
 } catch(const grunt::bad_packet& e) {
-	LOG_DEBUG(logger_) << e.what() << LOG_ASYNC;
+	LOG_DEBUG(logger_, e.what());
 	return false;
 }
 
 void LoginSession::execute_async(std::unique_ptr<Action> action) {
-	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	LOG_TRACE(logger_, log_func);
 
 	auto self(shared_from_this());
 	std::shared_ptr<Action> shared_act(std::move(action));
@@ -77,19 +77,19 @@ void LoginSession::execute_async(std::unique_ptr<Action> action) {
 }
 
 void LoginSession::async_completion(Action& action) try {
-	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	LOG_TRACE(logger_, log_func);
 
 	if(!handler_.update_state(action)) {
 		close_session(); // todo change
 	}
 } catch(const std::exception& e) {
-	LOG_DEBUG(logger_) << e.what() << LOG_ASYNC;
+	LOG_DEBUG(logger_, e.what());
 	close_session();
 }
 
 void LoginSession::write_packet(const grunt::Packet& packet, WriteCallback&& cb) {
-	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
-	LOG_TRACE_ASYNC(logger_, "{} <- {}", remote_address(), grunt::to_string(packet.opcode));
+	LOG_TRACE(logger_, log_func);
+	LOG_TRACE(logger_, "{} <- {}", remote_address(), grunt::to_string(packet.opcode));
 	write(packet, std::move(cb));
 }
 

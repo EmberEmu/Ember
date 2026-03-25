@@ -49,14 +49,14 @@ bool validate_maps(std::span<const std::int32_t> maps, const dbc::Store<dbc::Map
 		});
 
 		if(it == dbc.end()) {
-			LOG_ERROR_SYNC(logger, "Unknown map ID ({}) specified", id);
+			SLOG_ERROR(logger, "Unknown map ID ({}) specified", id);
 			return false;
 		}
 
 		auto& [_, map] = *it;
 
 		if(map.instance_type != dbc::Map::InstanceType::NORMAL) {
-			LOG_ERROR_SYNC(logger, "Map {} ({}) is not an open world area", map.id, map.map_name.en_gb);
+			SLOG_ERROR(logger, "Map {} ({}) is not an open world area", map.id, map.map_name.en_gb);
 			return false;
 		}
 
@@ -68,7 +68,7 @@ bool validate_maps(std::span<const std::int32_t> maps, const dbc::Store<dbc::Map
 
 void print_maps(std::span<const std::int32_t> maps, const dbc::Store<dbc::Map>& dbc, log::Logger& logger) {
 	for(auto id : maps) {
-		LOG_INFO_SYNC(logger, " - {}", dbc[id]->map_name.en_gb);
+		SLOG_INFO(logger, " - {}", dbc[id]->map_name.en_gb);
 	}
 }
 

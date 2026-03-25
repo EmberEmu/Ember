@@ -20,7 +20,7 @@
 namespace ember::realm {
 
 void ClientConnection::parse_header() {
-	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	LOG_TRACE(logger_, log_func);
 
 	if(inbound_buffer_.size() < protocol::ClientHeader::wire_size) {
 		return;
@@ -37,7 +37,7 @@ void ClientConnection::parse_header() {
 	>(msg_size_);
 
 	if(msg_size_ < sizeof(protocol::ClientHeader::OpcodeType)) {
-		LOG_DEBUG_ASYNC(logger_, "Invalid message size from {}", remote_address());
+		LOG_DEBUG(logger_, "Invalid message size from {}", remote_address());
 		close_session();
 		return;
 	}
@@ -134,7 +134,7 @@ void ClientConnection::read() {
 	// If there's partially processed data in the buffer, we may be
 	// able to free space by defragmenting it.
 	if(inbound_buffer_.free() < required_space && !inbound_buffer_.defragment()) [[unlikely]] {
-		LOG_DEBUG_ASYNC(logger_, "Inbound buffer full, closing {}", remote_address());
+		LOG_DEBUG(logger_, "Inbound buffer full, closing {}", remote_address());
 		close_session();
 		return;
 	}
@@ -179,7 +179,7 @@ void ClientConnection::stop() {
 		return;
 	}
 
-	LOG_DEBUG_ASYNC(logger_, "Closing connection to {}", remote_address());
+	LOG_DEBUG(logger_, "Closing connection to {}", remote_address());
 	boost::system::error_code ec; // we don't care about any errors
 	socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
 	socket_.close(ec);

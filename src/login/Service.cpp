@@ -81,7 +81,7 @@ int Service::run(const opts::variables_map& args) try {
 
 	// Spawn worker threads for Asio
 	const auto concurrency = thread::hardware_concurrency([&](auto msg) {
-		LOG_ERROR_SYNC(logger, msg);
+		SLOG_ERROR(logger, msg);
 	});
 
 	std::vector<std::jthread> threads;
@@ -96,7 +96,7 @@ int Service::run(const opts::variables_map& args) try {
 
 	return EXIT_SUCCESS;
 } catch(const std::exception& e) {
-	LOG_FATAL_SYNC(logger, e.what());
+	SLOG_FATAL(logger, e.what());
 	return EXIT_FAILURE;
 }
 
@@ -113,7 +113,7 @@ void Service::initialise(const opts::variables_map& args) {
 		builds += to_string(client) + " ";
 	}
 
-	LOG_INFO_SYNC(logger, "Allowed client builds: {}", builds);
+	SLOG_INFO(logger, "Allowed client builds: {}", builds);
 
 	auto stun = create_stun_client(args);
 	const auto stun_enabled = args["stun.enabled"].as<bool>();
@@ -126,15 +126,15 @@ void Service::initialise(const opts::variables_map& args) {
 			stun_log_callback(severity, reason, logger);
 		});
 
-		LOG_INFO_SYNC(logger, "Starting STUN query...");
+		SLOG_INFO(logger, "Starting STUN query...");
 		stun_res = stun.external_address();
 	}
 
-	LOG_INFO_SYNC(logger, "Seeding xorshift RNG...");
+	SLOG_INFO(logger, "Seeding xorshift RNG...");
 	seed_xorshift_rng();
 
 	const auto concurrency = thread::hardware_concurrency([&](auto msg) {
-		LOG_ERROR_SYNC(logger, msg);
+		SLOG_ERROR(logger, msg);
 	});
 
 	auto max_conns = args["database.max_connections"].as<unsigned short>();
@@ -143,14 +143,14 @@ void Service::initialise(const opts::variables_map& args) {
 		max_conns = concurrency;
 	}
 	
-	LOG_INFO_SYNC(logger, "Max. database connections set to {} ({} cores)", max_conns, concurrency);
+	SLOG_INFO(logger, "Max. database connections set to {} ({} cores)", max_conns, concurrency);
 
-	LOG_INFO_SYNC(logger, "Initialising database connection pool...");
+	SLOG_INFO(logger, "Initialising database connection pool...");
 	ctx->conn_pool = std::make_unique<connection_pool::Pool<drivers::AutoSelect>>(
 		init_database(args, logger)
 	);
 
-	LOG_INFO_SYNC(logger, "Initialising DAOs...");
+	SLOG_INFO(logger, "Initialising DAOs...");
 	auto user_dao = dal::user_dao(ctx->conn_pool->get());
 	auto patch_dao = dal::patch_dao(ctx->conn_pool->get());
 	auto realm_dao = dal::realm_dao(ctx->conn_pool->get());
@@ -159,7 +159,7 @@ void Service::initialise(const opts::variables_map& args) {
 	ctx->ip_ban_cache = std::make_unique<IPBanCache>(ip_ban_dao.all_bans());
 
 	// Load integrity, patch and survey data
-	LOG_INFO_SYNC(logger, "Loading client integrity validation data...");
+	SLOG_INFO(logger, "Loading client integrity validation data...");
 	ctx->integrity_data = std::make_unique<IntegrityData>();
 
 	if(args["integrity.enabled"].as<bool>()) {
@@ -167,7 +167,7 @@ void Service::initialise(const opts::variables_map& args) {
 		ctx->integrity_data->add_versions(allowed_builds, bin_path);
 	}
 
-	LOG_INFO_SYNC(logger, "Loading patch data...");
+	SLOG_INFO(logger, "Loading patch data...");
 	auto patches = Patcher::load_patches(
 		args["patches.bin_path"].as<std::string>(), patch_dao
 	);
@@ -176,7 +176,7 @@ void Service::initialise(const opts::variables_map& args) {
 	ctx->survey = std::make_unique<Survey>(args["survey.id"].as<std::uint32_t>());
 
 	if(ctx->survey->id()) {
-		LOG_INFO_SYNC(logger, "Loading survey data...");
+		SLOG_INFO(logger, "Loading survey data...");
 
 		ctx->survey->add_data(
 			grunt::Platform::x86, grunt::System::Win,
@@ -184,14 +184,14 @@ void Service::initialise(const opts::variables_map& args) {
 		);
 	}
 
-	LOG_INFO_SYNC(logger, "Loading realm list...");
+	SLOG_INFO(logger, "Loading realm list...");
 	ctx->realm_list = std::make_unique<RealmList>(realm_dao.get_realms());
 
 	const auto realm_count = ctx->realm_list->realms()->size();
-	LOG_INFO_SYNC(logger, "Added {} realm{}", realm_count, (!realm_count || realm_count > 1? "s" : ""));
+	SLOG_INFO(logger, "Added {} realm{}", realm_count, (!realm_count || realm_count > 1? "s" : ""));
 
 	for(const auto& realm : *ctx->realm_list->realms() | std::views::values) {
-		LOG_DEBUG_SYNC(logger, "#{} {}", realm.id, realm.name);
+		SLOG_DEBUG(logger, "#{} {}", realm.id, realm.name);
 	}
 
 	validate_realms(*ctx->realm_list, logger, args);
@@ -199,7 +199,7 @@ void Service::initialise(const opts::variables_map& args) {
 	const auto& s_address = args["spark.address"].as<std::string>();
 	auto s_port = args["spark.port"].as<std::uint16_t>();
 
-	LOG_INFO_SYNC(logger, "Starting RPC services...");
+	SLOG_INFO(logger, "Starting RPC services...");
 	ctx->rpc = std::make_unique<spark::Server>(ioc, app_name, s_address, s_port, logger);
 	ctx->rpc_account = std::make_unique<AccountClient>(*ctx->rpc, logger);
 	ctx->rpc_realm = std::make_unique<RealmClient>(*ctx->rpc, *ctx->realm_list, logger);
@@ -207,7 +207,7 @@ void Service::initialise(const opts::variables_map& args) {
 	// Start metrics service
 	ctx->metrics = start_metrics(ioc, args);
 
-	LOG_INFO_SYNC(logger, "Starting thread pool with {} threads...", concurrency);
+	SLOG_INFO(logger, "Starting thread pool with {} threads...", concurrency);
 	ctx->thread_pool = std::make_unique<thread::ThreadPool>(concurrency);
 
 	const LoginHandler::Options config {
@@ -229,7 +229,7 @@ void Service::initialise(const opts::variables_map& args) {
 	const auto port = args["network.port"].as<std::uint16_t>();
 	const auto tcp_no_delay = args["network.tcp_no_delay"].as<bool>();
 
-	LOG_INFO_SYNC(logger, "Starting network service on {}:{}...", interface, port);
+	SLOG_INFO(logger, "Starting network service on {}:{}...", interface, port);
 	ctx->server = std::make_unique<NetworkListener>(
 		ioc, interface, port, tcp_no_delay, *ctx->login_session_builder,
 		*ctx->ip_ban_cache, logger, *ctx->metrics
@@ -237,7 +237,7 @@ void Service::initialise(const opts::variables_map& args) {
 
 	// Start monitoring service
 	if(args["monitor.enabled"].as<bool>()) {
-		LOG_INFO_SYNC(logger, "Starting monitoring service...");
+		SLOG_INFO(logger, "Starting monitoring service...");
 
 		ctx->monitor = std::make_unique<Monitor>(	
 			ioc, args["monitor.interface"].as<std::string>(),
@@ -260,11 +260,11 @@ void Service::initialise(const opts::variables_map& args) {
 	}, 5s);
 
 	// Misc. information
-	LOG_INFO_SYNC(logger, "Max allowed sockets: {}", utility::max_sockets_desc());
+	SLOG_INFO(logger, "Max allowed sockets: {}", utility::max_sockets_desc());
 	
 	// Retrieve STUN result
 	if(stun_enabled) {
-		LOG_INFO_SYNC(logger, "Waiting on STUN result...");
+		SLOG_INFO(logger, "Waiting on STUN result...");
 
 		const auto result = stun_res.get();
 		log_stun_result(stun, result, port, logger);
@@ -283,12 +283,12 @@ void Service::initialise(const opts::variables_map& args) {
 	}
 
 	// Install service command handlers
-	LOG_INFO_SYNC(logger, "Registering command handlers...");
+	SLOG_INFO(logger, "Registering command handlers...");
 	register_commands();
 
 	// All done setting up
 	boost::asio::dispatch(ioc, [this, time]() {
-		LOG_INFO_SYNC(logger, "{} started successfully in {}", app_name,
+		SLOG_INFO(logger, "{} started successfully in {}", app_name,
 			utility::time_elapsed_format(time));
 
 		start_time = std::chrono::steady_clock::now();
@@ -299,13 +299,13 @@ void Service::register_commands() {
 	auto ctx = context.get();
 
 	ctx->cmd_exec = std::make_unique<utility::CommandExecutor>(ioc, [&](const auto& reason) {
-		LOG_CONSOLE_ERROR_ASYNC(logger, "Command could not be executed, {}", reason);
+		LOG_CONERR(logger, "Command could not be executed, {}", reason);
 	});
 	
 	auto handle = registry.scoped_insert(commands::Command::create("connections")
 		->description("Display open connection count")
 		->handler(ctx->cmd_exec->wrap([this, &server = *ctx->server](auto& command) {
-			LOG_CONSOLE_ASYNC(logger, "{} active connection(s), {} peak",
+			LOG_CONSOLE(logger, "{} active connection(s), {} peak",
 				server.connection_count(), server.peak_connections());
 		}))
 	);
@@ -316,7 +316,7 @@ void Service::register_commands() {
 		->description("Display service uptime")
 		->handler(ctx->cmd_exec->wrap([&](auto& command) {
 			const auto uptime = std::chrono::steady_clock::now() - start_time;
-			LOG_CONSOLE_ASYNC(logger, "Server has been up for {}", utility::time_duration_format(uptime));
+			LOG_CONSOLE(logger, "Server has been up for {}", utility::time_duration_format(uptime));
 		}))
 	);
 
@@ -327,7 +327,7 @@ std::unique_ptr<Metrics> Service::start_metrics(boost::asio::io_context& service
 	auto metrics = std::make_unique<Metrics>();
 
 	if(args["metrics.enabled"].as<bool>()) {
-		LOG_INFO_SYNC(logger, "Starting metrics service...");
+		SLOG_INFO(logger, "Starting metrics service...");
 		metrics = std::make_unique<MetricsImpl>(
 			service, args["metrics.statsd_host"].as<std::string>(),
 			args["metrics.statsd_port"].as<std::uint16_t>()
@@ -344,17 +344,17 @@ void Service::seed_xorshift_rng() {
 }
 
 void validate_realms(const RealmList& realmlist, log::Logger& logger, const opts::variables_map& args) {
-	LOG_INFO_SYNC(logger, "Loading DBC data...");
+	SLOG_INFO(logger, "Loading DBC data...");
 
 	dbc::DiskLoader loader(args["dbc.path"].as<std::string>(), [&](auto message) {
-		LOG_DEBUG(logger) << message << LOG_SYNC;
+		SLOG_DEBUG(logger, message);
 	});
 
 	const auto dbcs = loader.load(dbcs_required);
 
 	for(const auto& realm : *realmlist.realms() | std::views::values) {
 		if(!validate_realm(realm, dbcs.cfg_categories)) {
-			LOG_WARN_SYNC(logger, "Validation failed for {} - client may not display this realm", realm.name);
+			SLOG_WARN(logger, "Validation failed for {} - client may not display this realm", realm.name);
 		}
 	}
 }
@@ -366,7 +366,7 @@ void Service::stop() {
 		return;
 	}
 
-	LOG_TRACE_SYNC(logger, "Service termination requested");
+	SLOG_TRACE(logger, "Service termination requested");
 
 	boost::asio::post(ioc, [&] {
 		auto ctx = context.get();
@@ -430,7 +430,7 @@ bool validate_realm(const Realm& realm, const dbc::Store<dbc::Cfg_Categories>& d
 }
 
 void print_lib_versions(log::Logger& logger) {
-	LOG_DEBUG(logger)
+	LOG_DEBUG_STREAM(logger)
 		<< "Compiled with library versions: " << "\n"
 	    << " - Boost " << BOOST_VERSION / 100000 << "."
 	    << BOOST_VERSION / 100 % 1000 << "."

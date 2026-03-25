@@ -19,23 +19,23 @@ inline void pool_log_callback(connection_pool::Severity severity, std::string_vi
 
 	switch(severity) {
 		case connection_pool::Severity::debug:
-			LOG_DEBUG_ASYNC(logger, fmt, message);
+			LOG_DEBUG(logger, fmt, message);
 			break;
 		case connection_pool::Severity::info:
-			LOG_INFO_ASYNC(logger, fmt, message);
+			LOG_INFO(logger, fmt, message);
 			break;
 		case connection_pool::Severity::warn:
-			LOG_WARN_ASYNC(logger, fmt, message);
+			LOG_WARN(logger, fmt, message);
 			break;
 		case connection_pool::Severity::error:
-			LOG_ERROR_ASYNC(logger, fmt, message);
+			LOG_ERROR(logger, fmt, message);
 			break;
 		case connection_pool::Severity::fatal:
-			LOG_FATAL_ASYNC(logger, fmt, message);
+			LOG_FATAL(logger, fmt, message);
 			break;
 		default:
-			LOG_ERROR_ASYNC(logger, "Unhandled connection pool log callback severity");
-			LOG_ERROR_ASYNC(logger, fmt, message);
+			LOG_ERROR(logger, "Unhandled connection pool log callback severity");
+			LOG_ERROR(logger, fmt, message);
 	}
 }
 

@@ -20,16 +20,16 @@ CharacterService::CharacterService(Server& server, const CharacterHandler& handl
 	  logger_(logger) {}
 
 void CharacterService::on_link_up(const Link& link) {
-	LOG_DEBUG_ASYNC(logger_, "Link up: {}", link.peer_banner);
+	LOG_DEBUG(logger_, "Link up: {}", link.peer_banner);
 }
 
 void CharacterService::on_link_down(const Link& link) {
-	LOG_DEBUG_ASYNC(logger_, "Link down: {}", link.peer_banner);
+	LOG_DEBUG(logger_, "Link down: {}", link.peer_banner);
 }
 
 std::optional<CreateResponseT>
 CharacterService::handle_create(const Create& msg, const Link& link, const Token& token) {
-	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	LOG_TRACE(logger_, log_func);
 
 	if(!msg.character()) {
 		return CreateResponseT {
@@ -51,10 +51,10 @@ CharacterService::handle_create(const Create& msg, const Link& link, const Token
 
 std::optional<DeleteResponseT>
 CharacterService::handle_delete(const Delete& msg, const Link& link, const Token& token) {
-	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	LOG_TRACE(logger_, log_func);
 
 	handler_.erase(msg.account_id(), msg.realm_id(), msg.character_id(), [=, this](auto res) {
-		LOG_DEBUG_ASYNC(logger_, "Deletion response: {}", protocol::to_string(res));
+		LOG_DEBUG(logger_, "Deletion response: {}", protocol::to_string(res));
 
 		DeleteResponseT msg {
 			.status = Status::ok,
@@ -69,7 +69,7 @@ CharacterService::handle_delete(const Delete& msg, const Link& link, const Token
 
 std::optional<RenameResponseT> 
 CharacterService::handle_rename(const Rename& msg, const Link& link, const Token& token) {
-	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	LOG_TRACE(logger_, log_func);
 
 	if(!msg.name()) {
 		return RenameResponseT{
@@ -88,7 +88,7 @@ CharacterService::handle_rename(const Rename& msg, const Link& link, const Token
 
 std::optional<RetrieveResponseT>
 CharacterService::handle_enumerate(const Retrieve& msg, const Link& link, const Token& token) {
-	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	LOG_TRACE(logger_, log_func);
 
 	handler_.enumerate(msg.account_id(), msg.realm_id(), [=, this](auto res, auto characters) {
 		send_characters(res, characters, link, token);
@@ -101,7 +101,7 @@ void CharacterService::send_rename(const protocol::Result& res,
                                    const std::optional<const ember::Character>& character,
                                    const Link& link,
                                    const Token& token) const {
-	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	LOG_TRACE(logger_, log_func);
 
 	RenameResponseT response {
 		.status = Status::ok,
@@ -120,7 +120,7 @@ void CharacterService::send_characters(const bool result,
                                        std::span<const ember::Character> characters,
                                        const Link& link,
                                        const Token& token) const {
-	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	LOG_TRACE(logger_, log_func);
 
 	// painful
 	std::vector<std::unique_ptr<CharacterT>> chars;

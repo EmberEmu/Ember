@@ -18,11 +18,11 @@ NSDService::NSDService(Server& spark, log::Logger& logger)
 	  logger_(logger) {}
 
 void NSDService::on_link_up(const Link& link) {
-	LOG_INFO_ASYNC(logger_, "Link up to {}", link.peer_banner);
+	LOG_INFO(logger_, "Link up to {}", link.peer_banner);
 }
 
 void NSDService::on_link_down(const Link& link) {
-	LOG_INFO_ASYNC(logger_, "Link down to {}", link.peer_banner);
+	LOG_INFO(logger_, "Link down to {}", link.peer_banner);
 }
 
 } // ember

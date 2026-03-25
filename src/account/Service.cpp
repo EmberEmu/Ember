@@ -41,7 +41,7 @@ int Service::run(const opts::variables_map& args) try {
 	ioc.run();
 	return EXIT_SUCCESS;
 } catch(const std::exception& e) {
-	LOG_FATAL_SYNC(logger, e.what());
+	SLOG_FATAL(logger, e.what());
 	return EXIT_FAILURE;
 }
 
@@ -49,30 +49,30 @@ void Service::initialise(const opts::variables_map& args) {
 	const auto time = std::chrono::steady_clock::now();
 	auto ctx = context.get();
 	
-	LOG_INFO_SYNC(logger, "Initialising database connection pool...");
+	SLOG_INFO(logger, "Initialising database connection pool...");
 	ctx->conn_pool = std::make_unique<connection_pool::Pool<drivers::AutoSelect>>(
 		init_database(args, logger)
 	);
 
-	LOG_INFO_SYNC(logger,"Initialising DAOs...");
+	SLOG_INFO(logger,"Initialising DAOs...");
 	auto user_dao = dal::user_dao(ctx->conn_pool->get());
 	ctx->user_dao = std::make_unique<decltype(user_dao)>(std::move(user_dao));
 
 	const auto concurrency = thread::hardware_concurrency([&](auto msg) {
-		LOG_ERROR_SYNC(logger, msg);
+		SLOG_ERROR(logger, msg);
 	});
 
-	LOG_INFO_SYNC(logger, "Starting thread pool with {} threads...", concurrency);
+	SLOG_INFO(logger, "Starting thread pool with {} threads...", concurrency);
 	ctx->thread_pool = std::make_unique<thread::ThreadPool>(
 		concurrency
 	);
 
-	LOG_INFO_SYNC(logger, "Initialising account handler..."); 
+	SLOG_INFO(logger, "Initialising account handler..."); 
 	ctx->account_handler = std::make_unique<AccountHandler>(
 		*ctx->user_dao, *ctx->thread_pool
 	);
 
-	LOG_INFO_SYNC(logger, "Starting RPC services...");
+	SLOG_INFO(logger, "Starting RPC services...");
 	ctx->sessions = std::make_unique<Sessions>(true);
 
 	const auto& s_address = args["spark.address"].as<std::string>();
@@ -88,7 +88,7 @@ void Service::initialise(const opts::variables_map& args) {
 
 	// All done setting up
 	boost::asio::dispatch(ioc, [&, time]() {
-		LOG_INFO_SYNC(logger, "{} started successfully in {}", app_name,
+		SLOG_INFO(logger, "{} started successfully in {}", app_name,
 			utility::time_elapsed_format(time));
 
 		start_time = std::chrono::steady_clock::now();
@@ -102,7 +102,7 @@ void Service::stop() {
 		return;
 	}
 
-	LOG_TRACE_SYNC(logger, "Service termination requested");
+	SLOG_TRACE(logger, "Service termination requested");
 	auto ctx = context.get();
 
 	boost::asio::post(ioc, [&] {

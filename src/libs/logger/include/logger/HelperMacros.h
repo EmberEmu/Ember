@@ -14,82 +14,82 @@ inline auto& log_deref(auto& x) { return x; }
 inline auto& log_deref(auto* x) { return *x; }
 
 #if !defined(NO_LOGGING) && !defined(NO_TRACE_LOGGING)
-	#define LOG_TRACE(logger) \
+	#define LOG_TRACE_STREAM(logger) \
 		if(logger->severity() <= ember::log::Severity::trace) \
 			log_deref(logger) << ember::log::Severity::trace
 #else
-	#define LOG_TRACE(logger) \
+	#define LOG_TRACE_STREAM(logger) \
 		if(false) \
 			log_deref(logger)
 #endif
 
 #if !defined(NO_LOGGING) && !defined(NO_DEBUG_LOGGING)
-	#define LOG_DEBUG(logger) \
+	#define LOG_DEBUG_STREAM(logger) \
 		if(logger->severity() <= ember::log::Severity::debug) \
 			log_deref(logger) << ember::log::Severity::debug
 #else
-	#define LOG_DEBUG(logger) \
+	#define LOG_DEBUG_STREAM(logger) \
 		if(false) \
 			log_deref(logger)
 #endif
 
 #if !defined(NO_LOGGING) && !defined(NO_INFO_LOGGING)
-	#define LOG_INFO(logger) \
+	#define LOG_INFO_STREAM(logger) \
 		if(logger->severity() <= ember::log::Severity::info) \
 			log_deref(logger) << ember::log::Severity::info
 #else
-	#define LOG_INFO(logger) \
+	#define LOG_INFO_STREAM(logger) \
 		if(false) \
 			log_deref(logger)
 #endif
 
 #if !defined(NO_LOGGING) && !defined(NO_WARN_LOGGING)
-	#define LOG_WARN(logger) \
+	#define LOG_WARN_STREAM(logger) \
 	if(logger->severity() <= ember::log::Severity::warn) \
 			log_deref(logger) << ember::log::Severity::warn
 #else
-	#define LOG_WARN(logger) \
+	#define LOG_WARN_STREAM(logger) \
 		if(false) \
 			log_deref(logger)
 #endif
 
 #if !defined(NO_LOGGING) && !defined(NO_ERROR_LOGGING)
-	#define LOG_ERROR(logger) \
+	#define LOG_ERROR_STREAM(logger) \
 		if(logger->severity() <= ember::log::Severity::error) \
 			log_deref(logger) << ember::log::Severity::error
 #else
-	#define LOG_ERROR(logger) \
+	#define LOG_ERROR_STREAM(logger) \
 		if(false) \
 			log_deref(logger)
 #endif
 
 
 #if !defined(NO_LOGGING) && !defined(NO_FATAL_LOGGING)
-	#define LOG_FATAL(logger) \
+	#define LOG_FATAL_STREAM(logger) \
 		if(logger->severity() <= ember::log::Severity::fatal) \
 			log_deref(logger) << ember::log::Severity::fatal
 #else
-	#define LOG_FATAL(logger) \
+	#define LOG_FATAL_STREAM(logger) \
 		if(false) \
 			log_deref(logger)
 #endif
 
 #if !defined(NO_LOGGING) && !defined(NO_CONSOLE_LOGGING)
-#define LOG_CONSOLE(logger) \
+#define LOG_CONSOLE_STREAM(logger) \
 		if(logger->severity() <= ember::log::Severity::console) \
 			log_deref(logger) << ember::log::Severity::console
 #else
-#define LOG_CONSOLE(logger) \
+#define LOG_CONSOLE_STREAM(logger) \
 		if(false) \
 			log_deref(logger)
 #endif
 
 #if !defined(NO_LOGGING) && !defined(NO_CONSOLE_LOGGING)
-#define LOG_CONSOLE_ERR(logger) \
+#define LOG_CONERR_STREAM(logger) \
 		if(logger->severity() <= ember::log::Severity::console_error) \
 			log_deref(logger) << ember::log::Severity::console_error
 #else
-#define LOG_CONSOLE_ERR(logger) \
+#define LOG_CONERR_STREAM(logger) \
 		if(false) \
 			log_deref(logger)
 #endif
@@ -176,25 +176,25 @@ inline auto& log_deref(auto* x) { return *x; }
 #endif
 
 #define LOG_TRACE_GLOB \
-	LOG_TRACE(ember::log::global_logger())
+	LOG_TRACE_STREAM(ember::log::global_logger())
 
 #define LOG_DEBUG_GLOB \
-	LOG_DEBUG(ember::log::global_logger())
+	LOG_DEBUG_STREAM(ember::log::global_logger())
 
 #define LOG_INFO_GLOB \
-	LOG_INFO(ember::log::global_logger())
+	LOG_INFO_STREAM(ember::log::global_logger())
 
 #define LOG_WARN_GLOB \
-	LOG_WARN(ember::log::global_logger())
+	LOG_WARN_STREAM(ember::log::global_logger())
 
 #define LOG_ERROR_GLOB \
-	LOG_ERROR(ember::log::global_logger())
+	LOG_ERROR_STREAM(ember::log::global_logger())
 
 #define LOG_FATAL_GLOB \
-	LOG_FATAL(ember::log::global_logger())
+	LOG_FATAL_STREAM(ember::log::global_logger())
 
 #define LOG_CONSOLE_GLOB \
-	LOG_CONSOLE(ember::log::global_logger())
+	LOG_CONSOLE_STREAM(ember::log::global_logger())
 
 #define LOG_TRACE_FILTER_GLOB(filter) \
 	LOG_TRACE_FILTER(ember::log::global_logger(), filter)
@@ -224,146 +224,146 @@ inline auto& log_deref(auto* x) { return *x; }
 #define LOG_SYNC  ember::log::flush_sync
 
 #if !defined(NO_LOGGING) && !defined(NO_TRACE_LOGGING)
-	#define LOG_TRACE_ASYNC(logger, fmt_str, ...) \
+	#define LOG_TRACE(logger, fmt_str, ...) \
 		if(logger->severity() <= ember::log::Severity::trace) \
 			logger->fmt_write<true>(ember::log::Severity::trace, fmt_str __VA_OPT__(,) __VA_ARGS__);
 #else
-	#define LOG_TRACE_ASYNC(logger, fmt_str, ...) \
+	#define LOG_TRACE(logger, fmt_str, ...) \
 		if(false);
 #endif
 
 #if !defined(NO_LOGGING) && !defined(NO_DEBUG_LOGGING)
-	#define LOG_DEBUG_ASYNC(logger, fmt_str, ...) \
+	#define LOG_DEBUG(logger, fmt_str, ...) \
 		if(logger->severity() <= ember::log::Severity::debug) \
 			logger->fmt_write<true>(ember::log::Severity::debug, fmt_str __VA_OPT__(,) __VA_ARGS__);
 #else
-	#define LOG_DEBUG_ASYNC(logger, fmt_str, ...) \
+	#define LOG_DEBUG(logger, fmt_str, ...) \
 		if(false);
 #endif
 
 #if !defined(NO_LOGGING) && !defined(NO_INFO_LOGGING)
-	#define LOG_INFO_ASYNC(logger, fmt_str, ...) \
+	#define LOG_INFO(logger, fmt_str, ...) \
 		if(logger->severity() <= ember::log::Severity::info) \
 			logger->fmt_write<true>(ember::log::Severity::info, fmt_str __VA_OPT__(,) __VA_ARGS__);
 #else
-	#define LOG_INFO_ASYNC(logger, fmt_str, ...) \
+	#define LOG_INFO(logger, fmt_str, ...) \
 		if(false);
 #endif
 
 #if !defined(NO_LOGGING) && !defined(NO_WARN_LOGGING)
-	#define LOG_WARN_ASYNC(logger, fmt_str, ...) \
+	#define LOG_WARN(logger, fmt_str, ...) \
 		if(logger->severity() <= ember::log::Severity::warn) \
 			logger->fmt_write<true>(ember::log::Severity::warn, fmt_str __VA_OPT__(,) __VA_ARGS__);
 #else
-	#define LOG_WARN_ASYNC(logger, fmt_str, ...) \
+	#define LOG_WARN(logger, fmt_str, ...) \
 		if(false);
 #endif
 
 #if !defined(NO_LOGGING) && !defined(NO_ERROR_LOGGING)
-	#define LOG_ERROR_ASYNC(logger, fmt_str, ...) \
+	#define LOG_ERROR(logger, fmt_str, ...) \
 		if(logger->severity() <= ember::log::Severity::error) \
 			logger->fmt_write<true>(ember::log::Severity::error, fmt_str __VA_OPT__(,) __VA_ARGS__);
 #else
-	#define LOG_ERROR_ASYNC(logger, fmt_str, ...) \
+	#define LOG_ERROR(logger, fmt_str, ...) \
 		if(false);
 #endif
 
 #if !defined(NO_LOGGING) && !defined(NO_FATAL_LOGGING)
-	#define LOG_FATAL_ASYNC(logger, fmt_str, ...) \
+	#define LOG_FATAL(logger, fmt_str, ...) \
 		if(logger->severity() <= ember::log::Severity::fatal) \
 			logger->fmt_write<true>(ember::log::Severity::fatal, fmt_str __VA_OPT__(,) __VA_ARGS__);
 #else
-	#define LOG_FATAL_ASYNC(logger, fmt_str, ...) \
+	#define LOG_FATAL(logger, fmt_str, ...) \
 		if(false);
 #endif
 
 #if !defined(NO_LOGGING) && !defined(NO_CONSOLE_LOGGING)
-#define LOG_CONSOLE_ASYNC(logger, fmt_str, ...) \
+#define LOG_CONSOLE(logger, fmt_str, ...) \
 		if(logger->severity() <= ember::log::Severity::console) \
 			logger->fmt_write<true>(ember::log::Severity::console, fmt_str __VA_OPT__(,) __VA_ARGS__);
 #else
-#define LOG_CONSOLE_ASYNC(logger, fmt_str, ...) \
+#define LOG_CONSOLE(logger, fmt_str, ...) \
 		if(false);
 #endif
 
 #if !defined(NO_LOGGING) && !defined(NO_CONSOLE_LOGGING)
-#define LOG_CONSOLE_ERROR_ASYNC(logger, fmt_str, ...) \
+#define LOG_CONERR(logger, fmt_str, ...) \
 		if(logger->severity() <= ember::log::Severity::console_error) \
 			logger->fmt_write<true>(ember::log::Severity::console_error, fmt_str __VA_OPT__(,) __VA_ARGS__);
 #else
-#define LOG_CONSOLE_ERROR_ASYNC(logger, fmt_str, ...) \
+#define LOG_CONERR(logger, fmt_str, ...) \
 		if(false);
 #endif
 
 #if !defined(NO_LOGGING) && !defined(NO_TRACE_LOGGING)
-	#define LOG_TRACE_SYNC(logger, fmt_str, ...) \
+	#define SLOG_TRACE(logger, fmt_str, ...) \
 		if(logger->severity() <= ember::log::Severity::trace) \
 			logger->fmt_write<false>(ember::log::Severity::trace, fmt_str __VA_OPT__(,) __VA_ARGS__);
 #else
-	#define LOG_TRACE_SYNC(logger, fmt_str, ...) \
+	#define SLOG_TRACE(logger, fmt_str, ...) \
 		if(false);
 #endif
 
 #if !defined(NO_LOGGING) && !defined(NO_DEBUG_LOGGING)
-	#define LOG_DEBUG_SYNC(logger, fmt_str, ...) \
+	#define SLOG_DEBUG(logger, fmt_str, ...) \
 		if(logger->severity() <= ember::log::Severity::debug) \
 			logger->fmt_write<false>(ember::log::Severity::debug, fmt_str __VA_OPT__(,) __VA_ARGS__);
 #else
-	#define LOG_DEBUG_SYNC(logger, fmt_str, ...) \
+	#define SLOG_DEBUG(logger, fmt_str, ...) \
 		if(false);
 #endif
 
 #if !defined(NO_LOGGING) && !defined(NO_INFO_LOGGING)
-	#define LOG_INFO_SYNC(logger, fmt_str, ...) \
+	#define SLOG_INFO(logger, fmt_str, ...) \
 		if(logger->severity() <= ember::log::Severity::info) \
 			logger->fmt_write<false>(ember::log::Severity::info, fmt_str __VA_OPT__(,) __VA_ARGS__);
 #else
-	#define LOG_INFO_SYNC(logger, fmt_str, ...) \
+	#define SLOG_INFO(logger, fmt_str, ...) \
 		if(false);
 #endif
 
 #if !defined(NO_LOGGING) && !defined(NO_WARN_LOGGING)
-	#define LOG_WARN_SYNC(logger, fmt_str, ...) \
+	#define SLOG_WARN(logger, fmt_str, ...) \
 		if(logger->severity() <= ember::log::Severity::warn) \
 			logger->fmt_write<false>(ember::log::Severity::warn, fmt_str __VA_OPT__(,) __VA_ARGS__);
 #else
-	#define LOG_WARN_SYNC(logger, fmt_str, ...) \
+	#define SLOG_WARN(logger, fmt_str, ...) \
 		if(false);
 #endif
 
 #if !defined(NO_LOGGING) && !defined(NO_ERROR_LOGGING)
-	#define LOG_ERROR_SYNC(logger, fmt_str, ...) \
+	#define SLOG_ERROR(logger, fmt_str, ...) \
 		if(logger->severity() <= ember::log::Severity::error) \
 			logger->fmt_write<false>(ember::log::Severity::error, fmt_str __VA_OPT__(,) __VA_ARGS__);
 #else
-	#define LOG_ERROR_SYNC(logger, fmt_str, ...) \
+	#define SLOG_ERROR(logger, fmt_str, ...) \
 		if(false);
 #endif
 
 #if !defined(NO_LOGGING) && !defined(NO_FATAL_LOGGING)
-	#define LOG_FATAL_SYNC(logger, fmt_str, ...) \
+	#define SLOG_FATAL(logger, fmt_str, ...) \
 		if(logger->severity() <= ember::log::Severity::fatal) \
 			logger->fmt_write<false>(ember::log::Severity::fatal, fmt_str __VA_OPT__(,) __VA_ARGS__);
 #else
-	#define LOG_FATAL_SYNC(logger, fmt_str, ...) \
+	#define SLOG_FATAL(logger, fmt_str, ...) \
 		if(false);
 #endif
 
 #if !defined(NO_LOGGING) && !defined(NO_CONSOLE_LOGGING)
-#define LOG_CONSOLE_SYNC(logger, fmt_str, ...) \
+#define SLOG_CONSOLE(logger, fmt_str, ...) \
 		if(logger->severity() <= ember::log::Severity::console) \
 			logger->fmt_write<false>(ember::log::Severity::console, fmt_str __VA_OPT__(,) __VA_ARGS__);
 #else
-#define LOG_CONSOLE_SYNC(logger, fmt_str, ...) \
+#define SLOG_CONSOLE(logger, fmt_str, ...) \
 		if(false);
 #endif
 
 #if !defined(NO_LOGGING) && !defined(NO_CONSOLE_LOGGING)
-#define LOG_CONSOLE_ERROR_SYNC(logger, fmt_str, ...) \
+#define SLOG_CONERR(logger, fmt_str, ...) \
 		if(logger->severity() <= ember::log::Severity::console_error) \
 			logger->fmt_write<false>(ember::log::Severity::console_error, fmt_str __VA_OPT__(,) __VA_ARGS__);
 #else
-#define LOG_CONSOLE_ERROR_SYNC(logger, fmt_str, ...) \
+#define SLOG_CONERR(logger, fmt_str, ...) \
 		if(false);
 #endif
 

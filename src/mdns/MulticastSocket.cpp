@@ -42,7 +42,7 @@ MulticastSocket::MulticastSocket(boost::asio::io_context& context,
 }
 
 void MulticastSocket::receive() {
-	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	LOG_TRACE(logger_, log_func);
 
 	if(!socket_.is_open()) {
 		return;
@@ -65,10 +65,10 @@ void MulticastSocket::receive() {
 
 void MulticastSocket::handle_datagram(const std::span<const std::uint8_t> datagram,
                                       const boost::asio::ip::udp::endpoint& ep) {
-	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	LOG_TRACE(logger_, log_func);
 
     if(!handler_) {
-		LOG_ERROR(logger_) << "No packet handler installed?" << LOG_ASYNC; // todo, rework
+		LOG_ERROR(logger_, "No packet handler installed?"); // todo, rework
 		return;
     }
 
@@ -86,7 +86,7 @@ void MulticastSocket::handle_datagram(const std::span<const std::uint8_t> datagr
 	}
 
 	if(datagram.size() > max_size) {
-		LOG_WARN_ASYNC(
+		LOG_WARN(
 			logger_, "Datagram exceeded maximum permitted size of {} bytes. Skipping.", max_size
 		);
 
@@ -97,7 +97,7 @@ void MulticastSocket::handle_datagram(const std::span<const std::uint8_t> datagr
 }
 
 void MulticastSocket::send(std::unique_ptr<std::vector<std::uint8_t>> buffer) {
-	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	LOG_TRACE(logger_, log_func);
 
 	if(!socket_.is_open()) {
 		return;
@@ -106,22 +106,22 @@ void MulticastSocket::send(std::unique_ptr<std::vector<std::uint8_t>> buffer) {
 	socket_.async_send_to(boost::asio::buffer(*buffer), ep_,
 		[&, buff = std::move(buffer)](const boost::system::error_code& ec, std::size_t size) {
 			if(ec) {
-				LOG_ERROR_ASYNC(logger_, "Error on sending datagram: {}, size {}", ec.message(), size);
+				LOG_ERROR(logger_, "Error on sending datagram: {}, size {}", ec.message(), size);
 			}
 		}
 	);
 }
 
 void MulticastSocket::register_handler(Handler* handler) {
-	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	LOG_TRACE(logger_, log_func);
     handler_ = handler;
 }
 
 void MulticastSocket::deregister_handler(const Handler* handler) {
-	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	LOG_TRACE(logger_, log_func);
 
 	if(handler != handler_) {
-		LOG_ERROR_ASYNC(logger_, "Attempted to deregister handler that wasn't registered");
+		LOG_ERROR(logger_, "Attempted to deregister handler that wasn't registered");
 	}
 
 	handler_ = nullptr;

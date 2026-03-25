@@ -35,21 +35,21 @@ int Service::run(const boost::program_options::variables_map& args) {
 	const auto time = std::chrono::steady_clock::now();
 	auto ctx = context.get();
 
-	LOG_INFO_SYNC(logger, "Loading DBC data...");
+	SLOG_INFO(logger, "Loading DBC data...");
 
 	dbc::DiskLoader loader(args["dbc.path"].as<std::string>(), [&](auto message) {
-		LOG_DEBUG(logger) << message << LOG_SYNC;
+		SLOG_DEBUG(logger, message);
 	});
 
 	ctx->dbcs = std::make_unique<dbc::Storage>(std::move(loader.load(dbcs_required)));
 
-	LOG_INFO_SYNC(logger, "Resolving DBC references...");
+	SLOG_INFO(logger, "Resolving DBC references...");
 	dbc::link(*ctx->dbcs);
 
 	const auto tip = random_tip(ctx->dbcs->game_tips);
 
 	if(!tip.empty()) {
-		LOG_INFO_SYNC(logger, "Tip: {}", tip);
+		SLOG_INFO(logger, "Tip: {}", tip);
 	}
 
 	const auto& maps = args["world.map_id"].as<std::vector<std::int32_t>>();
@@ -58,7 +58,7 @@ int Service::run(const boost::program_options::variables_map& args) {
 		return EXIT_FAILURE;
 	}
 
-	LOG_INFO_SYNC(logger, "Serving as world server for maps:");
+	SLOG_INFO(logger, "Serving as world server for maps:");
 	print_maps(maps, ctx->dbcs->map, logger);
 
 	// temporary bits
@@ -72,14 +72,14 @@ int Service::run(const boost::program_options::variables_map& args) {
 	// end of temporary bits
 
 	// All done setting up
-	LOG_INFO_SYNC(logger, "{} started successfully in {}", app_name, utility::time_elapsed_format(time));
+	SLOG_INFO(logger, "{} started successfully in {}", app_name, utility::time_elapsed_format(time));
 	start_time = time;
 
 	map::run(logger, stop_flag);
 
 	// temp bits again
 	ctx->spark->shutdown();
-	LOG_INFO_SYNC(logger, "{} terminated", app_name);
+	SLOG_INFO(logger, "{} terminated", app_name);
 	return EXIT_SUCCESS;
 }
 

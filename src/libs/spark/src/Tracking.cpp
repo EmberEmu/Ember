@@ -60,7 +60,7 @@ void Tracking::on_message(const Link& link,
 
 	// request has already expired or never existed
 	if(it == requests_.end()) {
-		LOG_DEBUG_ASYNC(logger_, "[spark] Received invalid or expired tracked response");
+		LOG_DEBUG(logger_, "[spark] Received invalid or expired tracked response");
 		return;
 	}
 

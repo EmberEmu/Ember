@@ -46,7 +46,7 @@ int Service::run(const opts::variables_map& args) try {
 	ioc.run();
 	return EXIT_SUCCESS;
 } catch(const std::exception& e) {
-	LOG_FATAL_SYNC(logger, e.what());
+	SLOG_FATAL(logger, e.what());
 	return EXIT_FAILURE;
 }
 
@@ -54,21 +54,21 @@ void Service::initialise(const opts::variables_map& args) {
 	const auto time = std::chrono::steady_clock::now();
 	auto ctx = context.get();
 
-	LOG_INFO_SYNC(logger, "Loading DBC data...");
+	SLOG_INFO(logger, "Loading DBC data...");
 	dbc::DiskLoader loader(
 		args["dbc.path"].as<std::string>(), [&](auto message) {
-			LOG_DEBUG(logger) << message << LOG_SYNC;
+			SLOG_DEBUG(logger, message);
 		}
 	);
 
 	auto dbcs = loader.load(dbcs_required);
 	ctx->dbcs = std::make_unique<dbc::Storage>(std::move(dbcs));
 
-	LOG_INFO_SYNC(logger, "Resolving DBC references...");
+	SLOG_INFO(logger, "Resolving DBC references...");
 	dbc::link(*ctx->dbcs);
 
 	// todo, should probably do this somewhere else
-	LOG_INFO_SYNC(logger, "Compiling DBC regular expressions...");
+	SLOG_INFO(logger, "Compiling DBC regular expressions...");
 	std::vector<utility::pcre::Result> profanity, reserved, spam;
 
 	for(auto& record : ctx->dbcs->names_profanity | std::views::values) {
@@ -84,7 +84,7 @@ void Service::initialise(const opts::variables_map& args) {
 	}
 
 	const auto concurrency = thread::hardware_concurrency([&](auto msg) {
-		LOG_ERROR_SYNC(logger, msg);
+		SLOG_ERROR(logger, msg);
 	});
 
 	const auto min_conns = args["database.min_connections"].as<unsigned short>();
@@ -94,14 +94,14 @@ void Service::initialise(const opts::variables_map& args) {
 		max_conns = concurrency;
 	}
 
-	LOG_INFO_SYNC(logger, "Max. database connections set to {} ({} cores)", max_conns, concurrency);
+	SLOG_INFO(logger, "Max. database connections set to {} ({} cores)", max_conns, concurrency);
 
-	LOG_INFO_SYNC(logger, "Initialising database connection pool...");
+	SLOG_INFO(logger, "Initialising database connection pool...");
 	ctx->conn_pool = std::make_unique<connection_pool::Pool<drivers::AutoSelect>>(
 		init_database(args, logger)
 	);
 
-	LOG_INFO_SYNC(logger, "Initialising DAOs...");
+	SLOG_INFO(logger, "Initialising DAOs...");
 	auto character_dao = dal::character_dao(ctx->conn_pool->get());
 	ctx->character_dao = std::make_unique<decltype(character_dao)>(std::move(character_dao));
 
@@ -111,10 +111,10 @@ void Service::initialise(const opts::variables_map& args) {
 		.max_chars_slots_server = args["max_chars_slots_server"].as<unsigned int>()
 	};
 
-	LOG_INFO_SYNC(logger, "Starting thread pool with {} threads...", concurrency);
+	SLOG_INFO(logger, "Starting thread pool with {} threads...", concurrency);
 	ctx->thread_pool = std::make_unique<thread::ThreadPool>(concurrency);
 
-	LOG_INFO_SYNC(logger, "Starting character handler...");
+	SLOG_INFO(logger, "Starting character handler...");
 	ctx->character_handler = std::make_unique<CharacterHandler>(
 		std::move(profanity), std::move(reserved), std::move(spam),
 	    *ctx->dbcs, *ctx->character_dao, config, *ctx->thread_pool, logger
@@ -123,7 +123,7 @@ void Service::initialise(const opts::variables_map& args) {
 	const auto&  s_address = args["spark.address"].as<std::string>();
 	const auto s_port = args["spark.port"].as<std::uint16_t>();
 
-	LOG_INFO_SYNC(logger, "Starting RPC services...");
+	SLOG_INFO(logger, "Starting RPC services...");
 	ctx->spark = std::make_unique<spark::Server>(
 		ioc, app_name, s_address, s_port, logger
 	);
@@ -134,7 +134,7 @@ void Service::initialise(const opts::variables_map& args) {
 	
 	// All done setting up
 	boost::asio::dispatch(ioc, [&, time]() {
-		LOG_INFO_SYNC(logger, "{} started successfully in {}", app_name,
+		SLOG_INFO(logger, "{} started successfully in {}", app_name,
 			utility::time_elapsed_format(time));
 
 		start_time = std::chrono::steady_clock::now();
@@ -148,7 +148,7 @@ void Service::stop() {
 		return;
 	}
 
-	LOG_TRACE_SYNC(logger, "Service termination requested");
+	SLOG_TRACE(logger, "Service termination requested");
 	auto ctx = context.get();
 
 	boost::asio::post(ioc, [&] {
@@ -159,7 +159,7 @@ void Service::stop() {
 }
 
 Service::~Service() {
-	LOG_TRACE_SYNC(logger, "Service termination requested");
+	SLOG_TRACE(logger, "Service termination requested");
 	stop();
 }
 

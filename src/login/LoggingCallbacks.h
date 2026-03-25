@@ -21,23 +21,23 @@ inline void forward_log_callback(ports::Severity severity, const std::string_vie
 
 	switch(severity) {
 		case ports::Severity::debug:
-			LOG_DEBUG_ASYNC(logger, fmt, message);
+			LOG_DEBUG(logger, fmt, message);
 			break;
 		case ports::Severity::info:
-			LOG_INFO_ASYNC(logger, fmt, message);
+			LOG_INFO(logger, fmt, message);
 			break;
 		case ports::Severity::warn:
-			LOG_WARN_ASYNC(logger, fmt, message);
+			LOG_WARN(logger, fmt, message);
 			break;
 		case ports::Severity::error:
-			LOG_ERROR_ASYNC(logger, fmt, message);
+			LOG_ERROR(logger, fmt, message);
 			break;
 		case ports::Severity::fatal:
-			LOG_FATAL_ASYNC(logger, fmt, message);
+			LOG_FATAL(logger, fmt, message);
 			break;
 		default:
-			LOG_ERROR_ASYNC(logger, "Unhandled port forward log callback severity");
-			LOG_ERROR_ASYNC(logger, fmt, message);
+			LOG_ERROR(logger, "Unhandled port forward log callback severity");
+			LOG_ERROR(logger, fmt, message);
 	}
 }
 
@@ -47,26 +47,26 @@ inline static void stun_log_callback(stun::Severity severity, stun::Error reason
 
 	switch(severity) {
 		case stun::Severity::trace:
-			LOG_TRACE_SYNC(logger, fmt, reason_str);
+			SLOG_TRACE(logger, fmt, reason_str);
 			break;
 		case stun::Severity::debug:
-			LOG_DEBUG_SYNC(logger, fmt, reason_str);
+			SLOG_DEBUG(logger, fmt, reason_str);
 			break;
 		case stun::Severity::info:
-			LOG_INFO_SYNC(logger, fmt, reason_str);
+			SLOG_INFO(logger, fmt, reason_str);
 			break;
 		case stun::Severity::warn:
-			LOG_WARN_SYNC(logger, fmt, reason_str);
+			SLOG_WARN(logger, fmt, reason_str);
 			break;
 		case stun::Severity::error:
-			LOG_ERROR_SYNC(logger, fmt, reason_str);
+			SLOG_ERROR(logger, fmt, reason_str);
 			break;
 		case stun::Severity::fatal:
-			LOG_FATAL_SYNC(logger, fmt, reason_str);
+			SLOG_FATAL(logger, fmt, reason_str);
 			break;
 		default:
-			LOG_ERROR_ASYNC(logger, "Unhandled STUN log callback severity");
-			LOG_ERROR_SYNC(logger, fmt, reason_str);
+			LOG_ERROR(logger, "Unhandled STUN log callback severity");
+			SLOG_ERROR(logger, fmt, reason_str);
 	}
 }
 
@@ -75,23 +75,23 @@ inline void pool_log_callback(connection_pool::Severity severity, std::string_vi
 
 	switch(severity) {
 		case connection_pool::Severity::debug:
-			LOG_DEBUG_ASYNC(logger, fmt, message);
+			LOG_DEBUG(logger, fmt, message);
 			break;
 		case connection_pool::Severity::info:
-			LOG_INFO_ASYNC(logger, fmt, message);
+			LOG_INFO(logger, fmt, message);
 			break;
 		case connection_pool::Severity::warn:
-			LOG_WARN_ASYNC(logger, fmt, message);
+			LOG_WARN(logger, fmt, message);
 			break;
 		case connection_pool::Severity::error:
-			LOG_ERROR_ASYNC(logger, fmt, message);
+			LOG_ERROR(logger, fmt, message);
 			break;
 		case connection_pool::Severity::fatal:
-			LOG_FATAL_ASYNC(logger, fmt, message);
+			LOG_FATAL(logger, fmt, message);
 			break;
 		default:
-			LOG_ERROR_ASYNC(logger, "Unhandled connection pool log callback severity");
-			LOG_ERROR_ASYNC(logger, fmt, message);
+			LOG_ERROR(logger, "Unhandled connection pool log callback severity");
+			LOG_ERROR(logger, fmt, message);
 	}
 }
 

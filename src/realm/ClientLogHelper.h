@@ -11,22 +11,22 @@
 #include <logger/Logger.h>
 
 #define CLIENT_TRACE(logger, ctx) \
-	LOG_TRACE(logger) << ctx.handler.client_identify() << ": "
+	LOG_TRACE_STREAM(logger) << ctx.handler.client_identify() << ": "
 
 #define CLIENT_DEBUG(logger, ctx) \
-	LOG_DEBUG(logger) << ctx.handler.client_identify() << ": "
+	LOG_DEBUG_STREAM(logger) << ctx.handler.client_identify() << ": "
 
 #define CLIENT_INFO(logger, ctx) \
-	LOG_INFO(logger) << ctx.handler.client_identify() << ": "
+	LOG_INFO_STREAM(logger) << ctx.handler.client_identify() << ": "
 
 #define CLIENT_WARN(logger, ctx) \
-    LOG_WARN(logger) << ctx.handler.client_identify() << ": "
+    LOG_WARN_STREAM(logger) << ctx.handler.client_identify() << ": "
 
 #define CLIENT_ERROR(logger, ctx) \
-	LOG_ERROR(logger) << ctx.handler.client_identify() << ": "
+	LOG_ERROR_STREAM(logger) << ctx.handler.client_identify() << ": "
 
 #define CLIENT_FATAL(logger, ctx) \
-	LOG_FATAL(logger) << ctx.handler.client_identify() << ": "
+	LOG_FATAL_STREAM(logger) << ctx.handler.client_identify() << ": "
 
 #define CLIENT_TRACE_GLOB(ctx) \
 	CLIENT_TRACE(ember::log::global_logger(), ctx)

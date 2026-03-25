@@ -47,16 +47,16 @@ int main(int argc, const char* argv[]) try {
 	log::Logger logger;
 	utility::configure_logger(logger, args);
 	log::global_logger(logger);
-	LOG_INFO_SYNC(logger, "Logger configured successfully");
+	SLOG_INFO(logger, "Logger configured successfully");
 
-	LOG_DEBUG_SYNC(logger, "Registering command handlers...");
+	SLOG_DEBUG(logger, "Registering command handlers...");
 	const auto suggestions = args["console_log.suggestions"].as<bool>();
 	commands::Registry registry;
 	utility::register_command_handlers(registry, logger, suggestions);
 	utility::register_shared_commands(registry, logger);
 
 	const auto ret = run(args, logger, registry);
-	LOG_INFO_SYNC(logger, "{} terminated (returned '{}')", dns::app_name, ret);
+	SLOG_INFO(logger, "{} terminated (returned '{}')", dns::app_name, ret);
 	return ret;
 } catch(const std::exception& e) {
 	std::cerr << e.what();
@@ -74,7 +74,7 @@ int run(const opts::variables_map& args, log::Logger& logger, commands::Registry
 			return;
 		}
 
-		LOG_DEBUG_SYNC(logger, "Received signal {}({})", utility::sig_str(signal), signal);
+		SLOG_DEBUG(logger, "Received signal {}({})", utility::sig_str(signal), signal);
 		service.stop();
 	});
 

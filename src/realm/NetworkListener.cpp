@@ -17,7 +17,7 @@
 namespace ember::realm {
 
 void NetworkListener::accept_connection() {
-	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	LOG_TRACE(logger_, log_func);
 
 	if(!acceptor_.is_open()) {
 		return;
@@ -31,7 +31,7 @@ void NetworkListener::accept_connection() {
 		if(!ec) {
 			dispatch_socket();
 		} else {
-			LOG_DEBUG_ASYNC(logger_, "Unable to accept connection, {}", ec.message());
+			LOG_DEBUG(logger_, "Unable to accept connection, {}", ec.message());
 		}
 
 		++index_;
@@ -46,7 +46,7 @@ void NetworkListener::dispatch_socket() {
 	const auto ep = socket_.remote_endpoint(ec);
 
 	if(!ec) {
-		LOG_DEBUG_ASYNC(logger_, "Accepted connection from {}", ep.address().to_string());
+		LOG_DEBUG(logger_, "Accepted connection from {}", ep.address().to_string());
 		auto executor = socket_.get_executor();
 
 		boost::asio::dispatch(executor, [&, socket = std::move(socket_), i = index_]() mutable {
@@ -54,7 +54,7 @@ void NetworkListener::dispatch_socket() {
 			sessions_.start(std::move(client));
 		});
 	} else {
-		LOG_DEBUG_ASYNC(logger_, "Aborted connection, remote peer disconnected");
+		LOG_DEBUG(logger_, "Aborted connection, remote peer disconnected");
 	}
 }
 
@@ -65,7 +65,7 @@ void NetworkListener::shutdown() {
 		return;
 	}
 
-	LOG_TRACE(logger_) << log_func << LOG_ASYNC;
+	LOG_TRACE(logger_, log_func);
 	acceptor_.close();
 }
 
