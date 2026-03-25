@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <protocol/Concepts.h>
 #include <protocol/StreamResult.h>
 #include <protocol/ResultCodes.h>
 #include <array>
@@ -34,7 +35,7 @@ struct Weather final {
 	std::uint32_t sound_id;
 	WeatherChangeType change;
 
-	StreamResult read_from_stream(auto& stream) try {
+	StreamResult read_from_stream(le_stream auto& stream) try {
 		stream >> type;
 		stream >> grade;
 		stream >> sound_id;
@@ -44,7 +45,7 @@ struct Weather final {
 		return StreamResult::caught_exception;
 	}
 
-	StreamResult write_to_stream(auto& stream) const try {
+	StreamResult write_to_stream(le_stream auto& stream) const try {
 		stream << type;
 		stream << grade;
 		stream << sound_id;

@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <protocol/Concepts.h>
 #include <protocol/StreamResult.h>
 #include <protocol/ResultCodes.h>
 #include <array>
@@ -19,14 +20,14 @@ namespace ember::protocol::server {
 struct AccountDataTimes final {
 	std::array<std::uint32_t, 32> data{};
 
-	StreamResult read_from_stream(auto& stream) try {
+	StreamResult read_from_stream(le_stream auto& stream) try {
 		stream >> data;
 		return StreamResult::success;
 	} catch(const std::exception&) {
 		return StreamResult::caught_exception;
 	}
 
-	StreamResult write_to_stream(auto& stream) const try {
+	StreamResult write_to_stream(le_stream auto& stream) const try {
 		stream << data;
 		return StreamResult::success;
 	} catch(const std::exception&) {

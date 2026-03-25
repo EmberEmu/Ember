@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <protocol/Concepts.h>
 #include <protocol/StreamResult.h>
 #include <protocol/ResultCodes.h>
 #include <protocol/MovementInfo.h>
@@ -19,7 +20,7 @@ namespace ember::protocol::client {
 struct MoveFallLand final {
 	MovementInfo info;
 
-	StreamResult read_from_stream(auto& stream) try {
+	StreamResult read_from_stream(le_stream auto& stream) try {
 		stream >> info.flags;
 		stream >> info.timestamp;
 		stream >> info.position;
@@ -51,7 +52,7 @@ struct MoveFallLand final {
 		return StreamResult::caught_exception;
 	}
 
-	StreamResult write_to_stream(auto& stream) const try {
+	StreamResult write_to_stream(le_stream auto& stream) const try {
 		stream << info.flags;
 		stream << info.timestamp;
 		stream << info.position;

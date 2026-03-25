@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <protocol/Concepts.h>
 #include <protocol/StreamResult.h>
 #include <shared/utility/UTF8String.h>
 #include <stdexcept>
@@ -20,7 +21,7 @@ struct CharacterRename final {
 	std::uint64_t id;
 	utf8_string name;
 
-	StreamResult read_from_stream(auto& stream) try {
+	StreamResult read_from_stream(le_stream auto& stream) try {
 		stream >> id;
 		stream >> spark::io::null_terminated(name);
 		return stream? StreamResult::success : StreamResult::stream_error;
@@ -28,7 +29,7 @@ struct CharacterRename final {
 		return StreamResult::caught_exception;
 	}
 
-	StreamResult write_to_stream(auto& stream) const try {
+	StreamResult write_to_stream(le_stream auto& stream) const try {
 		stream << id;
 		stream << spark::io::null_terminated(name);
 		return stream? StreamResult::success : StreamResult::stream_error;

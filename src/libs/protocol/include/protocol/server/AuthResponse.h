@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <protocol/Concepts.h>
 #include <protocol/StreamResult.h>
 #include <protocol/ResultCodes.h>
 #include <stdexcept>
@@ -21,7 +22,7 @@ struct AuthResponse final {
 	std::uint8_t billing_flags = 0;
 	std::uint32_t billing_rested = 0;
 
-	StreamResult read_from_stream(auto& stream) try {
+	StreamResult read_from_stream(le_stream auto& stream) try {
 		stream >> result;
 
 		if(result == Result::auth_wait_queue) {
@@ -39,7 +40,7 @@ struct AuthResponse final {
 		return StreamResult::caught_exception;
 	}
 
-	StreamResult write_to_stream(auto& stream) const try {
+	StreamResult write_to_stream(le_stream auto& stream) const try {
 		stream << result;
 
 		if(result == Result::auth_wait_queue) {

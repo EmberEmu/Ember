@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <protocol/Concepts.h>
 #include <protocol/StreamResult.h>
 #include <stdexcept>
 #include <cstdint>
@@ -19,7 +20,7 @@ struct Ping final {
 	std::uint32_t sequence_id;
 	std::uint32_t latency;
 
-	StreamResult read_from_stream(auto& stream) try {
+	StreamResult read_from_stream(le_stream auto& stream) try {
 		stream >> sequence_id;
 		stream >> latency;
 		return stream? StreamResult::success : StreamResult::stream_error;
@@ -27,7 +28,7 @@ struct Ping final {
 		return StreamResult::caught_exception;
 	}
 
-	StreamResult write_to_stream(auto& stream) const try {
+	StreamResult write_to_stream(le_stream auto& stream) const try {
 		stream << sequence_id;
 		stream << latency;
 		return stream? StreamResult::success : StreamResult::stream_error;

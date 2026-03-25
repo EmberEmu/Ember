@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <protocol/Concepts.h>
 #include <protocol/StreamResult.h>
 #include <protocol/ResultCodes.h>
 #include <spark/buffers/Shared.h>
@@ -22,7 +23,7 @@ struct CharacterRename final {
 	std::uint64_t id;
 	utf8_string name;
 	
-	StreamResult read_from_stream(auto& stream) try {
+	StreamResult read_from_stream(le_stream auto& stream) try {
 		stream >> result;
 
 		if(result == protocol::Result::response_success) {
@@ -35,7 +36,7 @@ struct CharacterRename final {
 		return StreamResult::caught_exception;
 	}
 
-	StreamResult write_to_stream(auto& stream) const try {
+	StreamResult write_to_stream(le_stream auto& stream) const try {
 		stream << result;
 
 		if(result == protocol::Result::response_success) {

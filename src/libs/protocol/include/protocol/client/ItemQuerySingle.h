@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <protocol/Concepts.h>
 #include <protocol/StreamResult.h>
 #include <protocol/ResultCodes.h>
 #include <stdexcept>
@@ -19,7 +20,7 @@ struct ItemQuerySingle final {
 	std::uint32_t item;
 	std::uint64_t query;
 
-	StreamResult read_from_stream(auto& stream) try {
+	StreamResult read_from_stream(le_stream auto& stream) try {
 		stream >> item;
 		stream >> query;
 		return stream? StreamResult::success : StreamResult::failed;
@@ -27,7 +28,7 @@ struct ItemQuerySingle final {
 		return StreamResult::caught_exception;
 	}
 
-	StreamResult write_to_stream(auto& stream) const try {
+	StreamResult write_to_stream(le_stream auto& stream) const try {
 		stream << item;
 		stream << query;
 		return stream? StreamResult::success : StreamResult::failed;

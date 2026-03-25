@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <protocol/Concepts.h>
 #include <protocol/StreamResult.h>
 #include <protocol/ResultCodes.h>
 #include <stdexcept>
@@ -85,7 +86,7 @@ struct ChannelNotify final {
 	ChatNotify type;
 	std::string name;
 
-	StreamResult read_from_stream(auto& stream) try {
+	StreamResult read_from_stream(le_stream auto& stream) try {
 		stream >> type;
 		stream >> spark::io::null_terminated(name);
 		return stream? StreamResult::success : StreamResult::failed;
@@ -93,7 +94,7 @@ struct ChannelNotify final {
 		return StreamResult::caught_exception;
 	}
 
-	StreamResult write_to_stream(auto& stream) const try {
+	StreamResult write_to_stream(le_stream auto& stream) const try {
 		stream << type;
 		stream << spark::io::null_terminated(name);
 

@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <protocol/Concepts.h>
 #include <protocol/StreamResult.h>
 #include <protocol/ResultCodes.h>
 #include <array>
@@ -58,14 +59,14 @@ struct UpdateObject final {
 		50, 0, 0, 0, // UNIT_FIELD_NATIVEDISPLAYID (50, Human Female)
 	};
 
-	StreamResult read_from_stream(auto& stream) try {
+	StreamResult read_from_stream(le_stream auto& stream) try {
 		stream >> data;
 		return stream? StreamResult::success : StreamResult::failed;
 	} catch(const std::exception&) {
 		return StreamResult::caught_exception;
 	}
 
-	StreamResult write_to_stream(auto& stream) const try {
+	StreamResult write_to_stream(le_stream auto& stream) const try {
 		stream << data;
 		return stream? StreamResult::success : StreamResult::failed;
 	} catch(const std::exception&) {

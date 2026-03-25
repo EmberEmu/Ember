@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <protocol/Concepts.h>
 #include <protocol/StreamResult.h>
 #include <protocol/ResultCodes.h>
 #include <array>
@@ -144,7 +145,7 @@ struct ItemQuerySingleResponse final {
 			0, 0, 0, 0, // bag_family: BagFamily NONE (0)
 	};
 
-	StreamResult read_from_stream(auto& stream) try {
+	StreamResult read_from_stream(le_stream auto& stream) try {
 		stream >> item;
 		stream >> data;
 		return stream? StreamResult::success : StreamResult::failed;
@@ -152,7 +153,7 @@ struct ItemQuerySingleResponse final {
 		return StreamResult::caught_exception;
 	}
 
-	StreamResult write_to_stream(auto& stream) const try {
+	StreamResult write_to_stream(le_stream auto& stream) const try {
 		stream << item;
 		stream << data;
 		return stream? StreamResult::success : StreamResult::failed;

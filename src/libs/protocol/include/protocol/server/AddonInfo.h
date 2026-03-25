@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <protocol/Concepts.h>
 #include <protocol/StreamResult.h>
 #include <protocol/ResultCodes.h>
 #include <spark/buffers/Shared.h>
@@ -56,13 +57,13 @@ struct AddonInfo final {
 	Result result;
 	std::vector<AddonData> addon_data;
 
-	StreamResult read_from_stream(auto& stream) try {
+	StreamResult read_from_stream(le_stream auto& stream) try {
 		return StreamResult::success;
 	} catch(const std::exception&) {
 		return StreamResult::failed;
 	}
 
-	StreamResult write_to_stream(auto& stream) const try {
+	StreamResult write_to_stream(le_stream auto& stream) const try {
 		for(auto& addon : addon_data) {
 			stream << addon.type;
 

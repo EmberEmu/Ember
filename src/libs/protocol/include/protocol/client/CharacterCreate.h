@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <protocol/Concepts.h>
 #include <protocol/StreamResult.h>
 #include <Character_generated.h>
 #include <shared/database/objects/Character.h>
@@ -22,7 +23,7 @@ namespace ember::protocol::client {
 struct CharacterCreate final {
 	rpc::Character::CharacterTemplateT character;
 	
-	StreamResult read_from_stream(auto& stream) try {
+	StreamResult read_from_stream(le_stream auto& stream) try {
 		stream >> spark::io::null_terminated(character.name);
 		stream >> character.race;
 		stream >> character.class_;
@@ -38,7 +39,7 @@ struct CharacterCreate final {
 		return StreamResult::caught_exception;
 	}
 
-	StreamResult write_to_stream(auto& stream) const try {
+	StreamResult write_to_stream(le_stream auto& stream) const try {
 		stream << spark::io::null_terminated(character.name);
 		stream << character.race;
 		stream << character.class_;
