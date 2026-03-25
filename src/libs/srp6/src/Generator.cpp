@@ -37,7 +37,6 @@ Botan::BigInt Generator::g_from_group(Group& group) {
 	std::terminate();
 }
 
-// todo: Botan 3 should have std::span overloads to clean this up
 Botan::BigInt Generator::n_from_group(Group& group) {
 	switch(group) {
 		case Group::g_256_bit:
