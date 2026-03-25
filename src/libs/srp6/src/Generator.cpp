@@ -41,21 +41,21 @@ Botan::BigInt Generator::g_from_group(Group& group) {
 Botan::BigInt Generator::n_from_group(Group& group) {
 	switch(group) {
 		case Group::g_256_bit:
-			return { g_256_bit.data(), g_256_bit.size() };
+			return Botan::BigInt(g_256_bit);
 		case Group::g_1024_bit:
-			return { g_1024_bit.data(), g_1024_bit.size() };
+			return Botan::BigInt(g_1024_bit);
 		case Group::g_1536_bit:
-			return { g_1536_bit.data(), g_1536_bit.size() };
+			return Botan::BigInt(g_1536_bit);
 		case Group::g_2048_bit:
-			return { g_2048_bit.data(), g_2048_bit.size() };
+			return Botan::BigInt(g_2048_bit);
 		case Group::g_3072_bit:
-			return { g_3072_bit.data(), g_3072_bit.size() };
+			return Botan::BigInt(g_3072_bit);
 		case Group::g_4096_bit:
-			return { g_4096_bit.data(), g_4096_bit.size() };
+			return Botan::BigInt(g_4096_bit);
 		case Group::g_6144_bit:
-			return { g_6144_bit.data(), g_6144_bit.size() };
+			return Botan::BigInt(g_6144_bit);
 		case Group::g_8192_bit:
-			return { g_8192_bit.data(), g_8192_bit.size() };
+			return Botan::BigInt(g_8192_bit);
 	}
 
 	BOOST_ASSERT_MSG(0, "Unhandled enum constant - this is an SRP6 library error!");
