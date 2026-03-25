@@ -18,12 +18,18 @@ namespace ember::realm {
 	#define PREALLOCATED_CLIENTS_PER_THREAD 4
 #endif
 
+#ifdef ENABLE_PAGE_LOCKING
+using PageLockPolicy = spark::io::PageLock;
+#else
+using PageLockPolicy = spark::io::NoPageLock;
+#endif
+
 using ClientAllocator = spark::io::TLSBlockAllocator<
 	Client,
 	PREALLOCATED_CLIENTS_PER_THREAD,
 	spark::io::NoRefCounting,
 	spark::io::SafeEntrant,
-	spark::io::PageLock
+	PageLockPolicy
 >;
 
 class ClientBuilder {

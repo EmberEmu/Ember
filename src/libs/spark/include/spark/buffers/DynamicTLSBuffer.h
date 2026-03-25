@@ -28,6 +28,12 @@ namespace ember::spark::io {
 // Cons: everything else.
 // 
 // TL;DR Do not use unless you know what you're doing.
+#ifdef ENABLE_PAGE_LOCKING
+using PageLockPolicy = spark::io::PageLock;
+#else
+using PageLockPolicy = spark::io::NoPageLock;
+#endif
+
 template<decltype(auto) block_size,
 	std::size_t count,
 	typename ref_count_policy = NoRefCounting,
@@ -35,7 +41,11 @@ template<decltype(auto) block_size,
 	typename storage_type = std::byte>
 using DynamicTLSBuffer = DynamicBuffer<block_size, storage_type,
 	TLSBlockAllocator<typename DynamicBuffer<
-		block_size>::storage_type, count, NoRefCounting, entrant_policy, spark::io::PageLock
+		block_size>::storage_type,
+		count,
+		NoRefCounting,
+		entrant_policy,
+		PageLockPolicy
 	>
 >;
 
