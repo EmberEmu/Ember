@@ -14,6 +14,7 @@
 #include <cstdlib>
 
 #define EMBER_DEBUG_ALLOCATORS
+#undef ENABLE_HUGE_PAGES // required for the over allocation test
 #include <spark/buffers/allocators/TLSBlockAllocator.h>
 
 using namespace ember;
