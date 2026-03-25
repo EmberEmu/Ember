@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 - 2025 Ember
+ * Copyright (c) 2024 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -30,9 +30,7 @@ concept seekable = writeable<buf_type>
 };
 
 template<typename buf_type>
-concept contiguous = requires(buf_type t) {
-	std::is_same_v<typename buf_type::contiguous, is_contiguous>;
-};
+concept contiguous = std::is_same_v<typename buf_type::contiguous, is_contiguous>;
 
 template<typename T>
 concept arithmetic = std::integral<T> || std::floating_point<T>;
