@@ -128,8 +128,8 @@ class BlockAllocator {
 	void allocate_storage() {
 #if (defined __linux__ || defined __unix__) && defined ENABLE_HUGE_PAGES
 		constexpr std::size_t align_to = HUGE_PAGE_MINIMUM;
-		constexpr auto rem = sizeof(Storage) % align_to;
-		constexpr auto alloc_size = rem == 0? sizeof(Storage) : sizeof(Storage) + (align_to - rem);
+		constexpr auto rem = sizeof(StorageType) % align_to;
+		constexpr auto alloc_size = rem == 0? sizeof(StorageType) : sizeof(StorageType) + (align_to - rem);
 
 		storage_ = static_cast<StorageType*>(
 			std::aligned_alloc(alloc_size, HUGE_PAGE_MINIMUM)
