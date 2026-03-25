@@ -131,10 +131,7 @@ class BlockAllocator {
 		constexpr auto rem = sizeof(StorageType) % align_to;
 		constexpr auto alloc_size = rem == 0? sizeof(StorageType) : sizeof(StorageType) + (align_to - rem);
 
-		storage_ = static_cast<StorageType*>(
-			std::aligned_alloc(alloc_size, HUGE_PAGE_MINIMUM)
-		);
-
+		storage_ = static_cast<StorageType*>(std::aligned_alloc(alloc_size, HUGE_PAGE_MINIMUM));
 		madvise(storage_->data(), alloc_size, MADV_HUGEPAGE);
 #else
 		storage_ = static_cast<StorageType*>(std::malloc(sizeof(StorageType)));
