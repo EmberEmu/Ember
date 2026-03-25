@@ -34,7 +34,7 @@ template<typename _ty,
 	std::derived_from<NoPageLock> PageLockPolicy = NoPageLock
 >
 class TLSBlockAllocator final {
-	using AllocatorType = BlockAllocator<_ty, _elements, PageLockPolicy>;
+	using AllocatorType = BlockAllocator<_ty, PageLockPolicy>;
 
 	using RefCount = std::conditional_t<
 		std::is_same_v<RefCountPolicy, RefCounting>, int, std::monostate
@@ -46,6 +46,7 @@ class TLSBlockAllocator final {
 
 	static inline thread_local std::unique_ptr<AllocatorType> allocator_;
 	static inline thread_local RefCount ref_count_{};
+	const char* tag_ = nullptr;
 
 	[[no_unique_address]] TLSHandleCache cached_handle_{};
 
@@ -53,7 +54,7 @@ class TLSBlockAllocator final {
 	inline void initialise() {
 		if constexpr(std::is_same_v<EntrantPolicy, SafeEntrant>) {
 			if(!allocator_) {
-				allocator_ = std::make_unique<AllocatorType>();
+				allocator_ = std::make_unique<AllocatorType>(_elements, tag_);
 			}
 		}
 	}
@@ -73,8 +74,8 @@ public:
 	std::size_t active_allocs = 0;
 #endif
 
-	TLSBlockAllocator(const char* tag = nullptr) {
-		thread_enter(tag);
+	TLSBlockAllocator(const char* tag = nullptr) : tag_(tag) {
+		thread_enter();
 	}
 
 	/*
@@ -82,9 +83,9 @@ public:
 	 * to be executed on another thread without paying for checks on every
 	 * allocation
 	 */
-	inline void thread_enter(const char* tag) {
+	inline void thread_enter() {
 		if(!allocator_) {
-			allocator_ = std::make_unique<AllocatorType>(tag);
+			allocator_ = std::make_unique<AllocatorType>(_elements, tag_);
 		}
 
 		if constexpr(std::is_same_v<EntrantPolicy, UnsafeEntrant>) {
