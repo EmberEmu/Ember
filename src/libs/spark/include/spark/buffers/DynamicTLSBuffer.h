@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 - 2025 Ember
+ * Copyright (c) 2024 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -34,7 +34,9 @@ template<decltype(auto) block_size,
 	typename entrant_policy = SafeEntrant,
 	typename storage_type = std::byte>
 using DynamicTLSBuffer = DynamicBuffer<block_size, storage_type,
-	TLSBlockAllocator<typename DynamicBuffer<block_size>::storage_type, count, NoRefCounting, entrant_policy>
+	TLSBlockAllocator<typename DynamicBuffer<
+		block_size>::storage_type, count, NoRefCounting, entrant_policy, spark::io::PageLock
+	>
 >;
 
 } // io, spark, ember

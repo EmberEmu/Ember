@@ -82,10 +82,15 @@ if(MSVC)
 endif()
 
 set(BUILD_SHARED_MSG "Builds the services as shared libraries - generated code may be slower but Fusion service reloading is enabled")
+set(CMAKE_POSITION_INDEPENDENT_CODE ${BUILD_SHARED})
+set(PREALLOC_CLIENTS 4) # Preallocate memory for the specified number of clients
 
 option(BUILD_SHARED ${BUILD_SHARED_MSG} OFF)
-set(CMAKE_POSITION_INDEPENDENT_CODE ${BUILD_SHARED})
-set(PREALLOC_CLIENTS 4)
+option(ENABLE_HUGE_PAGES "When running on Linux, enable huge page support (disable if memory constrained)" ON)
+
+if (ENABLE_HUGE_PAGES)
+	add_compile_definitions(ENABLE_HUGE_PAGES)
+endif()
 
 if (BUILD_SHARED)
 	add_compile_definitions(BUILD_SHARED_SERVICES)
