@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <spark/buffers/allocators/HugePages.h>
 #include <shared/utility/Utility.h>
 #include <array>
 #include <memory>
@@ -18,6 +19,10 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
+#include <cstdlib>
+#if (defined __linux__ || defined __unix__) && defined ENABLE_HUGE_PAGES
+#include <sys/mman.h>
+#endif
 
 #ifndef NDEBUG
 #define EMBER_DEBUG_ALLOCATORS
@@ -53,7 +58,8 @@ struct ValidateDealloc final : NoValidateDealloc {};
 template<typename _ty, 
 	std::size_t _elements,
 	std::derived_from<NoPageLock> PageLockPolicy = NoPageLock,
-	std::derived_from<NoValidateDealloc> ValidatePolicy = NoValidateDealloc>
+	std::derived_from<NoValidateDealloc> ValidatePolicy = NoValidateDealloc
+>
 requires (_elements > 0)
 class BlockAllocator {
 	using tid_type = std::conditional_t<
@@ -78,25 +84,27 @@ class BlockAllocator {
 
 	static constexpr auto block_size = sizeof(Block);
 
+	using StorageType = std::array<Block, _elements>;
+
 	Block* head_ = nullptr;
 	[[no_unique_address]] tid_type thread_id_;
-	std::array<Block, _elements> storage_;
+	StorageType* storage_ = nullptr;
 	const char* tag_;
 
 	void page_lock_conditional() {
 		if constexpr(std::is_same_v<PageLockPolicy, PageLock>) {
-			utility::page_lock(storage_.data(), storage_.size());
+			utility::page_lock(storage_->data(), storage_->size());
 		}
 	}
 
 	void page_unlock_conditional() {
 		if constexpr(std::is_same_v<PageLockPolicy, PageLock>) {
-			utility::page_unlock(storage_.data(), storage_.size());
+			utility::page_unlock(storage_->data(), storage_->size());
 		}
 	}
 
 	void initialise_free_list() {
-		for(auto& element : storage_) {
+		for(auto& element : *storage_) {
 			push(&element);
 		}
 	}
@@ -117,6 +125,26 @@ class BlockAllocator {
 		return block;
 	}
 
+	void allocate_storage() {
+#if (defined __linux__ || defined __unix__) && defined ENABLE_HUGE_PAGES
+		constexpr std::size_t align_to = HUGE_PAGE_MINIMUM;
+		constexpr auto rem = sizeof(Storage) % align_to;
+		constexpr auto alloc_size = rem == 0? sizeof(Storage) : sizeof(Storage) + (align_to - rem);
+
+		storage_ = static_cast<StorageType*>(
+			std::aligned_alloc(alloc_size, HUGE_PAGE_MINIMUM)
+		);
+
+		madvise(storage_->data(), alloc_size, MADV_HUGEPAGE);
+#else
+		storage_ = static_cast<StorageType*>(std::malloc(sizeof(StorageType)));
+#endif
+	}
+
+	void deallocate_storage() {
+		free(storage_);
+	}
+
 public:
 #ifdef EMBER_DEBUG_ALLOCATORS
 	std::size_t storage_active_count = 0;
@@ -127,12 +155,16 @@ public:
 #endif
 
 	BlockAllocator(const char* tag = nullptr) requires std::same_as<ValidatePolicy, ValidateDealloc>
-		: tag_(tag), thread_id_(std::this_thread::get_id()) {
+		: tag_(tag)
+		, thread_id_(std::this_thread::get_id()) {
+		allocate_storage();
 		page_lock_conditional();
 		initialise_free_list();
 	}
 
-	BlockAllocator(const char* tag = nullptr) : tag_(tag) {
+	BlockAllocator(const char* tag = nullptr)
+		: tag_(tag) {
+		allocate_storage();
 		page_lock_conditional();
 		initialise_free_list();
 	}
@@ -200,6 +232,7 @@ public:
 
 	~BlockAllocator() {
 		page_unlock_conditional();
+		deallocate_storage();
 
 #ifdef EMBER_DEBUG_ALLOCATORS
 		assert(active_count == 0);
