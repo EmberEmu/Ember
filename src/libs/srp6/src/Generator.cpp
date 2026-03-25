@@ -13,7 +13,7 @@
 
 namespace ember::srp6 {
 
-Botan::BigInt Generator::g_from_group(Group& group) {
+Botan::BigInt Generator::g_from_group(const Group group) {
 	switch(group) {
 		case Group::g_256_bit:
 			return 7;
@@ -37,7 +37,7 @@ Botan::BigInt Generator::g_from_group(Group& group) {
 	std::terminate();
 }
 
-Botan::BigInt Generator::n_from_group(Group& group) {
+Botan::BigInt Generator::n_from_group(const Group group) {
 	switch(group) {
 		case Group::g_256_bit:
 			return Botan::BigInt(g_256_bit);
@@ -61,7 +61,7 @@ Botan::BigInt Generator::n_from_group(Group& group) {
 	std::terminate();
 }
 
-Generator::Generator(Group group)
+Generator::Generator(const Group group)
 	: g_(g_from_group(group)),
 	  N_(n_from_group(group)) { }
 
