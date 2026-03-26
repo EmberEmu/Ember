@@ -101,19 +101,11 @@ void EventDispatcher::broadcast_event(std::shared_ptr<const Event> event) const 
 }
 
 void EventDispatcher::register_handler(ClientHandler* handler) {
-	auto& service = pool_.get(handler->uuid().service());
-
-	boost::asio::dispatch(service, [=] {
-		handlers_.insert_or_assign(handler->uuid(), handler);
-	});
+	handlers_.insert_or_assign(handler->uuid(), handler);
 }
 
 void EventDispatcher::remove_handler(const ClientHandler* handler) {
-	auto& service = pool_.get(handler->uuid().service());
-
-	boost::asio::dispatch(service, [=] {
-		handlers_.erase(handler->uuid());
-	});
+	handlers_.erase(handler->uuid());
 }
 
 } // realm, ember
