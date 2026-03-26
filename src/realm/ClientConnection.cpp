@@ -159,7 +159,7 @@ void ClientConnection::read() {
 }
 
 void ClientConnection::set_key(std::span<const std::uint8_t> key) {
-	crypt_ = PacketCrypto(key);
+	crypt_ = PacketCrypto<0>(key);
 }
 
 void ClientConnection::start() {
