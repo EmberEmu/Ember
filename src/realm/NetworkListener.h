@@ -30,9 +30,9 @@ class NetworkListener final {
 	SessionManager& sessions_;
 	ClientBuilder builder_;
 	tcp_acceptor acceptor_;
+	std::size_t index_;
 	tcp_socket socket_;
 	thread::ServicePool& pool_;
-	std::size_t index_;
 	log::Logger& logger_;
 	std::atomic_bool stopped_;
 
@@ -48,9 +48,9 @@ public:
 			pool.get_next(),
 			asio::ip::tcp::endpoint(asio::ip::make_address(interface), port)
 		  )
-		, socket_(pool.get_next())
-		, pool_(pool)
 		, index_(0)
+		, socket_(pool.get(index_))
+		, pool_(pool)
 		, logger_(logger)
 		, stopped_(false) {
 		acceptor_.set_option(asio::ip::tcp::no_delay(tcp_no_delay));
