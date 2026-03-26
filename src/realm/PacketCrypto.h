@@ -29,9 +29,13 @@ namespace ember::realm {
  * GCC and msvc produced significantly slower code with it. Clang's output was already better
  * and didn't see much benefit.
  * 
+ * The calls that take a reference for _key_size = 0 aren't implemented in terms of the
+ * pointer/length overload because the generated code was very marginally slower.
+ * 
  * Using the doubled key size in the non-templated conditionals to try to reduce the number of
  * index resets to zero yielded slightly slower code. GT & subtraction rather than GTE & zero
  * assignment made little difference. This is well into yak shaving territory, so it'll do.
+ * 
  */
 template<std::size_t _key_size = 0>
 requires(_key_size < 256)
