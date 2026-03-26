@@ -57,7 +57,7 @@ private:
 
 	ClientHandler* handler_;
 	ConnectionStats stats_;
-	std::optional<PacketCrypto> crypt_;
+	std::optional<PacketCrypto<0>> crypt_;
 	protocol::SizeType msg_size_;
 	AsioAllocator<thread_safe> allocator_; // todo - should be shared & passed in
 	log::Logger& logger_;
