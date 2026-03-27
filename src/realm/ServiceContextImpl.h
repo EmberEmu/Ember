@@ -51,7 +51,6 @@ struct ServiceContext::Impl {
 	std::unique_ptr<NetworkListener> server;
 	std::unique_ptr<BroadcastTimer> timer;
 	std::vector<commands::ScopedCommand> commands;
-
 };
 
 } // realm, ember
