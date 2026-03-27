@@ -8,6 +8,7 @@
 
 #include "CharacterList.h"
 #include "ClientContext.h"
+#include "../CharacterClient.h"
 #include "../ClientHandler.h"
 #include "../ConfigStore.h"
 #include "../RealmQueue.h"
