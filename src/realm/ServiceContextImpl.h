@@ -10,6 +10,7 @@
 
 #include "AccountClient.h"
 #include "CharacterClient.h"
+#include "BroadcastTimer.h"
 #include "Config.h"
 #include "ConfigStore.h"
 #include "EventDispatcher.h"
@@ -48,7 +49,9 @@ struct ServiceContext::Impl {
 	std::unique_ptr<WorldRPCClient> rpc_world;
 	std::unique_ptr<NetworkServiceDiscovery> rpc_discovery;
 	std::unique_ptr<NetworkListener> server;
+	std::unique_ptr<BroadcastTimer> timer;
 	std::vector<commands::ScopedCommand> commands;
+
 };
 
 } // realm, ember

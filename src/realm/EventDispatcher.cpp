@@ -80,6 +80,12 @@ void EventDispatcher::broadcast_event(std::vector<ClientIdent> clients, std::sha
 	}
 }
 
+void EventDispatcher::broadcast_event_thread(const Event& event) const {
+	for(auto& handler : handlers_ | std::views::values) {
+		handler->handle_event(&event);
+	}
+}
+
 void EventDispatcher::broadcast_event(const Event& event) const {
 	for(auto& ioc : pool_) {
 		boost::asio::dispatch(*ioc, [event]() {

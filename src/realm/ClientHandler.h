@@ -29,16 +29,24 @@ namespace ember::realm {
 class ClientConnection;
 
 class ClientHandler final {
+	constexpr static auto pps_grace = 3u;
+	constexpr static auto pps_soft_limit = 1000u;
+	constexpr static auto pps_hard_limit = 1500u;
+
 	ClientConnection* connection_;
 	ClientContext context_;
 	const ClientIdent uuid_;
 	boost::asio::steady_timer timer_;
 	log::Logger& logger_;
+	unsigned int packets_;
+	unsigned int pps_violation_;
 
 	mutable std::string client_id_;
 	mutable std::string client_id_ext_;
 
 	void handle_ping(BinaryStream& stream);
+	void handle_timer();
+	void pps_rate_limit();
 
 public:
 	ClientHandler(ClientIdent uuid, executor executor, log::Logger& logger);

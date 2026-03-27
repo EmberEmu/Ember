@@ -75,7 +75,20 @@ public:
 	}
 
 	void post_event(const ClientIdent& client, std::unique_ptr<Event> event) const;
+
+	/*
+	 * Broadcasts an event to all handlers, across all service threads
+	 */
 	void broadcast_event(const Event& event) const;
+
+	/*
+	 * Broadcasts an event to all handlers registered to the current thread
+	 */
+	void broadcast_event_thread(const Event& event) const;
+
+	/*
+	* Broadcasts an event to all handlers, across all service threads
+	*/
 	void broadcast_event(std::shared_ptr<const Event> event) const;
 	void broadcast_event(std::vector<ClientIdent> clients, std::shared_ptr<const Event> event) const;
 	void register_handler(ClientHandler* handler);
