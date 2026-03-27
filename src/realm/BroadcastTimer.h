@@ -32,7 +32,7 @@ class BroadcastTimer {
 	const EventDispatcher& dispatcher_;
 	const thread::ServicePool& pool_;
 	std::vector<boost::asio::steady_timer> timers_;
-	bool stopped_;
+	bool running_;
 
 public:
 	BroadcastTimer(const thread::ServicePool& pool,
@@ -41,7 +41,7 @@ public:
 		: frequency_(frequency)
 		, dispatcher_(dispatcher)
 		, pool_(pool)
-		, stopped_(true) {
+		, running_(false) {
 		timers_.reserve(pool_.size());
 
 		for(auto& ioc : pool_) {
@@ -54,16 +54,20 @@ public:
 	}
 
 	void start() {
+		if(running_) {
+			return;
+		}
+
 		for(auto& timer : timers_) {
 			set_timer(timer);
 		}
 
-		stopped_ = false;
+		running_ = true;
 	}
 
 	void stop() {
 		timers_.clear();
-		stopped_ = true;
+		running_ = false;
 	}
 
 	void set_timer(boost::asio::steady_timer& timer) {
