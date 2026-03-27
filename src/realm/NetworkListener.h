@@ -40,12 +40,8 @@ class NetworkListener final {
 	void dispatch_socket();
 
 public:
-	NetworkListener(thread::ServicePool& pool,
-	                ClientBuilder& builder,
-	                SessionManager& sessions,
-	                std::string_view interface,
-	                std::uint16_t port,
-	                bool tcp_no_delay,
+	NetworkListener(std::string_view interface, std::uint16_t port, bool tcp_no_delay,
+	                thread::ServicePool& pool, ClientBuilder& builder, SessionManager& sessions,
 	                log::Logger& logger);
 
 	~NetworkListener();

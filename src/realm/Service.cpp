@@ -245,7 +245,7 @@ void Service::initialise(const opts::variables_map& args) try {
 	// Start network listener
 	SLOG_INFO(logger, "Starting network service on {}:{}...", interface, port);
 	ctx->server = std::make_unique<NetworkListener>(
-		*ctx->service_pool, *ctx->builder, ctx->sessions, interface, port, tcp_no_delay, logger
+		interface, port, tcp_no_delay, *ctx->service_pool, *ctx->builder, ctx->sessions, logger
 	);
 	
 	// Start timer service

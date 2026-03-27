@@ -16,9 +16,9 @@
 
 namespace ember::realm {
 
-NetworkListener::NetworkListener(thread::ServicePool& pool, ClientBuilder& builder,
-                                 SessionManager& sessions, std::string_view interface,
-                                 std::uint16_t port, bool tcp_no_delay, log::Logger& logger)
+NetworkListener::NetworkListener(std::string_view interface, std::uint16_t port, bool tcp_no_delay,
+                                 thread::ServicePool& pool, ClientBuilder& builder,
+                                 SessionManager& sessions, log::Logger& logger)
 	: sessions_(sessions)
 	, builder_(builder)
 	, acceptor_(
