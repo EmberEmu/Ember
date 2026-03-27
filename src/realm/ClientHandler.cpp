@@ -124,8 +124,6 @@ void ClientHandler::cancel_timer() {
  * official servers used to behave.
  */
 void ClientHandler::pps_rate_limit() {
-	CLIENT_DEBUG(logger_, context_) << packets_ << LOG_SYNC;
-
 	if(packets_ > pps_hard_limit) {
 		CLIENT_DEBUG(logger_, context_) << "Packet rate > hard limit" << LOG_SYNC;
 		close();
