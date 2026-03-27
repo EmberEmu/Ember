@@ -6,8 +6,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#pragma once
-
 #include <cstdint>
 #ifdef _WIN32
 #include <Windows.h>
@@ -26,8 +24,7 @@ std::uint64_t get_tick_count() {
 	std::uint64_t tick = ts.tv_nsec / 1000000ull;
 	tick += ts.tv_sec * 1000ull;
 	return tick;
-}
 #endif
-};
+}
 
 } // utility, ember
