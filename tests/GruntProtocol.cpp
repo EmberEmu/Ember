@@ -7,7 +7,7 @@
  */
 
 #include "GruntPacketDumps.h"
-#include <spark/buffers/DynamicBuffer.h>
+#include <login/StreamTypes.h>
 #include <login/grunt/Packets.h>
 #include <login/grunt/Magic.h>
 #include <shared/utility/HashDefines.h>
@@ -38,9 +38,9 @@ TEST(GruntProtocol, ClientLoginChallenge) {
 	const std::size_t packet_size = sizeof(client_login_challenge);
 
 	// write the packet bytes into chain
-	spark::io::DynamicBuffer<1024> chain;
-	spark::io::pmr::BinaryStream in_stream(chain);
-	spark::io::pmr::BinaryStream out_stream(chain);
+	BufferType chain;
+	PacketStream in_stream(chain);
+	PacketStream out_stream(chain);
 	chain.write(client_login_challenge);
 
 	// deserialise the packet
@@ -86,9 +86,9 @@ TEST(GruntProtocol, ClientLoginProof) {
 	const std::size_t packet_size = sizeof(client_login_proof);
 
 	// write the packet bytes into chain
-	spark::io::DynamicBuffer<1024> chain;
-	spark::io::pmr::BinaryStream in_stream(chain);
-	spark::io::pmr::BinaryStream out_stream(chain);
+	BufferType chain;
+	PacketStream in_stream(chain);
+	PacketStream out_stream(chain);
 	chain.write(client_login_proof);
 
 	// deserialise the packet
@@ -115,9 +115,9 @@ TEST(GruntProtocol, ClientReconnectProof) {
 	const std::size_t packet_size = sizeof(client_reconnect_proof);
 
 	// write the packet bytes into chain
-	spark::io::DynamicBuffer<1024> chain;
-	spark::io::pmr::BinaryStream in_stream(chain);
-	spark::io::pmr::BinaryStream out_stream(chain);
+	BufferType chain;
+	PacketStream in_stream(chain);
+	PacketStream out_stream(chain);
 	chain.write(client_reconnect_proof);
 
 	// deserialise the packet
@@ -167,9 +167,9 @@ TEST(GruntProtocol, ClientRequestRealmList) {
 	const std::size_t packet_size = sizeof(request_realm_list);
 
 	// write the packet bytes into chain
-	spark::io::DynamicBuffer<1024> chain;
-	spark::io::pmr::BinaryStream in_stream(chain);
-	spark::io::pmr::BinaryStream out_stream(chain);
+	BufferType chain;
+	PacketStream in_stream(chain);
+	PacketStream out_stream(chain);
 	chain.write(request_realm_list);
 
 	// deserialise the packet
@@ -195,12 +195,12 @@ TEST(GruntProtocol, ServerLoginChallenge) {
 	const std::size_t packet_size = sizeof(server_login_challenge);
 
 	// write the packet bytes into chain
-	spark::io::DynamicBuffer<1024> chain;
+	BufferType chain;
 	chain.write(server_login_challenge);
 
 	// deserialise the packet
-	spark::io::pmr::BinaryStream in_stream(chain);
-	spark::io::pmr::BinaryStream out_stream(chain);
+	PacketStream in_stream(chain);
+	PacketStream out_stream(chain);
 	grunt::server::LoginChallenge packet{};
 	packet.read_from_stream(in_stream);
 
@@ -235,9 +235,9 @@ TEST(GruntProtocol, ServerLoginProof) {
 	const std::size_t packet_size = sizeof(server_login_proof);
 
 	// write the packet bytes into chain
-	spark::io::DynamicBuffer<1024> chain;
-	spark::io::pmr::BinaryStream in_stream(chain);
-	spark::io::pmr::BinaryStream out_stream(chain);
+	BufferType chain;
+	PacketStream in_stream(chain);
+	PacketStream out_stream(chain);
 	chain.write(server_login_proof);
 
 	// deserialise the packet
@@ -266,9 +266,9 @@ TEST(GruntProtocol, ServerRealmList) {
 	const std::size_t packet_size = sizeof(realm_list);
 
 	// write the packet bytes into chain
-	spark::io::DynamicBuffer<1024> chain;
-	spark::io::pmr::BinaryStream in_stream(chain);
-	spark::io::pmr::BinaryStream out_stream(chain);
+	BufferType chain;
+	PacketStream in_stream(chain);
+	PacketStream out_stream(chain);
 	chain.write(realm_list);
 
 	// deserialise the packet
@@ -325,9 +325,9 @@ TEST(GruntProtocol, ServerReconnectChallenge) {
 	const std::size_t packet_size = sizeof(server_reconnect_challenge);
 
 	// write the packet bytes into chain
-	spark::io::DynamicBuffer<1024> chain;
-	spark::io::pmr::BinaryStream in_stream(chain);
-	spark::io::pmr::BinaryStream out_stream(chain);
+	BufferType chain;
+	PacketStream in_stream(chain);
+	PacketStream out_stream(chain);
 	chain.write(server_reconnect_challenge);
 
 	// deserialise the packet
@@ -362,9 +362,9 @@ TEST(GruntProtocol, ServerReconnectProof) {
 	const std::size_t packet_size = sizeof(server_reconnect_proof);
 
 	// write the packet bytes into chain
-	spark::io::DynamicBuffer<1024> chain;
-	spark::io::pmr::BinaryStream in_stream(chain);
-	spark::io::pmr::BinaryStream out_stream(chain);
+	BufferType chain;
+	PacketStream in_stream(chain);
+	PacketStream out_stream(chain);
 	chain.write(server_reconnect_proof);
 
 	// deserialise the packet

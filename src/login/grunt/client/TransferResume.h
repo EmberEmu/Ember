@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2020 Ember
+ * Copyright (c) 2016 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -12,28 +12,25 @@
 #include "../Packet.h"
 #include "../Exceptions.h"
 #include <boost/assert.hpp>
-#include <boost/endian/arithmetic.hpp>
 #include <cstdint>
 #include <cstddef>
 
 namespace ember::grunt::client {
 
-namespace be = boost::endian;
-
 class TransferResume final : public Packet {
-	static const std::size_t WIRE_LENGTH = 9;
+	static const std::size_t wire_length = 9;
 	State state_ = State::initial;
 
 public:
 	TransferResume()
 		: Packet(Opcode::cmd_xfer_resume) {}
 
-	be::little_uint64_t offset = 0;
+	std::uint64_t offset = 0;
 	
-	State read_from_stream(spark::io::pmr::BinaryStream& stream) override {
+	State read_from_stream(PacketStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::done, "Packet already complete - check your logic!");
 
-		if(stream.size() < WIRE_LENGTH) {
+		if(stream.size() < wire_length) {
 			return State::call_again;
 		}
 
@@ -43,7 +40,7 @@ public:
 		return (state_ = State::done);
 	}
 
-	void write_to_stream(spark::io::pmr::BinaryStream& stream) const override {
+	void write_to_stream(PacketStream& stream) const override {
 		stream << opcode;
 		stream << offset;
 	}

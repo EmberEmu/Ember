@@ -67,6 +67,7 @@ set(LIBRARY_HDR
     ServiceContext.h
     ServiceContextImpl.h
     DBCRequired.h
+    StreamTypes.h
 )
 
 set(LIBRARY_SRC
@@ -84,7 +85,7 @@ set(LIBRARY_SRC
     Service.cpp
     ServiceContext.cpp
     Service.cpp
-	Patcher.cpp
+    Patcher.cpp
     PINAuthenticator.cpp
     IntegrityData.cpp
     PatchGraph.cpp
@@ -105,8 +106,8 @@ set(EXECUTABLE_SOURCE
 source_group("Grunt Protocol" FILES ${GRUNT_SRC})
 
 add_library(${LIBRARY_OBJECTS} OBJECT
-	${LIBRARY_SRC}
-	${LIBRARY_HDR}
+    ${LIBRARY_SRC}
+    ${LIBRARY_HDR}
     ${GRUNT_SRC}
 )
 
@@ -114,7 +115,7 @@ target_include_directories(${LIBRARY_OBJECTS} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
 target_link_libraries(${LIBRARY_OBJECTS} PUBLIC ${ZLIB_LIBRARY} ${BOTAN_TARGET} Threads::Threads spark ports dbcreader stun service spark srp6 shared)
 
 add_library(${LIBRARY_NAME} ${SERVICE_LIB_LINKAGE}
-	$<TARGET_OBJECTS:${LIBRARY_OBJECTS}>
+    $<TARGET_OBJECTS:${LIBRARY_OBJECTS}>
 )
 
 add_dependencies(${LIBRARY_NAME}
@@ -122,7 +123,7 @@ add_dependencies(${LIBRARY_NAME}
 )
 
 if(BUILD_SHARED)
-	target_compile_definitions(${LIBRARY_NAME} PUBLIC EXPORT_SERVICE)
+    target_compile_definitions(${LIBRARY_NAME} PUBLIC EXPORT_SERVICE)
 endif()
 
 target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

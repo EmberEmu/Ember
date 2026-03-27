@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2025 Ember
+ * Copyright (c) 2015 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,9 +11,8 @@
 #include "FilterTypes.h"
 #include "SessionManager.h"
 #include "SocketType.h"
+#include "StreamTypes.h"
 #include <logger/Logger.h>
-#include <spark/buffers/pmr/BinaryStream.h>
-#include <spark/buffers/DynamicBuffer.h>
 #include <spark/buffers/BufferSequence.h>
 #include <shared/memory/AsioAllocator.h>
 #include <boost/asio/io_context.hpp>
@@ -35,8 +34,6 @@ public:
 	using WriteCallback = std::function<void()>;
 
 private:
-	using Buffer = spark::io::DynamicBuffer<1024>;
-
 	const std::chrono::seconds socket_activity_timeout { 60 };
 	AsioAllocator<thread_safe> allocator_;
 
@@ -44,10 +41,10 @@ private:
 	tcp_strand_socket socket_;
 	boost::asio::steady_timer timer_;
 
-	Buffer inbound_buffer_;
-	std::array<Buffer, 2> outbound_buffers_{};
-	Buffer* outbound_front_;
-	Buffer* outbound_back_;
+	BufferType inbound_buffer_;
+	std::array<BufferType, 2> outbound_buffers_{};
+	BufferType* outbound_front_;
+	BufferType* outbound_back_;
 	bool write_in_progress_;
 	bool is_active_;
 
@@ -204,7 +201,7 @@ public:
 			return;
 		}
 
-		spark::io::pmr::BinaryStream stream(*outbound_back_);
+		PacketStream stream(*outbound_back_);
 		data.write_to_stream(stream);
 
 		if(!write_in_progress_) {

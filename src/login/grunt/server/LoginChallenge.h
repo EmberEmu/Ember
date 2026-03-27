@@ -19,15 +19,13 @@
 
 namespace ember::grunt::server {
 
-namespace be = boost::endian;
-
 class LoginChallenge final : public Packet {
-	static const std::size_t WIRE_LENGTH = 119;
-	static const std::uint8_t SALT_LENGTH = 32;
+	static const std::size_t wire_length = 119;
+	static const std::uint8_t salt_length = 32;
 
 	State state_ = State::initial;
 
-	void read_body(spark::io::pmr::BinaryStream& stream) {
+	void read_body(PacketStream& stream) {
 		stream >> opcode;
 		stream >> protocol_ver;
 		stream >> result;
@@ -37,7 +35,7 @@ class LoginChallenge final : public Packet {
 			return; // rest of the fields won't be sent
 		}
 
-		std::array<std::uint8_t, PUB_KEY_LENGTH> b_buff;
+		std::array<std::uint8_t, pub_key_length> b_buff;
 		stream >> b_buff;
 		std::ranges::reverse(b_buff);
 		B = Botan::BigInt(b_buff);
@@ -51,12 +49,12 @@ class LoginChallenge final : public Packet {
 		stream >> g;
 		stream >> n_len;
 
-		std::array<std::uint8_t, PRIME_LENGTH> n_buff;
+		std::array<std::uint8_t, prime_length> n_buff;
 		stream >> n_buff;
 		std::ranges::reverse(n_buff);
 		N = Botan::BigInt(n_buff);
 
-		std::array<std::uint8_t, SALT_LENGTH> s_buff;
+		std::array<std::uint8_t, salt_length> s_buff;
 		stream >> s_buff;
 		std::ranges::reverse(s_buff);
 		s = Botan::BigInt(s_buff);
@@ -69,7 +67,7 @@ class LoginChallenge final : public Packet {
 		}
 	}
 
-	void read_pin_data(spark::io::pmr::BinaryStream& stream) {
+	void read_pin_data(PacketStream& stream) {
 		if(state_ == State::done) {
 			return;
 		}
@@ -85,10 +83,10 @@ class LoginChallenge final : public Packet {
 	}
 
 public:
-	static const std::uint8_t PRIME_LENGTH         = 32;
-	static const std::uint8_t PUB_KEY_LENGTH       = 32;
-	static const std::uint8_t PIN_SALT_LENGTH      = 16;
-	static const std::uint8_t CHECKSUM_SALT_LENGTH = 16;
+	static const std::uint8_t prime_length         = 32;
+	static const std::uint8_t pub_key_length       = 32;
+	static const std::uint8_t pin_salt_length      = 16;
+	static const std::uint8_t checksum_salt_length = 16;
 
 	LoginChallenge() : Packet(Opcode::cmd_auth_logon_challenge) {}
 
@@ -105,16 +103,16 @@ public:
 	std::uint8_t n_len;
 	Botan::BigInt N;
 	Botan::BigInt s;
-	std::array<std::uint8_t, CHECKSUM_SALT_LENGTH> checksum_salt;
+	std::array<std::uint8_t, checksum_salt_length> checksum_salt;
 	bool two_factor_auth = false;
-	be::little_uint32_t pin_grid_seed;
-	std::array<std::uint8_t, PIN_SALT_LENGTH> pin_salt;
+	std::uint32_t pin_grid_seed;
+	std::array<std::uint8_t, pin_salt_length> pin_salt;
 
 	// todo - early abort (wire length change)
-	State read_from_stream(spark::io::pmr::BinaryStream& stream) override {
+	State read_from_stream(PacketStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::done, "Packet already complete - check your logic!");
 
-		if(state_ == State::initial && stream.size() < WIRE_LENGTH) {
+		if(state_ == State::initial && stream.size() < wire_length) {
 			return State::call_again;
 		}
 
@@ -132,7 +130,7 @@ public:
 		return state_;
 	}
 
-	void write_to_stream(spark::io::pmr::BinaryStream& stream) const override {
+	void write_to_stream(PacketStream& stream) const override {
 		stream << opcode;
 		stream << protocol_ver;
 		stream << result;
@@ -141,7 +139,7 @@ public:
 			return; // don't send the rest of the fields
 		}
 		
-		std::array<std::uint8_t, PUB_KEY_LENGTH> bytes{};
+		std::array<std::uint8_t, pub_key_length> bytes{};
 		B.serialize_to(bytes);
 		stream.put(bytes.rbegin(), bytes.rend());
 
@@ -153,11 +151,11 @@ public:
 		stream << g;
 		stream << n_len;
 
-		static_assert(bytes.size() == PRIME_LENGTH);
+		static_assert(bytes.size() == prime_length);
 		N.serialize_to(bytes);
 		stream.put(bytes.rbegin(), bytes.rend());
 
-		static_assert(bytes.size() == SALT_LENGTH);
+		static_assert(bytes.size() == salt_length);
 		s.serialize_to(bytes);
 		stream.put(bytes.rbegin(), bytes.rend());
 

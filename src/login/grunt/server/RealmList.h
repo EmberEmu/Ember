@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2025 Ember
+ * Copyright (c) 2015 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -13,8 +13,6 @@
 #include "../ResultCodes.h"
 #include <shared/Realm.h>
 #include <boost/assert.hpp>
-#include <boost/endian/arithmetic.hpp>
-#include <boost/endian/conversion.hpp>
 #include <boost/container/small_vector.hpp>
 #include <gsl/narrow>
 #include <cstdint>
@@ -22,24 +20,22 @@
 
 namespace ember::grunt::server {
 
-namespace be = boost::endian;
-
 class RealmList final : public Packet {
-	static const std::size_t WIRE_LENGTH = 3; // header size 
-	static const std::size_t DEFAULT_REALMS = 10u;
+	static const std::size_t wire_length = 3; // header size 
+	static const std::size_t default_realms = 10u;
 
 	State state_ = State::initial;
-	be::little_uint16_t size = 0;
-	be::little_uint8_t realm_count = 0;
+	std::uint16_t size = 0;
+	std::uint8_t realm_count = 0;
 
-	void read_size(spark::io::pmr::BinaryStream& stream) {
+	void read_size(PacketStream& stream) {
 		stream >> opcode;
 		stream >> size;
 
 		state_ = State::call_again;
 	}
 
-	void parse_body(spark::io::pmr::BinaryStream& stream) {
+	void parse_body(PacketStream& stream) {
 		if(stream.size() < size) {
 			return;
 		}
@@ -84,14 +80,14 @@ public:
 	RealmList()
 		: Packet(Opcode::cmd_realm_list) {}
 
-	be::little_uint32_t unknown = 0; // appears to be ignored in public clients
-	boost::container::small_vector<RealmListEntry, DEFAULT_REALMS> realms;
-	be::little_uint16_t unknown2 = 5; // appears to be ignored in public clients
+	std::uint32_t unknown = 0; // appears to be ignored in public clients
+	boost::container::small_vector<RealmListEntry, default_realms> realms;
+	std::uint16_t unknown2 = 5; // appears to be ignored in public clients
 
-	State read_from_stream(spark::io::pmr::BinaryStream& stream) override {
+	State read_from_stream(PacketStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::done, "Packet already complete - check your logic!");
 
-		if(state_ == State::initial && stream.size() < WIRE_LENGTH) {
+		if(state_ == State::initial && stream.size() < wire_length) {
 			return State::call_again;
 		}
 
@@ -109,7 +105,7 @@ public:
 		return state_;
 	}
 
-	std::size_t write_body(spark::io::pmr::BinaryStreamWriter& stream) const {
+	std::size_t write_body(PacketStream& stream) const {
 		const auto initial_write = stream.total_write();
 
 		stream << unknown;
@@ -117,7 +113,7 @@ public:
 
 		for(const auto& entry : realms) {
 			auto& realm = entry.realm;
-			stream << be::native_to_little(realm.type);
+			stream << realm.type;
 			stream << realm.flags;
 			stream << spark::io::null_terminated(realm.name);
 			stream << spark::io::null_terminated(realm.address);
@@ -132,7 +128,7 @@ public:
 		return stream.total_write() - initial_write;
 	}
 
-	void write_to_stream(spark::io::pmr::BinaryStream& stream) const override {
+	void write_to_stream(PacketStream& stream) const override {
 		stream << opcode;
 		stream << std::uint16_t(0); // write placeholder size
 		const auto write_len = write_body(stream);
@@ -140,7 +136,7 @@ public:
 
 		// update size field
 		stream.write_seek(spark::io::StreamSeek::sk_stream_absolute, sizeof(opcode));
-		stream << be::native_to_little(gsl::narrow<std::uint16_t>(write_len));
+		stream << gsl::narrow<std::uint16_t>(write_len);
 		stream.write_seek(spark::io::StreamSeek::sk_stream_absolute, end_pos);
 	}
 };

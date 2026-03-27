@@ -11,10 +11,10 @@
 #include "LoginHandler.h"
 #include "NetworkSession.h"
 #include "SocketType.h"
+#include "StreamTypes.h"
 #include "grunt/Packet.h"
 #include "grunt/Handler.h"
 #include <logger/LoggerFwd.h>
-#include <spark/buffers/pmr/Buffer.h>
 #include <thread/ThreadPool.h>
 #include <memory>
 
@@ -39,7 +39,7 @@ public:
 	             thread::ThreadPool& pool,
 	             const LoginHandlerBuilder& builder);
 
-	bool handle_packet(spark::io::pmr::Buffer& buffer);
+	bool handle_packet(BufferType& buffer);
 };
 
 } // ember

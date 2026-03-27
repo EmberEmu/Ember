@@ -13,7 +13,6 @@
 #include "../Exceptions.h"
 #include "../KeyData.h"
 #include <boost/assert.hpp>
-#include <boost/endian/arithmetic.hpp>
 #include <botan/bigint.h>
 #include <gsl/narrow>
 #include <array>
@@ -32,24 +31,24 @@ class LoginProof final : public Packet {
 
 	State state_ = State::initial;
 
-	static const std::size_t WIRE_LENGTH = 74; 
-	static const unsigned int A_LENGTH = 32;
-	static const unsigned int M1_LENGTH = 20;
-	static const unsigned int SHA1_LENGTH = 20;
-	static const std::uint8_t PIN_SALT_LENGTH = 16;
-	static const std::uint8_t PIN_HASH_LENGTH = 20;
+	static const std::size_t wire_length = 74; 
+	static const unsigned int a_length = 32;
+	static const unsigned int m1_length = 20;
+	static const unsigned int sha1_length = 20;
+	static const std::uint8_t pin_salt_length = 16;
+	static const std::uint8_t pin_hash_length = 20;
 
 	std::uint8_t key_count_ = 0;
 
-	void read_body(spark::io::pmr::BinaryStream& stream) {
+	void read_body(PacketStream& stream) {
 		stream >> opcode;
 
-		std::array<std::uint8_t, A_LENGTH> a_buff;
+		std::array<std::uint8_t, a_length> a_buff;
 		stream >> a_buff;
 		std::ranges::reverse(a_buff);
 		A = Botan::BigInt(a_buff);
 
-		std::array<std::uint8_t, M1_LENGTH> m1_buff;
+		std::array<std::uint8_t, m1_length> m1_buff;
 		stream >> m1_buff;
 		std::ranges::reverse(m1_buff);
 		M1 = Botan::BigInt(m1_buff);
@@ -58,23 +57,17 @@ class LoginProof final : public Packet {
 		stream >> key_count_;
 	}
 
-	bool read_security_type(spark::io::pmr::BinaryStream& stream) {
+	bool read_security_type(PacketStream& stream) {
 		if(stream.size() < sizeof(two_factor_auth)) {
 			return false;
 		}
 
 		stream >> two_factor_auth;
-
-		if(two_factor_auth) {
-			read_state_ = ReadState::pin_data;
-		} else {
-			read_state_ = ReadState::done;
-		}
-
+		read_state_ = two_factor_auth? ReadState::pin_data : ReadState::done;
 		return true;
 	}
 
-	bool read_pin_data(spark::io::pmr::BinaryStream& stream) {
+	bool read_pin_data(PacketStream& stream) {
 		if(stream.size() < (pin_salt.size() + pin_hash.size())) {
 			return false;
 		}
@@ -86,7 +79,7 @@ class LoginProof final : public Packet {
 		return true;
 	}
 
-	bool read_key_data(spark::io::pmr::BinaryStream& stream) {
+	bool read_key_data(PacketStream& stream) {
 		// could use a macro to take care of this - not using sizeof(KeyData) to avoid having to #pragma pack
 		auto key_data_size = sizeof(KeyData::product) + sizeof(KeyData::pub_value) 
 		                     + sizeof(KeyData::len) + sizeof(KeyData::hash);
@@ -116,12 +109,12 @@ public:
 	Botan::BigInt A;
 	Botan::BigInt M1;
 	bool two_factor_auth = 0;
-	std::array<std::uint8_t, SHA1_LENGTH> client_checksum;
-	std::array<std::uint8_t, PIN_SALT_LENGTH> pin_salt;
-	std::array<std::uint8_t, PIN_HASH_LENGTH> pin_hash;
+	std::array<std::uint8_t, sha1_length> client_checksum;
+	std::array<std::uint8_t, pin_salt_length> pin_salt;
+	std::array<std::uint8_t, pin_hash_length> pin_hash;
 	std::vector<KeyData> keys;
 
-	void read_optional_data(spark::io::pmr::BinaryStream& stream) {
+	void read_optional_data(PacketStream& stream) {
 		bool continue_read = true;
 
 		while(continue_read) {
@@ -144,10 +137,10 @@ public:
 		state_ = (read_state_ == ReadState::done)? State::done : State::call_again;
 	}
 
-	State read_from_stream(spark::io::pmr::BinaryStream& stream) override {
+	State read_from_stream(PacketStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::done, "Packet already complete - check your logic!");
 
-		if(state_ == State::initial && stream.size() < WIRE_LENGTH) {
+		if(state_ == State::initial && stream.size() < wire_length) {
 			return State::call_again;
 		}
 
@@ -165,14 +158,14 @@ public:
 		return state_;
 	}
 
-	void write_to_stream(spark::io::pmr::BinaryStream& stream) const override {
+	void write_to_stream(PacketStream& stream) const override {
 		stream << opcode;
 
-		std::array<std::uint8_t, A_LENGTH> a_bytes;
+		std::array<std::uint8_t, a_length> a_bytes;
 		A.serialize_to(a_bytes);
 		stream.put(a_bytes.rbegin(), a_bytes.rend());
 
-		std::array<std::uint8_t, M1_LENGTH> m1_bytes;
+		std::array<std::uint8_t, m1_length> m1_bytes;
 		M1.serialize_to(m1_bytes);
 		stream.put(m1_bytes.rbegin(), m1_bytes.rend());
 

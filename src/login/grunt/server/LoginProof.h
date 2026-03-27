@@ -13,28 +13,25 @@
 #include "../ResultCodes.h"
 #include <botan/bigint.h>
 #include <boost/assert.hpp>
-#include <boost/endian/arithmetic.hpp>
 #include <array>
 #include <cstdint>
 #include <cstddef>
 
 namespace ember::grunt::server {
 
-namespace be = boost::endian;
-
 class LoginProof final : public Packet {
-	static const std::size_t HEADER_LENGTH = 2;
-	static const std::size_t BODY_LENGTH = 24;
-	static const std::size_t PROOF_LENGTH = 20;
+	static const std::size_t header_length = 2;
+	static const std::size_t body_length = 24;
+	static const std::size_t proof_length = 20;
 
 	State state_ = State::initial;
 
-	void read_head(spark::io::pmr::BinaryStream& stream) {
+	void read_head(PacketStream& stream) {
 		stream >> opcode;
 		stream >> result;
 	}
 
-	void read_body(spark::io::pmr::BinaryStream& stream) {
+	void read_body(PacketStream& stream) {
 		// no need to keep reading - the other fields aren't set
 		if(result != grunt::Result::success) {
 			state_ = State::done;
@@ -42,12 +39,12 @@ class LoginProof final : public Packet {
 		}
 
 		// must be CMD_AUTH_LOGIN_PROOF, so read the rest of the packet
-		if(stream.size() < BODY_LENGTH) {
+		if(stream.size() < body_length) {
 			state_ = State::call_again;
 			return;
 		}
 		
-		std::array<std::uint8_t, PROOF_LENGTH> m2_buff;
+		std::array<std::uint8_t, proof_length> m2_buff;
 		stream >> m2_buff;
 		std::ranges::reverse(m2_buff);
 		M2 = Botan::BigInt(m2_buff);
@@ -61,12 +58,12 @@ public:
 
 	Result result;
 	Botan::BigInt M2;
-	be::little_uint32_t survey_id = 0;
+	std::uint32_t survey_id = 0;
 
-	State read_from_stream(spark::io::pmr::BinaryStream& stream) override {
+	State read_from_stream(PacketStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::done, "Packet already complete - check your logic!");
 
-		if(state_ == State::initial && stream.size() < HEADER_LENGTH) {
+		if(state_ == State::initial && stream.size() < header_length) {
 			return State::call_again;
 		}
 
@@ -84,7 +81,7 @@ public:
 		return state_;
 	}
 
-	void write_to_stream(spark::io::pmr::BinaryStream& stream) const override {
+	void write_to_stream(PacketStream& stream) const override {
 		stream << opcode;
 		stream << result;
 
@@ -93,7 +90,7 @@ public:
 			return;
 		}
 
-		std::array<std::uint8_t, PROOF_LENGTH> bytes{};
+		std::array<std::uint8_t, proof_length> bytes{};
 		M2.serialize_to(bytes);
 		stream.put(bytes.rbegin(), bytes.rend());
 		stream << survey_id;
