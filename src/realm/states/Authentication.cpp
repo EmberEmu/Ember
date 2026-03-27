@@ -21,8 +21,8 @@
 #include <protocol/Opcodes.h>
 #include <protocol/PacketHeaders.h>
 #include <protocol/Packets.h>
-#include <shared/game/GameVersion.h>
 #include <spark/buffers/pmr/Buffer.h>
+#include <shared/game/GameVersion.h>
 #include <shared/utility/EnumHelper.h>
 #include <shared/utility/UTF8String.h>
 #include <shared/utility/xoroshiro128plus.h>
