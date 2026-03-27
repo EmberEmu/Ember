@@ -11,7 +11,7 @@
 namespace ember::realm {
 
 class AccountClient;
-class CharatcerClient;
+class CharacterClient;
 class ClientHandler;
 class ClientConnection;
 class ConfigStore;
