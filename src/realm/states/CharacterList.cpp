@@ -29,8 +29,6 @@ using namespace std::chrono_literals;
 
 namespace ember::realm::character_list {
 
-namespace {
-
 void handle_timeout(ClientContext& ctx);
 
 void send_character_list_fail(ClientContext& ctx) {
@@ -173,8 +171,6 @@ void handle_timeout(ClientContext& ctx) {
 	CLIENT_DEBUG(ctx.logger, ctx) << "Character list timed out" << LOG_ASYNC;
 	ctx.handler.close();
 }
-
-} // unnamed
 
 void enter(ClientContext& ctx) {
 	const auto& config = ctx.cfg_store.config_tls();
