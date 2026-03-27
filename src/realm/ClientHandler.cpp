@@ -68,7 +68,10 @@ void ClientHandler::handle_event(std::unique_ptr<const Event> event) {
 
 void ClientHandler::handle_timer() {
 	pps_rate_limit();
-	ensure_ping();
+	
+	if(!check_ping_sent()) {
+		close();
+	}
 }
 
 void ClientHandler::state_update(ClientState new_state) {
@@ -156,43 +159,38 @@ void ClientHandler::pps_rate_limit() {
 	packets_ = 0;
 }
 
-void ClientHandler::ensure_ping() {
-	const auto timer_ival_ms = config::broadcast_timer_frequency.count() * 1000.0;
-
-	// temp, needs tick count for accuracy
-	const auto expected = static_cast<int>(timer_events_ * (timer_ival_ms / ping_delta_ms));
+/*
+ * Ensures that the client isn't bypassing cmsg_ping validation by simply
+ * not sending the packet at all or by sending it once to set the sequence
+ * and then never again.
+ */
+bool ClientHandler::check_ping_sent() {
+	// ensure the client has been given enough time since the last timer fired
+	const auto frequency = config::broadcast_timer_frequency.count() * 1000.0;
+	const auto expected = static_cast<int>(((frequency + ping_leeway_ms) / ping_delta_ms) * timer_events_);
 	++timer_events_;
 
 	if(!expected) {
-		return;
+		return true;
 	}
 
-	if(!prev_ping_sequence_) {
+	timer_events_ = 0;
+
+	if(prev_ping_sequence_ == ping_sequence_) {
 		CLIENT_DEBUG(logger_, context_)
 			<< "cmsg_ping missed" << LOG_ASYNC;
 		++ping_violation_;
-		return;
-	}
-
-	const auto predicted_sequence = prev_ping_sequence_ + expected;
-	prev_ping_sequence_ = ping_sequence_;
-
-	if(ping_sequence_ != predicted_sequence) {
-		CLIENT_DEBUG(logger_, context_)
-			<< "cmsg_ping mispredicted, "
-			<< ping_sequence_ << ", predicted "
-			<< predicted_sequence << LOG_ASYNC;
-
-		++ping_violation_;
+	} else {
+		prev_ping_sequence_ = ping_sequence_;
 	}
 
 	if(ping_violation_ > ping_grace) {
 		CLIENT_DEBUG(logger_, context_)
 			<< "cmsg_pings absent" << LOG_ASYNC;
-		close();
+		return false;
 	}
 
-	timer_events_ = 0;
+	return true;
 }
 
 bool ClientHandler::validate_ping(const protocol::client::Ping& ping) {
