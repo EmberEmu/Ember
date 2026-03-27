@@ -220,9 +220,6 @@ bool ClientHandler::validate_ping(const protocol::client::Ping& ping) {
 	const auto delta = tick - last_tick_;
 	last_tick_ = tick;
 
-	CLIENT_DEBUG(logger_, context_)
-		<< "cmsg_ping delta: " << delta  << LOG_ASYNC;
-
 	if(delta > (ping_delta_ms - ping_leeway_ms) && delta < (ping_delta_ms + ping_leeway_ms)) {
 		if(ping_violation_) {
 			--ping_violation_;
