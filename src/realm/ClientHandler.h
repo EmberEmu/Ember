@@ -29,6 +29,7 @@ namespace ember::realm {
 class ClientConnection;
 
 class ClientHandler final {
+	// client sanity check rules
 	constexpr static auto pps_grace = 3u;
 	constexpr static auto pps_soft_limit = 33u;
 	constexpr static auto pps_hard_limit = 50u;
@@ -41,7 +42,9 @@ class ClientHandler final {
 	const ClientIdent uuid_;
 	boost::asio::steady_timer timer_;
 	log::Logger& logger_;
-	unsigned int packets_;
+
+	// client sanity check state
+	unsigned int packet_counter_;
 	unsigned int pps_violation_;
 	std::uint32_t ping_sequence_;
 	std::uint32_t prev_ping_sequence_;

@@ -43,7 +43,7 @@ void ClientHandler::handle_message(StaticBuffer& buffer, const protocol::SizeTyp
 	stream >> opcode;
 
 	CLIENT_TRACE(logger_, context_) << " -> " << protocol::to_string(opcode) << LOG_ASYNC;
-	++packets_;
+	++packet_counter_;
 
 	// handle ping as a special case
 	if(opcode == protocol::ClientOpcode::cmsg_ping) {
@@ -135,7 +135,7 @@ void ClientHandler::cancel_timer() {
  * official servers used to behave.
  */
 void ClientHandler::pps_rate_limit() {
-	const auto packets_per_sec = packets_ / config::broadcast_timer_frequency.count();
+	const auto packets_per_sec = packet_counter_ / config::broadcast_timer_frequency.count();
 
 	if(packets_per_sec > pps_hard_limit) {
 		CLIENT_DEBUG(logger_, context_) << "Packet rate > hard limit" << LOG_SYNC;
@@ -156,7 +156,7 @@ void ClientHandler::pps_rate_limit() {
 		return;
 	}
 
-	packets_ = 0;
+	packet_counter_ = 0;
 }
 
 /*
@@ -271,7 +271,7 @@ ClientHandler::ClientHandler(ClientIdent uuid, executor executor, log::Logger& l
 	, logger_(logger)
 	, uuid_(uuid)
 	, timer_(executor)
-	, packets_(0)
+	, packet_counter_(0)
 	, pps_violation_(0)
 	, ping_sequence_(0)
 	, ping_violation_(0)
