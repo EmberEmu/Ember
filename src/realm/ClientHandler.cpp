@@ -200,10 +200,6 @@ bool ClientHandler::validate_ping(const protocol::client::Ping& ping) {
 		return true;
 	}
 
-	if(!prev_ping_sequence_) {
-		prev_ping_sequence_ = ping_sequence_;
-	}
-
 	if(!ping.sequence_id) {
 		CLIENT_DEBUG(logger_, context_)
 			<< "Zero cmsg_ping sequence" << LOG_ASYNC;
