@@ -16,6 +16,7 @@
 #include "states/StateJumpTables.h"
 #include <logger/Logger.h>
 #include <protocol/Packets.h>
+#include <shared/utility/TickClock.h>
 #include <format>
 #include <utility>
 
@@ -67,6 +68,10 @@ void ClientHandler::handle_event(std::unique_ptr<const Event> event) {
 
 void ClientHandler::handle_timer() {
 	pps_rate_limit();
+	
+	if(!check_ping_sent()) {
+		close();
+	}
 }
 
 void ClientHandler::state_update(ClientState new_state) {
@@ -94,6 +99,11 @@ void ClientHandler::handle_ping(BinaryStream& stream) {
 	protocol::cmsg_ping packet;
 
 	if(!deserialise(packet, stream)) {
+		return;
+	}
+
+	if(!validate_ping(packet.payload)) {
+		close();
 		return;
 	}
 
@@ -150,6 +160,83 @@ void ClientHandler::pps_rate_limit() {
 }
 
 /*
+ * Ensures that the client isn't bypassing cmsg_ping validation by simply
+ * not sending the packet at all or by sending it once to set the sequence
+ * and then never again.
+ */
+bool ClientHandler::check_ping_sent() {
+	// ensure the client has been given enough time since the last timer fired
+	const auto frequency = config::broadcast_timer_frequency.count() * 1000.0;
+	const auto expected = static_cast<int>(((frequency + ping_leeway_ms) / ping_delta_ms) * timer_events_);
+	++timer_events_;
+
+	if(!expected) {
+		return true;
+	}
+
+	timer_events_ = 0;
+
+	if(prev_ping_sequence_ == ping_sequence_) {
+		CLIENT_DEBUG(logger_, context_)
+			<< "cmsg_ping missed" << LOG_ASYNC;
+		++ping_violation_;
+	} else {
+		prev_ping_sequence_ = ping_sequence_;
+	}
+
+	if(ping_violation_ > ping_grace) {
+		CLIENT_DEBUG(logger_, context_)
+			<< "cmsg_pings absent" << LOG_ASYNC;
+		return false;
+	}
+
+	return true;
+}
+
+bool ClientHandler::validate_ping(const protocol::client::Ping& ping) {
+	if(!ping_sequence_) {
+		ping_sequence_ = ping.sequence_id;
+		last_tick_ = utility::get_tick_count();
+		return true;
+	}
+
+	if(!ping.sequence_id) {
+		CLIENT_DEBUG(logger_, context_)
+			<< "Zero cmsg_ping sequence" << LOG_ASYNC;
+		return false;
+	}
+
+	if(++ping_sequence_ != ping.sequence_id) {
+		CLIENT_DEBUG(logger_, context_)
+			<< "Non-sequential cmsg_ping sequence" << LOG_ASYNC;
+		return false;
+	}
+
+	const auto tick = utility::get_tick_count();
+	const auto delta = tick - last_tick_;
+	last_tick_ = tick;
+
+	if(delta > (ping_delta_ms - ping_leeway_ms) && delta < (ping_delta_ms + ping_leeway_ms)) {
+		if(ping_violation_) {
+			--ping_violation_;
+		}
+
+		return true;
+	}
+
+	CLIENT_DEBUG(logger_, context_)
+		<< "cmsg_ping timing violation" << LOG_ASYNC;
+
+	if(++ping_violation_ > ping_grace) {
+		CLIENT_DEBUG(logger_, context_)
+			<< "cmsg_ping violations exceeded grace" << LOG_ASYNC;
+		return false;
+	}
+
+	return true;
+}
+
+/*
  * Helper that decides whether to print the IP address or username
  * and IP address in log outputs, based on whether authentication
  * has completed
@@ -185,7 +272,10 @@ ClientHandler::ClientHandler(ClientIdent uuid, executor executor, log::Logger& l
 	, uuid_(uuid)
 	, timer_(executor)
 	, packets_(0)
-	, pps_violation_(0) {
+	, pps_violation_(0)
+	, ping_sequence_(0)
+	, ping_violation_(0)
+	, last_tick_(utility::get_tick_count()) {
 }
 
 ClientHandler::~ClientHandler() {
