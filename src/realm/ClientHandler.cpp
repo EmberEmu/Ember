@@ -67,9 +67,9 @@ void ClientHandler::handle_event(std::unique_ptr<const Event> event) {
 }
 
 void ClientHandler::handle_timer() {
-	pps_rate_limit();
-	
-	if(!check_ping_sent()) {
+	if(!pps_flood_check()) {
+		close();
+	} else if(!check_ping_sent()) {
 		close();
 	}
 }
@@ -134,13 +134,12 @@ void ClientHandler::cancel_timer() {
  * by spamming move set facing packets for too long, which mirrors how the
  * official servers used to behave.
  */
-void ClientHandler::pps_rate_limit() {
+bool ClientHandler::pps_flood_check() {
 	const auto packets_per_sec = packet_counter_ / config::broadcast_timer_frequency.count();
 
 	if(packets_per_sec > pps_hard_limit) {
 		CLIENT_DEBUG(logger_, context_) << "Packet rate > hard limit" << LOG_SYNC;
-		close();
-		return;
+		return false;
 	}
 
 	if(packets_per_sec > pps_soft_limit) {
@@ -152,11 +151,11 @@ void ClientHandler::pps_rate_limit() {
 
 	if(pps_violation_ >= pps_grace) {
 		CLIENT_DEBUG(logger_, context_) << "Too many rate limit violations" << LOG_SYNC;
-		close();
-		return;
+		return false;
 	}
 
 	packet_counter_ = 0;
+	return true;
 }
 
 /*

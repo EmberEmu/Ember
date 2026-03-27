@@ -59,7 +59,7 @@ class ClientHandler final {
 	bool check_ping_sent();
 	void handle_ping(BinaryStream& stream);
 	void handle_timer();
-	void pps_rate_limit();
+	bool pps_flood_check();
 
 public:
 	ClientHandler(ClientIdent uuid, executor executor, log::Logger& logger);
