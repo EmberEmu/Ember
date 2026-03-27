@@ -13,7 +13,6 @@ set(LIBRARY_HDR
     EventDispatcher.h
     Events.h
     EventTypes.h
-    Locator.h
     SessionManager.h
     FilterTypes.h
     RealmService.h
@@ -64,6 +63,7 @@ set(LIBRARY_HDR
     ClientBuilder.h
     Client.h
     BroadcastTimer.h
+    Forwards.h
 )
 
 set(LIBRARY_SRC

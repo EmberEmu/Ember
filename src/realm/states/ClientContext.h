@@ -25,8 +25,13 @@ class Logger;
 
 namespace ember::realm {
 
+class AccountClient;
+class CharacterClient;
 class ClientHandler;
 class ClientConnection;
+class ConfigStore;
+class EventDispatcher;
+class RealmQueue;
 
 struct WorldContext {
 	//std::shared_ptr<WorldConnection> world_conn;
@@ -46,6 +51,11 @@ struct ClientID {
 struct ClientContext {
 	ClientHandler& handler;
 	ClientConnection* connection;
+	const ConfigStore& cfg_store;
+	EventDispatcher& dispatcher;
+	RealmQueue& queue;
+	AccountClient& account_rpc;
+	CharacterClient& character_rpc;
 	log::Logger& logger;
 	BinaryStream* stream;
 	ClientState state;

@@ -16,7 +16,6 @@
 #include "../Digest.h"
 #include "../EventDispatcher.h"
 #include "../Events.h"
-#include "../Locator.h"
 #include "../RealmQueue.h"
 #include <logger/Logger.h>
 #include <protocol/Opcodes.h>
@@ -80,7 +79,7 @@ void handle_authentication(ClientContext& ctx) {
 		<< auth_ctx.packet->username
 		<< LOG_ASYNC;
 	
-	const auto& config = Locator::config_store()->config_tls();
+	const auto& config = ctx.cfg_store.config_tls();
 
 	const bool build_res = std::ranges::any_of(config.allowed_builds, [&](auto& version) {
 		return version.build == auth_ctx.packet->build;
@@ -105,10 +104,11 @@ void fetch_account_id(const ClientContext& ctx, const utf8_string& username) {
 	LOG_TRACE(ctx.logger, log_func);
 
 	const auto& uuid = ctx.handler.uuid();
+	auto& dispatcher = ctx.dispatcher;
 
-	Locator::account()->locate_account_id(username, [uuid](auto status, auto id) {
+	ctx.account_rpc.locate_account_id(username, [dispatcher, uuid](auto status, auto id) {
 		AccountIDResponse event(status, id);
-		Locator::dispatcher()->post_event(uuid, event);
+		dispatcher.post_event(uuid, event);
 	});
 }
 
@@ -144,10 +144,11 @@ void fetch_session_key(const ClientContext& ctx, const std::uint32_t account_id)
 	LOG_TRACE(ctx.logger, log_func);
 
 	const auto& uuid = ctx.handler.uuid();
-
-	Locator::account()->locate_session(account_id, [uuid](auto status, auto key) {
+	auto& dispatcher = ctx.dispatcher;
+		
+	ctx.account_rpc.locate_session(account_id, [dispatcher, uuid](auto status, auto key) {
 		SessionKeyResponse event(status, key);
-		Locator::dispatcher()->post_event(uuid, event);
+		dispatcher.post_event(uuid, event);
 	});
 }
 
@@ -204,7 +205,7 @@ void prove_session(ClientContext& ctx, const Botan::BigInt& key) {
 	 // todo, allowing for multiple realms to connect to a single world server
 	 // will require an external service to keep track of available slots
 	unsigned int active_players = 0;
-	const auto& config = Locator::config_store()->config_tls();
+	const auto& config = ctx.cfg_store.config_tls();
 
 	if(active_players < config.max_slots) {
 		auth_success(ctx);
@@ -255,14 +256,15 @@ void auth_queue(ClientContext& ctx) {
 	LOG_TRACE(ctx.logger, log_func);
 
 	const auto& uuid = ctx.handler.uuid();
+	auto& dispatcher = ctx.dispatcher;
 
-	Locator::queue()->enqueue(uuid,
-		[uuid](const std::size_t position) {
-			Locator::dispatcher()->post_event(uuid, QueuePosition(position));
+	ctx.queue.enqueue(uuid,
+		[dispatcher, uuid](const std::size_t position) {
+			dispatcher.post_event(uuid, QueuePosition(position));
 		},
-		[uuid]() {
+		[dispatcher, uuid]() {
 			const Event event { EventType::queue_success };
-			Locator::dispatcher()->post_event(uuid, event);
+			dispatcher.post_event(uuid, event);
 		}
 	);
 
@@ -310,7 +312,7 @@ void handle_timeout(ClientContext& ctx) {
 
 void enter(ClientContext& ctx) {
 	ctx.state_ctx = Context{};
-	const auto& config = Locator::config_store()->config_tls();
+	const auto& config = ctx.cfg_store.config_tls();
 	ctx.handler.start_timer(config.auth_timeout);
 	send_auth_challenge(ctx);
 }
@@ -351,7 +353,7 @@ void exit(ClientContext& ctx) {
 	const auto& auth_ctx = std::get<Context>(ctx.state_ctx);
 
 	if(auth_ctx.state == State::in_queue) {
-		Locator::queue()->dequeue(ctx.handler.uuid());
+		ctx.queue.dequeue(ctx.handler.uuid());
 	} else {
 		ctx.handler.cancel_timer();
 	}

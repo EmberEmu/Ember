@@ -12,7 +12,6 @@
 #include "Config.h"
 #include "EventDispatcher.h"
 #include "FilterTypes.h"
-#include "Locator.h"
 #include "states/StateJumpTables.h"
 #include <logger/Logger.h>
 #include <protocol/Packets.h>
@@ -23,12 +22,12 @@
 namespace ember::realm {
 
 void ClientHandler::start() {
-	Locator::dispatcher()->register_handler(this);
+	context_.dispatcher.register_handler(this);
 	enter_state[context_.state](context_);
 }
 
 void ClientHandler::stop() {
-	Locator::dispatcher()->remove_handler(this);
+	context_.dispatcher.remove_handler(this);
 	state_update(ClientState::cs_session_closed);
 }
 
@@ -115,11 +114,12 @@ void ClientHandler::handle_ping(BinaryStream& stream) {
 
 void ClientHandler::start_timer(const std::chrono::milliseconds& time) {
 	timer_.expires_after(time);
+	auto& dispatcher = context_.dispatcher;
 
-	timer_.async_wait([uuid = uuid_](const boost::system::error_code& ec) {
+	timer_.async_wait([dispatcher, uuid = uuid_](const boost::system::error_code& ec) {
 		if(!ec) {
 			Event event { EventType::timer_expired };
-			Locator::dispatcher()->post_event(uuid, event);
+			dispatcher.post_event(uuid, event);
 		}
 	});
 }
@@ -258,10 +258,17 @@ std::string_view ClientHandler::client_identify() const {
 	return client_id_;
 }
 
-ClientHandler::ClientHandler(ClientIdent uuid, executor executor, log::Logger& logger)
+ClientHandler::ClientHandler(ClientIdent uuid, executor executor, const ConfigStore& cfg_store,
+                             EventDispatcher& dispatcher, RealmQueue& queue, AccountClient& account_rpc,
+                             CharacterClient& character_rpc, log::Logger& logger)
 	: context_ {
 		.handler = *this,
 		.connection = nullptr,
+		.cfg_store = cfg_store,
+		.dispatcher = dispatcher,
+		.queue = queue,
+		.account_rpc = account_rpc,
+		.character_rpc = character_rpc,
 		.logger = logger,
 		.state = ClientState::cs_authenticating,
 		.prev_state = ClientState::cs_authenticating,
@@ -274,6 +281,8 @@ ClientHandler::ClientHandler(ClientIdent uuid, executor executor, log::Logger& l
 	, pps_violation_(0)
 	, ping_sequence_(0)
 	, ping_violation_(0)
+	, prev_ping_sequence_(0)
+	, timer_events_(0)
 	, last_tick_(utility::get_tick_count()) {
 }
 
