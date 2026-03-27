@@ -28,6 +28,7 @@ namespace ember::realm {
  * per client timers for events that don't need precise timing.
  */
 class BroadcastTimer {
+	constexpr static std::chrono::seconds default_offset { 0 };
 	const std::chrono::milliseconds frequency_;
 	const EventDispatcher& dispatcher_;
 	const thread::ServicePool& pool_;
@@ -58,8 +59,11 @@ public:
 			return;
 		}
 
-		for(auto& timer : timers_) {
-			set_timer(timer);
+		// the initial firing will be slightly offset in case any of the events
+		// do anything that could cause contention - can't guarantee separation
+		// will be maintained over time but them's the breaks
+		for(std::size_t i = 0; i < timers_.size(); ++i) {
+			set_timer(timers_[i], std::chrono::seconds(i));
 		}
 
 		running_ = true;
@@ -70,8 +74,8 @@ public:
 		running_ = false;
 	}
 
-	void set_timer(boost::asio::steady_timer& timer) {
-		timer.expires_after(frequency_);
+	void set_timer(boost::asio::steady_timer& timer, const std::chrono::seconds& offset = default_offset) {
+		timer.expires_after(frequency_ + offset);
 		timer.async_wait([&](const auto& ec) {
 			if(ec) {
 				return;
