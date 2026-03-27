@@ -16,16 +16,12 @@
 #include <shared/game/GameVersion.h>
 #include <shared/utility/UTF8String.h>
 #include <boost/assert.hpp>
-#include <boost/endian/arithmetic.hpp>
-#include <boost/endian/conversion.hpp>
 #include <gsl/narrow>
 #include <string>
 #include <cstdint>
 #include <cstddef>
 
 namespace ember::grunt::client {
-
-namespace be = boost::endian;
 
 class LoginChallenge final : public Packet {
 	static const std::size_t max_username_len = 16 * 4; // * 4 to account for UTF8
@@ -34,7 +30,7 @@ class LoginChallenge final : public Packet {
 	State state_ = State::initial;
 	std::uint8_t username_len_ = 0;
 
-	void header(spark::io::pmr::BinaryStream& stream) {
+	void header(PacketStream& stream) {
 		if(stream.size() < header_length) {
 			return;
 		}
@@ -42,10 +38,9 @@ class LoginChallenge final : public Packet {
 		stream >> opcode;
 		stream >> protocol_ver;
 		stream >> body_size;
-		be::little_to_native_inplace(body_size);
 	}
 
-	void read_body(spark::io::pmr::BinaryStream& stream) {
+	void read_body(PacketStream& stream) {
 		if(stream.size() < body_size) {
 			state_ = State::call_again;
 			return;
@@ -60,7 +55,7 @@ class LoginChallenge final : public Packet {
 		stream >> os;
 		stream >> locale;
 		stream >> timezone_bias;
-		stream >> ip;
+		stream >> spark::io::endian::be(ip);
 
 		stream >> spark::io::prefixed<std::string, std::uint8_t>(username);
 
@@ -68,12 +63,6 @@ class LoginChallenge final : public Packet {
 			throw bad_packet("Username length was too long!");
 		}
 
-		// handle endianness
-		be::little_to_native_inplace(game);
-		be::little_to_native_inplace(version.build);
-		be::little_to_native_inplace(platform);
-		be::little_to_native_inplace(os);
-		be::little_to_native_inplace(locale);
 		state_ = State::done;
 	}
 
@@ -91,11 +80,11 @@ public:
 	Platform platform;
 	System os;
 	Locale locale;
-	be::little_int32_t timezone_bias = 0;
-	be::big_uint32_t ip = 0; // todo - apparently flipped with Mac builds (PPC only?)
+	std::int32_t timezone_bias = 0;
+	std::uint32_t ip = 0; // todo - apparently flipped with Mac builds (PPC only?)
 	utf8_string username;
 
-	State read_from_stream(spark::io::pmr::BinaryStream& stream) override {
+	State read_from_stream(PacketStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::done, "Packet already complete - check your logic!");
 
 		switch(state_) {
@@ -112,7 +101,7 @@ public:
 		return state_;
 	}
 
-	void write_to_stream(spark::io::pmr::BinaryStream& stream) const override {
+	void write_to_stream(PacketStream& stream) const override {
 		if(username.length() > max_username_len) {
 			throw bad_packet("Provided username was too long!");
 		}
@@ -122,22 +111,22 @@ public:
 		stream << protocol_ver;
 		const auto size_pos = stream.total_write();
 		stream << std::uint16_t(0); // size placeholder
-		stream << be::native_to_little(game);
+		stream << game;
 		stream << version.major;
 		stream << version.minor;
 		stream << version.patch;
-		stream << be::native_to_little(version.build);
-		stream << be::native_to_little(platform);
-		stream << be::native_to_little(os);
-		stream << be::native_to_little(locale);
+		stream << version.build;
+		stream << platform;
+		stream << os;
+		stream << locale;
 		stream << timezone_bias;
-		stream << ip;
+		stream << spark::io::endian::be(ip);
 		stream << spark::io::prefixed<const utf8_string, std::uint8_t>(username);
 		const auto end_pos = stream.total_write();
 		const auto size = (end_pos - start_pos) - header_length;
 
 		stream.write_seek(spark::io::StreamSeek::sk_stream_absolute, size_pos);
-		stream << be::native_to_little(gsl::narrow<std::uint16_t>(size));
+		stream << gsl::narrow<std::uint16_t>(size);
 		stream.write_seek(spark::io::StreamSeek::sk_forward, size);
 	}
 };

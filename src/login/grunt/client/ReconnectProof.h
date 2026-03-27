@@ -22,7 +22,7 @@
 namespace ember::grunt::client {
 
 class ReconnectProof final : public Packet {
-	static const std::size_t WIRE_LENGTH = 58;
+	static const std::size_t wire_length = 58;
 	State state_ = State::initial;
 
 public:
@@ -35,10 +35,10 @@ public:
 	std::uint8_t key_count = 0;
 	std::vector<KeyData> keys;
 
-	State read_from_stream(spark::io::pmr::BinaryStream& stream) override {
+	State read_from_stream(PacketStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::done, "Packet already complete - check your logic!");
 
-		if(state_ == State::initial && stream.size() < WIRE_LENGTH) {
+		if(state_ == State::initial && stream.size() < wire_length) {
 			return State::call_again;
 		}
 
@@ -47,12 +47,20 @@ public:
 		stream >> proof;
 		stream >> client_checksum;
 		stream >> key_count;
-		// todo, read key data here
+		
+		for(auto i = 0u; i < key_count; ++i) {
+			KeyData key;
+			stream << key.len;
+			stream << key.pub_value;
+			stream << key.product;
+			stream << key.hash;
+			keys.emplace_back(std::move(key));
+		}
 
 		return (state_ = State::done);
 	}
 
-	void write_to_stream(spark::io::pmr::BinaryStream& stream) const override {
+	void write_to_stream(PacketStream& stream) const override {
 		stream << opcode;
 		stream << salt;
 		stream << proof;

@@ -224,7 +224,7 @@ void LoginHandler::build_login_challenge(grunt::server::LoginChallenge& packet) 
 	packet.B = values.B;
 	packet.g_len = gsl::narrow<std::uint8_t>(values.gen.generator().bytes());
 	packet.g = gsl::narrow<std::uint8_t>(utility::to_u32bit(values.gen.generator()));
-	packet.n_len = grunt::server::LoginChallenge::PRIME_LENGTH;
+	packet.n_len = grunt::server::LoginChallenge::prime_length;
 	packet.N = values.gen.prime();
 	packet.s = values.salt;
 	packet.two_factor_auth = false;

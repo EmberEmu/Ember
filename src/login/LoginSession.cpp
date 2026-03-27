@@ -42,7 +42,7 @@ LoginSession::LoginSession(SessionManager& sessions,
 	};
 }
 
-bool LoginSession::handle_packet(spark::io::pmr::Buffer& buffer) try {
+bool LoginSession::handle_packet(BufferType& buffer) try {
 	LOG_TRACE(logger_, log_func);
 
 	auto result = grunt_handler_.process_buffer(buffer);

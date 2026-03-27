@@ -19,8 +19,8 @@
 namespace ember::grunt::server {
 
 class ReconnectChallenge final : public Packet {
-	const static std::size_t WIRE_LENGTH = 34;
-	const static std::size_t RAND_LENGTH = 16;
+	const static std::size_t wire_length = 34;
+	const static std::size_t rand_length = 16;
 
 	State state_ = State::initial;
 
@@ -29,13 +29,13 @@ public:
 		: Packet(Opcode::cmd_auth_reconnect_challenge) {}
 
 	Result result;
-	std::array<std::uint8_t, RAND_LENGTH> salt;
-	std::array<std::uint8_t, RAND_LENGTH> checksum_salt; // client no longer uses this
+	std::array<std::uint8_t, rand_length> salt;
+	std::array<std::uint8_t, rand_length> checksum_salt; // client no longer uses this
 
-	State read_from_stream(spark::io::pmr::BinaryStream& stream) override {
+	State read_from_stream(PacketStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::done, "Packet already complete - check your logic!");
 
-		if(state_ == State::initial && stream.size() < WIRE_LENGTH) {
+		if(state_ == State::initial && stream.size() < wire_length) {
 			return State::call_again;
 		}
 		
@@ -47,7 +47,7 @@ public:
 		return (state_ = State::done);
 	}
 
-	void write_to_stream(spark::io::pmr::BinaryStream& stream) const override {
+	void write_to_stream(PacketStream& stream) const override {
 		stream << opcode;
 		stream << result;
 		stream << salt;

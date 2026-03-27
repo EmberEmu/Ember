@@ -10,7 +10,6 @@
 #include "Exceptions.h"
 #include "Packets.h"
 #include <logger/Logger.h>
-#include <spark/buffers/pmr/BinaryStream.h>
 #include <shared/utility/FormatPacket.h>
 #include <boost/assert.hpp>
 #include <vector>
@@ -23,12 +22,10 @@ void Handler::create_packet() {
 	curr_packet_ = &packet_.emplace<T>();
 }
 
-void Handler::dump_bad_packet(const spark::io::buffer_underrun& e,
-                              spark::io::pmr::Buffer& buffer,
-                              std::size_t offset) {
+void Handler::dump_bad_packet(const spark::io::buffer_underrun& e, BufferType& buffer, std::size_t offset) {
 	std::size_t valid_bytes = offset - buffer.size();
 
-	spark::io::pmr::BinaryStream stream(buffer);
+	PacketStream stream(buffer);
 	stream.skip(stream.size()); // discard any remaining data, we don't care about it anymore
 
 	// recombobulate the data by serialising the packet
@@ -46,7 +43,7 @@ void Handler::dump_bad_packet(const spark::io::buffer_underrun& e,
 	    << valid_bytes << " bytes \n" << output << LOG_ASYNC;
 }
 
-void Handler::handle_new_packet(spark::io::pmr::Buffer& buffer) {
+void Handler::handle_new_packet(BufferType& buffer) {
 	Opcode opcode;
 	buffer.copy(&opcode, sizeof(opcode));
 
@@ -84,8 +81,8 @@ void Handler::handle_new_packet(spark::io::pmr::Buffer& buffer) {
 	state_ = State::read;
 }
 
-void Handler::handle_read(spark::io::pmr::Buffer& buffer, std::size_t offset) try {
-	spark::io::pmr::BinaryStream stream(buffer);
+void Handler::handle_read(BufferType& buffer, std::size_t offset) try {
+	PacketStream stream(buffer);
 	Packet::State state = curr_packet_->read_from_stream(stream);
 
 	switch(state) {
@@ -103,7 +100,7 @@ void Handler::handle_read(spark::io::pmr::Buffer& buffer, std::size_t offset) tr
 	throw bad_packet(e.what());
 }
 
-const Packet* Handler::process_buffer(spark::io::pmr::Buffer& buffer) {
+const Packet* Handler::process_buffer(BufferType& buffer) {
 	switch(state_) {
 		case State::new_packet:
 			handle_new_packet(buffer);

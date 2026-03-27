@@ -18,17 +18,17 @@
 namespace ember::grunt::client {
 
 class TransferCancel final : public Packet {
-	static const std::size_t WIRE_LENGTH = 1;
+	static const std::size_t wire_length = 1;
 	State state_ = State::initial;
 
 public:
 	TransferCancel()
 		: Packet(Opcode::cmd_xfer_cancel) {}
 	
-	State read_from_stream(spark::io::pmr::BinaryStream& stream) override {
+	State read_from_stream(PacketStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::done, "Packet already complete - check your logic!");
 
-		if(stream.size() < WIRE_LENGTH) {
+		if(stream.size() < wire_length) {
 			return State::call_again;
 		}
 
@@ -37,7 +37,7 @@ public:
 		return (state_ = State::done);
 	}
 
-	void write_to_stream(spark::io::pmr::BinaryStream& stream) const override {
+	void write_to_stream(PacketStream& stream) const override {
 		stream << opcode;
 	}
 };

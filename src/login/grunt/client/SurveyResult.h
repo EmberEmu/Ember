@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2025 Ember
+ * Copyright (c) 2016 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -12,7 +12,6 @@
 #include "../Packet.h"
 #include "../Exceptions.h"
 #include <boost/assert.hpp>
-#include <boost/endian/arithmetic.hpp>
 #include <gsl/narrow>
 #include <zlib.h>
 #include <cstdint>
@@ -20,23 +19,21 @@
 
 namespace ember::grunt::client {
 
-namespace be = boost::endian;
-
 class SurveyResult final : public Packet {
-	static const std::size_t MIN_READ_LENGTH = 8;
-	static const std::size_t MAX_SURVEY_LEN  = 8192;
+	static const std::size_t min_read_length = 8;
+	static const std::size_t max_survey_len  = 8192;
 	State state_ = State::initial;
 
 	be::little_uint16_t compressed_size_ = 0;
 
-	void read_body(spark::io::pmr::BinaryStream& stream) {
+	void read_body(PacketStream& stream) {
 		stream >> opcode;
 		stream >> survey_id;
 		stream >> error;
 		stream >> compressed_size_;
 	}
 
-	void read_data(spark::io::pmr::BinaryStream& stream) {
+	void read_data(PacketStream& stream) {
 		if(error) {
 			state_ = State::done;
 			return;
@@ -58,7 +55,7 @@ class SurveyResult final : public Packet {
 
 		int ret = Z_OK;
 
-		data.resize_and_overwrite(MAX_SURVEY_LEN, [&](char* strbuf, std::size_t size) {
+		data.resize_and_overwrite(max_survey_len, [&](char* strbuf, std::size_t size) {
 			uLongf dest_len = size;
 			ret = uncompress(reinterpret_cast<Bytef*>(strbuf), &dest_len, compressed.data(), compressed.size());
 			return dest_len;
@@ -75,14 +72,14 @@ public:
 	SurveyResult()
 		: Packet(Opcode::cmd_survey_result) {}
 
-	be::little_uint32_t survey_id = 0;
-	be::little_uint8_t error = 0;
+	std::uint32_t survey_id = 0;
+	std::uint8_t error = 0;
 	std::string data;
 
-	State read_from_stream(spark::io::pmr::BinaryStream& stream) override {
+	State read_from_stream(PacketStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::done, "Packet already complete - check your logic!");
 
-		if(state_ == State::initial && stream.size() < MIN_READ_LENGTH) {
+		if(state_ == State::initial && stream.size() < min_read_length) {
 			return State::call_again;
 		}
 
@@ -100,8 +97,8 @@ public:
 		return state_;
 	}
 
-	void write_to_stream(spark::io::pmr::BinaryStream& stream) const override {
-		if(data.size() > MAX_SURVEY_LEN) {
+	void write_to_stream(PacketStream& stream) const override {
+		if(data.size() > max_survey_len) {
 			throw bad_packet("Survey data is too big");
 		}
 
