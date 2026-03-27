@@ -30,8 +30,8 @@ class ClientConnection;
 
 class ClientHandler final {
 	constexpr static auto pps_grace = 3u;
-	constexpr static auto pps_soft_limit = 1000u;
-	constexpr static auto pps_hard_limit = 1500u;
+	constexpr static auto pps_soft_limit = 33u;
+	constexpr static auto pps_hard_limit = 50u;
 
 	ClientConnection* connection_;
 	ClientContext context_;

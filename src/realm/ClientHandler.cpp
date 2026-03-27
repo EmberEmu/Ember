@@ -9,6 +9,7 @@
 #include "ClientHandler.h"
 #include "ClientConnection.h"
 #include "ClientLogHelper.h"
+#include "Config.h"
 #include "EventDispatcher.h"
 #include "FilterTypes.h"
 #include "Locator.h"
@@ -124,13 +125,15 @@ void ClientHandler::cancel_timer() {
  * official servers used to behave.
  */
 void ClientHandler::pps_rate_limit() {
-	if(packets_ > pps_hard_limit) {
+	const auto packets_per_sec = packets_ / config::broadcast_timer_frequency.count();
+
+	if(packets_per_sec > pps_hard_limit) {
 		CLIENT_DEBUG(logger_, context_) << "Packet rate > hard limit" << LOG_SYNC;
 		close();
 		return;
 	}
 
-	if(packets_ > pps_soft_limit) {
+	if(packets_per_sec > pps_soft_limit) {
 		CLIENT_DEBUG(logger_, context_) << "Packet rate > soft limit" << LOG_SYNC;
 		++pps_violation_;
 	} else if(pps_violation_) {

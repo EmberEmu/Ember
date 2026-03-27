@@ -255,7 +255,10 @@ void Service::initialise(const opts::variables_map& args) try {
 	);
 	
 	// Start timer service
-	ctx->timer = std::make_unique<BroadcastTimer>(*ctx->service_pool, *ctx->dispatcher, 30s);
+	ctx->timer = std::make_unique<BroadcastTimer>(
+		*ctx->service_pool, *ctx->dispatcher, config::broadcast_timer_frequency
+	);
+
 	ctx->timer->start();
 
 	// Install service command handlers

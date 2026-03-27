@@ -20,6 +20,12 @@ struct Realm;
 
 namespace ember::realm {
 
+namespace config {
+
+constexpr static inline std::chrono::seconds broadcast_timer_frequency { 30 };
+
+} // config
+
 struct Config {
 	Realm* realm;
 	unsigned int realm_id;
