@@ -35,24 +35,20 @@ struct Weather final {
 	std::uint32_t sound_id;
 	WeatherChangeType change;
 
-	StreamResult read_from_stream(le_stream auto& stream) try {
+	StreamResult read_from_stream(le_stream auto& stream) {
 		stream >> type;
 		stream >> grade;
 		stream >> sound_id;
 		stream >> change;
 		return stream? StreamResult::success : StreamResult::failed;
-	} catch(const std::exception&) {
-		return StreamResult::caught_exception;
 	}
 
-	StreamResult write_to_stream(le_stream auto& stream) const try {
+	StreamResult write_to_stream(le_stream auto& stream) const {
 		stream << type;
 		stream << grade;
 		stream << sound_id;
 		stream << change;
 		return stream? StreamResult::success : StreamResult::failed;
-	} catch(const std::exception&) {
-		return StreamResult::caught_exception;
 	}
 };
 

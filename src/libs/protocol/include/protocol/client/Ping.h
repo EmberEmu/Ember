@@ -20,20 +20,16 @@ struct Ping final {
 	std::uint32_t sequence_id;
 	std::uint32_t latency;
 
-	StreamResult read_from_stream(le_stream auto& stream) try {
+	StreamResult read_from_stream(le_stream auto& stream) {
 		stream >> sequence_id;
 		stream >> latency;
 		return stream? StreamResult::success : StreamResult::stream_error;
-	} catch(const std::exception&) {
-		return StreamResult::caught_exception;
 	}
 
-	StreamResult write_to_stream(le_stream auto& stream) const try {
+	StreamResult write_to_stream(le_stream auto& stream) const {
 		stream << sequence_id;
 		stream << latency;
 		return stream? StreamResult::success : StreamResult::stream_error;
-	} catch(const std::exception&) {
-		return StreamResult::caught_exception;
 	}
 };
 

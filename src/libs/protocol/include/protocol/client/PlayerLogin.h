@@ -20,18 +20,14 @@ namespace ember::protocol::client {
 struct PlayerLogin final {
 	std::uint64_t character_id;
 
-	StreamResult read_from_stream(le_stream auto& stream) try {
+	StreamResult read_from_stream(le_stream auto& stream) {
 		stream >> character_id;
 		return stream? StreamResult::success : StreamResult::stream_error;
-	} catch(const std::exception&) {
-		return StreamResult::caught_exception;
 	}
 
-	StreamResult write_to_stream(le_stream auto& stream) const try {
+	StreamResult write_to_stream(le_stream auto& stream) const {
 		stream << character_id;
 		return stream? StreamResult::success : StreamResult::stream_error;
-	} catch(const std::exception&) {
-		return StreamResult::caught_exception;
 	}
 };
 

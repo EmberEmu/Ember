@@ -22,7 +22,7 @@ namespace ember::protocol::server {
 struct CharacterEnum final {
 	std::vector<Character> characters;
 
-	StreamResult read_from_stream(le_stream auto& stream) try {
+	StreamResult read_from_stream(le_stream auto& stream) {
 		std::uint8_t char_count;
 		stream >> char_count;
 
@@ -57,11 +57,9 @@ struct CharacterEnum final {
 		}
 
 		return stream? StreamResult::success : StreamResult::failed;
-	} catch(const std::exception&) {
-		return StreamResult::caught_exception;
 	}
 
-	StreamResult write_to_stream(le_stream auto& stream) const try {
+	StreamResult write_to_stream(le_stream auto& stream) const {
 		stream << std::uint8_t(characters.size());
 
 		for(auto& c : characters) {
@@ -98,8 +96,6 @@ struct CharacterEnum final {
 		}
 
 		return stream? StreamResult::success : StreamResult::failed;
-	} catch(const std::exception&) {
-		return StreamResult::caught_exception;
 	}
 };
 

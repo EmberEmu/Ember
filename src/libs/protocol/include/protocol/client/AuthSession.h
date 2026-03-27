@@ -43,7 +43,7 @@ struct AuthSession final {
 	utf8_string username;
 	boost::container::small_vector<AddonData, 64> addons;
 
-	StreamResult read_from_stream(le_stream auto& stream) try {
+	StreamResult read_from_stream(le_stream auto& stream) {
 		const auto initial_stream_size = stream.size();
 
 		stream >> build;
@@ -86,7 +86,7 @@ struct AuthSession final {
 		}
 
 		spark::io::BufferAdaptor buffer(dest);
-		spark::io::BinaryStream addon_stream(buffer);
+		spark::io::BinaryStream addon_stream(buffer, spark::io::no_throw, spark::io::endian::little);
 
 		while(!addon_stream.empty()) {
 			AddonData data;
@@ -94,23 +94,24 @@ struct AuthSession final {
 			addon_stream >> data.key_version;
 			addon_stream >> data.crc;
 			addon_stream >> data.update_url_crc;
+
+			if(!addon_stream) {
+				return StreamResult::stream_error;
+			}
+
 			addons.emplace_back(std::move(data));
-		}
+		}		
 
 		return stream? StreamResult::success : StreamResult::stream_error;
-	} catch(const std::exception&) {
-		return StreamResult::caught_exception;
 	}
 
-	StreamResult write_to_stream(le_stream auto& stream) const try {
+	StreamResult write_to_stream(le_stream auto& stream) const {
 		stream << build;
 		stream << server_id;
 		stream << spark::io::null_terminated(username);
 		stream << seed;
 		stream << digest;
 		return stream? StreamResult::success : StreamResult::stream_error;
-	} catch(const std::exception&) {
-		return StreamResult::caught_exception;
 	}
 };
 

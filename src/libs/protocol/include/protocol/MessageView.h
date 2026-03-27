@@ -78,7 +78,7 @@ public:
 		return StreamResult::stream_error;
 	}
 
-	[[nodiscard]] StreamResult read_from_stream(stream_type& stream) try {
+	[[nodiscard]] StreamResult read_from_stream(stream_type& stream) {
 		if constexpr(std::is_pointer_v<packet_view>) {
 			packet = std::start_lifetime_as<packet_type>(stream.buffer()->read_ptr());
 
@@ -105,8 +105,6 @@ public:
 		} else {
 			return packet.read_from_stream(stream);
 		}
-	} catch(const std::exception& e) {
-		return StreamResult::caught_exception;
 	}
 
 	StreamResult read_payload_from_stream(stream_type& stream) {

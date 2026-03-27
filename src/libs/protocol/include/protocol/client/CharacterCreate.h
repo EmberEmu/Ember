@@ -23,7 +23,7 @@ namespace ember::protocol::client {
 struct CharacterCreate final {
 	rpc::Character::CharacterTemplateT character;
 	
-	StreamResult read_from_stream(le_stream auto& stream) try {
+	StreamResult read_from_stream(le_stream auto& stream) {
 		stream >> spark::io::null_terminated(character.name);
 		stream >> character.race;
 		stream >> character.class_;
@@ -35,11 +35,9 @@ struct CharacterCreate final {
 		stream >> character.facialhair;
 		stream >> character.outfit_id;
 		return stream? StreamResult::success : StreamResult::stream_error;
-	} catch(const std::exception&) {
-		return StreamResult::caught_exception;
 	}
 
-	StreamResult write_to_stream(le_stream auto& stream) const try {
+	StreamResult write_to_stream(le_stream auto& stream) const {
 		stream << spark::io::null_terminated(character.name);
 		stream << character.race;
 		stream << character.class_;
@@ -51,8 +49,6 @@ struct CharacterCreate final {
 		stream << character.facialhair;
 		stream << character.outfit_id;
 		return stream? StreamResult::success : StreamResult::stream_error;
-	} catch(const std::exception&) {
-		return StreamResult::caught_exception;
 	}
 };
 
