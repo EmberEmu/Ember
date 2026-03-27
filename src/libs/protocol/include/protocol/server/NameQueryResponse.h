@@ -25,7 +25,7 @@ struct NameQueryResponse final {
 	std::uint32_t gender;
 	std::uint32_t _class;
 
-	StreamResult read_from_stream(le_stream auto& stream) try {
+	StreamResult read_from_stream(le_stream auto& stream) {
 		stream >> guid;
 		stream >> spark::io::null_terminated(name);
 		stream >> spark::io::null_terminated(realm);
@@ -33,11 +33,9 @@ struct NameQueryResponse final {
 		stream >> gender;
 		stream >> _class;
 		return stream? StreamResult::success : StreamResult::failed;
-	} catch(const std::exception&) {
-		return StreamResult::caught_exception;
 	}
 
-	StreamResult write_to_stream(le_stream auto& stream) const try {
+	StreamResult write_to_stream(le_stream auto& stream) const {
 		stream << guid;
 		stream << spark::io::null_terminated(name);
 		stream << spark::io::null_terminated(realm);
@@ -45,8 +43,6 @@ struct NameQueryResponse final {
 		stream << gender;
 		stream << _class;
 		return stream? StreamResult::success : StreamResult::failed;
-	} catch(const std::exception&) {
-		return StreamResult::caught_exception;
 	}
 };
 

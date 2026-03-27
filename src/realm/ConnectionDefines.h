@@ -31,7 +31,7 @@ using StaticBuffer  = spark::io::StaticBuffer<std::uint8_t, inbound_size>;
 
 using BinaryStream = spark::io::BinaryStream<
 	StaticBuffer,
-	spark::io::allow_throw_t,
+	spark::io::no_throw_t,
 	spark::io::endian::as_little_t
 >;
 

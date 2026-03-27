@@ -20,20 +20,16 @@ struct Motd final {
 	std::uint32_t count;
 	std::string motd;
 
-	StreamResult read_from_stream(le_stream auto& stream) try {
+	StreamResult read_from_stream(le_stream auto& stream) {
 		stream >> count;
 		stream >> spark::io::null_terminated(motd);
 		return StreamResult::success;
-	} catch(const std::exception&) {
-		return StreamResult::caught_exception;
 	}
 
-	StreamResult write_to_stream(le_stream auto& stream) const try {
+	StreamResult write_to_stream(le_stream auto& stream) const {
 		stream << count;
 		stream << spark::io::null_terminated(motd);
 		return StreamResult::success;
-	} catch(const std::exception&) {
-		return StreamResult::caught_exception;
 	}
 };
 

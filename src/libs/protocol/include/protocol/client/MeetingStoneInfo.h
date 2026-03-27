@@ -17,16 +17,12 @@
 namespace ember::protocol::client {
 
 struct MeetingStoneInfo final {
-	StreamResult read_from_stream(le_stream auto& stream) try {
+	StreamResult read_from_stream(le_stream auto& stream) {
 		return StreamResult::success;
-	} catch(const std::exception&) {
-		return StreamResult::caught_exception;
 	}
 
-	StreamResult write_to_stream(le_stream auto& stream) const try {
+	StreamResult write_to_stream(le_stream auto& stream) const {
 		return StreamResult::success;
-	} catch(const std::exception&) {
-		return StreamResult::caught_exception;
 	}
 };
 

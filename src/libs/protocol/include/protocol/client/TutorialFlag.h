@@ -20,18 +20,14 @@ namespace ember::protocol::client {
 struct TutorialFlag final {
 	std::uint32_t flag;
 
-	StreamResult read_from_stream(le_stream auto& stream) try {
+	StreamResult read_from_stream(le_stream auto& stream) {
 		stream >> flag;
 		return stream? StreamResult::success : StreamResult::failed;
-	} catch(const std::exception&) {
-		return StreamResult::caught_exception;
 	}
 
-	StreamResult write_to_stream(le_stream auto& stream) const try {
+	StreamResult write_to_stream(le_stream auto& stream) const {
 		stream << flag;
 		return stream? StreamResult::success : StreamResult::failed;
-	} catch(const std::exception&) {
-		return StreamResult::caught_exception;
 	}
 };
 

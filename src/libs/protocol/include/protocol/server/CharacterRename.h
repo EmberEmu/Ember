@@ -23,7 +23,7 @@ struct CharacterRename final {
 	std::uint64_t id;
 	utf8_string name;
 	
-	StreamResult read_from_stream(le_stream auto& stream) try {
+	StreamResult read_from_stream(le_stream auto& stream) {
 		stream >> result;
 
 		if(result == protocol::Result::response_success) {
@@ -32,11 +32,9 @@ struct CharacterRename final {
 		}
 
 		return stream? StreamResult::success : StreamResult::failed;
-	} catch(const std::exception&) {
-		return StreamResult::caught_exception;
 	}
 
-	StreamResult write_to_stream(le_stream auto& stream) const try {
+	StreamResult write_to_stream(le_stream auto& stream) const {
 		stream << result;
 
 		if(result == protocol::Result::response_success) {
@@ -45,8 +43,6 @@ struct CharacterRename final {
 		}
 
 		return stream? StreamResult::success : StreamResult::failed;
-	} catch(const std::exception&) {
-		return StreamResult::caught_exception;
 	}
 };
 

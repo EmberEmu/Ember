@@ -86,15 +86,13 @@ struct ChannelNotify final {
 	ChatNotify type;
 	std::string name;
 
-	StreamResult read_from_stream(le_stream auto& stream) try {
+	StreamResult read_from_stream(le_stream auto& stream) {
 		stream >> type;
 		stream >> spark::io::null_terminated(name);
 		return stream? StreamResult::success : StreamResult::failed;
-	} catch(const std::exception&) {
-		return StreamResult::caught_exception;
 	}
 
-	StreamResult write_to_stream(le_stream auto& stream) const try {
+	StreamResult write_to_stream(le_stream auto& stream) const {
 		stream << type;
 		stream << spark::io::null_terminated(name);
 
@@ -127,8 +125,6 @@ struct ChannelNotify final {
 			stream << std::uint32_t(0);
 		}
 		return stream? StreamResult::success : StreamResult::failed;
-	} catch(const std::exception&) {
-		return StreamResult::caught_exception;
 	}
 };
 

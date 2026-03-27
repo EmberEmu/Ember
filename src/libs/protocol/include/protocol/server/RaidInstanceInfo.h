@@ -26,22 +26,18 @@ struct RaidInstanceInfo final {
 
 	std::vector<RaidInfo> info;
 
-	StreamResult read_from_stream(le_stream auto& stream) try {
+	StreamResult read_from_stream(le_stream auto& stream) {
 		std::uint32_t count;
 		stream >> count;
 		return stream? StreamResult::success : StreamResult::failed;
-	} catch(const std::exception&) {
-		return StreamResult::caught_exception;
 	}
 
-	StreamResult write_to_stream(le_stream auto& stream) const try {
+	StreamResult write_to_stream(le_stream auto& stream) const {
 		stream << std::uint32_t(1);
 		stream << std::uint32_t(369);
 		stream << std::uint32_t(-1);
 		stream << std::uint32_t(101920);
 		return stream? StreamResult::success : StreamResult::failed;
-	} catch(const std::exception&) {
-		return StreamResult::caught_exception;
 	}
 };
 

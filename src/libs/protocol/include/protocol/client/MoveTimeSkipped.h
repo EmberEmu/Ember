@@ -20,20 +20,16 @@ struct MoveTimeSkipped final {
 	std::uint64_t guid;
 	std::uint32_t lag;
 
-	StreamResult read_from_stream(le_stream auto& stream) try {
+	StreamResult read_from_stream(le_stream auto& stream) {
 		stream >> guid;
 		stream >> lag;
 		return StreamResult::success;
-	} catch(const std::exception&) {
-		return StreamResult::caught_exception;
 	}
 
-	StreamResult write_to_stream(le_stream auto& stream) const try {
+	StreamResult write_to_stream(le_stream auto& stream) const {
 		stream << guid;
 		stream << lag;
 		return StreamResult::success;
-	} catch(const std::exception&) {
-		return StreamResult::caught_exception;
 	}
 };
 

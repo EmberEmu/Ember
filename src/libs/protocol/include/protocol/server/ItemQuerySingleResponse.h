@@ -145,21 +145,18 @@ struct ItemQuerySingleResponse final {
 			0, 0, 0, 0, // bag_family: BagFamily NONE (0)
 	};
 
-	StreamResult read_from_stream(le_stream auto& stream) try {
+	StreamResult read_from_stream(le_stream auto& stream) {
 		stream >> item;
 		stream >> data;
 		return stream? StreamResult::success : StreamResult::failed;
-	} catch(const std::exception&) {
-		return StreamResult::caught_exception;
 	}
 
-	StreamResult write_to_stream(le_stream auto& stream) const try {
+	StreamResult write_to_stream(le_stream auto& stream) const {
 		stream << item;
 		stream << data;
 		return stream? StreamResult::success : StreamResult::failed;
-	} catch(const std::exception&) {
-		return StreamResult::caught_exception;
 	}
+
 };
 
 } // server, protocol, ember
