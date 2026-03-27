@@ -13,11 +13,11 @@
 #include "ConnectionDefines.h"
 #include "states/ClientContext.h"
 #include <logger/LoggerFwd.h>
+#include <protocol/client/Ping.h>
 #include <protocol/Packet.h>
-#include <spark/buffers/BinaryStream.h>
 #include <shared/ClientIdent.h>
+#include <spark/buffers/BinaryStream.h>
 #include <boost/asio/steady_timer.hpp>
-#include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <memory>
 #include <optional>
@@ -32,6 +32,9 @@ class ClientHandler final {
 	constexpr static auto pps_grace = 3u;
 	constexpr static auto pps_soft_limit = 33u;
 	constexpr static auto pps_hard_limit = 50u;
+	constexpr static auto ping_grace = 5u;
+	constexpr static auto ping_delta_ms = 30000u;
+	constexpr static auto ping_leeway_ms = 2000u;
 
 	ClientConnection* connection_;
 	ClientContext context_;
@@ -40,10 +43,17 @@ class ClientHandler final {
 	log::Logger& logger_;
 	unsigned int packets_;
 	unsigned int pps_violation_;
+	std::uint32_t ping_sequence_;
+	std::uint32_t prev_ping_sequence_;
+	unsigned int ping_violation_;
+	std::uint64_t last_tick_;
+	unsigned int timer_events_;
 
 	mutable std::string client_id_;
 	mutable std::string client_id_ext_;
 
+	bool validate_ping(const protocol::client::Ping& ping);
+	void ensure_ping();
 	void handle_ping(BinaryStream& stream);
 	void handle_timer();
 	void pps_rate_limit();
