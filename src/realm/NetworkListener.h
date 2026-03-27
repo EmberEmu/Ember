@@ -28,7 +28,7 @@ namespace asio = boost::asio;
 
 class NetworkListener final {
 	SessionManager& sessions_;
-	ClientBuilder builder_;
+	ClientBuilder& builder_;
 	tcp_acceptor acceptor_;
 	std::size_t index_;
 	tcp_socket socket_;
@@ -40,10 +40,10 @@ class NetworkListener final {
 	void dispatch_socket();
 
 public:
-	NetworkListener(thread::ServicePool& pool, SessionManager& sessions, std::string_view interface,
-	                std::uint16_t port, bool tcp_no_delay, log::Logger& logger)
+	NetworkListener(thread::ServicePool& pool, ClientBuilder& builder, SessionManager& sessions,
+	                std::string_view interface, std::uint16_t port, bool tcp_no_delay, log::Logger& logger)
 		: sessions_(sessions)
-		, builder_(logger)
+		, builder_(builder)
 		, acceptor_(
 			pool.get_next(),
 			asio::ip::tcp::endpoint(asio::ip::make_address(interface), port)

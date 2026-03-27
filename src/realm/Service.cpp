@@ -9,7 +9,6 @@
 #include "Service.h"
 #include "DBCRequired.h"
 #include "FilterTypes.h"
-#include "Locator.h"
 #include "LoggingCallbacks.h"
 #include "ServiceContextImpl.h"
 #include <conpool/ConnectionPool.h>
@@ -235,23 +234,18 @@ void Service::initialise(const opts::variables_map& args) try {
 	ctx->rpc_discovery = std::make_unique<NetworkServiceDiscovery>(*ctx->rpc, nsd_host, nsd_port, logger);
 	ctx->queue = std::make_unique<RealmQueue>(service);
 
-	// set services - not the best design pattern but it'll do for now
-	// todo, this can probably be removed now
-	Locator::set(ctx->dispatcher.get());
-	Locator::set(ctx->queue.get());
-	Locator::set(ctx->rpc_account.get());
-	Locator::set(ctx->rpc_character.get());
-	Locator::set(ctx->rpc_realm.get());
-	Locator::set(ctx->config_store.get());
-
 	// Misc. information
 	const auto max_socks = utility::max_sockets_desc();
 	SLOG_INFO(logger, "Max allowed sockets: {}", max_socks);
 
+	ctx->builder = std::make_unique<ClientBuilder>(
+		*ctx->config_store, *ctx->dispatcher, *ctx->queue, *ctx->rpc_account, *ctx->rpc_character, logger
+	);
+
 	// Start network listener
 	SLOG_INFO(logger, "Starting network service on {}:{}...", interface, port);
 	ctx->server = std::make_unique<NetworkListener>(
-		*ctx->service_pool, ctx->sessions, interface, port, tcp_no_delay, logger
+		*ctx->service_pool, *ctx->builder, ctx->sessions, interface, port, tcp_no_delay, logger
 	);
 	
 	// Start timer service

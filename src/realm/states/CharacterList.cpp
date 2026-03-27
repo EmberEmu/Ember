@@ -8,19 +8,19 @@
 
 #include "CharacterList.h"
 #include "ClientContext.h"
+#include "../CharacterClient.h"
 #include "../ClientHandler.h"
 #include "../ConfigStore.h"
-#include "../Locator.h"
-#include "../RealmQueue.h"
 #include "../CharacterClient.h"
 #include "../ClientConnection.h"
-#include "../EventDispatcher.h"
-#include "../FilterTypes.h"
 #include "../ClientLogHelper.h"
 #include "../Events.h"
+#include "../EventDispatcher.h"
+#include "../FilterTypes.h"
+#include "../RealmQueue.h"
 #include <logger/Logger.h>
-#include <protocol/Packets.h>
 #include <protocol/Opcodes.h>
+#include <protocol/Packets.h>
 #include <shared/utility/UTF8String.h>
 #include <memory>
 #include <vector>
@@ -28,8 +28,6 @@
 using namespace std::chrono_literals;
 
 namespace ember::realm::character_list {
-
-namespace {
 
 void handle_timeout(ClientContext& ctx);
 
@@ -70,11 +68,12 @@ void character_rename(ClientContext& ctx) {
 	}
 
 	const auto& uuid = ctx.handler.uuid();
+	auto& dispatcher = ctx.dispatcher;
 
-	Locator::character()->rename_character(ctx.client_id->id, packet->id, packet->name,
-	                                       [uuid](auto result, auto id, const auto& name) {
+	ctx.character_rpc.rename_character(ctx.client_id->id, packet->id, packet->name,
+	                                  [dispatcher, uuid](auto result, auto id, const auto& name) {
 		CharRenameResponse event(result, id, name);
-		Locator::dispatcher()->post_event(uuid, std::move(event));
+		dispatcher.post_event(uuid, std::move(event));
 	});
 }
 
@@ -82,10 +81,12 @@ void character_enumerate(const ClientContext& ctx) {
 	LOG_TRACE(ctx.logger, log_func);
 
 	const auto& uuid = ctx.handler.uuid();
-	Locator::character()->retrieve_characters(ctx.client_id->id,
-		[uuid](auto status, auto characters) {
+	auto& dispatcher = ctx.dispatcher;
+
+	ctx.character_rpc.retrieve_characters(ctx.client_id->id,
+		[dispatcher, uuid](auto status, auto characters) {
 			CharEnumResponse event(status, std::move(characters));
-			Locator::dispatcher()->post_event(uuid, std::move(event));
+			dispatcher.post_event(uuid, std::move(event));
 		}
 	);
 }
@@ -126,9 +127,10 @@ void character_create(ClientContext& ctx) {
 	}
 
 	const auto& uuid = ctx.handler.uuid();
+	auto& dispatcher = ctx.dispatcher;
 
-	Locator::character()->create_character(ctx.client_id->id, packet->character, [uuid](auto result) {
-		Locator::dispatcher()->post_event(uuid, CharCreateResponse(result));
+	ctx.character_rpc.create_character(ctx.client_id->id, packet->character, [dispatcher, uuid](auto result) {
+		dispatcher.post_event(uuid, CharCreateResponse(result));
 	});
 }
 
@@ -142,9 +144,10 @@ void character_delete(ClientContext& ctx) {
 	}
 
 	const auto& uuid = ctx.handler.uuid();
+	auto& dispatcher = ctx.dispatcher;
 
-	Locator::character()->delete_character(ctx.client_id->id, packet->id, [uuid](auto result) {
-		Locator::dispatcher()->post_event(uuid, CharDeleteResponse(result));
+	ctx.character_rpc.delete_character(ctx.client_id->id, packet->id, [dispatcher, uuid](auto result) {
+		dispatcher.post_event(uuid, CharDeleteResponse(result));
 	});
 }
 
@@ -157,7 +160,7 @@ void player_login(ClientContext& ctx) {
 		return;
 	}
 
-	Locator::dispatcher()->post_event(
+	ctx.dispatcher.post_event(
 		ctx.handler.uuid(), PlayerLogin(packet->character_id)
 	);
 
@@ -169,10 +172,8 @@ void handle_timeout(ClientContext& ctx) {
 	ctx.handler.close();
 }
 
-} // unnamed
-
 void enter(ClientContext& ctx) {
-	const auto& config = Locator::config_store()->config_tls();
+	const auto& config = ctx.cfg_store.config_tls();
 
 	if(auto timeout = config.char_list_timeout; timeout != 0s) {
 		ctx.handler.start_timer(timeout);
@@ -228,7 +229,7 @@ void exit(ClientContext& ctx) {
 
 	if(ctx.state == ClientState::cs_session_closed) {
 		//--test;
-		Locator::queue()->free_slot();
+		ctx.queue.free_slot();
 	}
 }
 

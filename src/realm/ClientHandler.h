@@ -62,7 +62,9 @@ class ClientHandler final {
 	bool pps_flood_check();
 
 public:
-	ClientHandler(ClientIdent uuid, executor executor, log::Logger& logger);
+	ClientHandler(ClientIdent uuid, executor executor, const ConfigStore& cfg_store,
+	              EventDispatcher& dispatcher, RealmQueue& queue, AccountClient& account_rpc,
+	              CharacterClient& character_rpc, log::Logger& logger);
 	~ClientHandler();
 
 	void set_connection(ClientConnection* connection) {

@@ -10,6 +10,7 @@
 
 #include "AccountClient.h"
 #include "CharacterClient.h"
+#include "ClientBuilder.h"
 #include "BroadcastTimer.h"
 #include "Config.h"
 #include "ConfigStore.h"
@@ -34,6 +35,7 @@ namespace ember::realm {
 
 struct ServiceContext::Impl {
 	SessionManager sessions;
+	std::unique_ptr<ClientBuilder> builder;
 	std::unique_ptr<utility::CommandExecutor> cmd_exec;
 	std::unique_ptr<thread::ServicePool> service_pool;
 	std::unique_ptr<Realm> realm;

@@ -9,6 +9,7 @@
 #pragma once
 
 #include "Client.h"
+#include "Forwards.h"
 #include <spark/buffers/allocators/TLSBlockAllocator.h>
 #include <memory>
 
@@ -36,16 +37,34 @@ class ClientBuilder {
 	constexpr inline static auto allocator_tag = "client_allocator";
 
 	ClientAllocator allocator_;
+	const ConfigStore& store_;
+	EventDispatcher& dispatcher_;
+	RealmQueue& queue_;
+	AccountClient& account_rpc_;
+	CharacterClient& character_rpc_;
 	log::Logger& logger_;
 
 public:
-	ClientBuilder(log::Logger& logger)
+	ClientBuilder(const ConfigStore& store,
+	              EventDispatcher& dispatcher,
+	              RealmQueue& queue,
+	              AccountClient& account_rpc,
+	              CharacterClient& character_rpc,
+	              log::Logger& logger)
 		: allocator_(allocator_tag)
+		, store_(store)
+		, dispatcher_(dispatcher)
+		, queue_(queue)
+		, account_rpc_(account_rpc)
+		, character_rpc_(character_rpc)
 		, logger_(logger) {}
 
 	ClientPtr create(tcp_socket socket, ClientIdent ident) {
 		return ClientPtr(
-			allocator_.allocate(std::move(socket), std::move(ident), logger_), [&](auto ptr) {
+			allocator_.allocate(
+				std::move(socket), std::move(ident), store_, dispatcher_, queue_,
+				account_rpc_, character_rpc_, logger_
+			), [&](auto ptr) {
 				allocator_.deallocate(ptr);
 			}
 		);
