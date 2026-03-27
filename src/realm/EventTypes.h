@@ -20,7 +20,8 @@ enum class EventType {
 	char_enum_response,
 	char_rename_response,
 	player_login,
-	timer_expired
+	timer_expired,
+	interval_timer_fire
 };
 
 } // realm, ember

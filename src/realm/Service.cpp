@@ -254,6 +254,13 @@ void Service::initialise(const opts::variables_map& args) try {
 		*ctx->service_pool, ctx->sessions, interface, port, tcp_no_delay, logger
 	);
 	
+	// Start timer service
+	ctx->timer = std::make_unique<BroadcastTimer>(
+		*ctx->service_pool, *ctx->dispatcher, config::broadcast_timer_frequency
+	);
+
+	ctx->timer->start();
+
 	// Install service command handlers
 	SLOG_INFO(logger, "Registering command handlers...");
 	register_commands(service);

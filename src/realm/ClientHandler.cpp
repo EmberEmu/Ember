@@ -9,6 +9,7 @@
 #include "ClientHandler.h"
 #include "ClientConnection.h"
 #include "ClientLogHelper.h"
+#include "Config.h"
 #include "EventDispatcher.h"
 #include "FilterTypes.h"
 #include "Locator.h"
@@ -41,6 +42,7 @@ void ClientHandler::handle_message(StaticBuffer& buffer, const protocol::SizeTyp
 	stream >> opcode;
 
 	CLIENT_TRACE(logger_, context_) << " -> " << protocol::to_string(opcode) << LOG_ASYNC;
+	++packets_;
 
 	// handle ping as a special case
 	if(opcode == protocol::ClientOpcode::cmsg_ping) {
@@ -52,11 +54,19 @@ void ClientHandler::handle_message(StaticBuffer& buffer, const protocol::SizeTyp
 }
 
 void ClientHandler::handle_event(const Event* event) {
+	if(event->type == EventType::interval_timer_fire) {
+		handle_timer();
+	}
+
 	update_event[context_.state](context_, event);
 }
 
 void ClientHandler::handle_event(std::unique_ptr<const Event> event) {
 	update_event[context_.state](context_, event.get());
+}
+
+void ClientHandler::handle_timer() {
+	pps_rate_limit();
 }
 
 void ClientHandler::state_update(ClientState new_state) {
@@ -109,6 +119,37 @@ void ClientHandler::cancel_timer() {
 }
 
 /*
+ * Ensures the client does not flood the server with a rate of packets that's
+ * unlikely to have been generated through normal play. This can be tripped
+ * by spamming move set facing packets for too long, which mirrors how the
+ * official servers used to behave.
+ */
+void ClientHandler::pps_rate_limit() {
+	const auto packets_per_sec = packets_ / config::broadcast_timer_frequency.count();
+
+	if(packets_per_sec > pps_hard_limit) {
+		CLIENT_DEBUG(logger_, context_) << "Packet rate > hard limit" << LOG_SYNC;
+		close();
+		return;
+	}
+
+	if(packets_per_sec > pps_soft_limit) {
+		CLIENT_DEBUG(logger_, context_) << "Packet rate > soft limit" << LOG_SYNC;
+		++pps_violation_;
+	} else if(pps_violation_) {
+		--pps_violation_;
+	}
+
+	if(pps_violation_ >= pps_grace) {
+		CLIENT_DEBUG(logger_, context_) << "Too many rate limit violations" << LOG_SYNC;
+		close();
+		return;
+	}
+
+	packets_ = 0;
+}
+
+/*
  * Helper that decides whether to print the IP address or username
  * and IP address in log outputs, based on whether authentication
  * has completed
@@ -138,11 +179,13 @@ ClientHandler::ClientHandler(ClientIdent uuid, executor executor, log::Logger& l
 		.logger = logger,
 		.state = ClientState::cs_authenticating,
 		.prev_state = ClientState::cs_authenticating,
-	  },
-	  connection_(nullptr),
-	  logger_(logger),
-	  uuid_(uuid),
-	  timer_(executor) {
+	  }
+	, connection_(nullptr)
+	, logger_(logger)
+	, uuid_(uuid)
+	, timer_(executor)
+	, packets_(0)
+	, pps_violation_(0) {
 }
 
 ClientHandler::~ClientHandler() {

@@ -63,6 +63,7 @@ set(LIBRARY_HDR
     ConfigStore.h
     ClientBuilder.h
     Client.h
+    BroadcastTimer.h
 )
 
 set(LIBRARY_SRC
