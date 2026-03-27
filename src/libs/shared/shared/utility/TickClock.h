@@ -12,6 +12,10 @@
 
 namespace ember::utility {
 
+/*
+ * This is ideal for when we need a very fast time source for a task and we're fine
+ * that the timer isn't that precise (e.g. events measured in the seconds).
+ */
 std::uint64_t get_tick_count();
 
 }; // utility, ember
