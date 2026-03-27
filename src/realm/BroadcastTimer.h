@@ -16,6 +16,17 @@
 
 namespace ember::realm {
 
+/*
+ * Implements a coarse-grained timer that fires a timer event notification to all connected
+ * clients at the specified frequency.
+ * 
+ * This works by maintaining a timer per service thread rather than a single shared timer as it
+ * allows for timers to fire without involving any cross-thread event posting. The number of
+ * clients doesn't matter.
+ * 
+ * Overall, timers are quite expensive and this mitigates that by removing the need for
+ * per client timers for events that don't need precise timing.
+ */
 class BroadcastTimer {
 	const std::chrono::milliseconds frequency_;
 	const EventDispatcher& dispatcher_;
