@@ -40,23 +40,13 @@ class NetworkListener final {
 	void dispatch_socket();
 
 public:
-	NetworkListener(thread::ServicePool& pool, ClientBuilder& builder, SessionManager& sessions,
-	                std::string_view interface, std::uint16_t port, bool tcp_no_delay, log::Logger& logger)
-		: sessions_(sessions)
-		, builder_(builder)
-		, acceptor_(
-			pool.get_next(),
-			asio::ip::tcp::endpoint(asio::ip::make_address(interface), port)
-		  )
-		, index_(0)
-		, socket_(pool.get(index_))
-		, pool_(pool)
-		, logger_(logger)
-		, stopped_(false) {
-		acceptor_.set_option(asio::ip::tcp::no_delay(tcp_no_delay));
-		acceptor_.set_option(asio::ip::tcp::acceptor::reuse_address(true));
-		accept_connection();
-	}
+	NetworkListener(thread::ServicePool& pool,
+	                ClientBuilder& builder,
+	                SessionManager& sessions,
+	                std::string_view interface,
+	                std::uint16_t port,
+	                bool tcp_no_delay,
+	                log::Logger& logger);
 
 	~NetworkListener();
 
