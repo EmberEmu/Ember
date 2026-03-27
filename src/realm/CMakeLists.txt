@@ -101,7 +101,7 @@ add_library(${LIBRARY_NAME} ${SERVICE_LIB_LINKAGE}
 )
 
 add_dependencies(${LIBRARY_NAME} SPARK_RPC_GENERATE)
-target_link_libraries(${LIBRARY_NAME} PRIVATE thread nsd conpool stun ports dbcreader protocol spark ${ZLIB_LIBRARY} Threads::Threads PUBLIC logger commands shared ${Boost_LIBRARIES})
+target_link_libraries(${LIBRARY_NAME} PRIVATE protocol thread nsd conpool stun ports dbcreader spark ${ZLIB_LIBRARY} Threads::Threads PUBLIC service logger commands shared ${Boost_LIBRARIES})
 
 add_dependencies(${LIBRARY_NAME}
     FB_SCHEMA_COMPILE
@@ -114,7 +114,6 @@ endif()
 
 target_compile_definitions(${LIBRARY_NAME} PRIVATE PREALLOCATED_CLIENTS_PER_THREAD=${PREALLOC_CLIENTS_THREAD})
 target_compile_definitions(${LIBRARY_NAME} PUBLIC EXPORT_SERVICE)
-target_link_libraries(${LIBRARY_NAME} PRIVATE thread nsd conpool stun ports dbcreader protocol spark ${ZLIB_LIBRARY} Threads::Threads PUBLIC service logger commands shared ${Boost_LIBRARIES})
 
 if(WIN32)
     set(ICON_RESOURCE resources.rc)
