@@ -48,8 +48,7 @@ void Survey::add_data(const grunt::Platform platform, const grunt::System os, co
 	data_.insert_or_assign(key, std::move(buffer));
 }
 
-std::optional<std::reference_wrapper<const FileMeta>>
-Survey::meta(const grunt::Platform platform, const grunt::System os) const {
+std::optional<const FileMeta&> Survey::meta(const grunt::Platform platform, const grunt::System os) const {
 	if(auto it = meta_.find({ platform, os }); it != meta_.end()) {
 		return it->second;
 	}

@@ -53,8 +53,7 @@ public:
 	void add_data(grunt::Platform platform, grunt::System os, const std::string& path);
 	
 	[[nodiscard]]
-	std::optional<std::reference_wrapper<const FileMeta>>
-	meta(grunt::Platform platform, grunt::System os) const;
+	std::optional<const FileMeta&> meta(grunt::Platform platform, grunt::System os) const;
 
 	[[nodiscard]]
 	std::optional<std::span<const std::byte>>
