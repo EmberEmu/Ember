@@ -101,7 +101,6 @@ void Worker::process_outstanding_sync() {
 
 void Worker::process_dequeued() {
 	const auto records = dequeued_.size();
-	apply_soft_backpressure(records);
 
 	if(discarded_) {
 		write_discard_log();
@@ -140,6 +139,7 @@ void Worker::process_outstanding() {
 	dequeued_.reserve(size_approx);
 
 	if(queue_.try_dequeue_bulk(std::back_inserter(dequeued_), hard_queue_limit)) {
+		apply_soft_backpressure(dequeued_.size());
 		process_dequeued();
 	}
 }
