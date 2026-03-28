@@ -342,6 +342,7 @@ void CommandSink::history_scroll(const ScrollDirection dir) {
 	}
 
 	command_ = cmd_history_[history_idx_];
+	update_suggestion();
 	redraw_prompt();
 }
 

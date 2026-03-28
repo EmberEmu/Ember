@@ -223,7 +223,6 @@ commands::Suggestions full_command_table(const Registries& registries) {
 		const auto& [k, v] = registry;
 		auto suggestions = v.autocomplete("");
 		
-	
 		for(auto& suggestion : suggestions.records) {
 			suggestion.name = std::format("{} {}", k, suggestion.name);
 		}
