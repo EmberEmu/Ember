@@ -132,6 +132,7 @@ void Worker::process_dequeued() {
 void Worker::process_outstanding() {
 	const auto size_approx = queue_.size_approx();
 	apply_hard_backpressure(size_approx);
+	dequeued_.reserve(size_approx);
 
 	if(queue_.try_dequeue_bulk(std::back_inserter(dequeued_), size_approx)) {
 		process_dequeued();
