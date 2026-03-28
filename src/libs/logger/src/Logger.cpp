@@ -38,6 +38,14 @@ std::vector<std::shared_ptr<Sink>> Logger::fetch_sink(const std::string_view nam
 	return pimpl_->fetch_sink(name);
 }
 
+void Logger::set_soft_limit(std::size_t value) {
+	pimpl_->set_soft_limit(value);
+}
+
+void Logger::set_hard_limit(std::size_t value) {
+	pimpl_->set_hard_limit(value);
+}
+
 Severity Logger::severity() {
 	return pimpl_->severity();
 }
