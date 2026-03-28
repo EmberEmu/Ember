@@ -29,7 +29,7 @@ using ClientAllocator = spark::io::TLSBlockAllocator<
 	Client,
 	PREALLOCATED_CLIENTS_PER_THREAD,
 	spark::io::NoRefCounting,
-	spark::io::SafeEntrant,
+	spark::io::UnsafeEntrant,
 	PageLockPolicy
 >;
 
