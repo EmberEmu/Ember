@@ -61,8 +61,8 @@ public:
 	void start();
 	void stop();
 	bool discard();
-	void set_soft_limit(unsigned int value);
-	void set_hard_limit(unsigned int value);
+	void set_soft_limit(std::size_t value);
+	void set_hard_limit(std::size_t value);
 
 	inline void signal() { 
 		sem_.release();
