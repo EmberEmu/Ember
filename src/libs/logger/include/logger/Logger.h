@@ -83,6 +83,8 @@ public:
 	Logger& operator <<(unsigned long long data);
 	Logger& operator <<(unsigned int data);
 	void add_sink(std::shared_ptr<Sink> sink);
+	void set_soft_limit(std::size_t value);
+	void set_hard_limit(std::size_t value);
 	std::vector<std::shared_ptr<Sink>> fetch_sink(const std::string_view name);
 	std::vector<std::shared_ptr<Sink>> fetch_sinks();
 	Severity severity();

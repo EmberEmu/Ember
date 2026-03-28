@@ -34,7 +34,17 @@ class Worker final {
 	std::binary_semaphore sem_;
 	std::thread thread_;
 	std::atomic_bool stop_ { false };
-
+#ifdef LOG_PRODUCER_BACKPRESSURE
+	std::atomic_bool discard_ { false };
+#endif
+	std::size_t soft_queue_limit = 1000;
+	std::size_t hard_queue_limit = 2000;
+	unsigned int discarded_ = 0;
+	
+	void apply_hard_backpressure(std::size_t size);
+	void apply_soft_backpressure(std::size_t size);
+	void write_discard_log();
+	void process_dequeued();
 	void process_outstanding();
 	void process_outstanding_sync();
 	void run();
@@ -50,6 +60,10 @@ public:
 
 	void start();
 	void stop();
+	bool discard();
+	void set_soft_limit(std::size_t value);
+	void set_hard_limit(std::size_t value);
+
 	inline void signal() { 
 		sem_.release();
 	}

@@ -32,7 +32,7 @@ namespace ember::log {
 class Logger::impl final {
 	friend class Logger;
 
-	static constexpr std::size_t BUFFER_RESERVE = 256;
+	static constexpr std::size_t buffer_reserve = 128;
 
 	Severity severity_ = Severity::disabled;
 	Filter filter_ = Filter(0);
@@ -44,11 +44,19 @@ class Logger::impl final {
 	static inline thread_local std::binary_semaphore sem_{0};
 
 	void finalise() {
+#ifdef LOG_PRODUCER_BACKPRESSURE
+		if(worker_.discard()) {
+			buffer_.second.clear();
+			return;
+		}
+#endif
 		buffer_.second.push_back('\n');
 		worker_.queue_.enqueue(std::move(buffer_));
+#ifndef LOG_PRODUCER_LOW_LATENCY
 		worker_.signal();
+#endif
 		buffer_ = {};
-		buffer_.second.reserve(BUFFER_RESERVE);
+		buffer_.second.reserve(buffer_reserve);
 	}
 
 	void finalise_sync() {
@@ -58,7 +66,7 @@ class Logger::impl final {
 		worker_.queue_sync_.enqueue(std::move(r));
 		worker_.signal();
 		buffer_ = {};
-		buffer_.second.reserve(BUFFER_RESERVE);
+		buffer_.second.reserve(buffer_reserve);
 		sem_.acquire();
 	}
 
@@ -195,6 +203,14 @@ public:
 		}
 
 		return sinks;
+	}
+
+	void set_soft_limit(std::size_t value) {
+		worker_.set_soft_limit(value);
+	}
+
+	void set_hard_limit(std::size_t value) {
+		worker_.set_hard_limit(value);
 	}
 
 	impl(const impl&) = delete;
