@@ -60,7 +60,7 @@ int main(int argc, const char* argv[]) try {
 
 	register_command_handlers(registries, logger);
 	register_shared_commands(registries, logger);
-	register_service_commands(registries.at("root"), logger);
+	register_service_commands(registries.at("fusion"), logger);
 
 	glob_params = Params {
 		.args = &args,

@@ -57,28 +57,27 @@ void handle_command_result(commands::Result result, const std::string& path,
 void execute_command(const std::string_view input, const Registries& registries, log::Logger& logger) try {
 	const auto tokens = commands::Registry::parse_input(input);
 
-	// figure out which registry to use
-	auto prefix = tokens.front();
-	const auto it = registries.find(prefix);
-
-	std::span token_view = tokens;
-
-	if(token_view.size() == 1 || !registries.contains(prefix)) {
-		prefix = "root"; // use the root registry
-	} else {
-		token_view = token_view.subspan<1>();
+	if(tokens.empty()) {
+		return;
 	}
 
-	const auto& registry = registries.at(prefix);
+	// figure out which registry to use
+	auto prefix = tokens.front();
+	std::span token_view = tokens;
+	token_view = token_view.subspan<1>();
+
+	const auto it = registries.find(prefix);
+	
+	if(it == registries.end()) {
+		LOG_CONERR(logger, R"(Command "{}" not found)", input);
+		return;
+	}
+
+	const auto& registry = it->second;
 	const auto search = registry.find(token_view);
 
 	if(!search.command) {
-		LOG_CONERR(
-			logger,
-			R"(Command "{}" not found)",
-			token_view.front()
-		);
-
+		LOG_CONERR(logger, R"(Command "{}" not found)", input);
 		return;
 	}
 
@@ -139,24 +138,20 @@ void handle_help_command(const commands::Arguments& arguments,
 
 	// figure out which registry to use
 	auto prefix = tokens.front();
-	const auto it = registries.find(prefix);
-
 	std::span token_view = tokens;
+	token_view = token_view.subspan<1>();
 
-	if(token_view.size() == 1 || !registries.contains(prefix)) {
-		prefix = "root"; // use the root registry
+	if(auto it = registries.find(prefix); it != registries.end()) {
+		const auto result = it->second.find(token_view);
+
+		if(result.command) {
+			LOG_CONSOLE(logger, "Usage: {} {}", command, result.command->usage_string());
+			LOG_CONSOLE(logger, "Description: {}", result.command->description());
+		} else {
+			LOG_CONERR(logger, R"(Command "{}" not found)", command);
+		}
 	} else {
-		token_view = token_view.subspan<1>();
-	}
-
-	const auto& registry = registries.at(prefix);
-	const auto result = registry.find(token_view);
-
-	if(result.command) {
-		LOG_CONSOLE(logger, "Usage: {} {}", command, result.command->usage_string());
-		LOG_CONSOLE(logger, "Description: {}", result.command->description());
-	} else {
-		LOG_CONERR(logger, R"(Command "{}" not found)", command);
+		LOG_CONERR(logger, R"(Command "{} {}" not found)", prefix, command);
 	}
 }
 
@@ -177,7 +172,7 @@ void handle_cls_command(log::Logger& logger) {
 #endif
 
 void register_shared_commands(Registries& registries, log::Logger& logger) {
-	auto& root = registries["root"];
+	auto& root = registries["fusion"];
 
 	root.insert("help")
 		->description("Display console command usage information")
@@ -195,7 +190,7 @@ void register_shared_commands(Registries& registries, log::Logger& logger) {
 #endif
 }
 
-std::string shortest_common_substring(std::span<const std::string> candidates) {
+std::string shortest_common_substring(std::span<const std::string_view> candidates) {
 	std::string match;
 
 	if(candidates.empty()) {
@@ -204,7 +199,7 @@ std::string shortest_common_substring(std::span<const std::string> candidates) {
 		match = candidates.front();
 	}
 
-	for(const auto& str : candidates) {
+	for(auto& str : candidates) {
 		std::size_t i = 0;
 
 		while(i < match.size() && i < str.size() && match[i] == str[i]) {
@@ -221,75 +216,63 @@ std::string shortest_common_substring(std::span<const std::string> candidates) {
 	return match;
 }
 
+commands::Suggestions full_command_table(const Registries& registries) {
+	commands::Suggestions result;
+
+	for(const auto& registry : registries) {
+		const auto& [k, v] = registry;
+		auto suggestions = v.autocomplete("");
+		
+	
+		for(auto& suggestion : suggestions.records) {
+			suggestion.name = std::format("{} {}", k, suggestion.name);
+		}
+
+		result.records.insert_range(result.records.end(), std::move(suggestions.records));
+	}
+
+	return result;
+}
+
 commands::Suggestions handle_autocomplete(const Registries& registries, const std::string_view command) {
 	auto tokens = commands::Registry::parse_input(command);
 
-	// figure out which registry this command could belong to
-	std::vector<std::pair<std::string, const commands::Registry*>> candidates;
+	// delegate to a specific service registry if we can
+	if(!tokens.empty()) {
+		for(auto& entry : registries) {
+			const auto& [name, registry] = entry;
 
-	for(const auto& it : registries) {
-		const auto& [key, value] = it;
+			if(tokens.front() == name) {
+				auto subcommand = command.substr(command.find_first_of(name) + name.size(), -1);
 
-		if(tokens.empty()) {
-			candidates.emplace_back(key, &value);
-		} else if(key == "root" || key.starts_with(tokens.front())) {
-			candidates.emplace_back(key, &value);
-		}
-	}
+				if(subcommand.starts_with(' ')) {
+					subcommand = subcommand.substr(1, -1);
+				}
 
-	std::vector<std::string> completions;
-	std::vector<commands::Suggestions::Record> records;
-	std::string_view split_command;
-	std::string_view registry_name;
-
-	auto pos = command.find_first_of(' ');
-
-	if(pos == command.npos || pos == command.size() - 1) {
-		split_command = "";
-	} else {
-		registry_name = registry_name.substr(0, pos);
-		split_command = command.substr(pos + 1, command.size() - pos);
-	}
-
-	for(auto& [name, registry]  : candidates) {
-		std::string_view command_view = command;
-
-		if(name != "root") {
-			command_view = split_command;
-		}
-
-		// exclude current registry from the search if the prefix doesn't belong to it
-		if(!registry_name.empty() && registry_name != name) {
-			continue;
-		}
-
-		auto suggestions = registry->autocomplete(command_view);
-	
-		// populate auto-completion candidate names for these matches
-		for(const auto& record : suggestions.records) {
-			if(name != "root") {
-				completions.emplace_back(std::format("{} {}", name, record.name));
-			} else {
-				completions.emplace_back(record.name);
+				auto result = registry.autocomplete(subcommand);
+				result.substring = std::format("{} {}", name, result.substring);
+				return result;
 			}
 		}
-
-		// populate command records, prefixing the current registry name for the table output
-		for(auto& suggestion : suggestions.records) {
-			if(name != "root") {
-				suggestion.name = std::format("{} {}", name, suggestion.name);
-			}
-		}
-
-		records.insert_range(records.begin(), suggestions.records);
 	}
 
-	auto substring = shortest_common_substring(completions);
+	// nope, we only had a partial match, build the table ourselves
+	auto full_table = full_command_table(registries);
+	std::vector<std::string_view> completions;
 
-	return commands::Suggestions {
-		.substring = std::move(substring),
-		.records = std::move(records),
-	};
+	for(auto& record : full_table.records) {
+		if(record.name.starts_with(command)) {
+			completions.emplace_back(record.name);
+		}
+	}
+
+	full_table.substring = shortest_common_substring(completions);
+
+	std::erase_if(full_table.records, [&](const auto& record) {
+		return !record.name.starts_with(full_table.substring);
+	});
+
+	return full_table;
 }
 
 std::string suggest_command(const Registries& registries, const std::string_view cmd) {
