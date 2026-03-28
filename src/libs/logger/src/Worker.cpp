@@ -8,6 +8,7 @@
 
 #include <logger/Worker.h>
 #include <thread/Utility.h>
+#include <algorithm>
 #include <chrono>
 #include <iterator>
 #include <format>
@@ -37,21 +38,18 @@ bool Worker::discard() {
 }
 
 void Worker::apply_hard_backpressure(const std::size_t size_approx) {
-	if(hard_queue_limit == 0 || size_approx < hard_queue_limit) {
+	if(hard_queue_limit == 0 || size_approx <= hard_queue_limit) {
 #ifdef LOG_PRODUCER_BACKPRESSURE
 		discard_.store(false, std::memory_order_relaxed);
 #endif
 		return;
 	}
 
-	std::pair<RecordDetail, std::vector<char>> item;
 	const auto discard_count = size_approx - hard_queue_limit;
 
-	for(auto i = 0u; i < discard_count; ++i) {
-		if(queue_.try_dequeue(item)) {
-			++discarded_;
-		}
-	}
+	std::vector<std::pair<RecordDetail, std::vector<char>>> item;
+	item.resize(discard_count);
+	discarded_ += queue_.try_dequeue_bulk(std::back_inserter(item), discard_count);
 
 #ifdef LOG_PRODUCER_BACKPRESSURE
 	discard_.store(true, std::memory_order_relaxed);
@@ -59,20 +57,22 @@ void Worker::apply_hard_backpressure(const std::size_t size_approx) {
 }
 
 void Worker::apply_soft_backpressure(const std::size_t size) {
-	if(soft_queue_limit == 0 || size < soft_queue_limit) {
+	if(soft_queue_limit == 0 || size <= soft_queue_limit) {
 		return;
 	}
 
-	const auto discard_count = size - soft_queue_limit;
+	auto discard_count = size - soft_queue_limit;
 
-	for(auto i = 0u; i < discard_count; ++i) {
-		auto& [detail, _] = dequeued_.back();
-
-		if(detail.severity == Severity::trace || detail.severity == Severity::debug) {
-			dequeued_.pop_back();
-			++discarded_;
+	discarded_ += std::erase_if(dequeued_, [&](const auto& elem) {
+		const auto severity = elem.first.severity;
+		
+		if(discard_count && (severity == Severity::trace || severity == Severity::debug)) {
+			--discard_count;
+			return true;
+		} else {
+			return false;
 		}
-	}
+	});
 }
 
 void Worker::write_discard_log() {
