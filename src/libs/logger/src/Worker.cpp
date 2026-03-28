@@ -134,7 +134,7 @@ void Worker::process_outstanding() {
 	apply_hard_backpressure(size_approx);
 	dequeued_.reserve(size_approx);
 
-	if(queue_.try_dequeue_bulk(std::back_inserter(dequeued_), size_approx)) {
+	if(queue_.try_dequeue_bulk(std::back_inserter(dequeued_), hard_queue_limit)) {
 		process_dequeued();
 	}
 }
@@ -149,18 +149,16 @@ void Worker::set_hard_limit(const std::size_t value) {
 
 void Worker::run() {
 	while(!stop_) {
-#ifndef LOG_PRODUCER_LOW_LATENCY
-		sem_.acquire();
-#else
+#ifdef LOG_PRODUCER_LOW_LATENCY
 		const bool ret = sem_.try_acquire_for(100ms);
-
-		if(ret) {
+#else
+		const bool ret = sem_.try_acquire_for(250ms);
 #endif
 		process_outstanding();
-		process_outstanding_sync();
-#ifdef LOG_PRODUCER_LOW_LATENCY
+
+		if(ret) {
+			process_outstanding_sync();
 		}
-#endif
 	}
 }
 
