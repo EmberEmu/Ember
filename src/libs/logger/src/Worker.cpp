@@ -131,6 +131,11 @@ void Worker::process_dequeued() {
 
 void Worker::process_outstanding() {
 	const auto size_approx = queue_.size_approx();
+
+	if(!size_approx) {
+		return;
+	}
+
 	apply_hard_backpressure(size_approx);
 	dequeued_.reserve(size_approx);
 
