@@ -39,6 +39,18 @@ class BroadcastTimer {
 	std::vector<boost::asio::steady_timer> timers_;
 	bool running_;
 
+	void set_timer(boost::asio::steady_timer& timer, const std::chrono::seconds& offset = 0s) {
+		timer.expires_after(frequency_ + offset);
+		timer.async_wait([&](const auto& ec) {
+			if(ec) {
+				return;
+			}
+
+			dispatcher_.broadcast_event_thread({ EventType::interval_timer_fire });
+			set_timer(timer);
+		});
+	}
+
 public:
 	BroadcastTimer(const thread::ServicePool& pool,
 	               const EventDispatcher& dispatcher,
@@ -76,18 +88,6 @@ public:
 	void stop() {
 		timers_.clear();
 		running_ = false;
-	}
-
-	void set_timer(boost::asio::steady_timer& timer, const std::chrono::seconds& offset = 0s) {
-		timer.expires_after(frequency_ + offset);
-		timer.async_wait([&](const auto& ec) {
-			if(ec) {
-				return;
-			}
-
-			dispatcher_.broadcast_event_thread({ EventType::interval_timer_fire });
-			set_timer(timer);
-		});
 	}
 };
 
