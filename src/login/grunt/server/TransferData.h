@@ -25,8 +25,7 @@ class TransferData final : public Packet {
 public:
 	static const std::uint16_t MAX_CHUNK_SIZE = 65535;
 
-	TransferData()
-		: Packet(Opcode::cmd_xfer_data) {}
+	TransferData() : Packet(Opcode::cmd_xfer_data) {}
 
 	std::uint16_t size = 0;
 	std::array<std::byte, MAX_CHUNK_SIZE> chunk;
@@ -41,13 +40,14 @@ public:
 		stream >> opcode;
 		stream >> size;
 
-		return (state_ = State::done);
+		return stream? state_ = State::done : state_ = State::err_stream_err;
 	}
 
-	void write_to_stream(PacketStream& stream) const override {
+	State write_to_stream(PacketStream& stream) const override {
 		stream << opcode;
 		stream << size;
 		stream.put(chunk.data(), size);
+		return stream? State::done : State::err_stream_err;
 	}
 };
 

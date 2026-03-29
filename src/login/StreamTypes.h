@@ -15,9 +15,9 @@
 
 namespace ember {
 
-constexpr auto buffer_size = 1024u;
+constexpr auto buffer_node_size = 1024u;
 
-using BufferType = spark::io::DynamicBuffer<buffer_size>;
-using PacketStream = spark::io::BinaryStream<BufferType, spark::io::allow_throw_t, spark::io::endian::as_little_t>;
+using BufferType = spark::io::DynamicBuffer<buffer_node_size>;
+using PacketStream = spark::io::BinaryStream<BufferType, spark::io::no_throw_t, spark::io::endian::as_little_t>;
 
 } // ember

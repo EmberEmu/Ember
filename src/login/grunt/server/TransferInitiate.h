@@ -24,8 +24,7 @@ class TransferInitiate final : public Packet {
 	State state_ = State::initial;
 
 public:
-	TransferInitiate()
-		: Packet(Opcode::cmd_xfer_initiate) {}
+	TransferInitiate() : Packet(Opcode::cmd_xfer_initiate) {}
 	
 	std::string filename;
 	std::uint64_t filesize = 0;
@@ -39,15 +38,16 @@ public:
 		}
 
 		stream >> opcode;
-		return (state_ = State::done);
+		return stream? state_ = State::done : state_ = State::err_stream_err;
 	}
 
-	void write_to_stream(PacketStream& stream) const override {
+	State write_to_stream(PacketStream& stream) const override {
 		stream << opcode;
 		stream << gsl::narrow<std::uint8_t>(filename.size());
 		stream << filename.c_str();
 		stream << filesize;
 		stream << md5;
+		return stream? State::done : State::err_stream_err;
 	}
 };
 

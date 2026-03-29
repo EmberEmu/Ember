@@ -62,19 +62,22 @@ class SurveyResult final : public Packet {
 		});
 
 		if(ret != Z_OK) {
-			throw bad_packet("Decompression of survey data failed with code " + std::to_string(ret));
+			_impl_zlib_error = ret;
+			state_ = State::err_decompress_err;
+			return;
 		}
 		
 		state_ = State::done;
 	}
 
 public:
-	SurveyResult()
-		: Packet(Opcode::cmd_survey_result) {}
+	SurveyResult() : Packet(Opcode::cmd_survey_result) {}
 
 	std::uint32_t survey_id = 0;
 	std::uint8_t error = 0;
 	std::string data;
+
+	mutable int _impl_zlib_error = Z_OK;
 
 	State read_from_stream(PacketStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::done, "Packet already complete - check your logic!");
@@ -94,12 +97,12 @@ public:
 				BOOST_ASSERT_MSG(false, "Unreachable condition hit");
 		}
 		
-		return state_;
+		return stream? state_ : state_ = State::err_stream_err;
 	}
 
-	void write_to_stream(PacketStream& stream) const override {
+	State write_to_stream(PacketStream& stream) const override {
 		if(data.size() > max_survey_len) {
-			throw bad_packet("Survey data is too big");
+			return State::err_survey_too_big;
 		}
 
 		stream << opcode;
@@ -112,11 +115,14 @@ public:
 		auto ret = compress(compressed.data(), &dest_len, reinterpret_cast<const Bytef*>(data.data()), data.size());
 
 		if(ret != Z_OK) {
-			throw bad_packet("Compression of survey data failed with code " + std::to_string(ret));
+			_impl_zlib_error = ret;
+			return State::err_compress_err;
 		}
 
 		stream << gsl::narrow<std::uint16_t>(dest_len);
 		stream.put(compressed.data(), dest_len);
+
+		return stream? State::done : State::err_stream_err;
 	}
 };
 

@@ -37,12 +37,13 @@ public:
 		stream >> opcode;
 		stream >> offset;
 
-		return (state_ = State::done);
+		return stream? state_ = State::done : state_ = State::err_stream_err;
 	}
 
-	void write_to_stream(PacketStream& stream) const override {
+	State write_to_stream(PacketStream& stream) const override {
 		stream << opcode;
 		stream << offset;
+		return stream? State::done : State::err_stream_err;
 	}
 };
 

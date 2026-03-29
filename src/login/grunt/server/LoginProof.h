@@ -53,8 +53,7 @@ class LoginProof final : public Packet {
 	}
 
 public:
-	LoginProof()
-		: Packet(Opcode::cmd_auth_logon_proof) {}
+	LoginProof() : Packet(Opcode::cmd_auth_logon_proof) {}
 
 	Result result;
 	Botan::BigInt M2;
@@ -78,23 +77,24 @@ public:
 				BOOST_ASSERT_MSG(false, "Unreachable condition hit");
 		}
 		
-		return state_;
+		return stream? state_ = State::done : state_ = State::err_stream_err;
 	}
 
-	void write_to_stream(PacketStream& stream) const override {
+	State write_to_stream(PacketStream& stream) const override {
 		stream << opcode;
 		stream << result;
 
 		// no need to stream the rest of the members
 		if(result != grunt::Result::success && result != grunt::Result::success_survey) {
-			return;
+			return stream? State::done : State::err_stream_err;
 		}
 
 		std::array<std::uint8_t, proof_length> bytes{};
 		M2.serialize_to(bytes);
 		stream.put(bytes.rbegin(), bytes.rend());
 		stream << survey_id;
-	
+
+		return stream? State::done : State::err_stream_err;
 	}
 };
 

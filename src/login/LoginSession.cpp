@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2025 Ember
+ * Copyright (c) 2015 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -42,21 +42,23 @@ LoginSession::LoginSession(SessionManager& sessions,
 	};
 }
 
-bool LoginSession::handle_packet(BufferType& buffer) try {
+bool LoginSession::handle_packet(BufferType& buffer) {
 	LOG_TRACE(logger_, log_func);
 
 	auto result = grunt_handler_.process_buffer(buffer);
 
-	if(result) {
-		const auto& packet = *result;
-		LOG_TRACE(logger_, "{} -> {}", remote_address(), grunt::to_string(packet.opcode));
-		return handler_.update_state(packet);
+	if(!result) {
+		return false;
+	}
+	
+	const grunt::Packet* packet = *result;
+
+	if(packet) {
+		LOG_TRACE(logger_, "{} -> {}", remote_address(), grunt::to_string(packet->opcode));
+		return handler_.update_state(*packet);
 	}
 
 	return true;
-} catch(const grunt::bad_packet& e) {
-	LOG_DEBUG(logger_, e.what());
-	return false;
 }
 
 void LoginSession::execute_async(std::unique_ptr<Action> action) {

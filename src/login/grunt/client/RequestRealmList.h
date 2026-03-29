@@ -22,8 +22,7 @@ class RequestRealmList final : public Packet {
 	State state_ = State::initial;
 
 public:
-	RequestRealmList() 
-		: Packet(Opcode::cmd_realm_list) {}
+	RequestRealmList() : Packet(Opcode::cmd_realm_list) {}
 
 	std::uint32_t unknown = 0; // hardcoded to zero in public client, probably some kind of filter
 
@@ -37,12 +36,13 @@ public:
 		stream >> opcode;
 		stream >> unknown;
 
-		return (state_ = State::done);
+		return stream? state_ = State::done : state_ = State::err_stream_err;
 	}
 
-	void write_to_stream(PacketStream& stream) const override {
+	State write_to_stream(PacketStream& stream) const override {
 		stream << opcode;
 		stream << unknown;
+		return stream? State::done : State::err_stream_err;
 	}
 };
 

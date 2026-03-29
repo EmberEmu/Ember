@@ -17,7 +17,13 @@ struct Packet {
 	enum class State {
 		initial,
 		call_again,
-		done
+		done,
+		err_stream_err,
+		err_username_too_long,
+		err_decompress_err,
+		err_compress_err,
+		err_survey_too_big,
+		err_invalid_generator_length
 	};
 
 	Opcode opcode;
@@ -25,7 +31,7 @@ struct Packet {
 	explicit Packet(Opcode opcode) : opcode(opcode) { }
 
 	virtual State read_from_stream(PacketStream& stream) = 0;
-	virtual void write_to_stream(PacketStream& stream) const = 0;
+	virtual State write_to_stream(PacketStream& stream) const = 0;
 	virtual ~Packet() = default;
 };
 

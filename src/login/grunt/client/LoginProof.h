@@ -103,8 +103,7 @@ class LoginProof final : public Packet {
 	}
 
 public:
-	LoginProof()
-		: Packet(Opcode::cmd_auth_logon_proof) {}
+	LoginProof() : Packet(Opcode::cmd_auth_logon_proof) {}
 
 	Botan::BigInt A;
 	Botan::BigInt M1;
@@ -155,10 +154,10 @@ public:
 				BOOST_ASSERT_MSG(false, "Unreachable condition hit");
 		}
 
-		return state_;
+		return stream? state_ : state_ = State::err_stream_err;
 	}
 
-	void write_to_stream(PacketStream& stream) const override {
+	State write_to_stream(PacketStream& stream) const override {
 		stream << opcode;
 
 		std::array<std::uint8_t, a_length> a_bytes;
@@ -186,6 +185,8 @@ public:
 			stream << pin_salt;
 			stream << pin_hash;
 		}
+
+		return stream? State::done : State::err_stream_err;
 	}
 };
 

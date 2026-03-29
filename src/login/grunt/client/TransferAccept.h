@@ -22,8 +22,7 @@ class TransferAccept final : public Packet {
 	State state_ = State::initial;
 
 public:
-	TransferAccept()
-		: Packet(Opcode::cmd_xfer_accept) {}
+	TransferAccept() : Packet(Opcode::cmd_xfer_accept) {}
 	
 	State read_from_stream(PacketStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::done, "Packet already complete - check your logic!");
@@ -34,11 +33,12 @@ public:
 
 		stream >> opcode;
 
-		return (state_ = State::done);
+		return stream? state_ = State::done : state_ = State::err_stream_err;
 	}
 
-	void write_to_stream(PacketStream& stream) const override {
+	State write_to_stream(PacketStream& stream) const override {
 		stream << opcode;
+		return stream? State::done : State::err_stream_err;
 	}
 };
 

@@ -77,8 +77,7 @@ public:
 		std::uint32_t characters;
 	};
 
-	RealmList()
-		: Packet(Opcode::cmd_realm_list) {}
+	RealmList() : Packet(Opcode::cmd_realm_list) {}
 
 	std::uint32_t unknown = 0; // appears to be ignored in public clients
 	boost::container::small_vector<RealmListEntry, default_realms> realms;
@@ -102,7 +101,7 @@ public:
 				BOOST_ASSERT_MSG(false, "Unreachable condition hit");
 		}
 
-		return state_;
+		return stream? state_ = State::done : state_ = State::err_stream_err;
 	}
 
 	std::size_t write_body(PacketStream& stream) const {
@@ -128,7 +127,7 @@ public:
 		return stream.total_write() - initial_write;
 	}
 
-	void write_to_stream(PacketStream& stream) const override {
+	State write_to_stream(PacketStream& stream) const override {
 		stream << opcode;
 		stream << std::uint16_t(0); // write placeholder size
 		const auto write_len = write_body(stream);
@@ -138,6 +137,8 @@ public:
 		stream.write_seek(spark::io::StreamSeek::sk_stream_absolute, sizeof(opcode));
 		stream << gsl::narrow<std::uint16_t>(write_len);
 		stream.write_seek(spark::io::StreamSeek::sk_stream_absolute, end_pos);
+
+		return stream? State::done : State::err_stream_err;
 	}
 };
 
