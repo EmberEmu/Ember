@@ -418,8 +418,6 @@ void print_lib_versions(log::Logger& logger) {
 }
 
 opts::variables_map Service::reload_options(const std::string& filename) {
-	opts::options_description config_opts;
-	config_opts.add(options());
 	std::ifstream stream(filename);
 
 	if(!stream) {
@@ -428,10 +426,10 @@ opts::variables_map Service::reload_options(const std::string& filename) {
 		);
 	}
 
-	opts::variables_map options;
-	opts::store(opts::parse_config_file(stream, config_opts), options);
-	opts::notify(options);
-	return options;
+	opts::variables_map args;
+	opts::store(opts::parse_config_file(stream, options(), true), args);
+	opts::notify(args);
+	return args;
 }
 
 opts::options_description Service::options() {
