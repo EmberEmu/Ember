@@ -26,6 +26,8 @@
 
 namespace ember::realm {
 
+using namespace std::chrono_literals;
+
 class ClientConnection;
 
 class ClientHandler final {
@@ -34,8 +36,8 @@ class ClientHandler final {
 	constexpr static auto pps_soft_limit = 33u;
 	constexpr static auto pps_hard_limit = 50u;
 	constexpr static auto ping_grace = 5u;
-	constexpr static std::chrono::milliseconds ping_delta_ms { 30000u };
-	constexpr static std::chrono::milliseconds ping_leeway_ms { 2000u };
+	constexpr static auto ping_delta_ms = 30000ms;
+	constexpr static auto ping_leeway_ms = 2000ms;
 
 	ClientConnection* connection_;
 	ClientContext context_;
