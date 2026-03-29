@@ -19,7 +19,8 @@ namespace ember::protocol::server {
 
 struct TutorialFlags final {
 	std::array<std::uint32_t, 8> flags {
-		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff
+		0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
+		0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff
 	};
 
 	StreamResult read_from_stream(le_stream auto& stream) {
