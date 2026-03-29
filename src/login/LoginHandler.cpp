@@ -334,7 +334,8 @@ void LoginHandler::send_reconnect_challenge(const FetchSessionKeyAction& action)
 		metrics_.increment("login_internal_failure");
 		response.result = grunt::Result::fail_db_busy;
 		LOG_ERROR(logger_, "{} from peer during reconnect challenge",
-		                utility::fb_status(status, rpc::Account::EnumNamesStatus()));
+		    utility::fb_status(status, rpc::Account::EnumNamesStatus())
+		);
 	}
 
 	send(response);
@@ -543,7 +544,8 @@ void LoginHandler::on_session_write(const RegisterSessionAction& action) {
 		metrics_.increment("login_internal_failure");
 		response = grunt::Result::fail_db_busy;
 		LOG_ERROR(logger_, "{} from peer during login",
-		                utility::fb_status(result, rpc::Account::EnumNamesStatus()));
+			utility::fb_status(result, rpc::Account::EnumNamesStatus())
+		);
 	}
 
 	// defer sending the response until we've fetched the character data
