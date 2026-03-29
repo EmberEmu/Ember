@@ -10,9 +10,13 @@
 
 #include "EventDispatcher.h"
 #include <thread/ServicePool.h>
+#include <boost/asio/awaitable.hpp>
+#include <boost/asio/as_tuple.hpp>
+#include <boost/asio/executor.hpp>
+#include <boost/asio/co_spawn.hpp>
+#include <boost/asio/detached.hpp>
 #include <boost/asio/steady_timer.hpp>
 #include <chrono>
-#include <vector>
 #include <cstdlib>
 
 namespace ember::realm {
@@ -31,24 +35,40 @@ using namespace std::chrono_literals;
  * per client timers for events that don't need precise timing.
  */
 class BroadcastTimer {
-	constexpr static unsigned int max_offset { 20 };
+	template<typename T>
+	using await = boost::asio::awaitable<T>;
+
+	constexpr static auto max_offset { 10u };
+	constexpr static Event event { EventType::interval_timer_fire };
 
 	const std::chrono::milliseconds frequency_;
 	const EventDispatcher& dispatcher_;
 	const thread::ServicePool& pool_;
-	std::vector<boost::asio::steady_timer> timers_;
-	bool running_;
+	std::atomic_bool running_;
 
-	void set_timer(boost::asio::steady_timer& timer, const std::chrono::seconds& offset = 0s) {
+	await<void> await_timer(boost::asio::steady_timer& timer, const std::chrono::seconds offset) {
 		timer.expires_after(frequency_ + offset);
-		timer.async_wait([&](const auto& ec) {
-			if(ec) {
-				return;
-			}
+		const auto& [ec] = co_await timer.async_wait(boost::asio::as_tuple);
 
-			dispatcher_.broadcast_event_thread({ EventType::interval_timer_fire });
-			set_timer(timer);
-		});
+		if(ec) {
+			co_return;
+		}
+
+		dispatcher_.broadcast_event_thread(event);
+	}
+
+	// the initial firing will be slightly offset in case any of the events
+	// do anything that could cause contention - can't guarantee separation
+	// will be maintained over time but them's the breaks
+	await<void> run() {
+		auto offset = std::chrono::seconds(std::rand() % max_offset);
+		auto executor = co_await boost::asio::this_coro::executor;
+		boost::asio::steady_timer timer(executor);
+
+		while(running_) {
+			co_await await_timer(timer, offset);
+			offset = 0s; // only set it once
+		}
 	}
 
 public:
@@ -58,35 +78,25 @@ public:
 		: frequency_(frequency)
 		, dispatcher_(dispatcher)
 		, pool_(pool)
-		, running_(false) {
-		timers_.reserve(pool_.size());
-
-		for(auto& ioc : pool_) {
-			timers_.emplace_back(*ioc);
-		}
-	}
+		, running_(false) {}
 
 	~BroadcastTimer() {
 		stop();
 	}
 
 	void start() {
-		if(running_) {
+		bool expected = false;
+
+		if(!running_.compare_exchange_strong(expected, true)) {
 			return;
 		}
 
-		// the initial firing will be slightly offset in case any of the events
-		// do anything that could cause contention - can't guarantee separation
-		// will be maintained over time but them's the breaks
-		for(auto& timer : timers_) {
-			set_timer(timer, std::chrono::seconds(std::rand() % max_offset));
+		for(auto& ioc : pool_) {
+			boost::asio::co_spawn(*ioc, run(), boost::asio::detached);
 		}
-
-		running_ = true;
 	}
 
 	void stop() {
-		timers_.clear();
 		running_ = false;
 	}
 };
