@@ -63,6 +63,9 @@ class ClientHandler final {
 	void handle_timer();
 	bool pps_flood_check();
 
+	void start_timer(const std::chrono::milliseconds& time);
+	void cancel_timer();
+
 public:
 	ClientHandler(ClientIdent uuid, executor executor, const ConfigStore& cfg_store,
 	              EventDispatcher& dispatcher, RealmQueue& queue, AccountClient& account_rpc,
@@ -91,12 +94,11 @@ public:
 	void handle_event(const Event* event);
 	void handle_event(std::unique_ptr<const Event> event);
 
-	void start_timer(const std::chrono::milliseconds& time);
-	void cancel_timer();
-
 	const ClientIdent& uuid() const {
 		return uuid_;
 	}
+
+	friend class ClientTimer;
 };
 
 } // realm, ember

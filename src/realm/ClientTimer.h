@@ -8,15 +8,23 @@
 
 #pragma once
 
+#include <chrono>
+
 namespace ember::realm {
 
-class AccountClient;
-class CharacterClient;
 class ClientHandler;
-class ClientConnection;
-class ClientTimer;
-class ConfigStore;
-class EventDispatcher;
-class RealmQueue;
+
+class ClientTimer {
+	ClientHandler& handler_;
+
+	ClientTimer(ClientHandler& handler)
+		: handler_(handler) {}
+
+public:
+	void start(const std::chrono::milliseconds& expiry);
+	void cancel();
+
+	friend class ClientHandler;
+};
 
 } // realm, ember
