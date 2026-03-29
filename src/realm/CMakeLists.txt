@@ -64,7 +64,7 @@ set(LIBRARY_HDR
     Client.h
     BroadcastTimer.h
     Forwards.h
-	ClientTimer.h
+    ClientTimer.h
 )
 
 set(LIBRARY_SRC
@@ -94,7 +94,7 @@ set(LIBRARY_SRC
     WorldRPCClient.cpp
     Digest.cpp
     ServiceContext.cpp
-	ClientTimer.cpp
+    ClientTimer.cpp
 )
 
 add_library(${LIBRARY_NAME} ${SERVICE_LIB_LINKAGE} 
