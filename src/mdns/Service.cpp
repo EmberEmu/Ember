@@ -26,7 +26,7 @@ namespace opts = boost::program_options;
 
 namespace ember::dns {
 
-Service::Service(log::Logger& logger, commands::Registry& registry)
+Service::Service(log::Logger& logger, commands::Command& registry)
 	: logger(logger)
 	, registry(registry)
 	, stopped(false) {
@@ -110,7 +110,7 @@ opts::options_description Service::options() {
 
 extern "C" {
 
-EMBER_EXPORT_SERVICE Service* create_mdns(log::Logger& logger, commands::Registry& registry) {
+EMBER_EXPORT_SERVICE Service* create_mdns(log::Logger& logger, commands::Command& registry) {
 	return new Service(logger, registry);
 }
 

@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <commands/Registry.h>
+#include <commands/Command.h>
 #include <boost/asio/io_context.hpp>
 #include <chrono>
 #include <functional>
@@ -32,6 +32,6 @@ struct Handlers {
 	OnRemaining on_remaining;
 };
 
-void register_command(commands::Registry& registry, boost::asio::io_context& ioc, Handlers handlers);
+void register_command(commands::Command& registry, boost::asio::io_context& ioc, Handlers handlers);
 
 } // shutdown, ember

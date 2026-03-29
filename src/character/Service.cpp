@@ -36,7 +36,7 @@ using namespace std::chrono_literals;
 
 namespace ember::character {
 
-Service::Service(log::Logger& logger, commands::Registry& registry)
+Service::Service(log::Logger& logger, commands::Command& registry)
 	: logger(logger)
 	, registry(registry)
 	, stopped(false) {}
@@ -188,7 +188,7 @@ opts::options_description Service::options() {
 
 extern "C" {
 
-EMBER_EXPORT_SERVICE Service* create_character(log::Logger& logger, commands::Registry& registry) {
+EMBER_EXPORT_SERVICE Service* create_character(log::Logger& logger, commands::Command& registry) {
 	return new Service(logger, registry);
 }
 

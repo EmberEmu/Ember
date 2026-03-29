@@ -8,15 +8,16 @@
 
 #pragma once
 
-#include <commands/AnyArg.h>
 #include <commands/impl/StringHash.h>
-#include <boost/unordered/unordered_flat_map.hpp>
+#include <functional>
+#include <memory>
 #include <string>
 #include <unordered_map>
-#include <utility>
 
 namespace ember::commands {
 
-using ArgMap = boost::unordered_flat_map<std::string, AnyArg, impl::StringHash, std::equal_to<>>;
+class Command;
+
+using CommandMap = std::unordered_map<std::string, std::shared_ptr<Command>, impl::StringHash, std::equal_to<>>;
 
 } // commands, ember

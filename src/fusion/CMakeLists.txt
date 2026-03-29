@@ -12,8 +12,6 @@ endif()
 
 set(SOURCE_LIST
     main.cpp
-    CommandHelpers.h
-    CommandHelpers.cpp
     Prototypes.h
     Library.h
     ServiceRunner.h

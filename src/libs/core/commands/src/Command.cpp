@@ -7,8 +7,10 @@
  */
 
 #include <commands/Command.h>
+#include <commands/Utility.h>
 #include <commands/Exception.h>
 #include <algorithm>
+#include <functional>
 #include <ranges>
 #include <utility>
 
@@ -253,6 +255,45 @@ std::size_t Command::argument_count() const {
 
 const Flags& Command::flags() const {
 	return flags_;
+}
+
+Suggestions Command::autocomplete(const std::string_view query) const {
+	auto tokens = parse_input(query);
+	auto results = impl::autocomplete_recurse(commands_, tokens);
+
+	std::ranges::sort(results.records, [&](const auto& a, const auto& b) {
+		return a.name < b.name;
+	});
+	
+	return results;
+}
+
+SearchResult Command::find(const std::string_view query) const {
+	const auto tokens = parse_input(query);
+	return find(tokens);
+}
+
+// this is really inefficient due to the registry copies (must be copied from subcommands for safety)
+// but it's not even remotely performance sensitive, so it'll do
+SearchResult Command::find(std::span<const std::string> tokens) const {
+	// we need go as deep as possible into the subcommand chain
+	SearchResult search;
+	auto registry = commands_;
+
+	for(auto& token : tokens) {
+		const auto& command_name = token;
+		const auto result = registry.find(command_name);
+
+		if(result != registry.end()) {
+			++search.depth;
+			search.command = result->second;
+			registry = search.command->commands();
+		} else {
+			break;
+		}
+	}
+
+	return search;
 }
 
 } // commands, ember

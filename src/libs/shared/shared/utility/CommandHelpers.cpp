@@ -7,10 +7,9 @@
  */
 
 #include "CommandHelpers.h"
+#include <commands/Commands.h>
 #include <logger/CommandSink.h>
 #include <logger/Logger.h>
-#include <commands/Registry.h>
-#include <commands/Utility.h>
 #include <boost/lexical_cast.hpp>
 #include <chrono>
 #include <ranges>
@@ -87,9 +86,9 @@ std::any convert_type(const std::type_info& info, std::string_view token) {
 	}
 }
 
-void execute_command(const std::string_view input, const commands::Registry& registry, log::Logger& logger) try {
-	const auto tokens = registry.parse_input(input);
-	const auto search = registry.find(tokens);
+void execute_command(const std::string_view input, const commands::Command& root, log::Logger& logger) try {
+	const auto tokens = commands::parse_input(input);
+	const auto search = root.find(tokens);
 
 	if(!search.command) {
 		LOG_CONERR(
@@ -141,9 +140,7 @@ void execute_command(const std::string_view input, const commands::Registry& reg
 	LOG_CONERR(logger, R"(Error during command execution, "{}")", e.what());
 }
 
-void handle_help_command(const commands::Arguments& arguments,
-                         const commands::Registry& registry,
-                         log::Logger& logger) {
+void handle_help_command(const commands::Arguments& arguments, const commands::Command& root, log::Logger& logger) {
 	if(arguments.empty()) {
 		LOG_CONSOLE(
 			logger,
@@ -154,8 +151,8 @@ void handle_help_command(const commands::Arguments& arguments,
 	}
 
 	const auto command = arguments["command"].as<std::string>();
-	const auto tokens = commands::Registry::parse_input(command);
-	const auto result = registry.find(tokens);
+	const auto tokens = commands::parse_input(command);
+	const auto result = root.find(tokens);
 
 	if(result.command) {
 		LOG_CONSOLE(logger, "Usage: {} {}", command, result.command->usage_string());
@@ -165,8 +162,8 @@ void handle_help_command(const commands::Arguments& arguments,
 	}
 }
 
-std::string suggest_command(const commands::Registry& registry, const std::string_view cmd) {
-	auto results = registry.autocomplete(cmd);
+std::string suggest_command(const commands::Command& root, const std::string_view cmd) {
+	auto results = root.autocomplete(cmd);
 
 	if(!results.substring.empty()) {
 		return results.substring;
@@ -191,16 +188,16 @@ void handle_cls_command(log::Logger& logger) {
 }
 #endif
 
-void register_shared_commands(commands::Registry& registry, log::Logger& logger) {
-	registry.insert("help")
+void register_shared_commands(commands::Command& root, log::Logger& logger) {
+	root.insert("help")
 		->description("Display console command usage information")
 		->argument<std::string>("command", commands::optional)
 		->handler([&](const auto& arguments) {
-			handle_help_command(arguments, registry, logger);
+			handle_help_command(arguments, root, logger);
 		});
 
 #ifdef _WIN32
-	registry.insert("cls")
+	root.insert("cls")
 		->description("Clears the console")
 		->handler([&](const auto&) {
 			handle_cls_command(logger);
@@ -208,7 +205,7 @@ void register_shared_commands(commands::Registry& registry, log::Logger& logger)
 #endif
 }
 
-void register_command_handlers(commands::Registry& registry, log::Logger& logger, const bool allow_suggest) {
+void register_command_handlers(commands::Command& root, log::Logger& logger, const bool allow_suggest) {
 #ifdef _WIN32
 	auto sinks = logger.fetch_sink(log::CommandSink::sink_name);
 
@@ -223,16 +220,16 @@ void register_command_handlers(commands::Registry& registry, log::Logger& logger
 	auto sink = static_cast<log::CommandSink*>(sinks.front().get());
 
 	sink->register_autocomplete([&](auto cmd) {
-		return registry.autocomplete(cmd);
+		return root.autocomplete(cmd);
 	});
 
 	sink->register_handler([&](auto input) {
-		execute_command(input, registry, logger);
+		execute_command(input, root, logger);
 	});
 
 	if(allow_suggest) {
 		sink->register_suggestion([&](auto cmd) {
-			return suggest_command(registry, cmd);
+			return suggest_command(root, cmd);
 		});
 	}
 #endif

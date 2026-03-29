@@ -12,7 +12,7 @@
 #include <string_view>
 #include <cstddef>
 
-namespace ember::commands {
+namespace ember::commands::impl {
 
 struct StringHash {
 	using hash_type = std::hash<std::string_view>;
@@ -31,4 +31,4 @@ struct StringHash {
 	}
 };
 
-} // commands, ember
+} // impl, commands, ember

@@ -6,16 +6,17 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include "CommandHelpers.h"
 #include "CreateHelpers.h"
 #include "Prototypes.h"
 #include "Library.h"
 #include "ServiceContext.h"
 #include "ServiceRunner.h"
 #include <banner/Banner.h>
+#include <commands/Commands.h>
 #include <logger/Logger.h>
 #include <thread/Utility.h>
 #include <shared/utility/cstring_view.hpp>
+#include <shared/utility/CommandHelpers.h>
 #include <shared/utility/LogConfig.h>
 #include <shared/utility/Utility.h>
 #include <boost/asio/io_context.hpp>
@@ -28,17 +29,17 @@
 using namespace ember;
 using namespace ember::fusion;
 namespace opts = boost::program_options;
-using Registries = std::unordered_map<std::string, commands::Registry>;
 
 constexpr cstring_view app_name { "Fusion" };
 std::unordered_map<std::string, ServiceRunner> runners;
 
 opts::variables_map parse_arguments(int, const char*[]);
 int launch(const opts::variables_map&, log::Logger&);
-void register_service_commands(commands::Registry& registry, log::Logger& logger);
+void register_service_commands(commands::Command& registry, log::Logger& logger);
+void create_service_subcommands(commands::Command& registry);
 void stop_services();
 
-Registries registries;
+std::shared_ptr<commands::Command> root;
 Params glob_params{};
 
 int main(int argc, const char* argv[]) try {
@@ -58,9 +59,11 @@ int main(int argc, const char* argv[]) try {
 	utility::configure_logger(logger, args);
 	log::global_logger(logger);
 
-	register_command_handlers(registries, logger);
-	register_shared_commands(registries, logger);
-	register_service_commands(registries.at("fusion"), logger);
+	root = commands::create("root");
+	create_service_subcommands(*root);
+	utility::register_command_handlers(*root, logger, true);
+	utility::register_shared_commands(*root, logger);
+	register_service_commands(*root, logger);
 
 	glob_params = Params {
 		.args = &args,
@@ -76,9 +79,18 @@ int main(int argc, const char* argv[]) try {
 	return EXIT_FAILURE;
 }
 
-Params create_params(commands::Registry* registry) {
+void create_service_subcommands(commands::Command& root) {
+	for(const auto& lib : lib_props) {
+		root.insert(std::string(lib.name))
+			->description(
+				std::format("{} service subcommands", lib.printable)
+			);
+	}
+}
+
+Params create_params(std::shared_ptr<commands::Command> registry) {
 	return Params {
-		.registry = registry,
+		.registry = std::move(registry),
 		.args = glob_params.args,
 		.logger = glob_params.logger,
 		.share_logger = glob_params.share_logger
@@ -102,8 +114,7 @@ void service_start(const std::string& service, log::Logger& logger) {
 		}
 	}
 
-	auto& registry = registries[service];
-	const auto params = create_params(&registry);
+	const auto params = create_params(root->commands().at(service));
 	auto runner = create_runner(idx, params);
 
 	LOG_CONSOLE(logger, "Starting {} service...", service);
@@ -139,7 +150,7 @@ void service_restart(std::string service, log::Logger& logger) {
 	service_start(service, logger);
 }
 
-void register_service_commands(commands::Registry& registry, log::Logger& logger) {
+void register_service_commands(commands::Command& registry, log::Logger& logger) {
 	auto svc_cmd = registry.insert("service")
 		->description("Commands for service control");
 
@@ -168,43 +179,43 @@ void register_service_commands(commands::Registry& registry, log::Logger& logger
 int launch(const opts::variables_map& args, log::Logger& logger) try {
 	// Start initial specified services
 	if(args["mdns.active"].as<bool>()) {
-		auto& registry = registries["mdns"];
-		const auto params = create_params(&registry);
+		auto registry = root->commands().at("mdns");
+		const auto params = create_params(registry);
 		auto runner = create_runner(ServiceIndex::service_mdns, params);
 		runners.emplace("mdns", std::move(runner));
 	}
 
 	if(args["account.active"].as<bool>()) {
-		auto& registry = registries["account"];
-		const auto params = create_params(&registry);
+		auto registry = root->commands().at("account");
+		const auto params = create_params(registry);
 		auto runner = create_runner(ServiceIndex::service_account, params);
 		runners.emplace("account", std::move(runner));
 	}
 
 	if(args["character.active"].as<bool>()) {
-		auto& registry = registries["character"];
-		const auto params = create_params(&registry);
+		auto registry = root->commands().at("character");
+		const auto params = create_params(registry);
 		auto runner = create_runner(ServiceIndex::service_character, params);
 		runners.emplace("character", std::move(runner));
 	}
 
 	if(args["login.active"].as<bool>()) {
-		auto& registry = registries["login"];
-		const auto params = create_params(&registry);
+		auto registry = root->commands().at("login");
+		const auto params = create_params(registry);
 		auto runner = create_runner(ServiceIndex::service_login, params);
 		runners.emplace("login", std::move(runner));
 	}
 
 	if(args["realm.active"].as<bool>()) {
-		auto& registry = registries["realm"];
-		const auto params = create_params(&registry);
+		auto registry = root->commands().at("realm");
+		const auto params = create_params(registry);
 		auto runner = create_runner(ServiceIndex::service_realm, params);
 		runners.emplace("realm", std::move(runner));
 	}
 
 	if(args["world.active"].as<bool>()) {
-		auto& registry = registries["world"];
-		const auto params = create_params(&registry);
+		auto registry = root->commands().at("world");
+		const auto params = create_params(registry);
 		auto runner = create_runner(ServiceIndex::service_world, params);
 		runners.emplace("world", std::move(runner));
 	}

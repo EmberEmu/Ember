@@ -9,7 +9,7 @@
 #pragma once
 
 #include "ServiceContext.h"
-#include <commands/Registry.h>
+#include <commands/Commands.h>
 #include <service/Service.h>
 #include <boost/program_options.hpp>
 #include <string>
