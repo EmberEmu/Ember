@@ -17,6 +17,8 @@
 
 namespace ember::realm {
 
+using namespace std::chrono_literals;
+
 /*
  * Implements a coarse-grained timer that fires a timer event notification to all connected
  * clients at the specified frequency.
@@ -29,7 +31,6 @@ namespace ember::realm {
  * per client timers for events that don't need precise timing.
  */
 class BroadcastTimer {
-	constexpr static std::chrono::seconds default_offset { 0 };
 	constexpr static unsigned int max_offset { 20 };
 
 	const std::chrono::milliseconds frequency_;
@@ -77,7 +78,7 @@ public:
 		running_ = false;
 	}
 
-	void set_timer(boost::asio::steady_timer& timer, const std::chrono::seconds& offset = default_offset) {
+	void set_timer(boost::asio::steady_timer& timer, const std::chrono::seconds& offset = 0s) {
 		timer.expires_after(frequency_ + offset);
 		timer.async_wait([&](const auto& ec) {
 			if(ec) {
