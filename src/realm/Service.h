@@ -23,10 +23,6 @@
 #include <memory>
 #include <semaphore>
 
-namespace ember::thread {
-	class ServicePool;
-};
-
 namespace ember::realm {
 
 static inline constexpr cstring_view app_name { "Realm Gateway" };
