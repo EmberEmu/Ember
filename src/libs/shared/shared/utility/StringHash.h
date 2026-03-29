@@ -24,7 +24,7 @@ struct StringHash {
 		return hash_type{}(str);
 	}
 
-	std::size_t operator()(const std::string &str) const {
+	std::size_t operator()(const std::string& str) const {
 		return hash_type{}(str);
 	}
 };

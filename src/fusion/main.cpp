@@ -177,47 +177,25 @@ void register_service_commands(commands::Command& registry, log::Logger& logger)
 }
 
 int launch(const opts::variables_map& args, log::Logger& logger) try {
-	// Start initial specified services
-	if(args["mdns.active"].as<bool>()) {
-		auto registry = root->commands().at("mdns");
-		const auto params = create_params(registry);
-		auto runner = create_runner(ServiceIndex::service_mdns, params);
-		runners.emplace("mdns", std::move(runner));
-	}
+	// Start initial services, as specified in config
+	for(const auto& service : lib_props) {
+		const auto key = std::format("{}.active", service.name);
 
-	if(args["account.active"].as<bool>()) {
-		auto registry = root->commands().at("account");
-		const auto params = create_params(registry);
-		auto runner = create_runner(ServiceIndex::service_account, params);
-		runners.emplace("account", std::move(runner));
-	}
+		if(auto it = args.find(key); it != args.end()) {
+			if(auto& [_, v] = *it; !v.as<bool>()) {
+				continue;
+			}
 
-	if(args["character.active"].as<bool>()) {
-		auto registry = root->commands().at("character");
-		const auto params = create_params(registry);
-		auto runner = create_runner(ServiceIndex::service_character, params);
-		runners.emplace("character", std::move(runner));
-	}
+			const auto commands = root->commands();
 
-	if(args["login.active"].as<bool>()) {
-		auto registry = root->commands().at("login");
-		const auto params = create_params(registry);
-		auto runner = create_runner(ServiceIndex::service_login, params);
-		runners.emplace("login", std::move(runner));
-	}
-
-	if(args["realm.active"].as<bool>()) {
-		auto registry = root->commands().at("realm");
-		const auto params = create_params(registry);
-		auto runner = create_runner(ServiceIndex::service_realm, params);
-		runners.emplace("realm", std::move(runner));
-	}
-
-	if(args["world.active"].as<bool>()) {
-		auto registry = root->commands().at("world");
-		const auto params = create_params(registry);
-		auto runner = create_runner(ServiceIndex::service_world, params);
-		runners.emplace("world", std::move(runner));
+			if(auto registry = commands.find(service.name); registry != commands.end()) {
+				const auto params = create_params(registry->second);
+				auto runner = create_runner(string_to_idx(service.name), params);
+				runners.emplace(service.name, std::move(runner));
+			} else {
+				throw std::runtime_error("Missing command node");
+			}
+		}
 	}
 
 	for(auto& runner : runners | std::views::values) {
