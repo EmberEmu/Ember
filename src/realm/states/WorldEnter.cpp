@@ -15,6 +15,10 @@
 #include <chrono>
 #include <ctime>
 
+/*
+ * This entire file is just temporary test code 
+ */
+
 namespace ember::realm::world_enter {
 
 std::uint32_t get_time() {
@@ -314,6 +318,18 @@ void handle_logout_request(ClientContext& ctx) {
 	ctx.handler.state_update(ClientState::cs_character_list);
 }
 
+void handle_standstate_change(ClientContext& ctx) {
+	message_view<protocol::cmsg_standstatechange> packet;
+
+	if(!ctx.handler.deserialise(packet, *ctx.stream)) {
+		return;
+	}
+
+	protocol::smsg_standstate_update response;
+	response->state = packet->state;
+	ctx.connection->send(response);
+}
+
 // everything in this file is for testing only
 void handle_packet(ClientContext& ctx, protocol::ClientOpcode opcode) {
 	switch(opcode) {
@@ -370,6 +386,9 @@ void handle_packet(ClientContext& ctx, protocol::ClientOpcode opcode) {
 			break;
 		case protocol::ClientOpcode::cmsg_logout_request:
 			handle_logout_request(ctx);
+			break;
+		case protocol::ClientOpcode::cmsg_standstatechange:
+			handle_standstate_change(ctx);
 			break;
 		default:
 			ctx.handler.skip(*ctx.stream);

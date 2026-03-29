@@ -42,6 +42,7 @@
 #include <protocol/server/GenericMove.h>
 #include <protocol/server/MessageChat.h>
 #include <protocol/server/TriggerCinematic.h>
+#include <protocol/server/StandStateUpdate.h>
 #include <protocol/client/AuthSession.h>
 #include <protocol/client/Ping.h>
 #include <protocol/client/CharacterCreate.h>
@@ -66,6 +67,7 @@
 #include <protocol/client/GenericMove.h>
 #include <protocol/client/TutorialFlag.h>
 #include <protocol/client/MessageChat.h>
+#include <protocol/client/StandStateChange.h>
 
 namespace ember::protocol {
 
@@ -101,6 +103,7 @@ using smsg_channel_notify             = ServerPacket<ServerOpcode::smsg_channel_
 using msg_move_set_facing_s           = ServerPacket<ServerOpcode::msg_move_set_facing,             server::GenericMove>;
 using smsg_messagechat                = ServerPacket<ServerOpcode::smsg_messagechat,                server::MessageChat>;
 using smsg_trigger_cinematic          = ServerPacket<ServerOpcode::smsg_trigger_cinematic,          server::TriggerCinematic>;
+using smsg_standstate_update          = ServerPacket<ServerOpcode::smsg_standstate_update,          server::StandStateUpdate>;
 
 using cmsg_auth_session           = ClientPacket<ClientOpcode::cmsg_auth_session,        client::AuthSession>;
 using cmsg_ping                   = ClientPacket<ClientOpcode::cmsg_ping,                client::Ping>;
@@ -126,5 +129,6 @@ using cmsg_join_channel           = ClientPacket<ClientOpcode::cmsg_join_channel
 using move_set_facing_c           = ClientPacket<ClientOpcode::msg_move_set_facing,      client::GenericMove>;
 using cmsg_tutorial_flag          = ClientPacket<ClientOpcode::cmsg_tutorial_flag,       client::TutorialFlag>;
 using cmsg_messagechat            = ClientPacket<ClientOpcode::cmsg_messagechat,         client::MessageChat>;
+using cmsg_standstatechange       = ClientPacket<ClientOpcode::cmsg_standstatechange,    client::StandStateChange>;
 
 } // protocol, ember

@@ -31,6 +31,7 @@ set(CLIENT_MESSAGES
     include/protocol/client/TutorialFlag.h
     include/protocol/client/RequestRaidInfo.h
     include/protocol/client/GMTicketGetTicket.h
+    include/protocol/client/StandStateChange.h
 )
 
 set(SERVER_MESSAGES
@@ -66,6 +67,7 @@ set(SERVER_MESSAGES
     include/protocol/server/TriggerCinematic.h
     include/protocol/server/GMTicketGetTicket.h
     include/protocol/server/ChannelNotify.h
+    include/protocol/server/StandStateUpdate.h
 )
 
 set(CORE_HEADERS
@@ -78,6 +80,7 @@ set(CORE_HEADERS
     include/protocol/Concepts.h
     include/protocol/StreamResult.h
     include/protocol/MovementInfo.h
+    include/protocol/UnitStandState.h
 )
 
 set(HEADERS
