@@ -11,6 +11,7 @@
 #include "ClientStates.h"
 #include "AuthenticationContext.h"
 #include "WorldEnterContext.h"
+#include "../ClientTimer.h"
 #include "../ConnectionDefines.h"
 #include "../Forwards.h"
 #include <logger/LoggerFwd.h>
@@ -37,6 +38,7 @@ struct ClientID {
 };
 
 struct ClientContext {
+	ClientTimer timer;
 	ClientHandler& handler;
 	ClientConnection* connection;
 	const ConfigStore& cfg_store;

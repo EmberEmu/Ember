@@ -262,6 +262,7 @@ ClientHandler::ClientHandler(ClientIdent uuid, executor executor, const ConfigSt
                              EventDispatcher& dispatcher, RealmQueue& queue, AccountClient& account_rpc,
                              CharacterClient& character_rpc, log::Logger& logger)
 	: context_ {
+		.timer = ClientTimer(*this),
 		.handler = *this,
 		.connection = nullptr,
 		.cfg_store = cfg_store,
