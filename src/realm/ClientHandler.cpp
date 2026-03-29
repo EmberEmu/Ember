@@ -165,8 +165,8 @@ bool ClientHandler::pps_flood_check() {
  */
 bool ClientHandler::check_ping_sent() {
 	// ensure the client has been given enough time since the last timer fired
-	const auto frequency = config::broadcast_timer_frequency.count() * 1000.0;
-	const auto expected = static_cast<int>(((frequency + ping_leeway_ms) / ping_delta_ms) * timer_events_);
+	const auto& frequency = config::broadcast_timer_frequency;
+	const auto expected = ((frequency + ping_leeway) / ping_delta) * timer_events_;
 	++timer_events_;
 
 	if(!expected) {
@@ -195,7 +195,7 @@ bool ClientHandler::check_ping_sent() {
 bool ClientHandler::validate_ping(const protocol::client::Ping& ping) {
 	if(!ping_sequence_) {
 		ping_sequence_ = ping.sequence_id;
-		last_tick_ = utility::get_tick_count();
+		last_tick_ = utility::get_tick_count(utility::as_chrono);
 		return true;
 	}
 
@@ -211,11 +211,11 @@ bool ClientHandler::validate_ping(const protocol::client::Ping& ping) {
 		return false;
 	}
 
-	const auto tick = utility::get_tick_count();
+	const auto tick = utility::get_tick_count(utility::as_chrono);
 	const auto delta = tick - last_tick_;
 	last_tick_ = tick;
 
-	if(delta > (ping_delta_ms - ping_leeway_ms) && delta < (ping_delta_ms + ping_leeway_ms)) {
+	if(delta > (ping_delta - ping_leeway) && delta < (ping_delta + ping_leeway)) {
 		if(ping_violation_) {
 			--ping_violation_;
 		}
