@@ -6,39 +6,47 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include <commands/Registry.h>
+#include <commands/Utility.h>
+#include <commands/Command.h>
 #include <boost/tokenizer.hpp>
 #include <algorithm>
 #include <ranges>
 
 namespace ember::commands {
 
-Registry::Registry()
-	: root_(std::move(Command::create("_root"))) {}
-
-std::shared_ptr<Command> Registry::insert(std::string name) {
-	return root_->insert(name);
+std::shared_ptr<Command> create(std::string name) {
+	return Command::create(name);
 }
 
-void Registry::insert(std::shared_ptr<Command> command) {
-	root_->insert(std::move(command));
+std::string path_fragment(std::span<const std::string> tokens, std::size_t depth) {
+	constexpr auto approx_cmd_len = 10u;
+
+	if(tokens.size() < depth) {
+		return {};
+	}
+
+	std::string fragment;
+	fragment.reserve(depth * approx_cmd_len);
+
+	for(auto i = 0; i < depth; ++i) {
+		fragment += tokens[i];
+
+		if(i != depth - 1) {
+			fragment += " ";
+		}
+	}
+
+	return fragment;
 }
 
-ScopedCommand Registry::scoped_insert(std::shared_ptr<Command> command) {
-	return root_->scoped_insert(command);
-}
-
-std::vector<std::string> Registry::parse_input(const std::string_view input) {
+std::vector<std::string> parse_input(const std::string_view input) {
 	std::vector<std::string> tokens;
 	std::string str(input);
 
 	try {
 		boost::escaped_list_separator<char> sep('\\', ' ', '"');
 		boost::tokenizer<boost::escaped_list_separator<char>> tok(str, sep);
-
-		for(auto& t : tok) {
-			tokens.emplace_back(std::move(t));
-		}
+		tokens.assign_range(tok);
 	} catch(boost::escaped_list_error& e) {
 		throw parse_error(e.what());
 	}
@@ -46,38 +54,12 @@ std::vector<std::string> Registry::parse_input(const std::string_view input) {
 	return tokens;
 }
 
-auto Registry::find(const std::string_view query) const -> SearchResult {
-	const auto tokens = parse_input(query);
-	return find(tokens);
-}
-
-// this is really inefficient due to the registry copies (must be copied from subcommands for safety)
-// but it's not even remotely performance sensitive, so it'll do
-auto Registry::find(std::span<const std::string> tokens) const -> SearchResult {
-	// we need go as deep as possible into the subcommand chain
-	SearchResult search;
-	auto registry = root_->commands();
-
-	for(auto& token : tokens) {
-		const auto& command_name = token;
-		const auto result = registry.find(command_name);
-
-		if(result != registry.end()) {
-			++search.depth;
-			search.command = result->second;
-			registry = search.command->commands();
-		} else {
-			break;
-		}
-	}
-
-	return search;
-}
+namespace impl {
 
 /*
  * 'hack' to find the longest common substring without bothering to write an entire trie (this is not perf. sensitive)
  */
-std::string Registry::longest_prefix(std::span<const Suggestions::Record> matches) {
+std::string longest_prefix(std::span<const Suggestions::Record> matches) {
 	if(matches.empty()) {
 		return {};
 	}
@@ -101,7 +83,7 @@ std::string Registry::longest_prefix(std::span<const Suggestions::Record> matche
 	return prefix;
 }
 
-Suggestions Registry::autocomplete_recurse(const CommandMap& commands, std::span<const std::string> tokens) const {
+Suggestions autocomplete_recurse(const CommandMap& commands, std::span<const std::string> tokens) {
 	Suggestions result;
 
 	if(tokens.empty()) {
@@ -147,27 +129,6 @@ Suggestions Registry::autocomplete_recurse(const CommandMap& commands, std::span
 	return result;
 }
 
-Suggestions Registry::autocomplete(const std::string_view query) const {
-	auto tokens = parse_input(query);
-	auto results = autocomplete_recurse(root_->commands(), tokens);
-
-	std::ranges::sort(results.records, [&](const auto& a, const auto& b) {
-		return a.name < b.name;
-	});
-	
-	return results;
-}
-
-std::optional<std::shared_ptr<Command>> Registry::erase(const std::string_view name) {
-	return root_->erase(name);
-}
-
-bool Registry::erase(const std::shared_ptr<const Command> command) {
-	return root_->erase(command);
-}
-
-std::shared_ptr<Command> Registry::root() const {
-	return root_;
 }
 
 } // commands, ember

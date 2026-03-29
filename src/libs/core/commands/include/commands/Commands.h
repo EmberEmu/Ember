@@ -8,19 +8,5 @@
 
 #pragma once
 
-#include <string>
-#include <vector>
-
-namespace ember::commands {
-
-struct Suggestions {
-	struct Record {
-		std::string name;
-		std::string desc;
-	};
-
-	std::string substring;
-	std::vector<Record> records;
-};
-
-} // commands, ember
+#include <commands/Command.h>
+#include <commands/Utility.h>

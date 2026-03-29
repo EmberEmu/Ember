@@ -7,8 +7,9 @@
  */
 
 #include "Service.h"
-#include <logger/Logger.h>
 #include <banner/Banner.h>
+#include <commands/Commands.h>
+#include <logger/Logger.h>
 #include <thread/Utility.h>
 #include <shared/utility/CommandHelpers.h>
 #include <shared/utility/LogConfig.h>
@@ -28,7 +29,7 @@ using namespace ember;
 namespace opts = boost::program_options;
 
 opts::variables_map parse_arguments(int argc, const char* argv[]);
-int run(const opts::variables_map& args, log::Logger& logger, commands::Registry& registry);
+int run(const opts::variables_map& args, log::Logger& logger, commands::Command& registry);
 
 /*
  * We want to do the minimum amount of work required to get 
@@ -51,11 +52,11 @@ int main(int argc, const char* argv[]) try {
 
 	SLOG_DEBUG(logger, "Registering command handlers...");
 	const auto suggestions = args["console_log.suggestions"].as<bool>();
-	commands::Registry registry;
-	utility::register_command_handlers(registry, logger, suggestions);
-	utility::register_shared_commands(registry, logger);
+	auto root = commands::create("root");
+	utility::register_command_handlers(*root, logger, suggestions);
+	utility::register_shared_commands(*root, logger);
 
-	const auto ret = run(args, logger, registry);
+	const auto ret = run(args, logger, *root);
 	SLOG_INFO(logger, "{} terminated (returned '{}')", realm::app_name, ret);
 	return ret;
 } catch(const std::exception& e) {
@@ -63,7 +64,7 @@ int main(int argc, const char* argv[]) try {
 	return EXIT_FAILURE;
 }
 
-int run(const opts::variables_map& args, log::Logger& logger, commands::Registry& registry) try {
+int run(const opts::variables_map& args, log::Logger& logger, commands::Command& registry) try {
 	boost::asio::io_context ioc;
 	boost::asio::signal_set signals(ioc, SIGINT, SIGTERM);
 

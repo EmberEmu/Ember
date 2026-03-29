@@ -76,7 +76,7 @@ void handle_cancel_command(std::shared_ptr<boost::asio::steady_timer> timer,
 	}
 }
 
-void register_command(commands::Registry& registry, boost::asio::io_context& ioc, Handlers handlers) {
+void register_command(commands::Command& registry, boost::asio::io_context& ioc, Handlers handlers) {
 	auto flag = std::make_shared<std::atomic_bool>(false);
 	auto timer = std::make_shared<boost::asio::steady_timer>(ioc);
 

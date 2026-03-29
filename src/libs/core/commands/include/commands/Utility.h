@@ -8,31 +8,25 @@
 
 #pragma once
 
+#include <commands/CommandMap.h>
+#include <commands/Exception.h>
+#include <commands/Suggestions.h>
 #include <span>
 #include <string>
+#include <string_view>
 #include <cstddef>
 
 namespace ember::commands {
 
-inline std::string path_fragment(std::span<const std::string> tokens, std::size_t depth) {
-	constexpr auto approx_cmd_len = 10u;
+namespace impl {
 
-	if(tokens.size() < depth) {
-		return {};
-	}
+Suggestions autocomplete_recurse(const CommandMap& commands, std::span<const std::string> tokens);
+std::string longest_prefix(std::span<const Suggestions::Record> matches);
 
-	std::string fragment;
-	fragment.reserve(depth * approx_cmd_len);
+} // impl
 
-	for(auto i = 0; i < depth; ++i) {
-		fragment += tokens[i];
-
-		if(i != depth - 1) {
-			fragment += " ";
-		}
-	}
-
-	return fragment;
-}
+std::shared_ptr<Command> create(std::string name);
+std::vector<std::string> parse_input(const std::string_view input);
+std::string path_fragment(std::span<const std::string> tokens, std::size_t depth);
 
 } // commands, ember

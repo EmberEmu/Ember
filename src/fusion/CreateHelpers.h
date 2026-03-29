@@ -16,7 +16,7 @@
 #include <login/Service.h>
 #include <mdns/Service.h>
 #include <world/Service.h>
-#include <commands/Registry.h>
+#include <commands/Commands.h>
 #include <logger/Logger.h>
 #include <shared/utility/cstring_view.hpp>
 #include <shared/utility/LogConfig.h>
@@ -29,7 +29,7 @@ namespace ember::fusion {
 namespace opts = boost::program_options;
 
 struct Params {
-	commands::Registry* registry;
+	std::shared_ptr<commands::Command> registry;
 	opts::variables_map* args;
 	log::Logger* logger;
 	bool share_logger;
@@ -70,7 +70,7 @@ auto locate_symbol(const cstring_view lib_name, const cstring_view func_name) {
 }
 
 template<auto fn>
-auto create_service(ServiceIndex idx, log::Logger& logger, commands::Registry& registry) {
+auto create_service(ServiceIndex idx, log::Logger& logger, commands::Command& registry) {
 	library::Handle handle = nullptr;
 	IService* service = nullptr;
 

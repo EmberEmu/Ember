@@ -64,7 +64,7 @@ std::optional<Realm> load_realm(const opts::variables_map& args, log::Logger& lo
 std::string_view category_name(const Realm& realm, const dbc::Store<dbc::Cfg_Categories>& dbc);
 void print_lib_versions(log::Logger& logger);
 
-Service::Service(log::Logger& logger, commands::Registry& registry)
+Service::Service(log::Logger& logger, commands::Command& registry)
 	: logger(logger)
 	, registry(registry)
 	, stop_flag(0) {}
@@ -282,7 +282,7 @@ void Service::register_commands(boost::asio::io_context& ioc) {
 		}
 	);
 
-	auto cmd = registry.scoped_insert(commands::Command::create("config_reload")
+	auto cmd = registry.scoped_insert(commands::create("config_reload")
 		->argument<std::string>("filename", commands::optional)
 		->description("Reload the service configuration")
 		->handler(ctx->cmd_exec->wrap([&](const commands::Arguments& arguments) {
@@ -471,7 +471,7 @@ opts::options_description Service::options() {
 
 extern "C" {
 
-EMBER_EXPORT_SERVICE Service* create_realm(log::Logger& logger, commands::Registry& registry) {
+EMBER_EXPORT_SERVICE Service* create_realm(log::Logger& logger, commands::Command& registry) {
 	return new Service(logger, registry);
 }
 

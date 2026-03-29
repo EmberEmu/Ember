@@ -62,7 +62,7 @@ void print_lib_versions(log::Logger& logger);
 bool validate_realm(const Realm& realm, const dbc::Store<dbc::Cfg_Categories>& dbc);
 void validate_realms(const RealmList& realmlist, log::Logger& logger, const opts::variables_map& args);
 
-Service::Service(log::Logger& logger, commands::Registry& registry)
+Service::Service(log::Logger& logger, commands::Command& registry)
 	: logger(logger)
 	, registry(registry)
 	, start_time(std::chrono::steady_clock::now())
@@ -302,7 +302,7 @@ void Service::register_commands() {
 		LOG_CONERR(logger, "Command could not be executed, {}", reason);
 	});
 	
-	auto handle = registry.scoped_insert(commands::Command::create("connections")
+	auto handle = registry.scoped_insert(commands::create("connections")
 		->description("Display open connection count")
 		->handler(ctx->cmd_exec->wrap([this, &server = *ctx->server](auto& command) {
 			LOG_CONSOLE(logger, "{} active connection(s), {} peak",
@@ -312,7 +312,7 @@ void Service::register_commands() {
 
 	ctx->commands.emplace_back(std::move(handle));
 
-	handle = registry.scoped_insert(commands::Command::create("uptime")
+	handle = registry.scoped_insert(commands::create("uptime")
 		->description("Display service uptime")
 		->handler(ctx->cmd_exec->wrap([&](auto& command) {
 			const auto uptime = std::chrono::steady_clock::now() - start_time;
@@ -448,7 +448,7 @@ void print_lib_versions(log::Logger& logger) {
 
 extern "C" {
 
-EMBER_EXPORT_SERVICE Service* create_login(log::Logger& logger, commands::Registry& registry) {
+EMBER_EXPORT_SERVICE Service* create_login(log::Logger& logger, commands::Command& registry) {
 	return new Service(logger, registry);
 }
 

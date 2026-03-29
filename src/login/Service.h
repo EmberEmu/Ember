@@ -9,8 +9,8 @@
 #pragma once
 
 #include "ServiceContext.h"
+#include <commands/Commands.h>
 #include <logger/LoggerFwd.h>
-#include <commands/Registry.h>
 #include <service/Service.h>
 #include <shared/metrics/Metrics.h>
 #include <shared/utility/cstring_view.hpp>
@@ -30,7 +30,7 @@ constexpr cstring_view app_name { "Login Daemon" };
 
 class EMBER_EXPORT_SERVICE Service final : public IService {
 	log::Logger& logger;
-	commands::Registry& registry;
+	commands::Command& registry;
 	std::chrono::steady_clock::time_point start_time;
 	boost::asio::io_context ioc;
 	ServiceContext context;
@@ -48,14 +48,14 @@ class EMBER_EXPORT_SERVICE Service final : public IService {
 public:
 	static boost::program_options::options_description options();
 
-	Service(log::Logger& logger, commands::Registry& registry);
+	Service(log::Logger& logger, commands::Command& registry);
 	~Service();
 
 	int run(const boost::program_options::variables_map& args);
 	void stop();
 };
 
-extern "C" EMBER_EXPORT_SERVICE Service* create_login(log::Logger& logger, commands::Registry& registry);
+extern "C" EMBER_EXPORT_SERVICE Service* create_login(log::Logger& logger, commands::Command& registry);
 extern "C" EMBER_EXPORT_SERVICE void destroy_login(Service* service);
 
 } // login, ember

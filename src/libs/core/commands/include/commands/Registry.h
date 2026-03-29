@@ -25,35 +25,4 @@
 
 namespace ember::commands {
 
-class Registry {
-public:
-	struct SearchResult {
-		std::shared_ptr<Command> command;
-		std::size_t depth = 0;
-	};
-
-private:
-	std::shared_ptr<Command> root_;
-
-	Suggestions autocomplete_recurse(const CommandMap& commands, std::span<const std::string> tokens) const;
-
-	static std::string longest_prefix(std::span<const Suggestions::Record> matches);
-public:
-	Registry();
-
-	std::shared_ptr<Command> insert(std::string name);
-	void insert(std::shared_ptr<Command> command);
-	ScopedCommand scoped_insert(std::shared_ptr<Command> command);
-	std::optional<std::shared_ptr<Command>> erase(const std::string_view name);
-	bool erase(const std::shared_ptr<const Command> command);
-
-	Suggestions autocomplete(const std::string_view query) const;
-
-	SearchResult find(const std::string_view query) const;
-	SearchResult find(std::span<const std::string> tokens) const;
-	std::shared_ptr<Command> root() const;
-
-	static std::vector<std::string> parse_input(const std::string_view input);
-};
-
 } // commands, ember

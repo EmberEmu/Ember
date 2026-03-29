@@ -11,18 +11,18 @@
 #include <commands/Argument.h>
 #include <commands/Arguments.h>
 #include <commands/ArgumentMap.h>
+#include <commands/CommandMap.h>
 #include <commands/Flags.h>
 #include <commands/Result.h>
+#include <commands/SearchResult.h>
 #include <commands/ScopedCommand.h>
-#include <commands/detail/StringHash.h>
-#include <functional>
+#include <commands/Suggestions.h>
 #include <memory>
 #include <mutex>
 #include <optional>
 #include <span>
 #include <string>
 #include <typeinfo>
-#include <unordered_map>
 #include <vector>
 #include <cstddef>
 
@@ -31,7 +31,6 @@ namespace ember::commands {
 class Command;
 
 using CommandHandler = std::function<void(const Arguments&)>;
-using CommandMap = std::unordered_map<std::string, std::shared_ptr<Command>, StringHash, std::equal_to<>>;
 
 class Command : public std::enable_shared_from_this<Command> {
 	mutable std::mutex mutex_;
@@ -92,10 +91,12 @@ public:
 	std::size_t argument_count() const;
 	const Flags& flags() const;
 
+	Suggestions autocomplete(const std::string_view query) const;
+	SearchResult find(const std::string_view query) const;
+	SearchResult find(std::span<const std::string> tokens) const;
+
 	Result execute();
 	Result execute(std::span<std::any> arg_values);
-
-	friend class PrefixedRegistry; 
 };
 
 } // commands, ember
