@@ -57,10 +57,10 @@ public:
 			keys.emplace_back(std::move(key));
 		}
 
-		return (state_ = State::done);
+		return stream? state_ = State::done : state_ = State::err_stream_err;
 	}
 
-	void write_to_stream(PacketStream& stream) const override {
+	State write_to_stream(PacketStream& stream) const override {
 		stream << opcode;
 		stream << salt;
 		stream << proof;
@@ -73,6 +73,8 @@ public:
 			stream << key.product;
 			stream << key.hash;
 		}
+
+		return stream? State::done : State::err_stream_err;
 	}
 };
 

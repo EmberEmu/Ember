@@ -25,8 +25,7 @@ class ReconnectChallenge final : public Packet {
 	State state_ = State::initial;
 
 public:
-	ReconnectChallenge()
-		: Packet(Opcode::cmd_auth_reconnect_challenge) {}
+	ReconnectChallenge() : Packet(Opcode::cmd_auth_reconnect_challenge) {}
 
 	Result result;
 	std::array<std::uint8_t, rand_length> salt;
@@ -44,14 +43,15 @@ public:
 		stream >> salt;
 		stream >> checksum_salt;
 
-		return (state_ = State::done);
+		return stream? state_ = State::done : state_ = State::err_stream_err;
 	}
 
-	void write_to_stream(PacketStream& stream) const override {
+	State write_to_stream(PacketStream& stream) const override {
 		stream << opcode;
 		stream << result;
 		stream << salt;
 		stream << checksum_salt;
+		return stream? State::done : State::err_stream_err;
 	}
 };
 

@@ -64,12 +64,12 @@ void initiate_player_login(ClientContext& ctx, const PlayerLogin* event) {
 	protocol::smsg_account_data_times adt;
 	ctx.connection->send(adt);
 
-	protocol::smsg_weather weather;
-	weather->change = weather->INSTANT;
-	weather->grade = 1.f;
-	weather->type = weather->RAIN;
-	weather->sound_id = 8535;
-	ctx.connection->send(weather);
+	//protocol::smsg_weather weather;
+	//weather->change = weather->INSTANT;
+	//weather->grade = 1.f;
+	//weather->type = weather->RAIN;
+	//weather->sound_id = 8535;
+	//ctx.connection->send(weather);
 
 	protocol::smsg_trigger_cinematic cinematic;
 	cinematic->id = 81;

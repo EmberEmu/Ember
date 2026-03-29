@@ -22,7 +22,7 @@ void Handler::create_packet() {
 	curr_packet_ = &packet_.emplace<T>();
 }
 
-void Handler::dump_bad_packet(const spark::io::buffer_underrun& e, BufferType& buffer, std::size_t offset) {
+void Handler::dump_bad_packet(BufferType& buffer, std::size_t offset) {
 	std::size_t valid_bytes = offset - buffer.size();
 
 	PacketStream stream(buffer);
@@ -36,16 +36,14 @@ void Handler::dump_bad_packet(const spark::io::buffer_underrun& e, BufferType& b
 
 	auto output = utility::format_packet(contig_buff.data(), contig_buff.size());
 
-	LOG_ERROR_STREAM(logger_)
-		<< "Buffer stream underrun! \nRead request: "
-	    << e.read_size << " bytes \nBuffer size: " << e.buff_size
-	    << " bytes \nError triggered by first "
-	    << valid_bytes << " bytes \n" << output << LOG_ASYNC;
+	LOG_ERROR(logger_, "Deserialisation error! Triggered by {} bytes. Dumping packet...", valid_bytes);
+	LOG_ERROR(logger_, "\n{}", output);
 }
 
 void Handler::handle_new_packet(BufferType& buffer) {
 	Opcode opcode;
 	buffer.copy(&opcode, sizeof(opcode));
+	state_ = State::read;
 
 	switch(opcode) {
 		case Opcode::cmd_auth_logon_challenge:
@@ -75,15 +73,18 @@ void Handler::handle_new_packet(BufferType& buffer) {
 			create_packet<client::TransferCancel>();
 			break;
 		default:
-			throw bad_packet("Unknown opcode encountered!");
+			state_ = State::read_error;
+			curr_packet_ = nullptr;
 	}
-
-	state_ = State::read;
 }
 
-void Handler::handle_read(BufferType& buffer, std::size_t offset) try {
+void Handler::handle_read(BufferType& buffer, std::size_t offset) {
+	if(!curr_packet_) {
+		return;
+	}
+
 	PacketStream stream(buffer);
-	Packet::State state = curr_packet_->read_from_stream(stream);
+	const auto state = curr_packet_->read_from_stream(stream);
 
 	switch(state) {
 		case Packet::State::done:
@@ -92,15 +93,15 @@ void Handler::handle_read(BufferType& buffer, std::size_t offset) try {
 		case Packet::State::call_again:
 			state_ = State::read;
 			break;
+		case Packet::State::err_stream_err:
+			dump_bad_packet(buffer, offset);
+			[[fallthrough]];
 		default:
-			BOOST_ASSERT_MSG(false, "Unreachable condition hit!");
+			state_ = State::read_error;
 	}
-} catch(const spark::io::buffer_underrun& e) {
-	dump_bad_packet(e, buffer, offset);
-	throw bad_packet(e.what());
 }
 
-const Packet* Handler::process_buffer(BufferType& buffer) {
+const std::expected<Packet*, Handler::State> Handler::process_buffer(BufferType& buffer) {
 	switch(state_) {
 		case State::new_packet:
 			handle_new_packet(buffer);
@@ -108,6 +109,10 @@ const Packet* Handler::process_buffer(BufferType& buffer) {
 		case State::read:
 			handle_read(buffer, buffer.size());
 			break;
+	}
+
+	if(state_ == State::read_error) {
+		return std::unexpected(state_);
 	}
 
 	return state_ == State::new_packet? curr_packet_ : nullptr;

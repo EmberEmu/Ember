@@ -22,8 +22,7 @@ class ReconnectProof final : public Packet {
 	State state_ = State::initial;
 
 public:
-	ReconnectProof()
-		: Packet(Opcode::cmd_auth_reconnect_proof) {}
+	ReconnectProof() : Packet(Opcode::cmd_auth_reconnect_proof) {}
 
 	Result result;
 
@@ -37,12 +36,13 @@ public:
 		stream >> opcode;
 		stream >> result;
 		
-		return (state_ = State::done);
+		return stream? state_ = State::done : state_ = State::err_stream_err;
 	}
 
-	void write_to_stream(PacketStream& stream) const override {
+	State write_to_stream(PacketStream& stream) const override {
 		stream << opcode;
 		stream << result;
+		return stream? State::done : State::err_stream_err;
 	}
 };
 

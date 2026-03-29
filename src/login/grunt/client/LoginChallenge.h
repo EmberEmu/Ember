@@ -60,15 +60,15 @@ class LoginChallenge final : public Packet {
 		stream >> spark::io::prefixed<std::string, std::uint8_t>(username);
 
 		if(username.size() > max_username_len) {
-			throw bad_packet("Username length was too long!");
+			state_ = State::err_username_too_long;
+			return;
 		}
 
 		state_ = State::done;
 	}
 
 public:
-	LoginChallenge()
-		: Packet(Opcode::cmd_auth_logon_challenge) {}
+	LoginChallenge() : Packet(Opcode::cmd_auth_logon_challenge) {}
 
 	const static int challenge_version = 3;
 	const static int reconnect_challenge_version = 2;
@@ -98,12 +98,12 @@ public:
 				BOOST_ASSERT_MSG(false, "Unreachable condition hit");
 		}
 
-		return state_;
+		return stream? state_ : state_ = State::err_stream_err;
 	}
 
-	void write_to_stream(PacketStream& stream) const override {
+	State write_to_stream(PacketStream& stream) const override {
 		if(username.length() > max_username_len) {
-			throw bad_packet("Provided username was too long!");
+			return State::err_username_too_long;
 		}
 
 		const auto start_pos = stream.total_write();
@@ -128,6 +128,8 @@ public:
 		stream.write_seek(spark::io::StreamSeek::sk_stream_absolute, size_pos);
 		stream << gsl::narrow<std::uint16_t>(size);
 		stream.write_seek(spark::io::StreamSeek::sk_forward, size);
+
+		return stream? State::done : State::err_stream_err;
 	}
 };
 

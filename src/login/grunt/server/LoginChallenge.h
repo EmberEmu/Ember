@@ -43,7 +43,8 @@ class LoginChallenge final : public Packet {
 		stream >> g_len;
 
 		if(g_len > 1) {
-			throw bad_packet("invalid generator length");
+			state_ = State::err_invalid_generator_length;
+			return;
 		}
 
 		stream >> g;
@@ -127,16 +128,16 @@ public:
 				BOOST_ASSERT_MSG(false, "Unreachable condition hit");
 		}
 
-		return state_;
+		return stream? state_ : state_ = State::err_stream_err;
 	}
 
-	void write_to_stream(PacketStream& stream) const override {
+	State write_to_stream(PacketStream& stream) const override {
 		stream << opcode;
 		stream << protocol_ver;
 		stream << result;
 
-		if(result != grunt::Result::success) {
-			return; // don't send the rest of the fields
+		if(result != grunt::Result::success) { // don't send the rest of the fields
+			return stream? State::done : State::err_stream_err;
 		}
 		
 		std::array<std::uint8_t, pub_key_length> bytes{};
@@ -144,7 +145,7 @@ public:
 		stream.put(bytes.rbegin(), bytes.rend());
 
 		if(g_len > 1) {
-			throw bad_packet("invalid generator length");
+			return State::err_invalid_generator_length;
 		}
 
 		stream << g_len;
@@ -166,6 +167,8 @@ public:
 			stream << pin_grid_seed;
 			stream << pin_salt;
 		}
+
+		return stream? State::done : State::err_stream_err;
 	}
 };
 

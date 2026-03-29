@@ -11,6 +11,7 @@
 #include "Packets.h"
 #include "StreamTypes.h"
 #include <logger/LoggerFwd.h>
+#include <expected>
 #include <functional>
 #include <optional>
 #include <type_traits>
@@ -22,7 +23,8 @@ namespace ember::grunt {
 class Handler final {
 	enum class State {
 		new_packet,
-		read
+		read,
+		read_error
 	};
 
 	std::variant<
@@ -45,12 +47,12 @@ class Handler final {
 	template<typename T> void create_packet();
 	void handle_new_packet(BufferType& buffer);
 	void handle_read(BufferType& buffer, std::size_t offset);
-	void dump_bad_packet(const spark::io::buffer_underrun& e, BufferType& buffer, std::size_t offset);
+	void dump_bad_packet(BufferType& buffer, std::size_t offset);
 
 public:
 	explicit Handler(log::Logger& logger) : logger_(logger) { }
 
-	const Packet* process_buffer(BufferType& buffer);
+	const std::expected<Packet*, State> process_buffer(BufferType& buffer);
 };
 
 } // grunt, ember
