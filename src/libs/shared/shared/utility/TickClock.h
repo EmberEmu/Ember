@@ -8,14 +8,19 @@
 
 #pragma once
 
+#include <chrono>
 #include <cstdint>
 
 namespace ember::utility {
+
+struct as_chrono_t{};
+inline constexpr as_chrono_t as_chrono = as_chrono_t();
 
 /*
  * This is ideal for when we need a very fast time source for a task and we're fine
  * that the timer isn't that precise (e.g. events measured in the seconds).
  */
 std::uint64_t get_tick_count();
+std::chrono::milliseconds get_tick_count(as_chrono_t);
 
 }; // utility, ember

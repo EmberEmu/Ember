@@ -34,8 +34,8 @@ class ClientHandler final {
 	constexpr static auto pps_soft_limit = 33u;
 	constexpr static auto pps_hard_limit = 50u;
 	constexpr static auto ping_grace = 5u;
-	constexpr static auto ping_delta_ms = 30000u;
-	constexpr static auto ping_leeway_ms = 2000u;
+	constexpr static std::chrono::milliseconds ping_delta_ms { 30000u };
+	constexpr static std::chrono::milliseconds ping_leeway_ms { 2000u };
 
 	ClientConnection* connection_;
 	ClientContext context_;
@@ -49,7 +49,7 @@ class ClientHandler final {
 	std::uint32_t ping_sequence_;
 	std::uint32_t prev_ping_sequence_;
 	unsigned int ping_violation_;
-	std::uint64_t last_tick_;
+	std::chrono::milliseconds last_tick_;
 	unsigned int timer_events_;
 
 	mutable std::string client_id_;
