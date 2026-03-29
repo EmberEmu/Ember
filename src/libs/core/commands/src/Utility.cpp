@@ -129,6 +129,6 @@ Suggestions autocomplete_recurse(const CommandMap& commands, std::span<const std
 	return result;
 }
 
-}
+} // impl
 
 } // commands, ember
