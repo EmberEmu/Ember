@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2024 Ember
+ * Copyright (c) 2016 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -7,6 +7,8 @@
  */
 
 #include "RealmQueue.h"
+#include "Events.h"
+#include "EventDispatcher.h"
 
 namespace ember::realm {
 
@@ -14,9 +16,20 @@ void RealmQueue::set_timer() {
 	timer_.expires_after(frequency_);
 	timer_.async_wait([this](const boost::system::error_code& ec) {
 		if(!ec) { // if ec is set, the timer was aborted (shutdown)
-			update_clients();
+			if(dirty_) {
+				update_clients();
+			}
+
+			if(!empty()) {
+				set_timer();
+			}
 		}
 	});
+}
+
+bool RealmQueue::empty() {
+	std::lock_guard guard(lock_);
+	return queue_.empty();
 }
 
 /*
@@ -28,30 +41,24 @@ void RealmQueue::set_timer() {
 void RealmQueue::update_clients() {
 	std::lock_guard guard(lock_);
 
-	if(!dirty_) {
-		return;
-	}
-
 	std::size_t position = 1;
 
 	for(auto& entry : queue_) {
-		entry.on_update(position);
+		dispatcher_.post_event(entry.client, QueuePosition(position));
 		++position;
 	}
 
-	set_timer();
 	dirty_ = false;
 }
 
-void RealmQueue::enqueue(ClientIdent client, UpdateQueueCB on_update_cb,
-                         LeaveQueueCB on_leave_cb, int priority) {
+void RealmQueue::enqueue(ClientIdent client, int priority) {
 	std::lock_guard guard(lock_);
 
 	if(queue_.empty()) {
 		set_timer();
 	}
 
-	queue_.emplace_back(priority, client, on_update_cb, on_leave_cb);
+	queue_.emplace_back(priority, client);
 
 	// guaranteed to be a stable sort - not the most efficient way to have queue priority
 	// but allows for multiple priority levels without multiple hard-coded queues
@@ -70,10 +77,6 @@ void RealmQueue::dequeue(const ClientIdent& client) {
 		queue_.erase(it);
 	}
 
-	if(queue_.empty()) {
-		timer_.cancel();
-	}
-
 	dirty_ = true;
 }
 
@@ -89,16 +92,27 @@ void RealmQueue::free_slot() {
 	}
 
 	auto& entry = queue_.front();
-	entry.on_leave();
+	const Event event { EventType::queue_success };
+	dispatcher_.post_event(entry.client, event);
 	queue_.pop_front();
-
-	if(queue_.empty()) {
-		timer_.cancel();
-	}
-
 	dirty_ = true;
 }
 
+std::size_t RealmQueue::poll(const ClientIdent& client) {
+	std::lock_guard guard(lock_);
+
+	std::size_t position = 1;
+
+	for(auto& entry : queue_) {
+		if(entry.client == client) {
+			return position;
+		}
+
+		++position;
+	}
+
+	return npos;
+}
 void RealmQueue::shutdown() {
 	std::lock_guard guard(lock_);
 	timer_.cancel();

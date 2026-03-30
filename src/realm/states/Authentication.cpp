@@ -200,11 +200,15 @@ void prove_session(ClientContext& ctx, const Botan::BigInt& key) {
 	}
 
 	ctx.connection->set_key(k_bytes);
-	ctx.client_id = { auth_ctx.account_id, auth_ctx.packet->username };
+
+	ctx.client_id = ClientID { 
+		.id = auth_ctx.account_id,
+		.username = auth_ctx.packet->username
+	};
 
 	 // todo, allowing for multiple realms to connect to a single world server
 	 // will require an external service to keep track of available slots
-	unsigned int active_players = 0;
+	static unsigned int active_players = 0;
 	const auto& config = ctx.cfg_store.config_tls();
 
 	if(active_players < config.max_slots) {
@@ -212,6 +216,8 @@ void prove_session(ClientContext& ctx, const Botan::BigInt& key) {
 	} else {
 		auth_queue(ctx);
 	}
+	
+	++active_players;
 }
 
 void send_auth_challenge(ClientContext& ctx) {
@@ -258,19 +264,14 @@ void auth_queue(ClientContext& ctx) {
 	const auto& uuid = ctx.handler.uuid();
 	auto& dispatcher = ctx.dispatcher;
 
-	ctx.queue.enqueue(uuid,
-		[dispatcher, uuid](const std::size_t position) {
-			dispatcher.post_event(uuid, QueuePosition(position));
-		},
-		[dispatcher, uuid]() {
-			const Event event { EventType::queue_success };
-			dispatcher.post_event(uuid, event);
-		}
-	);
-
+	ctx.queue.enqueue(uuid);
 	ctx.timer.cancel();
 	auth_state(ctx, State::in_queue);
-	CLIENT_DEBUG(ctx.logger, ctx) << "added to queue" << LOG_ASYNC;
+
+	CLIENT_DEBUG(ctx.logger, ctx)
+		<< "added to queue, position "
+		<< ctx.queue.poll(uuid)
+		<< LOG_ASYNC;
 }
 
 void auth_success(ClientContext& ctx) {
