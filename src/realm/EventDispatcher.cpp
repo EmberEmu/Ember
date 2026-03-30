@@ -115,6 +115,8 @@ void EventDispatcher::broadcast_event(std::shared_ptr<const Event> event) const 
 	}
 }
 
+#pragma warning(push)
+#pragma warning(disable : 28020)
 void EventDispatcher::register_handler(ClientHandler* handler) {
 #ifdef EMBER_FAST_DISPATCH_CACHE
 	std::size_t index = rng::xorshift::next() & 0xfffull;
@@ -140,6 +142,7 @@ void EventDispatcher::register_handler(ClientHandler* handler) {
 	}
 #endif
 }
+#pragma warning(pop)
 
 void EventDispatcher::remove_handler(const ClientHandler* handler) {
 #ifdef EMBER_FAST_DISPATCH_CACHE
