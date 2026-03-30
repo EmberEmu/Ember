@@ -29,7 +29,7 @@ class ClientIdent final {
 	static constexpr std::size_t uuid_size = 16;
 	static constexpr std::size_t service_offset = 0;
 
-	std::array<std::uint64_t, uuid_size / sizeof(std::uint64_t)> data_;
+	std::array<std::uint64_t, uuid_size / sizeof(std::uint64_t)> data_{};
 	mutable std::size_t hash_;
 	mutable bool hashed_;
 
@@ -40,11 +40,17 @@ class ClientIdent final {
 			val = rng::xorshift::next();
 		}
 
-		auto bytes = std::as_writable_bytes(std::span(data_));
-		bytes[service_offset] = gsl::narrow<std::byte>(service_index);
+		encode_index(service_index);
+	}
+
+	void encode_index(const std::uint8_t index) {
+		data_[0] &= 0x00ffffffffffffffull;
+		data_[0] |= static_cast<std::uint64_t>(index) << 56;
 	}
 
 public:
+	ClientIdent() = default;
+
 	explicit ClientIdent(std::size_t service_index)
 		: hash_(0)
 		, hashed_(false) {
@@ -55,6 +61,24 @@ public:
 		: hash_(0)
 		, hashed_(false) {
 		std::ranges::copy(data, data_.data());
+	}
+
+	void encode(const void* ptr, std::uint32_t slot) {
+		std::uint64_t ptr_val = reinterpret_cast<std::uint64_t>(ptr);
+		ptr_val &= 0xffffffffffffull;
+		const std::uint8_t slot_hi = (slot >> 4) & 0xff;
+		const std::uint8_t slot_lo = slot & 0xF;
+		data_[0] = (data_[0] & (0xffull << 56)) | (ptr_val << 8ull) | slot_hi;
+		data_[1] = (data_[1] & ~0xfull) | slot_lo;
+	}
+
+	template<typename T>
+	T* extract_ptr() const {
+		return reinterpret_cast<T*>((data_[0] >> 8) & 0xffffffffffff);
+	}
+
+	std::size_t extract_slot() const {
+		return ((data_[0] & 0xff) << 4) | (data_[1] & 0xf);
 	}
 
 	inline std::size_t hash() const {
@@ -74,7 +98,7 @@ public:
 	}
 
 	inline std::uint8_t service() const {
-		return data_[service_offset];
+		return data_[0] >> 56;
 	}
 
 	// don't really care about efficiency here, it's for debugging
@@ -95,11 +119,12 @@ public:
 		return uuid_size;
 	}
 
-	friend bool operator==(const ClientIdent& rhs, const ClientIdent& lhs);
+	friend bool operator==(const ClientIdent& lhs, const ClientIdent& rhs);
 };
 
-inline bool operator==(const ClientIdent& rhs, const ClientIdent& lhs) {
-	return rhs.hash() == lhs.hash();
+inline bool operator==(const ClientIdent& lhs, const ClientIdent& rhs) {
+	return rhs.data_[0] == lhs.data_[0]
+		&& lhs.data_[1] == lhs.data_[1];
 }
 
 inline std::size_t hash_value(const ClientIdent& uuid) {

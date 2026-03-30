@@ -41,7 +41,7 @@ class ClientHandler final {
 
 	ClientConnection* connection_;
 	ClientContext context_;
-	const ClientIdent uuid_;
+	ClientIdent uuid_;
 	boost::asio::steady_timer timer_;
 	log::Logger& logger_;
 
@@ -93,6 +93,10 @@ public:
 	void handle_message(StaticBuffer& buffer, protocol::SizeType msg_size);
 	void handle_event(const Event* event);
 	void handle_event(std::unique_ptr<const Event> event);
+
+	ClientIdent& uuid() {
+		return uuid_;
+	}
 
 	const ClientIdent& uuid() const {
 		return uuid_;

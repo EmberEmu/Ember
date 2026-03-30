@@ -21,7 +21,19 @@
 
 namespace ember::realm {
 
+struct CacheSlot {
+	ClientIdent ident;
+	bool used;
+};
+
 class EventDispatcher final {
+#ifdef EMBER_FAST_DISPATCH_CACHE
+	constexpr static auto dispatch_cache = true;
+	constexpr static std::size_t cache_size = 4096;
+	static_assert(cache_size <= 0x1000, "Cache size must fit within 12 bits");
+	static inline thread_local std::array<CacheSlot, cache_size> cache_{};
+#endif
+
 	using HandlerMap = boost::unordered_flat_map<
 		ClientIdent, ClientHandler*, boost::hash<ClientIdent>
 	>;
@@ -30,6 +42,23 @@ class EventDispatcher final {
 	log::Logger& logger_;
 
 	static inline thread_local HandlerMap handlers_;
+
+	inline ClientHandler* locate_handler(const ClientIdent& client) const {
+#ifdef EMBER_FAST_DISPATCH_CACHE
+		const auto slot = client.extract_slot();
+
+		if(cache_[slot].ident == client) {
+			return client.extract_ptr<ClientHandler>();
+		}
+#endif
+
+		if(auto it = handlers_.find(client); it != handlers_.end()) {
+			auto& [_, handler] = *it;
+			return handler;
+		} else {
+			return nullptr;
+		}
+	}
 
 public:
 	explicit EventDispatcher(const thread::ServicePool& pool, log::Logger& logger)
@@ -65,8 +94,7 @@ public:
 		}
 
 		boost::asio::post(*service, [&, client, event = std::move(event)] {
-			if(auto it = handlers_.find(client); it != handlers_.end()) {
-				auto& [_, handler] = *it;
+			if(auto handler = locate_handler(client)) {
 				handler->handle_event(&event);
 			} else {
 				LOG_DEBUG(logger_, "Client disconnected, event discarded");

@@ -8,6 +8,7 @@
 
 #include "EventDispatcher.h"
 #include <logger/Logger.h>
+#include <shared/utility/xoroshiro128plus.h>
 #include <boost/asio/dispatch.hpp>
 #include <boost/asio/post.hpp>
 #include <ranges>
@@ -25,8 +26,8 @@ void EventDispatcher::post_event(const ClientIdent& client, std::unique_ptr<Even
 	}
 
 	boost::asio::post(*service, [&, client, event = std::move(event)] {
-		if(auto handler = handlers_.find(client); handler != handlers_.end()) {
-			handler->second->handle_event(event.get());
+		if(auto handler = locate_handler(client)) {
+			handler->handle_event(event.get());
 		} else {
 			LOG_DEBUG(logger_, "Client disconnected, event discarded");
 		}
@@ -107,10 +108,32 @@ void EventDispatcher::broadcast_event(std::shared_ptr<const Event> event) const 
 }
 
 void EventDispatcher::register_handler(ClientHandler* handler) {
+#ifdef EMBER_FAST_DISPATCH_CACHE
+	std::size_t index = rng::xorshift::next() & 0xfffull;
+	const std::size_t start = index;
+
+	do {
+		if(!cache_[index].used) {
+			handler->uuid().encode(handler, index);
+			cache_[index].used = true;
+			cache_[index].ident = handler->uuid();
+			break;
+		} else {
+			++index %= 0x1000;
+		}
+	} while(index != start);
+#endif
+
 	handlers_.insert_or_assign(handler->uuid(), handler);
 }
 
 void EventDispatcher::remove_handler(const ClientHandler* handler) {
+#ifdef EMBER_FAST_DISPATCH_CACHE
+		if(auto slot = handler->uuid().extract_slot()) {
+			cache_[slot].used = false;
+		}
+#endif
+
 	handlers_.erase(handler->uuid());
 }
 
