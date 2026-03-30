@@ -47,8 +47,12 @@ class EventDispatcher final {
 #ifdef EMBER_FAST_DISPATCH_CACHE
 		const auto slot = client.extract_slot();
 
-		if(cache_[slot].ident == client) {
-			return client.extract_ptr<ClientHandler>();
+		if(slot) {
+			if(cache_[slot].ident == client) {
+				return client.extract_ptr<ClientHandler>();
+			} else {
+				return nullptr;
+			}
 		}
 #endif
 

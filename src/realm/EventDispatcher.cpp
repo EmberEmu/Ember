@@ -111,30 +111,40 @@ void EventDispatcher::register_handler(ClientHandler* handler) {
 #ifdef EMBER_FAST_DISPATCH_CACHE
 	std::size_t index = rng::xorshift::next() & 0xfffull;
 	const std::size_t start = index;
+	bool cached = false;
 
 	do {
 		if(!cache_[index].used) {
 			handler->uuid().encode(handler, index);
 			cache_[index].used = true;
 			cache_[index].ident = handler->uuid();
+			cached = true;
 			break;
-		} else {
-			++index %= 0x1000;
+		} else if(++index > 0xfffull) {
+			index = 0;
 		}
 	} while(index != start);
-#endif
 
-	handlers_.insert_or_assign(handler->uuid(), handler);
+	if(!cached) {
+#endif
+		handlers_.insert_or_assign(handler->uuid(), handler);
+#ifdef EMBER_FAST_DISPATCH_CACHE
+	}
+#endif
 }
 
 void EventDispatcher::remove_handler(const ClientHandler* handler) {
 #ifdef EMBER_FAST_DISPATCH_CACHE
 		if(auto slot = handler->uuid().extract_slot()) {
 			cache_[slot].used = false;
+		}  else {
+			handlers_.erase(handler->uuid());
 		}
-#endif
 
+		return;
+#else
 	handlers_.erase(handler->uuid());
+#endif
 }
 
 } // realm, ember
