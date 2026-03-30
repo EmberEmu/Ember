@@ -30,6 +30,8 @@ class ClientIdent final {
 	static constexpr std::size_t service_offset = 0;
 
 	std::array<std::uint64_t, uuid_size / sizeof(std::uint64_t)> data_;
+	mutable std::size_t hash_;
+	mutable bool hashed_;
 
 	void generate(const std::size_t service_index) {
 		assert(service_index < 256);
@@ -43,15 +45,23 @@ class ClientIdent final {
 	}
 
 public:
-	explicit ClientIdent(std::size_t service_index) {
+	explicit ClientIdent(std::size_t service_index)
+		: hash_(0)
+		, hashed_(false) {
 		generate(service_index);
 	}
 
-	explicit ClientIdent(std::span<const std::uint8_t, uuid_size> data) {
+	explicit ClientIdent(std::span<const std::uint8_t, uuid_size> data)
+		: hash_(0)
+		, hashed_(false) {
 		std::ranges::copy(data, data_.data());
 	}
 
 	inline std::size_t hash() const {
+		if(hashed_) {
+			return hash_;
+		}
+
 		FNVHash hasher;
 		auto bytes = std::as_bytes(std::span(data_));
 
@@ -59,7 +69,8 @@ public:
 			hasher.update_byte(byte);
 		}
 
-		return hasher.finalise();
+		hashed_ = true;
+		return hash_ = hasher.finalise();
 	}
 
 	inline std::uint8_t service() const {
