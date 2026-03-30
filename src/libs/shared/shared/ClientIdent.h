@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2025 Ember
+ * Copyright (c) 2016 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -19,6 +19,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <cassert>
 #include <cstddef>
 #include <cstdint>
 
@@ -31,6 +32,8 @@ class ClientIdent final {
 	std::array<std::uint64_t, uuid_size / sizeof(std::uint64_t)> data_;
 
 	void generate(const std::size_t service_index) {
+		assert(service_index < 256);
+
 		for(auto& val : data_) {
 			val = rng::xorshift::next();
 		}
