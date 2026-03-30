@@ -81,19 +81,27 @@ void EventDispatcher::broadcast_event(std::vector<ClientIdent> clients, std::sha
 	}
 }
 
-void EventDispatcher::broadcast_event_thread(const Event& event) const {
+void EventDispatcher::broadcast(const Event& event) const {
 	for(auto& handler : handlers_ | std::views::values) {
 		handler->handle_event(&event);
 	}
+
+#ifdef EMBER_FAST_DISPATCH_CACHE
+	for(auto& entry : cache_) {
+		if(entry.used) {
+			entry.ident.extract_ptr<ClientHandler>()->handle_event(&event);
+		}
+	}
+#endif
+}
+
+void EventDispatcher::broadcast_event_thread(const Event& event) const {
+	broadcast(event);
 }
 
 void EventDispatcher::broadcast_event(const Event& event) const {
 	for(auto& ioc : pool_) {
-		boost::asio::dispatch(*ioc, [event]() {
-			for(auto& handler : handlers_ | std::views::values) {
-				handler->handle_event(&event);
-			}
-		});
+		broadcast(event);
 	}
 }
 

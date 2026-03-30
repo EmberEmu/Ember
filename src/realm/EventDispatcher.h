@@ -64,6 +64,8 @@ class EventDispatcher final {
 		}
 	}
 
+	void broadcast(const Event& event) const;
+
 public:
 	explicit EventDispatcher(const thread::ServicePool& pool, log::Logger& logger)
 		: pool_(pool)
