@@ -91,7 +91,7 @@ public:
 		return stream.str();
 	}
 
-	static constexpr auto size() {
+	static consteval auto size() {
 		return uuid_size;
 	}
 
