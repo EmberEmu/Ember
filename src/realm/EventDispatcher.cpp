@@ -71,8 +71,8 @@ void EventDispatcher::broadcast_event(std::vector<ClientIdent> clients, std::sha
 			auto [beg, end] = range;
 
 			while(beg != end) {
-				if(auto handler = handlers_.find(*beg++); handler != handlers_.end()) {
-					handler->second->handle_event(event.get());
+				if(auto handler = locate_handler(*beg++)) {
+					handler->handle_event(event.get());
 				} else {
 					LOG_DEBUG(logger_, "Client disconnected, event discarded");
 				}
