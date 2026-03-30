@@ -10,6 +10,7 @@
 #include "ClientContext.h"
 #include "../ClientConnection.h"
 #include "../Events.h"
+#include "../RealmQueue.h"
 #include <protocol/Packets.h>
 
 #include <chrono>
@@ -406,7 +407,7 @@ void handle_event(ClientContext& ctx, const Event* event) {
 }
 
 void exit(ClientContext& ctx) {
-
+	ctx.queue.free_slot();
 }
 
 } // world_enter, realm, ember

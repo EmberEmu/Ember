@@ -231,7 +231,7 @@ void Service::initialise(const opts::variables_map& args) try {
 	const auto nsd_port = args["nsd.port"].as<std::uint16_t>();
 
 	ctx->rpc_discovery = std::make_unique<NetworkServiceDiscovery>(*ctx->rpc, nsd_host, nsd_port, logger);
-	ctx->queue = std::make_unique<RealmQueue>(service);
+	ctx->queue = std::make_unique<RealmQueue>(service, *ctx->dispatcher);
 
 	// Misc. information
 	const auto max_socks = utility::max_sockets_desc();
