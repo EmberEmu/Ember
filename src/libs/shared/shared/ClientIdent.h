@@ -63,7 +63,8 @@ public:
 		std::ranges::copy(data, data_.data());
 	}
 
-	void encode(const void* ptr, std::uint32_t slot) {
+	void encode(const void* ptr, std::size_t slot) {
+		assert(slot < 0x1000);
 		std::uint64_t ptr_val = reinterpret_cast<std::uint64_t>(ptr);
 		ptr_val &= 0xffffffffffffull;
 		const std::uint8_t slot_hi = (slot >> 4) & 0xff;
