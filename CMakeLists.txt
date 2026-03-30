@@ -86,6 +86,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ${BUILD_SHARED})
 set(PREALLOC_CLIENTS_THREAD 4) # Preallocate memory for the specified number of clients per thread
 
 option(BUILD_SHARED ${BUILD_SHARED_MSG} OFF)
+option(ENABLE_FAST_CLIENT_DISPATCH_CACHE "Fast client event dispatch cache at the cost extra per-thread memory consumption" ON)
 option(ENABLE_HUGE_PAGES "When running on Linux, enable huge page support (disable if memory constrained)" ON)
 option(ENABLE_PAGE_LOCKING "Allow the allocator to lock pages (disable if memory constrained)" ON)
 

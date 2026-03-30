@@ -208,7 +208,7 @@ void prove_session(ClientContext& ctx, const Botan::BigInt& key) {
 
 	 // todo, allowing for multiple realms to connect to a single world server
 	 // will require an external service to keep track of available slots
-	static unsigned int active_players = 0;
+	unsigned int active_players = 0;
 	const auto& config = ctx.cfg_store.config_tls();
 
 	if(active_players < config.max_slots) {

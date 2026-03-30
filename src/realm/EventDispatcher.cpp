@@ -8,6 +8,7 @@
 
 #include "EventDispatcher.h"
 #include <logger/Logger.h>
+#include <shared/utility/xoroshiro128plus.h>
 #include <boost/asio/dispatch.hpp>
 #include <boost/asio/post.hpp>
 #include <ranges>
@@ -25,8 +26,8 @@ void EventDispatcher::post_event(const ClientIdent& client, std::unique_ptr<Even
 	}
 
 	boost::asio::post(*service, [&, client, event = std::move(event)] {
-		if(auto handler = handlers_.find(client); handler != handlers_.end()) {
-			handler->second->handle_event(event.get());
+		if(auto handler = locate_handler(client)) {
+			handler->handle_event(event.get());
 		} else {
 			LOG_DEBUG(logger_, "Client disconnected, event discarded");
 		}
@@ -70,8 +71,8 @@ void EventDispatcher::broadcast_event(std::vector<ClientIdent> clients, std::sha
 			auto [beg, end] = range;
 
 			while(beg != end) {
-				if(auto handler = handlers_.find(*beg++); handler != handlers_.end()) {
-					handler->second->handle_event(event.get());
+				if(auto handler = locate_handler(*beg++)) {
+					handler->handle_event(event.get());
 				} else {
 					LOG_DEBUG(logger_, "Client disconnected, event discarded");
 				}
@@ -80,19 +81,27 @@ void EventDispatcher::broadcast_event(std::vector<ClientIdent> clients, std::sha
 	}
 }
 
-void EventDispatcher::broadcast_event_thread(const Event& event) const {
+void EventDispatcher::broadcast(const Event& event) const {
 	for(auto& handler : handlers_ | std::views::values) {
 		handler->handle_event(&event);
 	}
+
+#ifdef EMBER_FAST_DISPATCH_CACHE
+	for(auto& entry : cache_) {
+		if(entry.used) {
+			entry.ident.extract_ptr<ClientHandler>()->handle_event(&event);
+		}
+	}
+#endif
+}
+
+void EventDispatcher::broadcast_event_thread(const Event& event) const {
+	broadcast(event);
 }
 
 void EventDispatcher::broadcast_event(const Event& event) const {
 	for(auto& ioc : pool_) {
-		boost::asio::dispatch(*ioc, [event]() {
-			for(auto& handler : handlers_ | std::views::values) {
-				handler->handle_event(&event);
-			}
-		});
+		broadcast(event);
 	}
 }
 
@@ -106,12 +115,47 @@ void EventDispatcher::broadcast_event(std::shared_ptr<const Event> event) const 
 	}
 }
 
+#pragma warning(push)
+#pragma warning(disable : 28020)
 void EventDispatcher::register_handler(ClientHandler* handler) {
-	handlers_.insert_or_assign(handler->uuid(), handler);
+#ifdef EMBER_FAST_DISPATCH_CACHE
+	std::size_t index = rng::xorshift::next() & 0xfffull;
+	const std::size_t start = index;
+	bool cached = false;
+
+	do {
+		if(!cache_[index].used) {
+			handler->uuid().encode(handler, index);
+			cache_[index].used = true;
+			cache_[index].ident = handler->uuid();
+			cached = true;
+			break;
+		} else if(++index > 0xfffull) {
+			index = 0;
+		}
+	} while(index != start);
+
+	if(!cached) {
+#endif
+		handlers_.insert_or_assign(handler->uuid(), handler);
+#ifdef EMBER_FAST_DISPATCH_CACHE
+	}
+#endif
 }
+#pragma warning(pop)
 
 void EventDispatcher::remove_handler(const ClientHandler* handler) {
+#ifdef EMBER_FAST_DISPATCH_CACHE
+		if(auto slot = handler->uuid().extract_slot()) {
+			cache_[slot].used = false;
+		}  else {
+			handlers_.erase(handler->uuid());
+		}
+
+		return;
+#else
 	handlers_.erase(handler->uuid());
+#endif
 }
 
 } // realm, ember
