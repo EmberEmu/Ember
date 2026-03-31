@@ -46,14 +46,6 @@ std::size_t SessionManager::count() const {
 	return sessions_.size();
 }
 
-auto SessionManager::begin() -> locked_iterator {
-	return SessionIterator(sessions_.begin(), sessions_lock_);
-}
-
-auto SessionManager::end() -> locked_iterator {
-	return SessionIterator(sessions_.end());
-}
-
 auto SessionManager::begin() const -> locked_const_iterator {
 	return SessionIterator(sessions_.begin(), sessions_lock_);
 }

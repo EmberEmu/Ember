@@ -65,8 +65,6 @@ public:
 	void stop_all();
 	std::size_t count() const;
 
-	locked_iterator begin();
-	locked_iterator end();
 	locked_const_iterator begin() const;
 	locked_const_iterator end() const;
 };
