@@ -30,6 +30,7 @@ class EventDispatcher final {
 #ifdef EMBER_FAST_DISPATCH_CACHE
 	constexpr static auto dispatch_cache = true;
 	constexpr static std::size_t cache_size = 4096;
+	constexpr static auto slot_npos = 0xfff;
 	static_assert(cache_size <= 0x1000, "Cache size must fit within 12 bits");
 	static inline thread_local std::array<CacheSlot, cache_size> cache_{};
 #endif
@@ -47,7 +48,7 @@ class EventDispatcher final {
 #ifdef EMBER_FAST_DISPATCH_CACHE
 		const auto slot = client.extract_slot();
 
-		if(slot) {
+		if(slot != slot_npos) {
 			if(cache_[slot].ident == client) {
 				return client.extract_ptr<ClientHandler>();
 			} else {
@@ -63,6 +64,10 @@ class EventDispatcher final {
 			return nullptr;
 		}
 	}
+
+#ifdef EMBER_FAST_DISPATCH_CACHE
+	bool try_insert_cache(ClientHandler* handler);
+#endif
 
 	void broadcast(const Event& event) const;
 

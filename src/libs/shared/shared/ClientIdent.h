@@ -68,7 +68,7 @@ public:
 		std::uint64_t ptr_val = reinterpret_cast<std::uint64_t>(ptr);
 		ptr_val &= 0xffffffffffffull;
 		const std::uint8_t slot_hi = (slot >> 4) & 0xff;
-		const std::uint8_t slot_lo = slot & 0xF;
+		const std::uint8_t slot_lo = slot & 0xf;
 		data_[0] = (data_[0] & (0xffull << 56)) | (ptr_val << 8ull) | slot_hi;
 		data_[1] = (data_[1] & ~0xfull) | slot_lo;
 	}

@@ -115,38 +115,48 @@ void EventDispatcher::broadcast_event(std::shared_ptr<const Event> event) const 
 	}
 }
 
+#ifdef EMBER_FAST_DISPATCH_CACHE
 #pragma warning(push)
 #pragma warning(disable : 28020)
-void EventDispatcher::register_handler(ClientHandler* handler) {
-#ifdef EMBER_FAST_DISPATCH_CACHE
-	std::size_t index = rng::xorshift::next() & 0xfffull;
-	const std::size_t start = index;
-	bool cached = false;
+bool EventDispatcher::try_insert_cache(ClientHandler* handler) {
+	std::size_t index = rng::xorshift::next() & 0xfff;
 
+	// modulo avoidance, mask needs to be a power of two
+	if(index == 0xfff) {
+		--index;
+	}
+
+	const std::size_t start = index;
 	do {
 		if(!cache_[index].used) {
 			handler->uuid().encode(handler, index);
 			cache_[index].used = true;
 			cache_[index].ident = handler->uuid();
-			cached = true;
-			break;
-		} else if(++index > 0xfffull) {
+			return true;
+		} else if(++index == slot_npos) {
 			index = 0;
 		}
 	} while(index != start);
 
-	if(!cached) {
+	handler->uuid().encode(0, slot_npos); // encode sentinel
+	return false;
+}
+#pragma warning(pop)
+#endif
+
+void EventDispatcher::register_handler(ClientHandler* handler) {
+#ifdef EMBER_FAST_DISPATCH_CACHE
+	if(!try_insert_cache(handler)) {
 #endif
 		handlers_.insert_or_assign(handler->uuid(), handler);
 #ifdef EMBER_FAST_DISPATCH_CACHE
 	}
 #endif
 }
-#pragma warning(pop)
 
 void EventDispatcher::remove_handler(const ClientHandler* handler) {
 #ifdef EMBER_FAST_DISPATCH_CACHE
-		if(auto slot = handler->uuid().extract_slot()) {
+		if(auto slot = handler->uuid().extract_slot(); slot != slot_npos) {
 			cache_[slot].used = false;
 		}  else {
 			handlers_.erase(handler->uuid());
