@@ -50,7 +50,7 @@ class ClientIdent final {
 
 public:
 	constexpr static auto max_slot_value = 0xfff;
-	static_assert(max_slot_value <= max_slot_value, "Slot count exceeds bits assigned for encoding");
+	static_assert(max_slot_value < 0x1000, "Slot count exceeds bits assigned for encoding");
 
 	ClientIdent()
 		: data_{}
