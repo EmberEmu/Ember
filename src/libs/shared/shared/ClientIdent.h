@@ -49,7 +49,9 @@ class ClientIdent final {
 	}
 
 public:
-	ClientIdent() = default;
+	ClientIdent()
+		: hash_(0)
+		, hashed_(false) {};
 
 	explicit ClientIdent(std::size_t service_index)
 		: hash_(0)
