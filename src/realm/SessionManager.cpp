@@ -61,13 +61,11 @@ auto SessionManager::generate_id() -> SessionID {
 		next_id_ = 0;
 	}
 
-	do {
-		if(!sessions_.contains(next_id_)) {
-			return next_id_++;
-		}
-	} while(++next_id_);
+	while(sessions_.contains(next_id_)) {
+		++next_id_;
+	}
 
-	std::unreachable();
+	return next_id_;
 }
 
 std::size_t SessionManager::count() const {
