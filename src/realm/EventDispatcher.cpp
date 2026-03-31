@@ -123,10 +123,11 @@ bool EventDispatcher::try_insert_cache(ClientHandler* handler) {
 
 	// modulo avoidance, mask needs to be a power of two
 	if(index == 0xfff) {
-		--index;
+		index = 0;
 	}
 
 	const std::size_t start = index;
+
 	do {
 		if(!cache_[index].used) {
 			handler->uuid().encode(handler, index);
