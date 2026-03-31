@@ -65,6 +65,7 @@ set(LIBRARY_HDR
     BroadcastTimer.h
     Forwards.h
     ClientTimer.h
+    SessionIterator.h
 )
 
 set(LIBRARY_SRC
@@ -115,7 +116,7 @@ if(BUILD_SHARED)
 endif()
 
 if(ENABLE_FAST_CLIENT_DISPATCH_CACHE)
-	target_compile_definitions(${LIBRARY_NAME} PUBLIC EMBER_FAST_DISPATCH_CACHE)
+    target_compile_definitions(${LIBRARY_NAME} PUBLIC EMBER_FAST_DISPATCH_CACHE)
 endif()
 
 target_compile_definitions(${LIBRARY_NAME} PRIVATE PREALLOCATED_CLIENTS_PER_THREAD=${PREALLOC_CLIENTS_THREAD})

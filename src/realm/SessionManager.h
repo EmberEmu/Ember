@@ -9,6 +9,7 @@
 #pragma once
 
 #include "Client.h"
+#include "SessionIterator.h"
 #include <spark/buffers/allocators/TLSBlockAllocator.h>
 #include <boost/unordered/unordered_flat_set.hpp>
 #include <memory>
@@ -50,10 +51,15 @@ class SessionManager final {
 		}
 	};
 
-	boost::unordered_flat_set<ClientPtr, Hasher, KeyEqual> sessions_;
+	using SessionsMap = boost::unordered_flat_set<ClientPtr, Hasher, KeyEqual>;
+
+	SessionsMap sessions_;
 	mutable std::mutex sessions_lock_;
 
 public:
+	using locked_iterator = SessionIterator<SessionsMap::iterator>;
+	using locked_const_iterator = SessionIterator<SessionsMap::const_iterator>;
+
 	SessionManager() = default;
 	~SessionManager();
 
@@ -61,7 +67,11 @@ public:
 	void stop(Client* session);
 	void stop_all();
 	std::size_t count() const;
-	ConnectionStats aggregate_stats() const;
+
+	locked_iterator begin();
+	locked_iterator end();
+	locked_const_iterator begin() const;
+	locked_const_iterator end() const;
 };
 
 } // realm, ember

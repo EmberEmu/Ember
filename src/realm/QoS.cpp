@@ -23,18 +23,18 @@ void QoS::set_timer() {
 }
 
 void QoS::measure_bandwidth() {
-	auto stats = sessions_.aggregate_stats();
-	auto timer_ms = std::chrono::duration_cast<std::chrono::milliseconds>(TIMER_FREQUENCY);
-	auto seconds = timer_ms.count() / 1000.0;
+	//auto stats = 0;
+	//auto timer_ms = std::chrono::duration_cast<std::chrono::milliseconds>(TIMER_FREQUENCY);
+	//auto seconds = timer_ms.count() / 1000.0;
 
-	auto out_per_sec = (stats.bytes_out - last_bandwidth_out_) / seconds;
-	auto target_bandwidth = (config_.max_bandwidth_out / 100.0) * MAX_BANDWIDTH_PERCENTAGE;
+	//auto out_per_sec = (stats.bytes_out - last_bandwidth_out_) / seconds;
+	//auto target_bandwidth = (config_.max_bandwidth_out / 100.0) * MAX_BANDWIDTH_PERCENTAGE;
 
-	if(out_per_sec > target_bandwidth) {
-		// bump up the compression level
-	}
+	//if(out_per_sec > target_bandwidth) {
+	//	// bump up the compression level
+	//}
 
-	last_bandwidth_out_ = stats.bytes_out;
+	//last_bandwidth_out_ = stats.bytes_out;
 }
 
 void QoS::shutdown() {

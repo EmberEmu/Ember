@@ -47,24 +47,20 @@ std::size_t SessionManager::count() const {
 	return sessions_.size();
 }
 
-ConnectionStats SessionManager::aggregate_stats() const {
-	std::lock_guard guard(sessions_lock_);
+auto SessionManager::begin() -> locked_iterator {
+	return SessionIterator(sessions_.begin(), sessions_lock_);
+}
 
-	ConnectionStats ag_stats {};
+auto SessionManager::end() -> locked_iterator {
+	return SessionIterator(sessions_.end());
+}
 
-	for(const auto& session : sessions_) {
-		const auto& stats = session->connection().stats();
-		ag_stats.bytes_in += stats.bytes_in;
-		ag_stats.bytes_out += stats.bytes_out;
-		ag_stats.latency += stats.latency;
-		ag_stats.messages_in += stats.messages_in;
-		ag_stats.messages_out += stats.messages_out;
-		ag_stats.async_receives += stats.async_receives;
-		ag_stats.async_sends += stats.async_sends;
-	}
+auto SessionManager::begin() const -> locked_const_iterator {
+	return SessionIterator(sessions_.begin(), sessions_lock_);
+}
 
-	ag_stats.latency /= count(); // average latency
-	return ag_stats;
+auto SessionManager::end() const -> locked_const_iterator {
+	return SessionIterator(sessions_.end());
 }
 
 SessionManager::~SessionManager() {
