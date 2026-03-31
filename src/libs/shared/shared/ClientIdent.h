@@ -10,7 +10,6 @@
 
 #include <shared/utility/FNVHash.h>
 #include <shared/utility/xoroshiro128plus.h>
-#include <boost/functional/hash.hpp>
 #include <gsl/narrow>
 #include <algorithm>
 #include <array>

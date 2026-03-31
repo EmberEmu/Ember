@@ -16,7 +16,6 @@
 #include <boost/asio/io_context.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/random_generator.hpp>
-#include <boost/functional/hash.hpp>
 #include <flatbuffers/flatbuffer_builder.h>
 #include <functional>
 #include <memory>

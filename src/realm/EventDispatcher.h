@@ -14,6 +14,7 @@
 #include <thread/ServicePool.h>
 #include <shared/ClientIdent.h>
 #include <boost/asio/post.hpp>
+#include <boost/functional/hash.hpp>
 #include <boost/unordered/unordered_flat_map.hpp>
 #include <concepts>
 #include <memory>
