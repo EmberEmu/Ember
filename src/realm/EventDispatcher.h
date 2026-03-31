@@ -29,9 +29,8 @@ struct CacheSlot {
 class EventDispatcher final {
 #ifdef EMBER_FAST_DISPATCH_CACHE
 	constexpr static auto dispatch_cache = true;
-	constexpr static std::size_t cache_size = 4096;
-	constexpr static auto slot_npos = 0xfff;
-	static_assert(cache_size <= 0x1000, "Cache size must fit within 12 bits");
+	constexpr static std::size_t cache_size = ClientIdent::max_slot_value;
+	constexpr static auto slot_npos = ClientIdent::max_slot_value;
 	static inline thread_local std::array<CacheSlot, cache_size> cache_{};
 #endif
 

@@ -49,6 +49,9 @@ class ClientIdent final {
 	}
 
 public:
+	constexpr static auto max_slot_value = 0xfff;
+	static_assert(max_slot_value <= max_slot_value, "Slot count exceeds bits assigned for encoding");
+
 	ClientIdent()
 		: hash_(0)
 		, hashed_(false) {};
@@ -64,7 +67,7 @@ public:
 	}
 
 	void encode(const void* ptr, std::size_t slot) {
-		assert(slot < 0x1000);
+		assert(slot <= max_slot_value);
 		std::uint64_t ptr_val = reinterpret_cast<std::uint64_t>(ptr);
 		ptr_val &= 0xffffffffffffull;
 		const std::uint8_t slot_hi = (slot >> 4) & 0xff;
