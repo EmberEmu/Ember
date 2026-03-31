@@ -17,8 +17,6 @@
 
 namespace ember::realm {
 
-struct ConnectionStats;
-
 class SessionManager final {
 	struct Hasher {
 		using is_transparent = void;
