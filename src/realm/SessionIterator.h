@@ -15,18 +15,15 @@ namespace ember::realm {
 
 template<typename _iter_type>
 class SessionIterator {
+	std::unique_lock<std::mutex> lock_;
+	_iter_type it_;
+
 public:
 	using iterator_category = std::forward_iterator_tag;
 	using difference_type   = std::ptrdiff_t;
 	using value_type        = typename _iter_type::value_type;
 	using pointer           = typename _iter_type::pointer;
 	using reference         = typename _iter_type::reference;
-
-public:
-	friend class SessionContainer;
-
-	std::unique_lock<std::mutex> lock_;
-	_iter_type it_;
 
 	SessionIterator(_iter_type it, std::mutex& m)
 		: lock_(m)
@@ -35,7 +32,6 @@ public:
 	SessionIterator(_iter_type it)
 		: it_(it) {}
 
-public:
 	SessionIterator(const SessionIterator&) = delete;
 	SessionIterator& operator=(const SessionIterator&) = delete;
 
