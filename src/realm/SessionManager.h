@@ -14,7 +14,6 @@
 #include <memory>
 #include <mutex>
 #include <optional>
-#include <queue>
 #include <cstddef>
 #include <cstdint>
 
@@ -25,11 +24,12 @@ public:
 	using SessionID = std::uint32_t;
 
 private:
+	constexpr static auto session_id_wrap = 100'000;
+
 	using SessionsMap = boost::unordered_flat_map<SessionID, ClientPtr>;
 
 	SessionsMap sessions_;
 	SessionID next_id_ = 0;
-	std::priority_queue<SessionID> id_recycle_;
 
 	mutable std::mutex sessions_lock_;
 

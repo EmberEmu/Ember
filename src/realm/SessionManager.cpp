@@ -7,6 +7,7 @@
  */
 
 #include "SessionManager.h"
+#include <utility>
 
 namespace ember::realm {
 
@@ -32,7 +33,6 @@ void SessionManager::stop(const SessionID session_id) {
 	std::lock_guard guard(sessions_lock_);
 
 	if(auto it = sessions_.find(session_id); it != sessions_.end()) {
-		id_recycle_.emplace(it->first);
 		sessions_.erase(it);
 	}
 }
@@ -46,14 +46,28 @@ void SessionManager::stop_all() {
 	}
 }
 
+/*
+ * Generates a new session ID, attempting to keep it below the defined wrap value.
+ * IDs larger than the wrap threshold can be generated, but it'd be very impressive
+ * if that happens in reality.
+
+ * This is primarily about generating an ID that isn't going to be too onerous to
+ * type in a command, while providing some protection against an ID being quickly
+ * recycled between an ID being displayed and a command input acting on that ID
+ * (use UUID for full protection against that).
+ */
 auto SessionManager::generate_id() -> SessionID {
-	if(id_recycle_.empty()) {
-		return next_id_++;
-	} else {
-		auto id = id_recycle_.top();
-		id_recycle_.pop();
-		return id;
+	if(next_id_ > session_id_wrap) {
+		next_id_ = 0;
 	}
+
+	do {
+		if(!sessions_.contains(next_id_)) {
+			return next_id_++;
+		}
+	} while(++next_id_);
+
+	std::unreachable();
 }
 
 std::size_t SessionManager::count() const {
