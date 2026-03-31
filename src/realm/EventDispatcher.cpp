@@ -88,8 +88,8 @@ void EventDispatcher::broadcast(const Event& event) const {
 
 #ifdef EMBER_FAST_DISPATCH_CACHE
 	for(auto& entry : cache_) {
-		if(entry.used) {
-			entry.ident.extract_ptr<ClientHandler>()->handle_event(&event);
+		if(!entry.is_zero()) {
+			entry.extract_ptr<ClientHandler>()->handle_event(&event);
 		}
 	}
 #endif
@@ -129,10 +129,9 @@ bool EventDispatcher::try_insert_cache(ClientHandler* handler) {
 	const std::size_t start = index;
 
 	do {
-		if(!cache_[index].used) {
+		if(!cache_[index].is_zero()) {
 			handler->uuid().encode(handler, index);
-			cache_[index].used = true;
-			cache_[index].ident = handler->uuid();
+			cache_[index] = handler->uuid();
 			return true;
 		} else if(++index == slot_npos) {
 			index = 0;
@@ -158,7 +157,7 @@ void EventDispatcher::register_handler(ClientHandler* handler) {
 void EventDispatcher::remove_handler(const ClientHandler* handler) {
 #ifdef EMBER_FAST_DISPATCH_CACHE
 		if(auto slot = handler->uuid().extract_slot(); slot != slot_npos) {
-			cache_[slot].used = false;
+			cache_[slot].set_zero();
 		}  else {
 			handlers_.erase(handler->uuid());
 		}

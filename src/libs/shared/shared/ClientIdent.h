@@ -29,7 +29,7 @@ class ClientIdent final {
 	static constexpr std::size_t uuid_size = 16;
 	static constexpr std::size_t service_offset = 0;
 
-	std::array<std::uint64_t, uuid_size / sizeof(std::uint64_t)> data_{};
+	std::array<std::uint64_t, uuid_size / sizeof(std::uint64_t)> data_;
 	mutable std::size_t hash_;
 	mutable bool hashed_;
 
@@ -53,7 +53,8 @@ public:
 	static_assert(max_slot_value <= max_slot_value, "Slot count exceeds bits assigned for encoding");
 
 	ClientIdent()
-		: hash_(0)
+		: data_{}
+		, hash_(0)
 		, hashed_(false) {};
 
 	explicit ClientIdent(std::size_t service_index)
@@ -117,6 +118,15 @@ public:
 		}
 
 		return stream.str();
+	}
+
+	void set_zero() {
+		data_[0] = 0;
+		data_[1] = 0;
+	}
+
+	bool is_zero() const {
+		return data_[0] == 0 && data_[1] == 0;
 	}
 
 	static consteval auto size() {

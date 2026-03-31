@@ -21,17 +21,12 @@
 
 namespace ember::realm {
 
-struct CacheSlot {
-	ClientIdent ident;
-	bool used;
-};
-
 class EventDispatcher final {
 #ifdef EMBER_FAST_DISPATCH_CACHE
 	constexpr static auto dispatch_cache = true;
 	constexpr static std::size_t cache_size = ClientIdent::max_slot_value;
 	constexpr static auto slot_npos = ClientIdent::max_slot_value;
-	static inline thread_local std::array<CacheSlot, cache_size> cache_{};
+	static inline thread_local std::array<ClientIdent, cache_size> cache_{};
 #endif
 
 	using HandlerMap = boost::unordered_flat_map<
@@ -48,7 +43,7 @@ class EventDispatcher final {
 		const auto slot = client.extract_slot();
 
 		if(slot != slot_npos) {
-			if(cache_[slot].ident == client) {
+			if(cache_[slot] == client) {
 				return client.extract_ptr<ClientHandler>();
 			} else {
 				return nullptr;
