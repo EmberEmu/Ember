@@ -22,18 +22,18 @@ namespace ember::realm {
 
 class SessionManager final {
 public:
-	using InternalID = std::uint32_t;
+	using SessionID = std::uint32_t;
 
 private:
-	using SessionsMap = boost::unordered_flat_map<InternalID, ClientPtr>;
+	using SessionsMap = boost::unordered_flat_map<SessionID, ClientPtr>;
 
 	SessionsMap sessions_;
-	InternalID next_id_ = 0;
-	std::priority_queue<InternalID> id_recycle_;
+	SessionID next_id_ = 0;
+	std::priority_queue<SessionID> id_recycle_;
 
 	mutable std::mutex sessions_lock_;
 
-	InternalID generate_id();
+	SessionID generate_id();
 
 public:
 	using locked_iterator = SessionIterator<SessionsMap::iterator>;
@@ -43,11 +43,11 @@ public:
 	~SessionManager();
 
 	void start(ClientPtr client);
-	void stop(InternalID id);
+	void stop(SessionID id);
 	void stop_all();
 
 	std::size_t count() const;
-	std::optional<ClientIdent> client_ident(InternalID session_id) const;
+	std::optional<ClientIdent> client_ident(SessionID id) const;
 
 	locked_const_iterator begin() const;
 	locked_const_iterator end() const;

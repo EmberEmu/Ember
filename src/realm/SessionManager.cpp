@@ -12,7 +12,7 @@ namespace ember::realm {
 
 void SessionManager::start(ClientPtr client) {
 	auto ptr = client.get();
-	InternalID assigned_id = 0;
+	SessionID assigned_id = 0;
 
 	{
 		std::lock_guard guard(sessions_lock_);
@@ -28,7 +28,7 @@ void SessionManager::start(ClientPtr client) {
 	ptr->start();
 }
 
-void SessionManager::stop(const InternalID session_id) {
+void SessionManager::stop(const SessionID session_id) {
 	std::lock_guard guard(sessions_lock_);
 
 	if(auto it = sessions_.find(session_id); it != sessions_.end()) {
@@ -46,7 +46,7 @@ void SessionManager::stop_all() {
 	}
 }
 
-auto SessionManager::generate_id() -> InternalID {
+auto SessionManager::generate_id() -> SessionID {
 	if(id_recycle_.empty()) {
 		return next_id_++;
 	} else {
@@ -68,10 +68,10 @@ auto SessionManager::end() const -> locked_const_iterator {
 	return SessionIterator(sessions_.end());
 }
 
-std::optional<ClientIdent> SessionManager::client_ident(const InternalID session_id) const {
+std::optional<ClientIdent> SessionManager::client_ident(const SessionID id) const {
 	std::lock_guard guard(sessions_lock_);
 
-	if(auto it = sessions_.find(session_id); it != sessions_.end()) {
+	if(auto it = sessions_.find(id); it != sessions_.end()) {
 		return it->second->handler().uuid();
 	}
 
