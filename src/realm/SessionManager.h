@@ -10,7 +10,6 @@
 
 #include "Client.h"
 #include "SessionIterator.h"
-#include <spark/buffers/allocators/TLSBlockAllocator.h>
 #include <boost/unordered/unordered_flat_set.hpp>
 #include <memory>
 #include <mutex>
