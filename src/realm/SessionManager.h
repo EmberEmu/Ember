@@ -10,48 +10,30 @@
 
 #include "Client.h"
 #include "SessionIterator.h"
-#include <boost/unordered/unordered_flat_set.hpp>
+#include <boost/unordered/unordered_flat_map.hpp>
 #include <memory>
 #include <mutex>
+#include <optional>
+#include <queue>
 #include <cstddef>
+#include <cstdint>
 
 namespace ember::realm {
 
 class SessionManager final {
-	struct Hasher {
-		using is_transparent = void;
+public:
+	using InternalID = std::uint32_t;
 
-		std::size_t operator()(Client* p) const {
-			return std::hash<Client*>{}(p);
-		}
-
-		std::size_t operator()(const ClientPtr& p) const {
-			return std::hash<const Client*>{}(p.get()); 
-		}
-	};
-
-	struct KeyEqual {
-		using is_transparent = void;
-
-		template<typename _lhs, typename _rhs>
-		auto operator()(const _lhs& lhs, const _rhs& rhs) const {
-			return to_ptr(lhs) == to_ptr(rhs);
-		}
-
-	private:
-		static const Client* to_ptr(const Client* p) {
-			return p; 
-		}
-
-		static const Client* to_ptr(const ClientPtr& p) {
-			return p.get(); 
-		}
-	};
-
-	using SessionsMap = boost::unordered_flat_set<ClientPtr, Hasher, KeyEqual>;
+private:
+	using SessionsMap = boost::unordered_flat_map<InternalID, ClientPtr>;
 
 	SessionsMap sessions_;
+	InternalID next_id_ = 0;
+	std::priority_queue<InternalID> id_recycle_;
+
 	mutable std::mutex sessions_lock_;
+
+	InternalID generate_id();
 
 public:
 	using locked_iterator = SessionIterator<SessionsMap::iterator>;
@@ -61,9 +43,11 @@ public:
 	~SessionManager();
 
 	void start(ClientPtr client);
-	void stop(Client* session);
+	void stop(InternalID id);
 	void stop_all();
+
 	std::size_t count() const;
+	std::optional<ClientIdent> client_ident(InternalID session_id) const;
 
 	locked_const_iterator begin() const;
 	locked_const_iterator end() const;

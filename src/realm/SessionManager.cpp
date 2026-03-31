@@ -12,23 +12,27 @@ namespace ember::realm {
 
 void SessionManager::start(ClientPtr client) {
 	auto ptr = client.get();
-
-	client->on_close([&, ptr]() {
-		stop(ptr);
-	});
+	InternalID assigned_id = 0;
 
 	{
 		std::lock_guard guard(sessions_lock_);
-		sessions_.emplace(std::move(client));
+		auto id = generate_id();
+		sessions_.emplace(id, std::move(client));
+		assigned_id = id;
 	}
+
+	ptr->on_close([&, assigned_id]() {
+		stop(assigned_id);
+	});
 
 	ptr->start();
 }
 
-void SessionManager::stop(Client* session) {
+void SessionManager::stop(const InternalID session_id) {
 	std::lock_guard guard(sessions_lock_);
 
-	if(auto it = sessions_.find(session); it != sessions_.end()) {
+	if(auto it = sessions_.find(session_id); it != sessions_.end()) {
+		id_recycle_.emplace(it->first);
 		sessions_.erase(it);
 	}
 }
@@ -37,8 +41,18 @@ void SessionManager::stop_all() {
 	std::lock_guard guard(sessions_lock_);
 
 	while(!sessions_.empty()) {
-		auto client = sessions_.pull(sessions_.begin());
+		auto [_, client] = sessions_.pull(sessions_.begin());
 		client->stop();
+	}
+}
+
+auto SessionManager::generate_id() -> InternalID {
+	if(id_recycle_.empty()) {
+		return next_id_++;
+	} else {
+		auto id = id_recycle_.top();
+		id_recycle_.pop();
+		return id;
 	}
 }
 
@@ -52,6 +66,16 @@ auto SessionManager::begin() const -> locked_const_iterator {
 
 auto SessionManager::end() const -> locked_const_iterator {
 	return SessionIterator(sessions_.end());
+}
+
+std::optional<ClientIdent> SessionManager::client_ident(const InternalID session_id) const {
+	std::lock_guard guard(sessions_lock_);
+
+	if(auto it = sessions_.find(session_id); it != sessions_.end()) {
+		return it->second->handler().uuid();
+	}
+
+	return std::nullopt;
 }
 
 SessionManager::~SessionManager() {
