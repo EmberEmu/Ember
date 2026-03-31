@@ -54,14 +54,12 @@ public:
 		, hashed_(false) {};
 
 	explicit ClientIdent(std::size_t service_index)
-		: hash_(0)
-		, hashed_(false) {
+		: ClientIdent() {
 		generate(service_index);
 	}
 
 	explicit ClientIdent(std::span<const std::uint8_t, uuid_size> data)
-		: hash_(0)
-		, hashed_(false) {
+		: ClientIdent() {
 		std::ranges::copy(data, data_.data());
 	}
 
