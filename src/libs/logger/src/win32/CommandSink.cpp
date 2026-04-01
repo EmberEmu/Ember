@@ -93,7 +93,7 @@ void CommandSink::do_batch_write(const std::span<std::pair<RecordDetail, std::ve
 
 	for(auto&& [detail, data] : records) {
 		if(sink_sev <= detail.severity && !(sink_filter & detail.type)) {
-			std::string_view severity = detail::severity_string(detail.severity);
+			std::string_view severity = severity_string(detail.severity);
 			const auto cur_sz = out_buf_.size();
 			const auto new_sz = cur_sz + severity.size() + data.size() + prefix_.size();
 			out_buf_.resize(new_sz, boost::container::default_init);
@@ -124,7 +124,7 @@ void CommandSink::write(Severity severity, Filter type, std::span<const char> re
 		return;
 	}
 
-	std::string_view sevsv = detail::severity_string(severity);
+	std::string_view sevsv = severity_string(severity);
 	out_buf_.resize(prefix_.size() + record.size() + sevsv.size(), boost::container::default_init);
 
 	std::size_t offset = 0;

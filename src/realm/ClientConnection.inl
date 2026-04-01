@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include "LogPacketHelper.h"
 #include <spark/buffers/BinaryStream.h>
 #include <gsl/narrow>
 
@@ -43,8 +44,6 @@ bool ClientConnection::write_packet_stream(const PacketType& packet) {
 }
 
 void ClientConnection::send(const is_packet auto& packet) {
-	LOG_TRACE(logger_,"{} <- {}", remote_address(), protocol::to_string(packet.opcode));
-
 	// we're in a bad state if writing fails, we can't recover
 	if(!write_packet_stream(packet)) [[unlikely]] {
 		LOG_WARN(logger_, "Failed to write packet to stream");

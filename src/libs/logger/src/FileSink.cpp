@@ -133,7 +133,7 @@ std::string FileSink::generate_record_detail(Severity severity, const std::tm& c
 	}
 
 	if(log_severity_) {
-		std::string_view sev_str = detail::severity_string(severity);
+		std::string_view sev_str = severity_string(severity);
 
 		if(!log_date_) {
 			prepend = sev_str;

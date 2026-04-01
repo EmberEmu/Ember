@@ -112,4 +112,19 @@ struct SystemMessage final : Event {
 	Type type;
 };
 
+struct LogRedirect final : Event {
+	enum class Type {
+		message,
+		notification
+	};
+
+	LogRedirect(std::string message, Type type)
+		: Event { EventType::log_redirect }
+		, message(std::move(message))
+		, type(type) {}
+
+	std::string message;
+	Type type;
+};
+
 } // realm, ember

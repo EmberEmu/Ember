@@ -10,6 +10,7 @@
 
 #include "Event.h"
 #include "FilterTypes.h"
+#include "ClientConnection.h"
 #include "ConnectionDefines.h"
 #include "states/ClientContext.h"
 #include <logger/LoggerFwd.h>
@@ -82,12 +83,13 @@ public:
 	void start();
 	void stop();
 	void close();
-
+	
 	std::string_view client_identify() const;
 
 	template<is_packet T>
 	std::optional<T> deserialise(BinaryStream& stream);
 
+	void send(is_packet auto& packet);
 	bool deserialise(is_packet auto& packet, BinaryStream& stream);
 	void skip(BinaryStream& stream);
 

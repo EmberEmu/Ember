@@ -11,6 +11,7 @@
 #include "../ClientConnection.h"
 #include "../Events.h"
 #include "../RealmQueue.h"
+#include "../ClientSink.h"
 #include <protocol/Packets.h>
 #include <chrono>
 #include <format>
@@ -49,7 +50,7 @@ void initiate_player_login(ClientContext& ctx, const PlayerLogin* event) {
 
 	protocol::smsg_trigger_cinematic cinematic;
 	cinematic->id = 81;
-	ctx.connection->send(cinematic);
+	ctx.handler.send(cinematic);
 
 	protocol::smsg_login_verify_world verify_world;
 	verify_world->map_id = 0;
@@ -57,28 +58,28 @@ void initiate_player_login(ClientContext& ctx, const PlayerLogin* event) {
 	verify_world->position.y = 331.033f;
 	verify_world->position.z = 382.758;
 	verify_world->position.o = 0.f;
-	ctx.connection->send(verify_world);
+	ctx.handler.send(verify_world);
 
 	protocol::smsg_tutorial_flags tutorial_flags;
-	ctx.connection->send(tutorial_flags);
+	ctx.handler.send(tutorial_flags);
 
 	protocol::smsg_update_object update_object;
-	ctx.connection->send(update_object);
+	ctx.handler.send(update_object);
 
 	protocol::smsg_login_settimespeed time_speed;
 	time_speed->speed = 0.01666667f;
 	time_speed->time = get_time();
-	ctx.connection->send(time_speed);
+	ctx.handler.send(time_speed);
 
 	protocol::smsg_account_data_times adt;
-	ctx.connection->send(adt);
+	ctx.handler.send(adt);
 
 	//protocol::smsg_weather weather;
 	//weather->change = weather->INSTANT;
 	//weather->grade = 1.f;
 	//weather->type = weather->RAIN;
 	//weather->sound_id = 8535;
-	//ctx.connection->send(weather);
+	//ctx.handler.send(weather);
 
 	protocol::smsg_messagechat motd;
 	motd->language = 0;
@@ -86,7 +87,15 @@ void initiate_player_login(ClientContext& ctx, const PlayerLogin* event) {
 	motd->message = "Welcome to a hacked together Ember test.";
 	motd->player_guid = 0;
 	motd->player_tag = protocol::server::TAG_NONE;
-	ctx.connection->send(motd);
+	ctx.handler.send(motd);
+
+	// log install test
+	auto sink = std::make_shared<ClientSink>(
+		ctx.dispatcher, log::Severity::trace, log::Filter(lf_packet_log),
+		ctx.handler.uuid(), LogRedirect::Type::message
+	);
+
+	ctx.logger.add_sink(std::move(sink));
 }
 
 void enter(ClientContext& ctx) {
@@ -103,7 +112,7 @@ void handle_name_query(ClientContext& ctx) {
 	protocol::smsg_name_query_response response{};
 	response->name = "Chaosvex";
 	response->guid = packet->guid;
-	ctx.connection->send(response);
+	ctx.handler.send(response);
 }
 
 void handle_active_mover(ClientContext& ctx) {
@@ -123,7 +132,7 @@ void handle_query_time(ClientContext& ctx) {
 
 	protocol::smsg_query_time_response response;
 	response->time = get_time();
-	ctx.connection->send(response);
+	ctx.handler.send(response);
 }
 
 void handle_request_raid_info(ClientContext& ctx) {
@@ -134,7 +143,7 @@ void handle_request_raid_info(ClientContext& ctx) {
 	}
 
 	protocol::smsg_raid_instance_info response;
-	ctx.connection->send(response);
+	ctx.handler.send(response);
 }
 
 void handle_item_query(ClientContext& ctx) {
@@ -146,7 +155,7 @@ void handle_item_query(ClientContext& ctx) {
 
 	protocol::smsg_item_query_single_response response;
 	response->item = packet->item;
-	ctx.connection->send(response);
+	ctx.handler.send(response);
 }
 
 void handle_mail_query(ClientContext& ctx) {
@@ -158,7 +167,7 @@ void handle_mail_query(ClientContext& ctx) {
 
 	protocol::msg_query_next_mail_time_s response;
 	response->next_time = -1.f;
-	ctx.connection->send(response);
+	ctx.handler.send(response);
 }
 
 void handle_gmticket_getticket(ClientContext& ctx) {
@@ -170,7 +179,7 @@ void handle_gmticket_getticket(ClientContext& ctx) {
 
 	protocol::smsg_gmticket_getticket response;
 	response->status = 0;
-	ctx.connection->send(response);
+	ctx.handler.send(response);
 }
 
 void handle_battlefield_status(ClientContext& ctx) {
@@ -183,7 +192,7 @@ void handle_battlefield_status(ClientContext& ctx) {
 	protocol::smsg_battlefield_status response;
 	response->map = 0;
 	response->position = 0;
-	ctx.connection->send(response);
+	ctx.handler.send(response);
 }
 
 void handle_meetingstone_info(ClientContext& ctx) {
@@ -196,7 +205,7 @@ void handle_meetingstone_info(ClientContext& ctx) {
 	protocol::smsg_meetingstone_setqueue response;
 	response->area = 0;
 	response->status = 5;
-	ctx.connection->send(response);
+	ctx.handler.send(response);
 }
 
 std::uint64_t packed_guid = 0;
@@ -214,7 +223,7 @@ void handle_move_time_skipped(ClientContext& ctx) {
 	protocol::move_time_skipped_s response;
 	response->guid = packet->guid;
 	response->lag = packet->lag;
-	ctx.connection->send(response);
+	ctx.handler.send(response);
 }
 
 void handle_move_fall_land(ClientContext& ctx) {
@@ -227,7 +236,7 @@ void handle_move_fall_land(ClientContext& ctx) {
 	protocol::move_fall_land_s response;
 	response->guid = packed_guid;
 	response->info = packet->info;
-	ctx.connection->send(response);
+	ctx.handler.send(response);
 }
 
 void handle_move_set_facing(ClientContext& ctx) {
@@ -240,7 +249,7 @@ void handle_move_set_facing(ClientContext& ctx) {
 	protocol::msg_move_set_facing_s response;
 	response->guid = packed_guid;
 	response->info = packet->info;
-	ctx.connection->send(response);
+	ctx.handler.send(response);
 }
 
 void handle_zone_update(ClientContext& ctx) {
@@ -269,7 +278,7 @@ void handle_join_channel(ClientContext& ctx) {
 	protocol::smsg_channel_notify response;
 	response->type = response->YOU_JOINED_NOTICE;
 	response->name = packet->name;
-	ctx.connection->send(response);
+	ctx.handler.send(response);
 
 	LOG_DEBUG(ctx.logger, "{}", response->name);
 }
@@ -307,7 +316,7 @@ void handle_messagechat(ClientContext& ctx) {
 		response->speech_bubble_attr = packed_guid;
 	}
 
-	ctx.connection->send(response);
+	ctx.handler.send(response);
 }
 
 void handle_logout_request(ClientContext& ctx) {
@@ -315,7 +324,7 @@ void handle_logout_request(ClientContext& ctx) {
 
 	protocol::smsg_character_login_failed response;
 	response->reason = 0x3e;
-	ctx.connection->send(response);
+	ctx.handler.send(response);
 	ctx.handler.state_update(ClientState::cs_character_list);
 }
 
@@ -328,7 +337,7 @@ void handle_standstate_change(ClientContext& ctx) {
 
 	protocol::smsg_standstate_update response;
 	response->state = packet->state;
-	ctx.connection->send(response);
+	ctx.handler.send(response);
 }
 
 // everything in this file is for testing only
@@ -396,15 +405,30 @@ void handle_packet(ClientContext& ctx, protocol::ClientOpcode opcode) {
 	}
 }
 
-void system_notification(ClientContext& ctx, const SystemMessage* event) {
-	protocol::smsg_notification msg;
-	msg->notification = event->message;
-	ctx.connection->send(msg);
+void system_notification(ClientContext& ctx, std::string_view message) {
+	protocol::smsg_notification packet;
+	packet->notification = message;
+	ctx.handler.send(packet);
+}
+
+void log_msg(ClientContext& ctx, const LogRedirect* event) {
+	if(event->type == LogRedirect::Type::notification) {
+		system_notification(ctx, event->message);
+		return;
+	}
+
+	protocol::smsg_messagechat msg;
+	msg->language = 0;
+	msg->type = protocol::server::SYSTEM;
+	msg->message = event->message;
+	msg->player_guid = 0;
+	msg->player_tag = protocol::server::TAG_NONE;
+	ctx.handler.send(msg);
 }
 
 void system_msg(ClientContext& ctx, const SystemMessage* event) {
 	if(event->type == SystemMessage::Type::notification) {
-		system_notification(ctx, event);
+		system_notification(ctx, event->message);
 		return;
 	}
 
@@ -422,7 +446,7 @@ void system_msg(ClientContext& ctx, const SystemMessage* event) {
 
 	msg->player_guid = 0;
 	msg->player_tag = protocol::server::TAG_NONE;
-	ctx.connection->send(msg);
+	ctx.handler.send(msg);
 }
 
 void handle_event(ClientContext& ctx, const Event* event) {
@@ -434,6 +458,9 @@ void handle_event(ClientContext& ctx, const Event* event) {
             break;
 		case system_message:
 			system_msg(ctx, static_cast<const SystemMessage*>(event));
+			break;
+		case log_redirect:
+			log_msg(ctx, static_cast<const LogRedirect*>(event));
 			break;
         default:
             break;

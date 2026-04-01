@@ -7,7 +7,6 @@
  */
 
 #include "ClientHandler.h"
-#include "ClientConnection.h"
 #include "ClientLogHelper.h"
 #include "Config.h"
 #include "EventDispatcher.h"
@@ -37,7 +36,6 @@ void ClientHandler::stop() {
 	stopped_ = true;
 }
 
-
 void ClientHandler::close() {
 	connection_->close_session();
 }
@@ -48,7 +46,7 @@ void ClientHandler::handle_message(StaticBuffer& buffer, const protocol::SizeTyp
 	protocol::ClientOpcode opcode;
 	stream >> opcode;
 
-	CLIENT_TRACE(logger_, context_) << " -> " << protocol::to_string(opcode) << LOG_ASYNC;
+	PACKET_TRACE(logger_, context_) << " -> " << protocol::to_string(opcode) << LOG_ASYNC;
 	++packet_counter_;
 
 	// handle ping as a special case

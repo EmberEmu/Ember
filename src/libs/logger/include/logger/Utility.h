@@ -20,12 +20,12 @@
 namespace ember::log { 
 
 Severity severity_string(const std::string_view severity);
+std::string_view severity_string(Severity severity);
 std::istream& operator>>(std::istream& in, Severity& severity);
 std::ostream& operator<<(std::ostream& stream, const Severity& severity);
 
 namespace detail {
 
-std::string_view severity_string(Severity severity);
 std::tm current_time();
 std::string put_time(const std::tm& time, cstring_view format);
 std::size_t put_time(const std::tm& time, cstring_view format, std::span<char> buffer);
