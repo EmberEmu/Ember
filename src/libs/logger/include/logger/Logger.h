@@ -29,6 +29,20 @@ class Logger final {
 
 	std::vector<char>* get_buffer();
 
+	template<bool async, typename ... Args>
+	requires (sizeof...(Args) > 0)
+	constexpr void fmt_write(std::format_string<Args...>& fmt, Args&&... args) {
+		auto buffer = get_buffer();
+
+		std::format_to(std::back_inserter(*buffer), fmt, std::forward<Args>(args)...);
+
+		if constexpr(async) {
+			finalise();
+		} else {
+			finalise_sync();
+		}
+	}
+
 public:
 	Logger();
 	~Logger();
@@ -53,30 +67,14 @@ public:
 	requires (sizeof...(Args) > 0)
 	constexpr void fmt_write(const Severity severity, const Filter filter, std::format_string<Args...> fmt, Args&&... args) {
 		*this << severity << filter;
-		auto buffer = get_buffer();
-
-		std::format_to(std::back_inserter(*buffer), fmt, std::forward<Args>(args)...);
-
-		if constexpr(async) {
-			finalise();
-		} else {
-			finalise_sync();
-		}
+		fmt_write<async>(fmt, std::forward<Args>(args)...);
 	}
 
 	template<bool async, typename ... Args>
 	requires (sizeof...(Args) > 0)
 	constexpr void fmt_write(const Severity severity, std::format_string<Args...> fmt, Args&&... args) {
 		*this << severity;
-		auto buffer = get_buffer();
-
-		std::format_to(std::back_inserter(*buffer), fmt, std::forward<Args>(args)...);
-
-		if constexpr(async) {
-			finalise();
-		} else {
-			finalise_sync();
-		}
+		fmt_write<async>(fmt, std::forward<Args>(args)...);
 	}
 
 	Logger& operator <<(Logger& (*m)(Logger&));
