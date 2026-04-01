@@ -211,12 +211,15 @@ void ClientConnection::compression_level(unsigned int level) {
 }
 
 void ClientConnection::log_packets(bool enable) {
-	// temp - make logger non-ptr and add enable flag?
 	if(enable) {
 		packet_logger_ = std::make_unique<PacketLogger>();
-		packet_logger_->add_sink(std::make_unique<FBSink>("temp", "realm", remote_address()));
+
 		packet_logger_->add_sink(
-			std::make_unique<LogSink>(logger_, log::Severity::info, remote_address())
+			std::make_unique<FBSink>("temp", "realm", remote_address())
+		);
+
+		packet_logger_->add_sink(
+			std::make_unique<LogSink>(logger_, log::Severity::debug, remote_address())
 		);
 	} else {
 		packet_logger_.reset();

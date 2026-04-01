@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 - 2025 Ember
+ * Copyright (c) 2018 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -19,7 +19,9 @@
 namespace ember::realm {
 
 LogSink::LogSink(log::Logger& logger, log::Severity severity, std::string remote_host)
-                 : logger_(logger), severity_(severity), remote_host_(std::move(remote_host)) {
+	: logger_(logger)
+	, severity_(severity)
+	, remote_host_(std::move(remote_host)) {
 	start_log();
 }
 

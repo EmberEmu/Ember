@@ -23,7 +23,7 @@
 namespace ember::realm {
 
 class PacketLogger final {
-	constexpr static auto RESERVE_LEN = 128u;
+	constexpr static auto reserve_len = 256u;
 
 	std::vector<std::unique_ptr<PacketSink>> sinks_;
 
@@ -36,7 +36,7 @@ public:
 	void log(const auto& buffer, std::size_t length, PacketDirection dir) {
 		const auto time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
 
-		boost::container::small_vector<std::uint8_t, RESERVE_LEN> out_buf(
+		boost::container::small_vector<std::uint8_t, reserve_len> out_buf(
 			length, boost::container::default_init
 		);
 
@@ -49,7 +49,7 @@ public:
 
 	void log(const is_packet auto& packet, PacketDirection dir) {
 		const auto time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-		boost::container::small_vector<std::uint8_t, RESERVE_LEN> buffer;
+		boost::container::small_vector<std::uint8_t, reserve_len> buffer;
 		spark::io::BufferAdaptor adaptor(buffer);
 		spark::io::BinaryStream stream(adaptor, spark::io::endian::little);
 		stream << packet.opcode;
