@@ -15,12 +15,15 @@
 
 namespace ember::realm {
 
-void system_message(const commands::Arguments& args, SessionManager& sessions,
-                    EventDispatcher& dispatcher, log::Logger& logger, bool whisper) {
+void system_message(const commands::Arguments& args,
+                    SessionManager& sessions,
+                    EventDispatcher& dispatcher,
+                    log::Logger& logger,
+                    SystemMessage::Type type) {
 	const auto& message = args["message"].as<std::string>();
 
 	if(args.contains("id")) {
-		SystemMessage event(message, whisper);
+		SystemMessage event(message, type);
 		const auto id = args["id"].as<SessionManager::SessionID>();
 		auto ident = sessions.client_ident(id);
 
@@ -32,14 +35,16 @@ void system_message(const commands::Arguments& args, SessionManager& sessions,
 		dispatcher.post_event(*ident, std::move(event));
 		LOG_CONSOLE(logger, "Message sent to connection {}", id);
 	} else {
-		auto event = std::make_shared<SystemMessage>(message, whisper);
+		auto event = std::make_shared<SystemMessage>(message, type);
 		dispatcher.broadcast_event(event);
 		LOG_CONSOLE(logger, "Message sent to all connections");
 	}
 }
 
-void toggle_logging(SessionManager::SessionID id, bool toggle,
-                    SessionManager& sessions, EventDispatcher& dispatcher,
+void toggle_logging(SessionManager::SessionID id,
+                    bool toggle,
+                    SessionManager& sessions,
+                    EventDispatcher& dispatcher,
                     log::Logger& logger) {
 	auto ident = sessions.client_ident(id);
 
@@ -58,8 +63,10 @@ void toggle_logging(SessionManager::SessionID id, bool toggle,
 	LOG_CONSOLE(logger, "Packet logging {} for connection {}", (toggle? "enabled" : "disabled"), id);
 }
 
-void kick_connection(SessionManager::SessionID id, SessionManager& sessions,
-                     EventDispatcher& dispatcher, log::Logger& logger) {
+void kick_connection(SessionManager::SessionID id,
+                     SessionManager& sessions,
+                     EventDispatcher& dispatcher,
+                     log::Logger& logger) {
 	auto ident = sessions.client_ident(id);
 
 	if(!ident) {
@@ -75,13 +82,12 @@ void kick_connection(SessionManager::SessionID id, SessionManager& sessions,
 	LOG_CONSOLE(logger, "Connection {} kicked", id);
 }
 
-void connection_list(const SessionManager& sessions, log::Logger& logger) {
+void connection_list(const commands::Arguments& args,
+                     const SessionManager& sessions,
+                     log::Logger& logger) {
 	if(!sessions.count()) {
 		LOG_CONSOLE(logger, "No connected sessions to display");
 		return;
-	}
-
-	for(const auto& session : sessions) {
 	}
 
 	std::stringstream stream;
@@ -95,11 +101,11 @@ void connection_list(const SessionManager& sessions, log::Logger& logger) {
 	std::size_t connections = 0;
 
 	for(const auto& session : sessions) {
-		const auto& [k, v] = session;
-		table << k;
-		table << v->connection().remote_address();
-		table << v->handler().client_identify();
-		table << ClientState_to_string(v->handler().state());
+		const auto& [id, client] = session;
+		table << id;
+		table << client->connection().remote_address();
+		table << client->handler().client_identify();
+		table << ClientState_to_string(client->handler().state());
 		++connections;
 	}
 
@@ -107,14 +113,7 @@ void connection_list(const SessionManager& sessions, log::Logger& logger) {
 	LOG_CONSOLE(logger, "Displaying {} connections\n{}", connections, stream.str());
 }
 
-void connection_statistics(const SessionManager& sessions, log::Logger& logger) {
-	if(!sessions.count()) {
-		LOG_CONSOLE(logger, "No connected sessions to display");
-		return;
-	}
-
-	std::stringstream stream;
-	bprinter::TablePrinter table(&stream);
+void print_connection_stats_header(bprinter::TablePrinter& table) {
 	table.AddColumn("ID", 5);
 	table.AddColumn("Remote", 22);
 	table.AddColumn("Ping", 5);
@@ -125,26 +124,68 @@ void connection_statistics(const SessionManager& sessions, log::Logger& logger) 
 	table.AddColumn("Ops In", 6);
 	table.AddColumn("Opts Out", 8);
 	table.PrintHeader();
-	
-	std::size_t connections = 0;
+}
 
-	for(const auto& session : sessions) {
-		const auto& [k, v] = session;
-		const auto stats = v->connection().stats();
-		table << k;
-		table << v->connection().remote_address();
-		table << stats.latency;
-		table << stats.messages_in;
-		table << stats.messages_out;
-		table << stats.bytes_in;
-		table << stats.bytes_out;
-		table << stats.async_receives;
-		table << stats.async_sends;
-		++connections;
+void print_connection_stats(bprinter::TablePrinter& table,
+                            SessionManager::SessionID id,
+                            const Client* client) {
+	const auto stats = client->connection().stats();
+	table << id;
+	table << client->connection().remote_address();
+	table << stats.latency;
+	table << stats.messages_in;
+	table << stats.messages_out;
+	table << stats.bytes_in;
+	table << stats.bytes_out;
+	table << stats.async_receives;
+	table << stats.async_sends;
+}
+
+void connection_statistics(const commands::Arguments& args,
+                           EventDispatcher& dispatcher,
+                           const SessionManager& sessions,
+                           log::Logger& logger) {
+	if(!sessions.count()) {
+		LOG_CONSOLE(logger, "No connected sessions to display");
+		return;
 	}
 
-	table.PrintFooter();
-	LOG_CONSOLE(logger, "Displaying statistics for {} connections\n{}", connections, stream.str());
+	std::size_t connections = 0;
+
+	if(args.contains("id")) {
+		const auto id = args["id"].as<SessionManager::SessionID>();
+		const auto ident = sessions.client_ident(id);
+		auto client = sessions.client(id);
+
+		if(!ident || !client) {
+			LOG_CONERR(logger, "Could not locate connection {}", id);
+			return;
+		}
+
+		auto work = [&, id, client] {
+			std::stringstream stream;
+			bprinter::TablePrinter table(&stream);
+			print_connection_stats_header(table);
+			print_connection_stats(table, id, client);
+			table.PrintFooter();
+			LOG_CONSOLE(logger, "Displaying statistics for connection {}\n{}", id, stream.str());
+		};
+
+		dispatcher.exec(*ident, work);
+	} else {
+		std::stringstream stream;
+		bprinter::TablePrinter table(&stream);
+		print_connection_stats_header(table);
+
+		for(const auto& session : sessions) {
+			const auto& [k, v] = session;
+			print_connection_stats(table, k, v.get());
+			++connections;
+		}
+
+		table.PrintFooter();
+		LOG_CONSOLE(logger, "Displaying statistics for {} connections\n{}", connections, stream.str());
+	}
 }
 
 commands::ScopedCommand add_session_commands(commands::Command& registry,
@@ -157,24 +198,25 @@ commands::ScopedCommand add_session_commands(commands::Command& registry,
 		->description("Commands for connection/session management");
 
 	root->insert(commands::create("list")
-		->description("List all active connections")
-		->handler(exec([&](const commands::Arguments& arguments) {
-			connection_list(sessions, logger);
+		->description("Display connections overview")
+		->handler(exec([&](const commands::Arguments& args) {
+			connection_list(args, sessions, logger);
 		})));
 
 	root->insert(commands::create("kick")
 		->description("Kick a specified connection")
 		->argument<SessionManager::SessionID>("id")
-		->handler(exec([&](const commands::Arguments& arguments) {
+		->handler(exec([&](const commands::Arguments& args) {
 			kick_connection(
-				arguments["id"].as<SessionManager::SessionID>(), sessions, dispatcher, logger
+				args["id"].as<SessionManager::SessionID>(), sessions, dispatcher, logger
 			);
 		})));
 
 	root->insert(commands::create("netstat")
-		->description("Display network stats for all connections")
-		->handler(exec([&](const commands::Arguments& arguments) {
-			connection_statistics(sessions, logger);
+		->description("Display network stats for specified or all connections")
+		->argument<SessionManager::SessionID>("id", commands::optional)
+		->handler(exec([&](const commands::Arguments& args) {
+			connection_statistics(args, dispatcher, sessions, logger);
 		})));
 
 	root->insert(commands::create("log")
@@ -188,12 +230,20 @@ commands::ScopedCommand add_session_commands(commands::Command& registry,
 			);
 		})));
 
+	root->insert(commands::create("notify")
+		->description("Send a system notification to all or a specific connection")
+		->argument<std::string>("message")
+		->argument<SessionManager::SessionID>("id", commands::optional)
+		->handler(exec([&](const commands::Arguments& arguments) {
+			system_message(arguments, sessions, dispatcher, logger, SystemMessage::Type::notification);
+		})));
+
 	root->insert(commands::create("message")
 		->description("Send a system message to all or a specific connection")
 		->argument<std::string>("message")
 		->argument<SessionManager::SessionID>("id", commands::optional)
 		->handler(exec([&](const commands::Arguments& arguments) {
-			system_message(arguments, sessions, dispatcher, logger, false);
+			system_message(arguments, sessions, dispatcher, logger, SystemMessage::Type::message);
 		})));
 
 	root->insert(commands::create("whisper")
@@ -201,7 +251,7 @@ commands::ScopedCommand add_session_commands(commands::Command& registry,
 		->argument<std::string>("message")
 		->argument<SessionManager::SessionID>("id", commands::optional)
 		->handler(exec([&](const commands::Arguments& arguments) {
-			system_message(arguments, sessions, dispatcher, logger, true);
+			system_message(arguments, sessions, dispatcher, logger, SystemMessage::Type::whisper);
 		})));
 
 	// register scoped root 'connections' command

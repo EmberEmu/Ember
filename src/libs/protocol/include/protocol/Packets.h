@@ -43,6 +43,7 @@
 #include <protocol/server/MessageChat.h>
 #include <protocol/server/TriggerCinematic.h>
 #include <protocol/server/StandStateUpdate.h>
+#include <protocol/server/Notification.h>
 #include <protocol/client/AuthSession.h>
 #include <protocol/client/Ping.h>
 #include <protocol/client/CharacterCreate.h>
@@ -104,6 +105,7 @@ using msg_move_set_facing_s           = ServerPacket<ServerOpcode::msg_move_set_
 using smsg_messagechat                = ServerPacket<ServerOpcode::smsg_messagechat,                server::MessageChat>;
 using smsg_trigger_cinematic          = ServerPacket<ServerOpcode::smsg_trigger_cinematic,          server::TriggerCinematic>;
 using smsg_standstate_update          = ServerPacket<ServerOpcode::smsg_standstate_update,          server::StandStateUpdate>;
+using smsg_notification               = ServerPacket<ServerOpcode::smsg_notification,               server::Notification>;
 
 using cmsg_auth_session           = ClientPacket<ClientOpcode::cmsg_auth_session,        client::AuthSession>;
 using cmsg_ping                   = ClientPacket<ClientOpcode::cmsg_ping,                client::Ping>;

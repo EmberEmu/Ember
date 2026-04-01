@@ -396,11 +396,22 @@ void handle_packet(ClientContext& ctx, protocol::ClientOpcode opcode) {
 	}
 }
 
+void system_notification(ClientContext& ctx, const SystemMessage* event) {
+	protocol::smsg_notification msg;
+	msg->notification = event->message;
+	ctx.connection->send(msg);
+}
+
 void system_msg(ClientContext& ctx, const SystemMessage* event) {
+	if(event->type == SystemMessage::Type::notification) {
+		system_notification(ctx, event);
+		return;
+	}
+
 	protocol::smsg_messagechat msg;
 	msg->language = 0;
 
-	if(event->whisper) {
+	if(event->type == SystemMessage::Type::whisper) {
 		msg->type = protocol::server::MONSTER_WHISPER;
 		msg->monster_name = "System";
 		msg->message = event->message;

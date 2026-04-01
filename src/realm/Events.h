@@ -97,13 +97,19 @@ struct CharRenameResponse final : Event {
 };
 
 struct SystemMessage final : Event {
-	SystemMessage(std::string message, bool whisper)
+	enum class Type {
+		message,
+		notification,
+		whisper
+	};
+
+	SystemMessage(std::string message, Type type)
 		: Event { EventType::system_message }
 		, message(std::move(message))
-		, whisper(whisper) {}
+		, type(type) {}
 
 	std::string message;
-	bool whisper;
+	Type type;
 };
 
 } // realm, ember

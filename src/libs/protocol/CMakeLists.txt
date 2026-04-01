@@ -68,6 +68,7 @@ set(SERVER_MESSAGES
     include/protocol/server/GMTicketGetTicket.h
     include/protocol/server/ChannelNotify.h
     include/protocol/server/StandStateUpdate.h
+	include/protocol/server/Notification.h
 )
 
 set(CORE_HEADERS
