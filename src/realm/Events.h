@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2024 Ember
+ * Copyright (c) 2016 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -94,6 +94,16 @@ struct CharRenameResponse final : Event {
 	protocol::Result result;
 	std::uint64_t character_id;
 	std::string name;
+};
+
+struct SystemMessage final : Event {
+	SystemMessage(std::string message, bool whisper)
+		: Event { EventType::system_message }
+		, message(std::move(message))
+		, whisper(whisper) {}
+
+	std::string message;
+	bool whisper;
 };
 
 } // realm, ember

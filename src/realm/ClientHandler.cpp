@@ -24,12 +24,19 @@ namespace ember::realm {
 void ClientHandler::start() {
 	context_.dispatcher.register_handler(this);
 	enter_state[context_.state](context_);
+	stopped_ = false;
 }
 
 void ClientHandler::stop() {
+	if(stopped_) {
+		return;
+	}
+
 	context_.dispatcher.remove_handler(this);
 	state_update(ClientState::cs_session_closed);
+	stopped_ = true;
 }
+
 
 void ClientHandler::close() {
 	connection_->close_session();
@@ -53,15 +60,40 @@ void ClientHandler::handle_message(StaticBuffer& buffer, const protocol::SizeTyp
 	update_packet[context_.state](context_, opcode);
 }
 
+bool ClientHandler::handle_top_level_event(const Event* event) {
+	using enum EventType;
+
+	switch(event->type) {
+		case interval_timer_fire:
+			handle_timer();
+			return true;
+		case kick_self:
+			close();
+			return true;
+		case packet_log_enable:
+			connection_->log_packets(true);
+			return true;
+		case packet_log_disable:
+			connection_->log_packets(false);
+			return true;
+		default:
+			return false;
+	}
+}
+
 void ClientHandler::handle_event(const Event* event) {
-	if(event->type == EventType::interval_timer_fire) {
-		handle_timer();
+	if(handle_top_level_event(event)) {
+		return;
 	}
 
 	update_event[context_.state](context_, event);
 }
 
 void ClientHandler::handle_event(std::unique_ptr<const Event> event) {
+	if(handle_top_level_event(event.get())) {
+		return;
+	}
+
 	update_event[context_.state](context_, event.get());
 }
 
@@ -284,13 +316,12 @@ ClientHandler::ClientHandler(ClientIdent uuid, executor executor, const ConfigSt
 	, ping_violation_(0)
 	, prev_ping_sequence_(0)
 	, timer_events_(0)
-	, last_tick_(utility::get_tick_count()) {
+	, last_tick_(utility::get_tick_count())
+	, stopped_(true) {
 }
 
 ClientHandler::~ClientHandler() {
-	if(context_.state != ClientState::cs_session_closed) {
-		close();
-	}
+	stop();
 }
 
 } // realm, ember

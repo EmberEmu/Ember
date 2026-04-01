@@ -54,6 +54,16 @@ void handle_command_result(commands::Result result,
     }
 }
 
+bool convert_bool(const std::string_view token) {
+	if(token == "on" || token == "enable" || token == "1" || token == "true") {
+		return true;
+	} else if(token == "off" || token == "disable" || token == "0" || token == "false") {
+		return false;
+	}
+
+	throw std::runtime_error("Unable to convert bool argument");
+}
+
 std::any convert_type(const std::type_info& info, std::string_view token) {
 	if(info == typeid(std::string)) {
 		return std::string(token);
@@ -79,6 +89,8 @@ std::any convert_type(const std::type_info& info, std::string_view token) {
 		return boost::lexical_cast<float>(token);
 	} else if(info == typeid(double)) {
 		return boost::lexical_cast<double>(token);
+	} else if(info == typeid(bool)) {
+		return convert_bool(token);
 	} else if(info == typeid(std::chrono::seconds)) {
 		return std::chrono::seconds(boost::lexical_cast<int>(token));
 	} else {

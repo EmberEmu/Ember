@@ -66,6 +66,7 @@ set(LIBRARY_HDR
     Forwards.h
     ClientTimer.h
     SessionIterator.h
+	commands/Session.h
 )
 
 set(LIBRARY_SRC
@@ -96,6 +97,7 @@ set(LIBRARY_SRC
     Digest.cpp
     ServiceContext.cpp
     ClientTimer.cpp
+	commands/Session.cpp
 )
 
 add_library(${LIBRARY_NAME} ${SERVICE_LIB_LINKAGE} 

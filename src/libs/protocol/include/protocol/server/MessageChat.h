@@ -70,6 +70,7 @@ struct MessageChat final {
 	std::string channel_name;
 	std::uint32_t player_rank;
 	std::uint64_t player_guid;
+	std::string monster_name;
 	PlayerChatTag player_tag;
 
 	StreamResult read_from_stream(le_stream auto& stream) {
@@ -94,7 +95,10 @@ struct MessageChat final {
 		stream << type;
 		stream << language;
 
-		if(type == SAY || type == YELL || type == PARTY) {
+		if(type == MONSTER_WHISPER) {
+			stream << monster_name;
+			stream << std::uint64_t(0);
+		} else if(type == SAY || type == YELL || type == PARTY) {
 			stream << speech_bubble_attr;
 			stream << chat_name_attr;
 		} else if(type == WHISPER) {

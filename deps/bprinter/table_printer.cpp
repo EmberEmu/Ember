@@ -52,14 +52,17 @@ void TablePrinter::AddColumn(const std::string & header_name, int column_width){
   table_width_ += column_width + separator_.size(); // for the separator  
 }
 
-void TablePrinter::PrintHorizontalLine() {
+void TablePrinter::PrintHorizontalLine(bool skip_newline) {
   *out_stream_ << "+"; // the left bar
 
   for (int i=0; i<table_width_-1; ++i)
     *out_stream_ << "-";
 
   *out_stream_ << "+"; // the right bar
-  *out_stream_ << "\n";
+
+  if(!skip_newline) {
+	*out_stream_ << "\n";  
+  }
 }
 
 void TablePrinter::PrintHeader(){
@@ -84,7 +87,7 @@ void TablePrinter::PrintHeader(){
 }
 
 void TablePrinter::PrintFooter(){
-  PrintHorizontalLine();
+  PrintHorizontalLine(true);
 }
 
 TablePrinter& TablePrinter::operator<<(float input){

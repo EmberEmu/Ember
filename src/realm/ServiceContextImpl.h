@@ -18,6 +18,7 @@
 #include "NetworkListener.h"
 #include "RealmService.h"
 #include "RealmQueue.h"
+#include "ServiceContext.h"
 #include "SessionManager.h"
 #include "WorldRPCClient.h"
 #include <commands/ScopedCommand.h>

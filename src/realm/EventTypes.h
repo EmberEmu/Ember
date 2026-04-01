@@ -21,7 +21,12 @@ enum class EventType {
 	char_rename_response,
 	player_login,
 	timer_expired,
-	interval_timer_fire
+	interval_timer_fire,
+	kick_self,
+	packet_log_enable,
+	packet_log_disable,
+	system_message,
+	system_whisper
 };
 
 } // realm, ember

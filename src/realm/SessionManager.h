@@ -35,6 +35,9 @@ private:
 
 	SessionID generate_id();
 
+	bool stop(SessionID id);
+	void stop_all();
+
 public:
 	using locked_iterator = SessionIterator<SessionsMap::iterator>;
 	using locked_const_iterator = SessionIterator<SessionsMap::const_iterator>;
@@ -43,8 +46,6 @@ public:
 	~SessionManager();
 
 	void start(ClientPtr client);
-	void stop(SessionID id);
-	void stop_all();
 
 	std::size_t count() const;
 	std::optional<ClientIdent> client_ident(SessionID id) const;
