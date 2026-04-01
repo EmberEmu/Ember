@@ -26,7 +26,7 @@ std::string longest_prefix(std::span<const Suggestions::Record> matches);
 } // impl
 
 std::shared_ptr<Command> create(std::string name);
-std::vector<std::string> parse_input(const std::string_view input);
+std::vector<std::string> parse_input(const std::string_view input, bool escape = true);
 std::string path_fragment(std::span<const std::string> tokens, std::size_t depth);
 
 } // commands, ember

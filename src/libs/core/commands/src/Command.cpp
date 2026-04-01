@@ -258,7 +258,7 @@ const Flags& Command::flags() const {
 }
 
 Suggestions Command::autocomplete(const std::string_view query) const {
-	auto tokens = parse_input(query);
+	auto tokens = parse_input(query, false);
 	auto results = impl::autocomplete_recurse(commands_, tokens);
 
 	std::ranges::sort(results.records, [&](const auto& a, const auto& b) {

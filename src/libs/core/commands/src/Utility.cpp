@@ -39,12 +39,19 @@ std::string path_fragment(std::span<const std::string> tokens, std::size_t depth
 	return fragment;
 }
 
-std::vector<std::string> parse_input(const std::string_view input) {
+std::vector<std::string> parse_input(const std::string_view input, bool escape) {
 	std::vector<std::string> tokens;
 	std::string str(input);
 
 	try {
-		boost::escaped_list_separator<char> sep('\\', ' ', '"');
+		boost::escaped_list_separator<char> sep;
+
+		if(escape) {
+			sep = boost::escaped_list_separator<char>('\\', ' ', '"');
+		} else {
+			sep = boost::escaped_list_separator<char>(' ');
+		}
+
 		boost::tokenizer<boost::escaped_list_separator<char>> tok(str, sep);
 		tokens.assign_range(tok);
 	} catch(boost::escaped_list_error& e) {
