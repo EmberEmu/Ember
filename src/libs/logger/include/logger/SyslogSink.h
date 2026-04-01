@@ -11,6 +11,7 @@
 #include <logger/Sink.h>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 #include <cstdint>
@@ -22,6 +23,8 @@ class SyslogSink final : public Sink {
 	std::unique_ptr<impl> pimpl_;
 
 public:	
+	static constexpr std::string_view sink_name = "SyslogSink";
+
 	enum class Facility : std::uint8_t {
 		kernel, user_level, mail_system, system_daemon,
 		security_and_auth, syslogd_internal, line_printer_subsystem,
@@ -32,9 +35,10 @@ public:
 		local_use_6, local_use_7
 	};
 
-	SyslogSink(log::Severity severity, Filter filter, std::string host, unsigned int port,
-	           Facility facility, std::string tag);
+	SyslogSink(log::Severity severity, Filter filter, std::string host,
+	            unsigned int port, Facility facility, std::string tag);
 	~SyslogSink();
+
 	void write(log::Severity severity, Filter type, std::span<const char> record, bool flush) override;
 	void batch_write(const std::span<std::pair<RecordDetail, std::vector<char>>>& records) override;
 };

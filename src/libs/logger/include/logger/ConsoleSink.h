@@ -13,6 +13,7 @@
 #include <boost/container/small_vector.hpp>
 #include <mutex>
 #include <string>
+#include <string_view>
 #include <utility>
 
 namespace ember::log {
@@ -30,9 +31,11 @@ class ConsoleSink final : public Sink {
 	void do_batch_write(const std::span<std::pair<RecordDetail, std::vector<char>>>& records);
 
 public:
+	static constexpr std::string_view sink_name = "ConsoleSink";
+
 	ConsoleSink(Severity severity, Filter filter)
-		: Sink(severity, filter, "ConsoleSink"),
-		  colour_(false) {}
+		: Sink(severity, filter, "ConsoleSink")
+		, colour_(false) {}
 
 	void write(Severity severity, Filter type, std::span<const char> record, bool flush) override;
 	void batch_write(const std::span<std::pair<RecordDetail, std::vector<char>>>& records) override;

@@ -54,6 +54,8 @@ private:
 	std::string generate_record_detail(Severity severity, const std::tm& curr_time);
 
 public:
+	static constexpr std::string_view sink_name = "FileSink";
+
 	FileSink(Severity severity, Filter filter, std::string file_name, Mode mode);
 	~FileSink();
 
