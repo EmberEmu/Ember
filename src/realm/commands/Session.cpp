@@ -235,7 +235,7 @@ commands::ScopedCommand add_session_commands(commands::Command& registry,
 		->argument<std::string>("message")
 		->argument<SessionManager::SessionID>("id", commands::optional)
 		->handler(exec([&](const commands::Arguments& arguments) {
-			system_message(arguments, sessions, dispatcher, logger, SystemMessage::Type::notification);
+			system_message(arguments, sessions, dispatcher, logger, SystemMessage::Type::console);
 		})));
 
 	root->insert(commands::create("message")

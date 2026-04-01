@@ -7,11 +7,9 @@
  */
 
 #include "ClientHandler.h"
-#include "ClientConnection.h"
 #include "ClientLogHelper.h"
 #include "Config.h"
 #include "EventDispatcher.h"
-#include "FilterTypes.h"
 #include "states/StateJumpTables.h"
 #include <logger/Logger.h>
 #include <protocol/Packets.h>
@@ -32,11 +30,11 @@ void ClientHandler::stop() {
 		return;
 	}
 
+	log_redirect_stop();
 	context_.dispatcher.remove_handler(this);
 	state_update(ClientState::cs_session_closed);
 	stopped_ = true;
 }
-
 
 void ClientHandler::close() {
 	connection_->close_session();
@@ -48,7 +46,7 @@ void ClientHandler::handle_message(StaticBuffer& buffer, const protocol::SizeTyp
 	protocol::ClientOpcode opcode;
 	stream >> opcode;
 
-	CLIENT_TRACE(logger_, context_) << " -> " << protocol::to_string(opcode) << LOG_ASYNC;
+	PACKET_TRACE(logger_, context_) << " -> " << protocol::to_string(opcode) << LOG_ASYNC;
 	++packet_counter_;
 
 	// handle ping as a special case
@@ -150,10 +148,10 @@ void ClientHandler::start_timer(const std::chrono::milliseconds& time) {
 
 	timer_.async_wait([dispatcher, uuid = uuid_](const boost::system::error_code& ec) {
 		if(!ec) {
-			Event event { EventType::timer_expired };
+			Event event{ EventType::timer_expired };
 			dispatcher.post_event(uuid, event);
 		}
-	});
+					  });
 }
 
 void ClientHandler::cancel_timer() {
@@ -265,6 +263,30 @@ bool ClientHandler::validate_ping(const protocol::client::Ping& ping) {
 	}
 
 	return true;
+}
+
+void ClientHandler::log_redirect(LogRedirect::Type type, log::Severity severity) {
+	log_redirect_stop(); // remove if we're just changing settigns
+
+	auto sink = std::make_shared<ClientSink>(
+		context_.dispatcher, uuid_, severity, type, log::Filter(lf_packet_log)
+	);
+
+	logger_.add_sink(sink);
+	redirect_sink_ = std::move(sink);
+}
+
+void ClientHandler::log_redirect_stop() {
+	if(!redirect_sink_) {
+		return;
+	}
+	
+	if(!logger_.remove_sink(redirect_sink_)) {
+		LOG_FATAL(logger_, "Could not remove client logging sink!");
+		std::terminate();
+	}
+
+	redirect_sink_.reset();
 }
 
 /*

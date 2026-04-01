@@ -8,12 +8,19 @@
 
 #pragma once
 
+#include "ClientLogHelper.h"
+#include "ClientConnection.h"
 #include "ConnectionDefines.h"
 #include <protocol/Concepts.h>
 #include <logger/Logger.h>
 #include <optional>
 
 namespace ember::realm {
+
+void ClientHandler::send(is_packet auto& packet) {
+	PACKET_TRACE(logger_, context_) << " <- " << protocol::to_string(packet.opcode) << LOG_ASYNC;
+	connection_->send(packet);
+}
 
 [[nodiscard]]
 bool ClientHandler::deserialise(is_packet auto& packet, BinaryStream& stream) {

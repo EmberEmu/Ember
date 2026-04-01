@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include "ClientHandler.h"
 #include "ConnectionStats.h"
 #include "ConnectionDefines.h"
 #include "PacketCrypto.h"
@@ -35,6 +34,8 @@
 #include <cstddef>
 
 namespace ember::realm {
+
+class ClientHandler;
 
 class ClientConnection final {
 public:

@@ -187,6 +187,17 @@ public:
 		sinks_.emplace_back(std::move(sink));
 	}
 
+	bool remove_sink(const std::shared_ptr<Sink>& remove) {
+		std::lock_guard lock(sink_lock_);
+
+		if(auto it = std::ranges::find(sinks_, remove); it != sinks_.end()) {
+			sinks_.erase(it);
+			return true;
+		}
+
+		return false;
+	}
+
 	std::vector<std::shared_ptr<Sink>> fetch_sinks() {
 		std::lock_guard lock(sink_lock_);
 		return sinks_;

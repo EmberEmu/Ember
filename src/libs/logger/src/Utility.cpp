@@ -7,7 +7,6 @@
  */
 
 #include <logger/Utility.h>
-#include <logger/Exception.h>
 #include <chrono>
 #include <iomanip>
 #include <stdexcept>
@@ -59,6 +58,8 @@ std::string put_time(const std::tm& time, cstring_view format) {
 	return buffer;
 }
 
+} // detail
+
 std::string_view severity_string(Severity severity) {
 	switch(severity) {
 		case Severity::debug:
@@ -81,8 +82,6 @@ std::string_view severity_string(Severity severity) {
 			return "[unknown] ";
 	}
 }
-
-} // detail
 
 Severity severity_string(const std::string_view severity) {
 	if(severity == "trace") {

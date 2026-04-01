@@ -226,7 +226,7 @@ void send_auth_challenge(ClientContext& ctx) {
 	auto& auth_ctx = std::get<Context>(ctx.state_ctx);
 	protocol::smsg_auth_challenge response;
 	response->seed = auth_ctx.seed = gsl::narrow_cast<std::uint32_t>(rng::xorshift::next());
-	ctx.connection->send(response);
+	ctx.handler.send(response);
 }
 
 void send_addon_data(ClientContext& ctx) {
@@ -255,7 +255,7 @@ void send_addon_data(ClientContext& ctx) {
 		response->addon_data.emplace_back(std::move(data));
 	}
 
-	ctx.connection->send(response);
+	ctx.handler.send(response);
 }
 
 void auth_queue(ClientContext& ctx) {
@@ -289,7 +289,7 @@ void send_auth_result(ClientContext& ctx, protocol::Result result) {
 
 	protocol::smsg_auth_response response;
 	response->result = result;
-	ctx.connection->send(response);
+	ctx.handler.send(response);
 }
 
 void handle_queue_update(ClientContext& ctx, const QueuePosition* event) {
@@ -298,7 +298,7 @@ void handle_queue_update(ClientContext& ctx, const QueuePosition* event) {
 	protocol::smsg_auth_response packet;
 	packet->result = protocol::Result::auth_wait_queue;
 	packet->queue_position = gsl::narrow_cast<std::uint32_t>(event->position);
-	ctx.connection->send(packet);
+	ctx.handler.send(packet);
 }
 
 void handle_queue_success(ClientContext& ctx) {

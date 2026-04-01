@@ -37,7 +37,7 @@ void send_character_list_fail(ClientContext& ctx) {
 	// displays an error dialogue on the client
 	protocol::smsg_char_create response;
 	response->result = protocol::Result::char_list_failed;
-	ctx.connection->send(response);
+	ctx.handler.send(response);
 }
 
 void send_character_list(ClientContext& ctx, std::vector<Character> characters) {
@@ -45,7 +45,7 @@ void send_character_list(ClientContext& ctx, std::vector<Character> characters) 
 
 	protocol::smsg_char_enum response;
 	response->characters = std::move(characters);
-	ctx.connection->send(response);
+	ctx.handler.send(response);
 }
 
 void send_character_rename(ClientContext& ctx, const CharRenameResponse* res) {
@@ -55,7 +55,7 @@ void send_character_rename(ClientContext& ctx, const CharRenameResponse* res) {
 	response->result = res->result;
 	response->id = res->character_id;
 	response->name = res->name;
-	ctx.connection->send(response);
+	ctx.handler.send(response);
 }
 
 void character_rename(ClientContext& ctx) {
@@ -106,7 +106,7 @@ void send_character_delete(ClientContext& ctx, const CharDeleteResponse* res) {
 
 	protocol::smsg_char_delete response;
 	response->result = res->result;
-	ctx.connection->send(response);
+	ctx.handler.send(response);
 }
 
 void send_character_create(ClientContext& ctx, const CharCreateResponse* res) {
@@ -114,7 +114,7 @@ void send_character_create(ClientContext& ctx, const CharCreateResponse* res) {
 
 	protocol::smsg_char_create response;
 	response->result = res->result;
-	ctx.connection->send(response);
+	ctx.handler.send(response);
 }
 
 void character_create(ClientContext& ctx) {

@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2020 - 2024 Ember
+* Copyright (c) 2020 - 2026 Ember
 *
 * This Source Code Form is subject to the terms of the Mozilla Public
 * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,7 +8,11 @@
 
 #pragma once
 
+#include "FilterTypes.h"
 #include <logger/Logger.h>
+
+#define PACKET_TRACE(logger, ctx) \
+	LOG_TRACE_STREAM(logger) << log::Filter(lf_packet_log) << ctx.handler.client_identify()
 
 #define CLIENT_TRACE(logger, ctx) \
 	LOG_TRACE_STREAM(logger) << ctx.handler.client_identify() << ": "

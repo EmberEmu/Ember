@@ -99,12 +99,27 @@ struct CharRenameResponse final : Event {
 struct SystemMessage final : Event {
 	enum class Type {
 		message,
-		notification,
+		console,
 		whisper
 	};
 
 	SystemMessage(std::string message, Type type)
 		: Event { EventType::system_message }
+		, message(std::move(message))
+		, type(type) {}
+
+	std::string message;
+	Type type;
+};
+
+struct LogRedirect final : Event {
+	enum class Type {
+		message,
+		console
+	};
+
+	LogRedirect(std::string message, Type type)
+		: Event { EventType::log_redirect }
 		, message(std::move(message))
 		, type(type) {}
 

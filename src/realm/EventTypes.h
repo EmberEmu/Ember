@@ -26,7 +26,8 @@ enum class EventType {
 	packet_log_enable,
 	packet_log_disable,
 	system_message,
-	system_whisper
+	system_whisper,
+	log_redirect
 };
 
 } // realm, ember
