@@ -12,7 +12,7 @@
 #include <logger/Logger.h>
 
 #define PACKET_TRACE(logger, ctx) \
-	LOG_TRACE_STREAM(logger) << log::Filter(lf_packet_log) << ctx.handler.client_identify()
+	LOG_TRACE_STREAM(logger) << log::Filter(lf_packet_trace) << ctx.handler.client_identify()
 
 #define CLIENT_TRACE(logger, ctx) \
 	LOG_TRACE_STREAM(logger) << ctx.handler.client_identify() << ": "

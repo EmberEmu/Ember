@@ -69,10 +69,11 @@ bool ClientHandler::handle_top_level_event(const Event* event) {
 			close();
 			return true;
 		case packet_log_enable:
-			connection_->log_packets(true);
+			log_redirect_stop();
+			connection_->packet_log_start();
 			return true;
 		case packet_log_disable:
-			connection_->log_packets(false);
+			connection_->packet_log_stop();
 			return true;
 		default:
 			return false;
@@ -269,7 +270,7 @@ void ClientHandler::log_redirect(LogRedirect::Type type, log::Severity severity)
 	log_redirect_stop(); // remove if we're just changing settigns
 
 	auto sink = std::make_shared<ClientSink>(
-		context_.dispatcher, uuid_, severity, type, log::Filter(lf_packet_log)
+		context_.dispatcher, uuid_, severity, type, log::Filter(lf_packet_trace)
 	);
 
 	logger_.add_sink(sink);

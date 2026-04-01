@@ -211,20 +211,24 @@ void ClientConnection::compression_level(unsigned int level) {
 	compression_level_ = level;
 }
 
-void ClientConnection::log_packets(bool enable) {
-	if(enable) {
-		packet_logger_ = std::make_unique<PacketLogger>();
+void ClientConnection::packet_log_start() {
+	packet_logger_ = std::make_unique<PacketLogger>();
 
-		packet_logger_->add_sink(
-			std::make_unique<FBSink>("temp", "realm", remote_address())
-		);
+	packet_logger_->add_sink(
+		std::make_unique<FBSink>("temp", "realm", remote_address())
+	);
 
-		packet_logger_->add_sink(
-			std::make_unique<LogSink>(logger_, log::Severity::debug, remote_address())
-		);
-	} else {
-		packet_logger_.reset();
-	}
+	packet_logger_->add_sink(
+		std::make_unique<LogSink>(logger_, log::Severity::debug, remote_address())
+	);
+}
+
+void ClientConnection::packet_log_stop() {
+	packet_logger_.reset();
+}
+
+bool ClientConnection::packet_logging() const {
+	return !!packet_logger_;
 }
 
 /*

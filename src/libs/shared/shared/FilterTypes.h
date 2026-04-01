@@ -11,13 +11,14 @@
 namespace ember {
 
 enum FilterType {
-	LF_RESERVED      =  1, // do not use explicitly
-	LF_MONITORING    =  2,
-	LF_DB_CONN_POOL  =  4,
-	LF_NETWORK       =  8,
-	LF_SPARK         = 16,
-	LF_NAUGHTY_USER  = 32,
-	LF_UNUSED        = 64
+	lf_uncategorised =  1, // do not use - reserved for the logger implementation
+	lf_monitoring    =  2,
+	lf_db_conn_pool  =  4,
+	lf_network       =  8,
+	lf_spark         = 16,
+	lf_naughty_user  = 32,
+	lf_reserved_1    = 64
+	// all higher valus are reserved for services
 };
 
 } // ember

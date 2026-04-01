@@ -115,7 +115,10 @@ public:
 
 	const ConnectionStats& stats() const;
 	std::string remote_address() const;
-	void log_packets(bool enable);
+
+	void packet_log_start();
+	void packet_log_stop();
+	bool packet_logging() const;
 
 	void send(const is_packet auto& packet);
 	void set_handler(ClientHandler* handler);

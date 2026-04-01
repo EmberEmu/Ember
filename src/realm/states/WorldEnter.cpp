@@ -367,7 +367,16 @@ bool handle_command(ClientContext& ctx, std::string_view message) try {
 			return false;
 		}
 
-		ctx.handler.log_redirect(type, severity);
+		if(!ctx.connection->packet_logging()) {
+			ctx.handler.log_redirect(type, severity);
+		} else {
+			protocol::smsg_notification resp;
+			resp->console = "Disable packet logging for yourself first - "
+			                "this would wipe out time, forwards and backwards";
+			ctx.handler.send(resp);
+			return false;
+		}
+
 		return true;
 	}
 

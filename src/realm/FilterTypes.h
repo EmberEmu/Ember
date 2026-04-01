@@ -14,7 +14,8 @@ namespace ember::realm {
 
 // Service specific filters
 enum ExtendedFilterType {
-	lf_packet_log = 128
+	lf_packet_log   = 0x80,    // per-player toggled packet logging
+	lf_packet_trace = 0x100    // packet trace log messages
 };
 
 } // realm, ember
