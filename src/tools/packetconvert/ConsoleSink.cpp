@@ -61,15 +61,21 @@ void ConsoleSink::handle(const fblog::Message& message) {
 
 	if(message.time()) {
 		std::istringstream ss(message.time()->str());
-		std::chrono::sys_time<std::chrono::seconds> time;
-		ss >> std::chrono::parse("%Y-%m-%dT%H:%M:%SZ", time);
+		std::chrono::sys_time<std::chrono::seconds> parsed;
+		ss >> std::chrono::parse(time_fmt_.c_str(), parsed);
 
 		if(!ss) {
 			std::cout << "<time parse failed>\n";
 		}
 
-		auto time_c = std::chrono::system_clock::to_time_t(time);
-		std::cout << std::put_time(std::gmtime(&time_c), "%a, %B %d, %Y @ %H:%M:%SZ\n");
+		auto time = std::chrono::system_clock::to_time_t(parsed);
+		const auto tm_res = std::gmtime(&time);
+
+		if(!tm_res) {
+			std::cout << "<time parse failed>\n";
+		}
+
+		std::cout << std::put_time(tm_res, "%a, %B %d, %Y @ %H:%M:%SZ\n");
 	} else {
 		std::cout << "<missing time>\n";
 	}
