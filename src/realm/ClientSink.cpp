@@ -67,7 +67,7 @@ auto ClientSink::severity_rgb(log::Severity severity) const -> Colour {
 }
 
 std::string ClientSink::format(const std::string_view input, log::Severity severity) const {
-	const auto colour = std::to_underlying<Colour>(severity_rgb(severity));
+	const auto colour = std::to_underlying(severity_rgb(severity));
 	const auto sev_str = log::severity_string(severity);
 	return std::format("{} |c{:x}{}|r", sev_str, colour, input);
 }
