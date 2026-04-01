@@ -47,7 +47,7 @@ auto ClientSink::severity_rgb(log::Severity severity) const -> Colour {
 
 	switch(severity) {
 		case trace:
-			return Colour::grey_alpha;
+			return Colour::alpha_grey;
 		case debug:
 			return Colour::light_grey;
 		case info:

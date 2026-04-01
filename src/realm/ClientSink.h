@@ -22,7 +22,7 @@ class EventDispatcher;
 class ClientSink final : public log::Sink {
 
 	enum class Colour : std::uint32_t {
-		grey_alpha = 0x80808080,
+		alpha_grey = 0x80808080,
 		light_grey = 0xffd4d4d4,
 		white      = 0xffffffff,
 		light_red  = 0xffff5757,
