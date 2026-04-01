@@ -40,7 +40,7 @@ class ClientSink final : public log::Sink {
 	EventDispatcher& dispatcher_;
 
 	Colour severity_rgb(log::Severity severity) const;
-	std::string format(std::string_view input, log::Severity severity) const;
+	std::string format(const std::string_view input, log::Severity severity) const;
 
 public:
 	static constexpr std::string_view sink_name = "ClientSink";
