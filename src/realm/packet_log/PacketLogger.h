@@ -52,6 +52,7 @@ public:
 		boost::container::small_vector<std::uint8_t, RESERVE_LEN> buffer;
 		spark::io::BufferAdaptor adaptor(buffer);
 		spark::io::BinaryStream stream(adaptor, spark::io::endian::little);
+		stream << packet.opcode;
 		packet.write_to_stream(stream);
 
 		for(auto& sink : sinks_) {
