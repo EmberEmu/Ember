@@ -67,7 +67,6 @@ set(LIBRARY_HDR
     ClientTimer.h
     SessionIterator.h
     ClientSink.h
-    LogPacketHelper.h
     commands/Session.h
 )
 
