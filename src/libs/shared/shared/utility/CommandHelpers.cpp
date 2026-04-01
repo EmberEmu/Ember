@@ -102,13 +102,13 @@ void execute_command(const std::string_view input, const commands::Command& root
 	const auto tokens = commands::parse_input(input);
 	const auto search = root.find(tokens);
 
-	if(!search.command) {
-		LOG_CONERR(
-			logger,
-			R"(Command "{}" not found)",
-			tokens.front()
-		);
+	if(tokens.empty()) {
+		LOG_CONERR(logger, "Command cannot be empty");
+		return;
+	}
 
+	if(!search.command) {
+		LOG_CONERR(logger, R"(Command "{}" not found)", tokens.front());
 		return;
 	}
 

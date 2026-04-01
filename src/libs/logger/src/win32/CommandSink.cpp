@@ -697,12 +697,18 @@ void CommandSink::register_suggestion(Suggestion handler) {
 }
 
 bool CommandSink::invoke_handler(const std::string_view command) {
+	std::lock_guard lock(handler_lock_);
+
 	if(handler_) {
-		handler_(command_);
+		handler_(command);
 		return true;
 	}
 	
 	return false;
+}
+
+bool CommandSink::invoke(const std::string_view command) {
+	return invoke_handler(command);
 }
 
 } // log, ember

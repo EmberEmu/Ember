@@ -17,15 +17,15 @@
 namespace ember::protocol::server {
 
 struct Notification final {
-	std::string notification;
+	std::string console;
 
 	StreamResult read_from_stream(le_stream auto& stream) {
-		stream >> spark::io::null_terminated(notification);
+		stream >> spark::io::null_terminated(console);
 		return stream? StreamResult::success : StreamResult::failed;
 	}
 
 	StreamResult write_to_stream(le_stream auto& stream) const {
-		stream << spark::io::null_terminated(notification);
+		stream << spark::io::null_terminated(console);
 		return stream? StreamResult::success : StreamResult::failed;
 	}
 };

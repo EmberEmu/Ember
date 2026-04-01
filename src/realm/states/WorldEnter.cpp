@@ -11,9 +11,12 @@
 #include "../ClientHandler.h"
 #include "../ClientConnection.h"
 #include "../RealmQueue.h"
+#include <commands/Utility.h>
+#include <logger/CommandSink.h>
 #include <protocol/Packets.h>
 #include <chrono>
 #include <format>
+#include <span>
 #include <ctime>
 
 /*
@@ -73,12 +76,12 @@ void initiate_player_login(ClientContext& ctx, const PlayerLogin* event) {
 	protocol::smsg_account_data_times adt;
 	ctx.handler.send(adt);
 
-	//protocol::smsg_weather weather;
-	//weather->change = weather->INSTANT;
-	//weather->grade = 1.f;
-	//weather->type = weather->RAIN;
-	//weather->sound_id = 8535;
-	//ctx.handler.send(weather);
+	/*protocol::smsg_weather weather;
+	weather->change = weather->INSTANT;
+	weather->grade = 1.f;
+	weather->type = weather->RAIN;
+	weather->sound_id = 8535;
+	ctx.handler.send(weather);*/
 
 	protocol::smsg_messagechat motd;
 	motd->language = 0;
@@ -87,8 +90,6 @@ void initiate_player_login(ClientContext& ctx, const PlayerLogin* event) {
 	motd->player_guid = 0;
 	motd->player_tag = protocol::server::TAG_NONE;
 	ctx.handler.send(motd);
-
-	ctx.handler.log_redirect(LogRedirect::Type::notification, log::Severity::debug);
 }
 
 void enter(ClientContext& ctx) {
@@ -284,6 +285,97 @@ void handle_tutorial_flag(ClientContext& ctx) {
 	}
 }
 
+// again, this entire file is just for testing other dev functionality
+#ifdef _WIN32
+std::shared_ptr<log::CommandSink> cmdsink;
+
+void patch_console_test(ClientContext& ctx) {
+	const auto sinks = ctx.logger.fetch_sink(log::CommandSink::sink_name);
+
+	if(sinks.empty()) {
+		return;
+	}
+
+	cmdsink = dynamic_pointer_cast<log::CommandSink>(sinks.front());
+}
+#endif
+
+// also temporary, if it's not clear - this needs to be properly hooked
+// up to the actual command system at some point in the future, but not right now
+bool handle_command(ClientContext& ctx, std::string_view message) try {
+	message.remove_prefix(1); // remove the leading dot
+	auto tokens = commands::parse_input(message);
+	std::span token_span(tokens);
+
+	if(tokens.empty()) {
+		return false;
+	}
+
+#ifdef _WIN32
+	if(token_span.front() == "console_stop") {
+		cmdsink.reset();
+		return true;
+	}
+
+	if(token_span.front() == "console") {
+		if(!cmdsink) {
+			patch_console_test(ctx);
+		}
+
+		if(!cmdsink) {
+			return false;
+		}
+
+		// trim message
+		if(!message.starts_with("console ")) {
+			return false;
+		}
+
+		message = message.substr(8, -1);
+		cmdsink->invoke(message);
+		return true;
+	}
+#endif
+
+	if(token_span.front() == "log") {
+		token_span = token_span.subspan(1, -1);
+		
+		if(token_span.empty()) {
+			return false;
+		}
+
+		if(token_span.front() == "stop") {
+			ctx.handler.log_redirect_stop();
+			return true;
+		}
+
+		const auto severity = log::severity_string(token_span.front());
+
+		token_span = token_span.subspan(1, -1);
+
+		if(token_span.empty()) {
+			return false;
+		}
+
+		auto type = LogRedirect::Type::message;
+
+		if(token_span.front() == "console") {
+			type = LogRedirect::Type::console;
+		} else if(token_span.front() == "chat") {
+			type = LogRedirect::Type::message;
+		} else {
+			return false;
+		}
+
+		ctx.handler.log_redirect(type, severity);
+		return true;
+	}
+
+	return false;
+} catch(std::exception& e) {
+	return false;
+}
+
 void handle_messagechat(ClientContext& ctx) {
 	message_view<protocol::cmsg_messagechat> packet;
 
@@ -292,6 +384,16 @@ void handle_messagechat(ClientContext& ctx) {
 	}
 
 	LOG_DEBUG(ctx.logger, "{}: {}", packet->destination, packet->message);
+
+	if(packet->message.starts_with(".")) {
+		if(!handle_command(ctx, packet->message)) {
+			protocol::smsg_notification resp;
+			resp->console = "Could not execute command";
+			ctx.handler.send(resp);
+		}
+
+		return;
+	}
 
 	protocol::smsg_messagechat response;
 	response->type = (decltype(response->type))packet->type; // kek
@@ -400,12 +502,12 @@ void handle_packet(ClientContext& ctx, protocol::ClientOpcode opcode) {
 
 void system_notification(ClientContext& ctx, std::string_view message) {
 	protocol::smsg_notification packet;
-	packet->notification = message;
+	packet->console = message;
 	ctx.handler.send(packet);
 }
 
 void log_msg(ClientContext& ctx, const LogRedirect* event) {
-	if(event->type == LogRedirect::Type::notification) {
+	if(event->type == LogRedirect::Type::console) {
 		system_notification(ctx, event->message);
 		return;
 	}
@@ -420,7 +522,7 @@ void log_msg(ClientContext& ctx, const LogRedirect* event) {
 }
 
 void system_msg(ClientContext& ctx, const SystemMessage* event) {
-	if(event->type == SystemMessage::Type::notification) {
+	if(event->type == SystemMessage::Type::console) {
 		system_notification(ctx, event->message);
 		return;
 	}

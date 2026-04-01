@@ -7,7 +7,6 @@
  */
 
 #include <logger/Utility.h>
-#include <logger/Exception.h>
 #include <chrono>
 #include <iomanip>
 #include <stdexcept>

@@ -10,7 +10,6 @@
 #include "ClientLogHelper.h"
 #include "Config.h"
 #include "EventDispatcher.h"
-#include "FilterTypes.h"
 #include "states/StateJumpTables.h"
 #include <logger/Logger.h>
 #include <protocol/Packets.h>
@@ -31,7 +30,7 @@ void ClientHandler::stop() {
 		return;
 	}
 
-	remove_log_redirect();
+	log_redirect_stop();
 	context_.dispatcher.remove_handler(this);
 	state_update(ClientState::cs_session_closed);
 	stopped_ = true;
@@ -267,25 +266,27 @@ bool ClientHandler::validate_ping(const protocol::client::Ping& ping) {
 }
 
 void ClientHandler::log_redirect(LogRedirect::Type type, log::Severity severity) {
-	remove_log_redirect(); // remove if we're just changing settigns
+	log_redirect_stop(); // remove if we're just changing settigns
 
 	auto sink = std::make_shared<ClientSink>(
-		context_.dispatcher, log::Severity::trace, log::Filter(lf_packet_log),
-		uuid(), LogRedirect::Type::message
+		context_.dispatcher, uuid_, severity, type, log::Filter(lf_packet_log)
 	);
 
 	logger_.add_sink(sink);
 	redirect_sink_ = std::move(sink);
 }
 
-void ClientHandler::remove_log_redirect() {
+void ClientHandler::log_redirect_stop() {
 	if(!redirect_sink_) {
 		return;
 	}
 	
 	if(!logger_.remove_sink(redirect_sink_)) {
-		LOG_ERROR(logger_, "Could not remove client logging sink!");
+		LOG_FATAL(logger_, "Could not remove client logging sink!");
+		std::terminate();
 	}
+
+	redirect_sink_.reset();
 }
 
 /*

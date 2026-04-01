@@ -110,6 +110,7 @@ public:
 
 	void clear_console();
 	void set_max_table_cols(unsigned int cols);
+	bool invoke(const std::string_view command);
 
 	bool unique() override { return true; }
 };

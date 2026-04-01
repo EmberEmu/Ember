@@ -15,7 +15,8 @@
 
 namespace ember::realm {
 
-ClientSink::ClientSink(EventDispatcher& dispatcher, log::Severity severity, log::Filter filter, ClientIdent client, LogRedirect::Type type) 
+ClientSink::ClientSink(EventDispatcher& dispatcher, ClientIdent client, log::Severity severity,
+                       LogRedirect::Type type, log::Filter filter)
 	: log::Sink(severity, filter, sink_name)
 	, dispatcher_(dispatcher)
 	, severity_(severity)
@@ -23,7 +24,7 @@ ClientSink::ClientSink(EventDispatcher& dispatcher, log::Severity severity, log:
 	, client_(client)
 	, type_(type) {}
 
-void ClientSink::write(log::Severity severity, log::Filter type, std::span<const char> record, bool /*flush*/) {
+void ClientSink::write(log::Severity severity, log::Filter type, std::span<const char> record, bool) {
 	if(severity < severity_  || filter() & type) {
 		return;
 	}
