@@ -10,7 +10,6 @@
 
 #include "Events.h"
 #include <logger/Sink.h>
-#include <logger/Severity.h>
 #include <shared/ClientIdent.h>
 #include <string>
 #include <cstdint>
