@@ -8,6 +8,7 @@
 
 #include "ClientSink.h"
 #include "Events.h"
+#include "EventDispatcher.h"
 #include <logger/Utility.h>
 #include <memory>
 #include <utility>

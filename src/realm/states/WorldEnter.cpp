@@ -8,10 +8,9 @@
 
 #include "WorldEnter.h"
 #include "ClientContext.h"
+#include "../ClientHandler.h"
 #include "../ClientConnection.h"
-#include "../Events.h"
 #include "../RealmQueue.h"
-#include "../ClientSink.h"
 #include <protocol/Packets.h>
 #include <chrono>
 #include <format>
@@ -89,13 +88,7 @@ void initiate_player_login(ClientContext& ctx, const PlayerLogin* event) {
 	motd->player_tag = protocol::server::TAG_NONE;
 	ctx.handler.send(motd);
 
-	// log install test
-	auto sink = std::make_shared<ClientSink>(
-		ctx.dispatcher, log::Severity::trace, log::Filter(lf_packet_log),
-		ctx.handler.uuid(), LogRedirect::Type::message
-	);
-
-	ctx.logger.add_sink(std::move(sink));
+	ctx.handler.log_redirect(LogRedirect::Type::notification, log::Severity::debug);
 }
 
 void enter(ClientContext& ctx) {

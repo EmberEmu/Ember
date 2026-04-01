@@ -30,6 +30,10 @@ void Logger::add_sink(std::shared_ptr<Sink> sink) {
 	pimpl_->add_sink(std::move(sink));
 }
 
+bool Logger::remove_sink(const std::shared_ptr<Sink>& sink) {
+	return pimpl_->remove_sink(sink);
+}
+
 std::vector<std::shared_ptr<Sink>> Logger::fetch_sinks() {
 	return pimpl_->fetch_sinks();
 }

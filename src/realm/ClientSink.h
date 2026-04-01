@@ -9,7 +9,6 @@
 #pragma once
 
 #include "Events.h"
-#include "EventDispatcher.h"
 #include <logger/Sink.h>
 #include <logger/Severity.h>
 #include <shared/ClientIdent.h>
@@ -17,6 +16,8 @@
 #include <cstdint>
 
 namespace ember::realm {
+
+class EventDispatcher;
 
 class ClientSink final : public log::Sink {
 
@@ -44,7 +45,9 @@ class ClientSink final : public log::Sink {
 public:
 	static constexpr std::string_view sink_name = "ClientSink";
 
-	ClientSink(EventDispatcher& dispatcher, log::Severity severity, log::Filter filter, ClientIdent client, LogRedirect::Type type);
+	ClientSink(EventDispatcher& dispatcher, log::Severity severity,
+	           log::Filter filter, ClientIdent client,
+	           LogRedirect::Type type);
 
 	void write(log::Severity severity, log::Filter type, std::span<const char> record, bool flush) override;
 	void batch_write(const std::span<std::pair<log::RecordDetail, std::vector<char>>>& records) override;

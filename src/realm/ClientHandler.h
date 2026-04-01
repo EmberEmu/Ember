@@ -8,9 +8,10 @@
 
 #pragma once
 
-#include "Event.h"
+#include "Events.h"
 #include "FilterTypes.h"
 #include "ClientConnection.h"
+#include "ClientSink.h"
 #include "ConnectionDefines.h"
 #include "states/ClientContext.h"
 #include <logger/LoggerFwd.h>
@@ -46,6 +47,7 @@ class ClientHandler final {
 	boost::asio::steady_timer timer_;
 	log::Logger& logger_;
 	bool stopped_;
+	std::shared_ptr<ClientSink> redirect_sink_;
 
 	// client sanity check state
 	unsigned int packet_counter_;
@@ -64,6 +66,7 @@ class ClientHandler final {
 	void handle_ping(BinaryStream& stream);
 	void handle_timer();
 	bool pps_flood_check();
+	void remove_log_redirect();
 
 	void start_timer(const std::chrono::milliseconds& time);
 	void cancel_timer();
@@ -98,6 +101,7 @@ public:
 	void handle_event(const Event* event);
 	void handle_event(std::unique_ptr<const Event> event);
 	bool handle_top_level_event(const Event* event);
+	void log_redirect(LogRedirect::Type type, log::Severity severity);
 
 	ClientIdent& uuid() {
 		return uuid_;

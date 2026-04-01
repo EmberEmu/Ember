@@ -31,6 +31,7 @@ void ClientHandler::stop() {
 		return;
 	}
 
+	remove_log_redirect();
 	context_.dispatcher.remove_handler(this);
 	state_update(ClientState::cs_session_closed);
 	stopped_ = true;
@@ -148,10 +149,10 @@ void ClientHandler::start_timer(const std::chrono::milliseconds& time) {
 
 	timer_.async_wait([dispatcher, uuid = uuid_](const boost::system::error_code& ec) {
 		if(!ec) {
-			Event event { EventType::timer_expired };
+			Event event{ EventType::timer_expired };
 			dispatcher.post_event(uuid, event);
 		}
-	});
+					  });
 }
 
 void ClientHandler::cancel_timer() {
@@ -263,6 +264,28 @@ bool ClientHandler::validate_ping(const protocol::client::Ping& ping) {
 	}
 
 	return true;
+}
+
+void ClientHandler::log_redirect(LogRedirect::Type type, log::Severity severity) {
+	remove_log_redirect(); // remove if we're just changing settigns
+
+	auto sink = std::make_shared<ClientSink>(
+		context_.dispatcher, log::Severity::trace, log::Filter(lf_packet_log),
+		uuid(), LogRedirect::Type::message
+	);
+
+	logger_.add_sink(sink);
+	redirect_sink_ = std::move(sink);
+}
+
+void ClientHandler::remove_log_redirect() {
+	if(!redirect_sink_) {
+		return;
+	}
+	
+	if(!logger_.remove_sink(redirect_sink_)) {
+		LOG_ERROR(logger_, "Could not remove client logging sink!");
+	}
 }
 
 /*
