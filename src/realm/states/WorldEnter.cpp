@@ -12,8 +12,8 @@
 #include "../Events.h"
 #include "../RealmQueue.h"
 #include <protocol/Packets.h>
-
 #include <chrono>
+#include <format>
 #include <ctime>
 
 /*
@@ -396,11 +396,34 @@ void handle_packet(ClientContext& ctx, protocol::ClientOpcode opcode) {
 	}
 }
 
+void system_msg(ClientContext& ctx, const SystemMessage* event) {
+	protocol::smsg_messagechat msg;
+	msg->language = 0;
+
+	if(event->whisper) {
+		msg->type = protocol::server::MONSTER_WHISPER;
+		msg->monster_name = "System";
+		msg->message = event->message;
+	} else {
+		msg->type = protocol::server::SYSTEM;
+		msg->message = std::format("[System] {}", event->message);
+	}
+
+	msg->player_guid = 0;
+	msg->player_tag = protocol::server::TAG_NONE;
+	ctx.connection->send(msg);
+}
+
 void handle_event(ClientContext& ctx, const Event* event) {
+	using enum EventType;
+
     switch(event->type) {
-        case EventType::player_login:
+        case player_login:
             initiate_player_login(ctx, static_cast<const PlayerLogin*>(event));
             break;
+		case system_message:
+			system_msg(ctx, static_cast<const SystemMessage*>(event));
+			break;
         default:
             break;
     }

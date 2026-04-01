@@ -44,6 +44,7 @@ class ClientHandler final {
 	ClientIdent uuid_;
 	boost::asio::steady_timer timer_;
 	log::Logger& logger_;
+	bool stopped_;
 
 	// client sanity check state
 	unsigned int packet_counter_;
@@ -81,6 +82,7 @@ public:
 	void start();
 	void stop();
 	void close();
+
 	std::string_view client_identify() const;
 
 	template<is_packet T>
@@ -93,6 +95,7 @@ public:
 	void handle_message(StaticBuffer& buffer, protocol::SizeType msg_size);
 	void handle_event(const Event* event);
 	void handle_event(std::unique_ptr<const Event> event);
+	bool handle_top_level_event(const Event* event);
 
 	ClientIdent& uuid() {
 		return uuid_;
@@ -100,6 +103,10 @@ public:
 
 	const ClientIdent& uuid() const {
 		return uuid_;
+	}
+
+	ClientState state() const {
+		return context_.state;
 	}
 
 	friend class ClientTimer;

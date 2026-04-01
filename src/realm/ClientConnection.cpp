@@ -179,21 +179,14 @@ void ClientConnection::stop() {
 		return;
 	}
 
+	stopped_ = true;
 	LOG_DEBUG(logger_, "Closing connection to {}", remote_address());
 	boost::system::error_code ec; // we don't care about any errors
 	socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
 	socket_.close(ec);
-	stopped_ = true;
 }
 
 void ClientConnection::close_session() {
-	if(stopping_) {
-		return;
-	}
-
-	stopping_ = true;
-	stop();
-
 	boost::asio::post(socket_.get_executor(), [&] {
 		if(on_disconnect_) {
 			on_disconnect_();
@@ -209,7 +202,7 @@ const ConnectionStats& ClientConnection::stats() const {
 	return stats_;
 }
 
-void ClientConnection::latency(std::size_t latency) {
+void ClientConnection::latency(std::uint32_t latency) {
 	stats_.latency = latency;
 }
 

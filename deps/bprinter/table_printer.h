@@ -81,7 +81,7 @@ public:
   }
 
 private:
-  void PrintHorizontalLine();
+  void PrintHorizontalLine(bool skip_newline = false);
 
   template<typename T> void OutputDecimalNumber(T input);
 

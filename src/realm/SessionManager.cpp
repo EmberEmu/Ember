@@ -29,12 +29,15 @@ void SessionManager::start(ClientPtr client) {
 	ptr->start();
 }
 
-void SessionManager::stop(const SessionID session_id) {
+bool SessionManager::stop(const SessionID session_id) {
 	std::lock_guard guard(sessions_lock_);
 
 	if(auto it = sessions_.find(session_id); it != sessions_.end()) {
 		sessions_.erase(it);
+		return true;
 	}
+
+	return false;
 }
 
 void SessionManager::stop_all() {
@@ -65,7 +68,7 @@ auto SessionManager::generate_id() -> SessionID {
 		++next_id_;
 	}
 
-	return next_id_;
+	return next_id_++;
 }
 
 std::size_t SessionManager::count() const {

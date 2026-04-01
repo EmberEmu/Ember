@@ -37,6 +37,10 @@ public:
 		connection_.set_handler(&handler_);
 	}
 
+	~Client() {
+		stop();
+	}
+
 	void start() {
 		connection_.start();
 		handler_.start();

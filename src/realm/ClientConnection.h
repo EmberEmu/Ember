@@ -84,6 +84,7 @@ private:
 	bool write_packet_stream(const is_packet auto& packet);
 
 	std::size_t minimum_transfer() const;
+	void close_session();
 
 public:
 	ClientConnection(tcp_socket socket, log::Logger& logger)
@@ -109,7 +110,7 @@ public:
 
 	void set_key(std::span<const std::uint8_t> key);
 	void compression_level(unsigned int level);
-	void latency(std::size_t latency);
+	void latency(std::uint32_t latency);
 
 	const ConnectionStats& stats() const;
 	std::string remote_address() const;
@@ -119,8 +120,7 @@ public:
 	void set_handler(ClientHandler* handler);
 	void set_on_disconnect(OnDisconnect on_disconnect);
 
-	//static void async_shutdown(std::shared_ptr<Client> client);
-	void close_session(); // should be made private
+	friend class ClientHandler;
 };
 
 } // realm, ember

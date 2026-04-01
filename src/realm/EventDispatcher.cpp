@@ -99,6 +99,7 @@ void EventDispatcher::broadcast_event_thread(const Event& event) const {
 	broadcast(event);
 }
 
+// todo
 void EventDispatcher::broadcast_event(const Event& event) const {
 	for(auto& ioc : pool_) {
 		broadcast(event);

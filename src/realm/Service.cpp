@@ -11,6 +11,7 @@
 #include "FilterTypes.h"
 #include "LoggingCallbacks.h"
 #include "ServiceContextImpl.h"
+#include "commands/Session.h"
 #include <conpool/ConnectionPool.h>
 #include <conpool/Policies.h>
 #include <conpool/drivers/AutoSelect.h>
@@ -302,7 +303,12 @@ void Service::register_commands(boost::asio::io_context& ioc) {
 			}
 		})
 	));
+	
+	auto conn_root = add_session_commands(
+		registry, *ctx->cmd_exec, *ctx->dispatcher, ctx->sessions, logger
+	);
 
+	ctx->commands.emplace_back(std::move(conn_root));
 	ctx->commands.emplace_back(std::move(cmd));
 }
 
@@ -388,7 +394,6 @@ void Service::stop() {
 
 	boost::asio::post(ctx->service_pool->get(0), [&] {
 		auto ctx = context.get();
-		ctx->sessions.stop_all();
 		ctx->cmd_exec->signal_stop();
 		context.reset();
 		stop_flag.release();
