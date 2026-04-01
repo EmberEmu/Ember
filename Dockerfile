@@ -19,11 +19,13 @@ RUN apt-get -y update \
  && apt-get install -y libmysqlcppconn-dev \
  && apt-get install -y zlib1g \ 
  && apt-get install -y zlib1g-dev \ 
- && apt-get install -y libpcre3 \
+ # && apt-get install -y libpcre3 \ - Ubuntu randomly vanished it with no notice, again - thanks, Ubuntu
  && apt-get install -y libpcre3-dev \
  && apt-get install -y libflatbuffers-dev \
  && apt-get install -y libjemalloc-dev \
- && apt-get install -y ccache
+ && apt-get install -y ccache \
+ && wget https://archive.ubuntu.com/ubuntu/pool/main/p/pcre3/libpcre3-dev_8.39-9_amd64.deb
+ && dpkg -i libpcre3-dev_8.39-9_amd64.deb
 
 RUN if [ -n "$USE_CLANG" ]; then                                        \
  apt-get -y install clang;                                              \
