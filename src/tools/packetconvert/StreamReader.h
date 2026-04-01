@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 - 2024 Ember
+ * Copyright (c) 2018 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -32,7 +32,7 @@ class StreamReader final {
 	std::ifstream& in_;
 	bool skip_;
 	const bool stream_;
-	const std::chrono::seconds interval_;
+	const std::chrono::milliseconds interval_;
 	std::streampos stream_size_;
 	std::vector<std::unique_ptr<Sink>> sinks_;
 
@@ -44,7 +44,7 @@ class StreamReader final {
 
 public:
 	StreamReader(std::ifstream& in, std::uintmax_t size, bool stream, bool skip = false,
-	             std::chrono::seconds interval = 2s);
+	             std::chrono::milliseconds interval = 500ms);
 
 	void process();
 	void add_sink(std::unique_ptr<Sink> sink);

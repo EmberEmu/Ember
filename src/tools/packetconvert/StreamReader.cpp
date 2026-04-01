@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 - 2025 Ember
+ * Copyright (c) 2018 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -10,13 +10,17 @@
 #include <boost/endian/conversion.hpp>
 #include <boost/container/small_vector.hpp>
 #include <thread>
+#include <iostream>
 
 namespace ember {
 
-StreamReader::StreamReader(std::ifstream& in, std::uintmax_t size, bool stream, bool skip,
-                           std::chrono::seconds interval)
-                           : in_(in), skip_(skip), stream_(stream), interval_(interval),
-                             stream_size_(size) {
+StreamReader::StreamReader(std::ifstream& in, std::uintmax_t size, bool stream,
+                           bool skip, std::chrono::milliseconds interval)
+	: in_(in)
+	, skip_(skip)
+	, stream_(stream)
+	, interval_(interval)
+	, stream_size_(size) {
 	if(!in) {
 		throw std::runtime_error("Packet dump stream error");
 	}
@@ -27,7 +31,7 @@ void StreamReader::add_sink(std::unique_ptr<Sink> sink) {
 }
 
 void StreamReader::process() {
-	ReadState state { ReadState::size };
+	auto state = ReadState::size;
 	std::optional<fblog::Type> type;
 	boost::container::small_vector<std::uint8_t, 256> buffer;
 
@@ -125,7 +129,6 @@ void StreamReader::handle_header(std::span<const std::uint8_t> buff) {
 void StreamReader::handle_message(std::span<const std::uint8_t> buff) {
 	auto message = flatbuffers::GetRoot<fblog::Message>(buff.data());
 	flatbuffers::Verifier verifier(buff.data(), buff.size());
-
 	if(!message->Verify(verifier)) {
 		throw std::runtime_error("Flatbuffer verification failed");
 	}

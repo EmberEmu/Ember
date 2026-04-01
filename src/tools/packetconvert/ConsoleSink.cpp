@@ -9,6 +9,7 @@
 #include "ConsoleSink.h"
 #include <protocol/Opcodes.h>
 #include <shared/utility/FormatPacket.h>
+#include <chrono>
 #include <iostream>
 #include <sstream>
 #include <iomanip>
@@ -59,10 +60,16 @@ void ConsoleSink::handle(const fblog::Message& message) {
 	std::cout << "<message>\n";
 
 	if(message.time()) {
-		std::tm time;
-		std::istringstream ss(message.time()->c_str());
-		ss >> std::get_time(&time, time_fmt_.c_str());
-		std::cout << std::put_time(&time, "%a, %B %d, %Y @ %H:%M:%S UTC\n");
+		std::istringstream ss(message.time()->str());
+		std::chrono::sys_time<std::chrono::seconds> time;
+		ss >> std::chrono::parse("%Y-%m-%dT%H:%M:%SZ", time);
+
+		if(!ss) {
+			std::cout << "<time parse failed>\n";
+		}
+
+		auto time_c = std::chrono::system_clock::to_time_t(time);
+		std::cout << std::put_time(std::gmtime(&time_c), "%a, %B %d, %Y @ %H:%M:%SZ\n");
 	} else {
 		std::cout << "<missing time>\n";
 	}
