@@ -162,16 +162,17 @@ void connection_statistics(const commands::Arguments& args,
 			return;
 		}
 
-		auto work = [&, id, client] {
+		// it's only safe to interact with a client from within a session
+		// iteration or by dispatching tasks/events to it - never interact
+		// with a client outside of these two mechanisms
+		dispatcher.exec(*ident, [&, id, client] {
 			std::stringstream stream;
 			bprinter::TablePrinter table(&stream);
 			print_connection_stats_header(table);
 			print_connection_stats(table, id, client);
 			table.PrintFooter();
 			LOG_CONSOLE(logger, "Displaying statistics for connection {}\n{}", id, stream.str());
-		};
-
-		dispatcher.exec(*ident, work);
+		});
 	} else {
 		std::stringstream stream;
 		bprinter::TablePrinter table(&stream);
