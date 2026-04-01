@@ -44,16 +44,15 @@ std::vector<std::string> parse_input(const std::string_view input, bool escape) 
 	std::string str(input);
 
 	try {
-		boost::escaped_list_separator<char> sep;
-
 		if(escape) {
-			sep = boost::escaped_list_separator<char>('\\', ' ', '"');
+			boost::escaped_list_separator<char> sep('\\', ' ', '"');
+			boost::tokenizer tok(str, sep);
+			tokens.assign_range(tok);
 		} else {
-			sep = boost::escaped_list_separator<char>(' ');
+			boost::char_separator<char> sep(" ");
+			boost::tokenizer tok(str, sep);;
+			tokens.assign_range(tok);
 		}
-
-		boost::tokenizer<boost::escaped_list_separator<char>> tok(str, sep);
-		tokens.assign_range(tok);
 	} catch(boost::escaped_list_error& e) {
 		throw parse_error(e.what());
 	}

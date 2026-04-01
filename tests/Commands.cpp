@@ -125,7 +125,7 @@ TEST_F(Registry, Autocomplete) {
 }
 	
 TEST_F(Registry, AutocompleteSubcommands) {
-	const auto result = registry->autocomplete("root ");
+	const auto result = registry->autocomplete("root r");
 	ASSERT_EQ(result.substring, "root root_nested_");
 	ASSERT_EQ(result.records.size(), 2);
 	ASSERT_EQ(result.records.front().name, "root_nested_1");
@@ -133,7 +133,7 @@ TEST_F(Registry, AutocompleteSubcommands) {
 }
 
 TEST_F(Registry, AutocompleteNestedSubcommand) {
-	const auto result = registry->autocomplete("root root_nested_2 ");
+	const auto result = registry->autocomplete("root root_nested_2 r");
 	ASSERT_EQ(result.substring, "root root_nested_2 root_nested_2_1");
 	ASSERT_EQ(result.records.size(), 1);
 	ASSERT_EQ(result.records.front().name, "root_nested_2_1");
