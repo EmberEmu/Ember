@@ -47,6 +47,10 @@ void initiate_player_login(ClientContext& ctx, const PlayerLogin* event) {
     auto& state_ctx = std::get<Context>(ctx.state_ctx);
     state_ctx.character_id = event->character_id_;
 
+	protocol::smsg_trigger_cinematic cinematic;
+	cinematic->id = 81;
+	ctx.connection->send(cinematic);
+
 	protocol::smsg_login_verify_world verify_world;
 	verify_world->map_id = 0;
 	verify_world->position.x = -6240.32f;
@@ -75,10 +79,6 @@ void initiate_player_login(ClientContext& ctx, const PlayerLogin* event) {
 	//weather->type = weather->RAIN;
 	//weather->sound_id = 8535;
 	//ctx.connection->send(weather);
-
-	protocol::smsg_trigger_cinematic cinematic;
-	cinematic->id = 81;
-	ctx.connection->send(cinematic);
 
 	protocol::smsg_messagechat motd;
 	motd->language = 0;
