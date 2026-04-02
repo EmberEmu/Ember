@@ -9,14 +9,9 @@
 #pragma once
 
 #include <shared/game/GameVersion.h>
+#include <shared/Realm.h>
 #include <chrono>
 #include <vector>
-
-namespace ember {
-
-struct Realm;
-
-} // ember
 
 namespace ember::realm {
 
@@ -27,7 +22,7 @@ constexpr static inline std::chrono::seconds broadcast_timer_frequency { 30 };
 } // config
 
 struct Config {
-	Realm* realm;
+	Realm realm;
 	unsigned int realm_id;
 	unsigned int max_slots;
 	std::chrono::seconds auth_timeout;

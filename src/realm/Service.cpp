@@ -148,19 +148,19 @@ void Service::initialise(const opts::variables_map& args) try {
 	SLOG_INFO(logger, "Loading configuration for realm ID {}", realm_id);
 
 	if(auto realm = load_realm(args, logger)) {
-		ctx->realm = std::make_unique<Realm>(std::move(*realm));
+		ctx->realm = std::move(*realm);
 	} else {
 		throw std::invalid_argument(
 			std::format("Configured realm ID {} does not exist in database.", realm_id)
 		);
 	}
 
-	const auto& title = std::format("{} - {}", app_name, ctx->realm->name);
+	const auto& title = std::format("{} - {}", app_name, ctx->realm.name);
 	utility::set_window_title(title);
 
 	// Validate category & region
-	const auto& cat_name = category_name(*ctx->realm, ctx->dbcs->cfg_categories);
-	SLOG_INFO(logger, "Serving as realm for {} ({})", ctx->realm->name, cat_name);
+	const auto& cat_name = category_name(ctx->realm, ctx->dbcs->cfg_categories);
+	SLOG_INFO(logger, "Serving as realm for {} ({})", ctx->realm.name, cat_name);
 
 	SLOG_INFO(logger, "Starting event dispatcher...");
 	ctx->dispatcher = std::make_unique<EventDispatcher>(*ctx->service_pool, logger);
@@ -178,14 +178,14 @@ void Service::initialise(const opts::variables_map& args) try {
 	};
 
 	// If the port specified in the database differs from the config file, use the config file
-	if(port != ctx->realm->port) {
+	if(port != ctx->realm.port) {
 		SLOG_WARN(
 			logger, "Configured port {} differs from database entry port {}, using {}",
-			port, ctx->realm->port, port
+			port, ctx->realm.port, port
 		);
 
-		ctx->realm->port = port;
-		update_realm_address(*ctx->realm);
+		ctx->realm.port = port;
+		update_realm_address(ctx->realm);
 	}
 
 	// Retrieve STUN result
@@ -196,12 +196,12 @@ void Service::initialise(const opts::variables_map& args) try {
 		log_stun_result(stun, result, port, logger);
 
 		if(result) {
-			ctx->realm->ip = stun::extract_ip_to_string(*result);
-			update_realm_address(*ctx->realm);
+			ctx->realm.ip = stun::extract_ip_to_string(*result);
+			update_realm_address(ctx->realm);
 		}
 	}
 
-	SLOG_INFO(logger, "Realm will be advertised on {}", ctx->realm->address);
+	SLOG_INFO(logger, "Realm will be advertised on {}", ctx->realm.address);
 
 	// Start port forwarding
 	auto& service = ctx->service_pool->get(0);
@@ -224,7 +224,7 @@ void Service::initialise(const opts::variables_map& args) try {
 
 	SLOG_INFO(logger, "Starting RPC services...");
 	ctx->rpc = std::make_unique<spark::Server>(service, app_name, s_address, s_port, logger);
-	ctx->rpc_realm = std::make_unique<RealmService>(*ctx->rpc, *ctx->realm, logger);
+	ctx->rpc_realm = std::make_unique<RealmService>(*ctx->rpc, ctx->realm, logger);
 	ctx->rpc_account= std::make_unique<AccountClient>(*ctx->rpc, logger);
 	ctx->rpc_character = std::make_unique<CharacterClient>(*ctx->rpc, *ctx->config_store, logger);
 	ctx->rpc_world = std::make_unique<WorldRPCClient>(*ctx->rpc, logger);
@@ -341,8 +341,8 @@ Config Service::generate_config(const opts::variables_map& args) {
 	auto ctx = context.get();
 
 	return Config {
-		.realm = ctx->realm.get(),
-		.realm_id = ctx->realm->id,
+		.realm = ctx->realm,
+		.realm_id = ctx->realm.id,
 		.max_slots = args["realm.max_slots"].as<unsigned int>(),
 		.auth_timeout = std::chrono::seconds(args["realm.auth_timeout"].as<unsigned int>()),
 		.char_list_timeout = std::chrono::seconds(args["realm.char_list_timeout"].as<unsigned int>()),

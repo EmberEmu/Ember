@@ -42,7 +42,7 @@ void CharacterClient::retrieve_characters(const std::uint32_t account_id, Retrie
 
 	RetrieveT msg {
 		.account_id = account_id,
-		.realm_id = config.realm->id
+		.realm_id = config.realm.id
 	};
 
 	send<RetrieveResponse>(msg, link_, [this, cb](auto link, auto message) {
@@ -59,7 +59,7 @@ void CharacterClient::create_character(const std::uint32_t account_id,
 
 	CreateT msg;
 	msg.account_id = account_id;
-	msg.realm_id = config.realm->id;
+	msg.realm_id = config.realm.id;
 	msg.character = std::make_unique<CharacterTemplateT>(character);
 
 	send<CreateResponse>(msg, link_, [this, cb](auto link, auto message) {
@@ -76,7 +76,7 @@ void CharacterClient::delete_character(std::uint32_t account_id,
 
 	DeleteT msg {
 		.account_id = account_id,
-		.realm_id = config.realm->id,
+		.realm_id = config.realm.id,
 		.character_id = id,
 	};
 
@@ -95,7 +95,7 @@ void CharacterClient::rename_character(std::uint32_t account_id,
 	RenameT msg {
 		.account_id = account_id,
 		.name = name,
-		.realm_id = config.realm->id,
+		.realm_id = config.realm.id,
 		.character_id = character_id,
 	};
 

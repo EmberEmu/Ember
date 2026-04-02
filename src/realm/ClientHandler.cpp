@@ -293,7 +293,7 @@ void ClientHandler::log_redirect_stop() {
 }
 
 void ClientHandler::enable_packet_log() {
-	const auto realm = context_.cfg_store.config().realm->name;
+	const auto realm = context_.cfg_store.config().realm.name;
 	connection_->packet_log_start(uuid_.to_string(), std::move(realm));
 }
 
