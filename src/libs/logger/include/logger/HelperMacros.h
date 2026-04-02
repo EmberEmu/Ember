@@ -228,7 +228,7 @@ inline auto& log_deref(auto* x) { return *x; }
 		if(logger->severity() <= ember::log::Severity::trace) \
 			logger->fmt_write<true>(ember::log::Severity::trace, filter, fmt_str __VA_OPT__(,) __VA_ARGS__);
 #else
-#define LOG_TRACE(logger, fmt_str, ...) \
+#define LOG_FTRACE(logger, fmt_str, ...) \
 		if(false);
 #endif
 
