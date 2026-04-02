@@ -24,7 +24,7 @@ RUN apt-get -y update \
  && apt-get install -y libflatbuffers-dev \
  && apt-get install -y libjemalloc-dev \
  && apt-get install -y ccache \
- && echo "deb http://archive.ubuntu.com/ubuntu/ questing main restricted" | sudo tee -a /etc/apt/sources.list \
+ && echo "deb http://archive.ubuntu.com/ubuntu/ questing main restricted" | tee -a /etc/apt/sources.list \
  && apt update \
  && wget https://archive.ubuntu.com/ubuntu/pool/main/p/pcre3/libpcre3-dev_8.39-9_amd64.deb \
  && apt install ./libpcre3-dev_8.39-9_amd64.deb
