@@ -27,6 +27,7 @@ class ServiceRunner final {
 
 public:
 	ServiceRunner(ServiceContext context, opts::variables_map args);
+	~ServiceRunner();
 
 	void run();
 	void stop();

@@ -17,6 +17,10 @@ ServiceRunner::ServiceRunner(ServiceContext context, opts::variables_map options
 	, opts_(std::move(options))
 	, running_(false) {}
 
+ServiceRunner::~ServiceRunner() {
+	stop();
+}
+
 void ServiceRunner::run() {
 	running_ = true;
 
