@@ -22,7 +22,7 @@ namespace ember::stun {
 using namespace std::chrono_literals;
 
 class DatagramTransport final : public Transport {
-	static const std::size_t INITIAL_RECV_BUFFER_SIZE = 2048;
+	static const std::size_t initial_recv_buffer_size = 2048;
 
 	boost::asio::io_context& ctx_;
 	boost::asio::ip::udp::socket socket_;
