@@ -24,8 +24,8 @@ RUN apt-get -y update \
  && apt-get install -y libflatbuffers-dev \
  && apt-get install -y libjemalloc-dev \
  && apt-get install -y ccache \
- && echo "deb http://archive.ubuntu.com/ubuntu/ questing main restricted" | tee -a /etc/apt/sources.list \
- && apt update \
+ && echo "deb http://archive.ubuntu.com/ubuntu/ questing main universe multiverse restricted" | tee -a /etc/apt/sources.list \
+ && apt-get -y update \
  && apt-get install -y libpcre3 \
  && apt-get install -y libpcre3-dev
 
