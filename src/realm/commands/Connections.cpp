@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include "Session.h"
+#include "Connections.h"
 #include "../Events.h"
 #include <logger/Logger.h>
 #include <bprinter/table_printer.h>
@@ -189,14 +189,14 @@ void connection_statistics(const commands::Arguments& args,
 	}
 }
 
-commands::ScopedCommand add_session_commands(commands::Command& registry,
-                                             utility::CommandExecutor& exec,
-                                             EventDispatcher& dispatcher,
-                                             SessionManager& sessions,
-                                             log::Logger& logger) {
+commands::ScopedCommand add_connections_commands(commands::Command& registry,
+                                                 utility::CommandExecutor& exec,
+                                                 EventDispatcher& dispatcher,
+                                                 SessionManager& sessions,
+                                                 log::Logger& logger) {
 
 	auto root = commands::create("connections")
-		->description("Commands for connection/session management");
+		->description("Commands for connection & session management");
 
 	root->insert(commands::create("list")
 		->description("Display connections overview")

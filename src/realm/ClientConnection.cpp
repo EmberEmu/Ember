@@ -8,7 +8,7 @@
 
 #include "ClientConnection.h"
 #include "ClientHandler.h"
-#include "packet_log/FBSink.h"
+#include "packet_log/FlatbuffersSink.h"
 #include "packet_log/LogSink.h"
 #include <logger/Logger.h>
 #include <protocol/PacketHeaders.h>
@@ -211,16 +211,25 @@ void ClientConnection::compression_level(unsigned int level) {
 	compression_level_ = level;
 }
 
-void ClientConnection::packet_log_start() {
-	packet_logger_ = std::make_unique<PacketLogger>();
+bool ClientConnection::packet_log_start(std::string file, std::string host) try {
+	// these can throw - they succeed or fail together
+	auto logger = std::make_unique<PacketLogger>();
 
-	packet_logger_->add_sink(
-		std::make_unique<FBSink>("temp", "realm", remote_address())
+	auto sink_fb = std::make_unique<FlatbuffersSink>(
+		std::move(file), std::move(host), remote_address()
 	);
 
-	packet_logger_->add_sink(
-		std::make_unique<LogSink>(logger_, log::Severity::debug, remote_address())
+	auto sink_log = std::make_unique<LogSink>(
+		logger_, log::Severity::debug, remote_address()
 	);
+
+	logger->add_sink(std::move(sink_fb));
+	logger->add_sink(std::move(sink_log));
+	packet_logger_.swap(logger);
+
+	return true;
+} catch(std::exception& e) {
+	return false;
 }
 
 void ClientConnection::packet_log_stop() {

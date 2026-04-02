@@ -67,6 +67,8 @@ class ClientHandler final {
 	void handle_timer();
 	bool pps_flood_check();
 
+	void enable_packet_log();
+
 	void start_timer(const std::chrono::milliseconds& time);
 	void cancel_timer();
 

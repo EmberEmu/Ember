@@ -50,7 +50,7 @@ set(LIBRARY_HDR
     states/StateFwdDecl.h
     packet_log/PacketLogger.h
     packet_log/PacketSink.h
-    packet_log/FBSink.h
+    packet_log/FlatbuffersSink.h
     packet_log/LogSink.h
     Service.h
     LoggingCallbacks.h
@@ -67,7 +67,7 @@ set(LIBRARY_HDR
     ClientTimer.h
     SessionIterator.h
     ClientSink.h
-    commands/Session.h
+    commands/Connections.h
 )
 
 set(LIBRARY_SRC
@@ -91,7 +91,7 @@ set(LIBRARY_SRC
     states/SessionClose.cpp
     states/WorldEnter.cpp
     packet_log/PacketLogger.cpp
-    packet_log/FBSink.cpp
+    packet_log/FlatbuffersSink.cpp
     packet_log/LogSink.cpp
     Service.cpp
     WorldRPCClient.cpp
@@ -99,7 +99,7 @@ set(LIBRARY_SRC
     ServiceContext.cpp
     ClientTimer.cpp
     ClientSink.cpp
-    commands/Session.cpp
+    commands/Connections.cpp
 )
 
 add_library(${LIBRARY_NAME} ${SERVICE_LIB_LINKAGE} 

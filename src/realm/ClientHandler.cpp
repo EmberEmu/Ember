@@ -9,10 +9,12 @@
 #include "ClientHandler.h"
 #include "ClientLogHelper.h"
 #include "Config.h"
+#include "ConfigStore.h"
 #include "EventDispatcher.h"
 #include "states/StateJumpTables.h"
 #include <logger/Logger.h>
 #include <protocol/Packets.h>
+#include <shared/Realm.h>
 #include <shared/utility/TickClock.h>
 #include <format>
 #include <utility>
@@ -70,7 +72,7 @@ bool ClientHandler::handle_top_level_event(const Event* event) {
 			return true;
 		case packet_log_enable:
 			log_redirect_stop();
-			connection_->packet_log_start();
+			enable_packet_log();
 			return true;
 		case packet_log_disable:
 			connection_->packet_log_stop();
@@ -288,6 +290,11 @@ void ClientHandler::log_redirect_stop() {
 	}
 
 	redirect_sink_.reset();
+}
+
+void ClientHandler::enable_packet_log() {
+	const auto realm = context_.cfg_store.config().realm->name;
+	connection_->packet_log_start(uuid_.to_string(), std::move(realm));
 }
 
 /*

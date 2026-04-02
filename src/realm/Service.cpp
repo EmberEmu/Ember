@@ -11,7 +11,7 @@
 #include "FilterTypes.h"
 #include "LoggingCallbacks.h"
 #include "ServiceContextImpl.h"
-#include "commands/Session.h"
+#include "commands/Connections.h"
 #include <conpool/ConnectionPool.h>
 #include <conpool/Policies.h>
 #include <conpool/drivers/AutoSelect.h>
@@ -304,7 +304,7 @@ void Service::register_commands(boost::asio::io_context& ioc) {
 		})
 	));
 	
-	auto conn_root = add_session_commands(
+	auto conn_root = add_connections_commands(
 		registry, *ctx->cmd_exec, *ctx->dispatcher, ctx->sessions, logger
 	);
 

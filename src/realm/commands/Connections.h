@@ -17,7 +17,7 @@
 
 namespace ember::realm {
 
-commands::ScopedCommand add_session_commands(
+commands::ScopedCommand add_connections_commands(
 	commands::Command& registry,
 	utility::CommandExecutor& exec,
     EventDispatcher& dispatcher,

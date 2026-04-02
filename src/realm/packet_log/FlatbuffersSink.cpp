@@ -1,30 +1,27 @@
 /*
- * Copyright (c) 2018 - 2025 Ember
+ * Copyright (c) 2018 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include "FBSink.h"
-#include <PacketLog_generated.h>
+#include "FlatbuffersSink.h"
 #include <logger/Utility.h>
-#include <boost/endian/conversion.hpp>
+#include <spark/buffers/Endian.h>
+#include <PacketLog_generated.h>
 #include <array>
 #include <memory>
 #include <cstddef>
 #include <ctime>
 
-namespace be = boost::endian;
-
 namespace ember::realm {
 
-FBSink::FBSink(const std::string& filename, std::string_view host, std::string_view remote_host) {
+FlatbuffersSink::FlatbuffersSink(const std::string& filename, std::string_view host, std::string_view remote_host) {
 	start_log(filename, host, remote_host);
 }
 
-void FBSink::start_log(const std::string& filename, std::string_view host,
-                       std::string_view remote_host) {
+void FlatbuffersSink::start_log(const std::string& filename, std::string_view host, std::string_view remote_host) {
 	file_ = std::ofstream(filename, std::fstream::binary | std::fstream::app | std::fstream::out);
 
 	if(!file_) {
@@ -47,21 +44,20 @@ void FBSink::start_log(const std::string& filename, std::string_view host,
 	auto header = hb.Finish();
 	fbb.Finish(header);
 
-	const auto size = fbb.GetSize();
-	const auto size_le = be::native_to_little(size);
-	const auto type_le = be::native_to_little(static_cast<std::uint32_t>(fblog::Type::header));
+	const auto size_native = fbb.GetSize();
+	const auto size_le = spark::io::endian::native_to_little(size_native);
+	const auto type_le = spark::io::endian::native_to_little(static_cast<std::uint32_t>(fblog::Type::header));
 
 	file_.write(reinterpret_cast<const char*>(&size_le), sizeof(size_le));
 	file_.write(reinterpret_cast<const char*>(&type_le), sizeof(type_le));
-	file_.write(reinterpret_cast<const char*>(fbb.GetBufferPointer()), size);
+	file_.write(reinterpret_cast<const char*>(fbb.GetBufferPointer()), size_native);
 
 	if(!file_) {
 		throw std::runtime_error("Error writing to packet log");
 	}
 }
 
-void FBSink::log(std::span<const std::uint8_t> buffer, const std::time_t& time, 
-                 PacketDirection dir) {
+void FlatbuffersSink::log(std::span<const std::uint8_t> buffer, const std::time_t& time, PacketDirection dir) {
 	std::tm utc_time;
 
 #if _MSC_VER && !__INTEL_COMPILER
@@ -69,7 +65,6 @@ void FBSink::log(std::span<const std::uint8_t> buffer, const std::time_t& time,
 #else
 	gmtime_r(&time, &utc_time);
 #endif
-
 
 	flatbuffers::FlatBufferBuilder fbb;
 	const auto payload = fbb.CreateVector(buffer.data(), buffer.size());
@@ -87,13 +82,13 @@ void FBSink::log(std::span<const std::uint8_t> buffer, const std::time_t& time,
 	auto message = mb.Finish();
 	fbb.Finish(message);
 
-	const auto size = fbb.GetSize();
-	const auto size_le = be::native_to_little(size);
-	const auto type_le = be::native_to_little(static_cast<std::uint32_t>(fblog::Type::message));
+	const auto size_native = fbb.GetSize();
+	const auto size_le = spark::io::endian::native_to_little(size_native);
+	const auto type_le = spark::io::endian::native_to_little(static_cast<std::uint32_t>(fblog::Type::message));
 
 	file_.write(reinterpret_cast<const char*>(&size_le), sizeof(size_le));
 	file_.write(reinterpret_cast<const char*>(&type_le), sizeof(type_le));
-	file_.write(reinterpret_cast<const char*>(fbb.GetBufferPointer()), size);
+	file_.write(reinterpret_cast<const char*>(fbb.GetBufferPointer()), size_native);
 	file_.flush();
 
 	if(!file_) {

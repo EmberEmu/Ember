@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 - 2024 Ember
+ * Copyright (c) 2018 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -16,7 +16,7 @@
 
 namespace ember::realm {
 
-class FBSink final : public PacketSink {
+class FlatbuffersSink final : public PacketSink {
 	constexpr static std::uint32_t VERSION = 1;
 
 	std::ofstream file_;
@@ -25,7 +25,7 @@ class FBSink final : public PacketSink {
 	void start_log(const std::string& filename, std::string_view host, std::string_view remote_host);
 
 public:
-	FBSink(const std::string& filename, std::string_view host, std::string_view remote_host);
+	FlatbuffersSink(const std::string& filename, std::string_view host, std::string_view remote_host);
 
 	void log(std::span<const std::uint8_t> buffer, const std::time_t& time,
 	         PacketDirection dir) override;
