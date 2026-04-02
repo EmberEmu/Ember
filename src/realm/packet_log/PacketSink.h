@@ -9,7 +9,6 @@
 #pragma once
 
 #include <span>
-#include <cstddef>
 #include <cstdint>
 #include <ctime>
 
