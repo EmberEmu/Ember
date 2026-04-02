@@ -17,7 +17,8 @@
 
 namespace ember::realm {
 
-void ClientHandler::send(is_packet auto& packet) {
+// this is a thunk to allow for outgoing logging without polluting the connection
+inline void ClientHandler::send(is_packet auto& packet) {
 	PACKET_TRACE(logger_, context_) << " <- " << protocol::to_string(packet.opcode) << LOG_ASYNC;
 	connection_->send(packet);
 }
