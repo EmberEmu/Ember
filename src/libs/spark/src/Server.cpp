@@ -239,6 +239,7 @@ void Server::shutdown() {
 
 	acceptor_.close();
 	stopped_ = true;
+	LOG_DEBUG(logger_, "[spark] Service stopped");
 }
 
 Server::~Server() {

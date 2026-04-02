@@ -122,4 +122,8 @@ std::size_t RealmQueue::size() const {
 	return queue_.size();
 }
 
+RealmQueue::~RealmQueue() {
+	shutdown();
+}
+
 } // realm, ember

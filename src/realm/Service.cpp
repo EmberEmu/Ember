@@ -393,10 +393,16 @@ void Service::stop() {
 	SLOG_TRACE(logger, "{} shutting down...", app_name);
 	auto ctx = context.get();
 
+	// this all needs to be reworked, waiting to switch to coroutines
 	boost::asio::post(ctx->service_pool->get(0), [&] {
 		auto ctx = context.get();
 		ctx->cmd_exec->signal_stop();
-		context.reset();
+		ctx->timer->stop();
+		ctx->server->shutdown();
+		ctx->rpc_discovery->stop();
+		ctx->port_daemon.reset();
+		ctx->queue->shutdown();
+		ctx->rpc->shutdown();
 		stop_flag.release();
 	});
 }

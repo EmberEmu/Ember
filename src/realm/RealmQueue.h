@@ -63,6 +63,8 @@ public:
 		, dispatcher_(dispatcher)
 		, dirty_(false) { }
 
+	~RealmQueue();
+
 	void enqueue(ClientIdent client, int priority = 0);
 	void dequeue(const ClientIdent& client);
 	std::size_t poll(const ClientIdent& client);
