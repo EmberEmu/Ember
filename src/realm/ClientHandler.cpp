@@ -285,7 +285,7 @@ void ClientHandler::log_redirect_stop() {
 	}
 	
 	if(!logger_.remove_sink(redirect_sink_)) {
-		LOG_FATAL(logger_, "Could not remove client logging sink!");
+		SLOG_FATAL(logger_, "Could not remove client logging sink!");
 		std::terminate();
 	}
 
