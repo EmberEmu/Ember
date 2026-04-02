@@ -10,9 +10,11 @@
 
 #include <string_view>
 
-namespace ember::version {
+namespace ember::build {
 
-extern std::string_view GIT_HASH;
-extern std::string_view VERSION;
+extern std::string_view git_hash;
+extern std::string_view version;
+extern std::string_view date;
+extern std::string_view time;
 
-} // version, ember
+} // build, ember

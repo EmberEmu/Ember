@@ -13,30 +13,31 @@
 #elif DB_POSTGRESQL
  	#include "postgresql/PostgreSQLQueryExecutor.h"
 #endif
-#include <logger/Logger.h>
+#include <banner/Version.h>
 #include <logger/ConsoleSink.h>
 #include <logger/FileSink.h>
-#include <banner/Version.h>
-#include <boost/program_options.hpp>
+#include <logger/Logger.h>
+#include <shared/utility/polyfill/print>
 #include <boost/asio/ip/host_name.hpp>
+#include <boost/program_options.hpp>
 #include <array>
 #include <algorithm>
 #include <chrono>
 #include <exception>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <memory>
-#include <stdexcept>
+#include <ranges>
 #include <span>
+#include <stdexcept>
 #include <string>
 #include <string_view>
-#include <ranges>
 #include <regex>
 #include <thread>
 #include <unordered_map>
-#include <filesystem>
-#include <vector>
 #include <utility>
+#include <vector>
 #include <cstdlib>
 
 using namespace ember;
@@ -64,7 +65,7 @@ bool apply_updates(const opts::variables_map& args, QueryExecutor& exec,
 bool pluralise(auto value);
 
 int main(int argc, const char* argv[]) try {
-	std::cout << "Build " << ember::version::VERSION << " (" << ember::version::GIT_HASH << ")\n";
+	std::println("Build {} ({}, {})", build::version, build::git_hash, build::date);
 	const auto args = parse_arguments(argc, argv);
 	
 	log::Logger logger;

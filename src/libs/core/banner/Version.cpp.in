@@ -8,11 +8,12 @@
 
 #include <banner/Version.h>
 
-using namespace std::string_view_literals;
 
-namespace ember::version {
+namespace ember::build {
 
-std::string_view GIT_HASH = "@GIT_SHA1@"sv;
-std::string_view VERSION = "@VERSION@"sv;
+std::string_view git_hash = "@GIT_SHA1@";
+std::string_view version = "@VERSION@";
+std::string_view date = __DATE__;
+std::string_view time = __TIME__;
 
-} // version, ember
+} // build, ember

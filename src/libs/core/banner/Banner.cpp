@@ -32,7 +32,7 @@ void print_banner(const std::string_view display_name) {
 	std::println();
 
 	console.reset();
-	std::print("{}, v{} ({})\n\n", display_name, version::VERSION, version::GIT_HASH);
+	std::print("{}, v{} ({}) @ {}, {}\n\n", display_name, build::version, build::git_hash, build::date, build::time);
 }
 
 } // ember
