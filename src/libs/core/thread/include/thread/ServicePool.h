@@ -38,7 +38,7 @@ public:
 	 * Begins running the pool. This function is non-blocking and cannot be called again
 	 * without first calling 'stop' or 'shutdown'.
 	 */
-	void run(unsigned int concurrency = std::thread::hardware_concurrency());
+	void run(bool pin = true, unsigned int concurrency = std::thread::hardware_concurrency());
 
 	/*
 	 * Requests a worker from the pool. This selects a worker using round-robin. 

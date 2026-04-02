@@ -64,14 +64,18 @@ boost::asio::io_context* ServicePool::get_if(const std::size_t index) const {
 	return services_[index].get();
 }
 
-void ServicePool::run(const unsigned int concurrency) {
+void ServicePool::run(const bool pin, const unsigned int concurrency) {
 	if(!threads_.empty()) {
 		throw std::runtime_error("Service pool already running");
 	}
 
 	for(std::size_t i = 0; i < pool_size_; ++i) {
 		threads_.emplace_back(&boost::asio::io_context::run, services_[i].get());
-		thread::set_affinity(threads_[i], i % (concurrency? concurrency : 1));
+
+		if(pin && concurrency) {
+			thread::set_affinity(threads_[i], i % concurrency);
+		}
+
 		thread::set_name(threads_[i], "Service Pool");
 	}
 }
