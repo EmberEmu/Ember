@@ -11,7 +11,7 @@
 
 namespace ember::realm {
 
-void SessionManager::start(ClientPtr client) {
+void SessionManager::start(unique_client_ptr client) {
 	auto ptr = client.get();
 	SessionID assigned_id = 0;
 

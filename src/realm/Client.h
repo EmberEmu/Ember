@@ -75,6 +75,6 @@ public:
 	}
 };
 
-using ClientPtr = std::unique_ptr<Client, std::function<void(Client*)>>;
+using unique_client_ptr = std::unique_ptr<Client, std::function<void(Client*)>>;
 
 } // realm, ember

@@ -26,7 +26,7 @@ public:
 private:
 	constexpr static auto session_id_wrap = 100'000;
 
-	using SessionsMap = boost::unordered_flat_map<SessionID, ClientPtr>;
+	using SessionsMap = boost::unordered_flat_map<SessionID, unique_client_ptr>;
 
 	SessionsMap sessions_;
 	SessionID next_id_ = 0;
@@ -45,7 +45,7 @@ public:
 	SessionManager() = default;
 	~SessionManager();
 
-	void start(ClientPtr client);
+	void start(unique_client_ptr client);
 
 	std::size_t count() const;
 	std::optional<ClientIdent> client_ident(SessionID id) const;

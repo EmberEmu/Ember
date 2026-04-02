@@ -59,8 +59,8 @@ public:
 		, character_rpc_(character_rpc)
 		, logger_(logger) {}
 
-	ClientPtr create(tcp_socket socket, ClientIdent ident) {
-		return ClientPtr(
+	unique_client_ptr create(tcp_socket socket, ClientIdent ident) {
+		return unique_client_ptr(
 			allocator_.allocate(
 				std::move(socket), std::move(ident), store_, dispatcher_, queue_,
 				account_rpc_, character_rpc_, logger_
