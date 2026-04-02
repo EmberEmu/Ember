@@ -67,14 +67,15 @@ private:
 	                    std::chrono::seconds& last_tick);
 	std::string generate_message() const;
 	bool has_severity(Severity sev) const;
-	void shutdown();
 
 public:
 	Monitor(boost::asio::io_context& service,
 	        std::string_view interface,
 	        std::uint16_t port,
 	        std::chrono::seconds frequency = 5s);
+	~Monitor();
 
+	void shutdown();
 	void add_source(Source source, Severity severity, LogCallback log_callback);
 };
 

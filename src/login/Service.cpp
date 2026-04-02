@@ -372,7 +372,10 @@ void Service::stop() {
 		auto ctx = context.get();
 		ctx->cmd_exec->signal_stop();
 		ctx->thread_pool->shutdown();
-		context.reset(); // todo, determine proper order
+		ctx->server->shutdown();
+		ctx->metrics_poll->shutdown();
+		ctx->monitor->shutdown();
+		ctx->rpc->shutdown();
 	});
 }
 

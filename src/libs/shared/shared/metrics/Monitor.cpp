@@ -27,6 +27,10 @@ Monitor::Monitor(asio::io_context& service,
 	receive();
 }
 
+Monitor::~Monitor() {
+	shutdown();
+}
+
 void Monitor::shutdown() {
 	boost::system::error_code ec; // we don't care about any errors
 	socket_.shutdown(asio::ip::udp::socket::shutdown_both, ec);
