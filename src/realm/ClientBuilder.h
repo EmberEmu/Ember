@@ -10,28 +10,10 @@
 
 #include "Client.h"
 #include "Forwards.h"
-#include <spark/buffers/allocators/TLSBlockAllocator.h>
+#include "unique_client_ptr.h"
 #include <memory>
 
 namespace ember::realm {
-
-#ifndef PREALLOCATED_CLIENTS_PER_THREAD
-	#define PREALLOCATED_CLIENTS_PER_THREAD 4
-#endif
-
-#ifdef ENABLE_PAGE_LOCKING
-using PageLockPolicy = spark::io::PageLock;
-#else
-using PageLockPolicy = spark::io::NoPageLock;
-#endif
-
-using ClientAllocator = spark::io::TLSBlockAllocator<
-	Client,
-	PREALLOCATED_CLIENTS_PER_THREAD,
-	spark::io::NoRefCounting,
-	spark::io::UnsafeEntrant,
-	PageLockPolicy
->;
 
 class ClientBuilder {
 	constexpr static auto allocator_tag = "client_allocator";
@@ -64,9 +46,7 @@ public:
 			allocator_.allocate(
 				std::move(socket), std::move(ident), store_, dispatcher_, queue_,
 				account_rpc_, character_rpc_, logger_
-			), [&](auto ptr) {
-				allocator_.deallocate(ptr);
-			}
+			), ClientDeleter(&allocator_)
 		);
 	}
 };

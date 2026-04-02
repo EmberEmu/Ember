@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "Client.h"
+#include "unique_client_ptr.h"
 #include "SessionIterator.h"
 #include <boost/unordered/unordered_flat_map.hpp>
 #include <memory>

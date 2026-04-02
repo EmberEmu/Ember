@@ -67,6 +67,7 @@ set(LIBRARY_HDR
     ClientTimer.h
     SessionIterator.h
     ClientSink.h
+    unique_client_ptr.h
     commands/Connections.h
 )
 
