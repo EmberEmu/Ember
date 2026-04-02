@@ -82,8 +82,8 @@ private:
 	void completion_check();
 	void dispatch_message();
 
+	void log_packet();
 	bool write_packet_stream(const is_packet auto& packet);
-
 	std::size_t minimum_transfer() const;
 	void close_session();
 

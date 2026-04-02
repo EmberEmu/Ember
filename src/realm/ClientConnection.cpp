@@ -72,8 +72,7 @@ void ClientConnection::process_buffered_data() {
 			++stats_.messages_in;
 
 			if(packet_logger_) [[unlikely]] {
-				std::span packet(inbound_buffer_.read_ptr(), msg_size_);
-				packet_logger_->log(packet, PacketDirection::inbound);
+				log_packet();
 			}
 			
 			dispatch_message();
@@ -238,6 +237,11 @@ void ClientConnection::packet_log_stop() {
 
 bool ClientConnection::packet_logging() const {
 	return !!packet_logger_;
+}
+
+void ClientConnection::log_packet() {
+	std::span packet(inbound_buffer_.read_ptr(), msg_size_);
+	packet_logger_->log(packet, PacketDirection::inbound);
 }
 
 /*

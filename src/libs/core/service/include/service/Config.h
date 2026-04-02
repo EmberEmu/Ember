@@ -17,5 +17,5 @@
 		#else
 			#define EMBER_EXPORT_SERVICE __declspec(dllimport) 
 		#endif // EXPORT_SERVICE
-	#endif
+	#endif // BUILD_SHARED_SERVICES
 #endif // _WIN32
