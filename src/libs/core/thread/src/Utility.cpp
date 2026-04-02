@@ -77,7 +77,7 @@ Result set_name([[maybe_unused]] auto& handle, const char* name) {
 		throw std::runtime_error("set_name: thread name too long");
 	}
 
-#if defined _WIN32 // todo, drop this eventually when bumping minimum Win version
+#ifdef _WIN32 // todo, drop this eventually when bumping minimum Win version
 	auto lib = LoadLibrary("Kernel32.dll");
 
 	if(!lib) {
