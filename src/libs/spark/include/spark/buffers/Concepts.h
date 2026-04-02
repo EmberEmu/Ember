@@ -33,7 +33,7 @@ template<typename buf_type>
 concept contiguous = std::is_same_v<typename buf_type::contiguous, is_contiguous>;
 
 template<typename T>
-concept arithmetic = std::integral<T> || std::floating_point<T>;
+concept arithmetic = std::integral<T> || std::floating_point<T> || std::is_enum_v<T>;
 
 template<typename T>
 concept byte_type = sizeof(T) == 1;

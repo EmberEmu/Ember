@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Ember
+ * Copyright (c) 2025 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -31,6 +31,8 @@ constexpr auto conditional_reverse(arithmetic auto value, std::endian from, std:
 			value = std::bit_cast<type>(std::byteswap(std::bit_cast<std::uint32_t>(value)));
 		} else if constexpr(std::is_same_v<type, double>) {
 			value = std::bit_cast<type>(std::byteswap(std::bit_cast<std::uint64_t>(value)));
+		} else if constexpr(std::is_enum_v<type>) {
+			value = static_cast<type>(std::byteswap(std::to_underlying(value)));
 		} else {
 			value = std::byteswap(value);
 		}
@@ -48,6 +50,8 @@ constexpr auto conditional_reverse(arithmetic auto value) {
 			value = std::bit_cast<type>(std::byteswap(std::bit_cast<std::uint32_t>(value)));
 		} else if constexpr(std::is_same_v<type, double>) {
 			value = std::bit_cast<type>(std::byteswap(std::bit_cast<std::uint64_t>(value)));
+		} else if constexpr(std::is_enum_v<type>) {
+			value = static_cast<type>(std::byteswap(std::to_underlying(value)));
 		} else {
 			value = std::byteswap(value);
 		}
@@ -81,6 +85,8 @@ constexpr void conditional_reverse_inplace(arithmetic auto& value) {
 			value = std::bit_cast<type>(std::byteswap(std::bit_cast<std::uint32_t>(value)));
 		} else if constexpr(std::is_same_v<type, double>) {
 			value = std::bit_cast<type>(std::byteswap(std::bit_cast<std::uint64_t>(value)));
+		} else if constexpr(std::is_enum_v<type>) {
+			value = static_cast<type>(std::byteswap(std::to_underlying(value)));
 		} else {
 			value = std::byteswap(value);
 		}
@@ -95,6 +101,8 @@ constexpr void conditional_reverse_inplace(arithmetic auto& value, std::endian f
 			value = std::bit_cast<type>(std::byteswap(std::bit_cast<std::uint32_t>(value)));
 		} else if constexpr(std::is_same_v<type, double>) {
 			value = std::bit_cast<type>(std::byteswap(std::bit_cast<std::uint64_t>(value)));
+		} else if constexpr(std::is_enum_v<type>) {
+			value = static_cast<type>(std::byteswap(std::to_underlying(value)));
 		} else {
 			value = std::byteswap(value);
 		}
