@@ -18,6 +18,17 @@ namespace ember::realm {
 
 class EventDispatcher;
 
+/*
+ * This sink enables forwarding log messages to interested game clients.
+ * It does this by dispatching events to the provided ClientUUID, which allows for
+ * safely addressing a specific client across threads.
+ * 
+ * Each client registers its own sink rather than sharing a single sink just for
+ * keeping the implementation as simple as possible and reducing overhead in the
+ * common case of there being no interested clients.
+ * 
+ * This is purely intended for development and debugging.
+ */
 class ClientSink final : public log::Sink {
 
 	enum class Colour : std::uint32_t {
