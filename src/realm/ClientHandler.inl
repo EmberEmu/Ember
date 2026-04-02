@@ -80,16 +80,11 @@ bool ClientHandler::deserialise(is_packet auto& packet, BinaryStream& stream) {
 	return false;
 }
 
-template<is_packet T>
-std::optional<T> ClientHandler::deserialise(BinaryStream& stream) {
-	T packet;
+template<is_packet PacketType>
+std::optional<PacketType> ClientHandler::deserialise(BinaryStream& stream) {
+	PacketType packet;
 	const auto result = deserialise(packet, stream);
-	
-	if(result) {
-		return packet;
-	} else {
-		return std::nullopt;
-	}
+	return result? packet : std::nullopt;
 }
 
 } // realm, ember

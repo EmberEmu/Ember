@@ -90,8 +90,8 @@ public:
 	
 	std::string_view client_identify() const;
 
-	template<is_packet T>
-	std::optional<T> deserialise(BinaryStream& stream);
+	template<is_packet PacketType>
+	std::optional<PacketType> deserialise(BinaryStream& stream);
 
 	void send(is_packet auto& packet);
 	bool deserialise(is_packet auto& packet, BinaryStream& stream);
