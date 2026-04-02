@@ -154,7 +154,7 @@ void ClientHandler::start_timer(const std::chrono::milliseconds& time) {
 			Event event{ EventType::timer_expired };
 			dispatcher.post_event(uuid, event);
 		}
-					  });
+	});
 }
 
 void ClientHandler::cancel_timer() {
