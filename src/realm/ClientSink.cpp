@@ -29,7 +29,14 @@ void ClientSink::write(log::Severity severity, log::Filter type, std::span<const
 	}
 
 	auto record_sv = std::string_view(record);
-	record_sv.remove_suffix(1);
+
+	// log entries always end with a newline to allow for fast bulk processing
+	// without manipulating the data but the game client handles its own newlines,
+	// so we need to trim it from the end here or we'd get double newlines
+	if(record_sv.ends_with('\n')) {
+		record_sv.remove_suffix(1);
+	}
+
 	auto message = format(record_sv, severity);
 	auto event = std::make_unique<LogRedirect>(std::move(message), type_);
 	dispatcher_.post_event(client_, std::move(event));
