@@ -29,6 +29,12 @@ public:
 	ServiceRunner(ServiceContext context, opts::variables_map args);
 	~ServiceRunner();
 
+	ServiceRunner(ServiceRunner&& other) noexcept;
+	ServiceRunner& operator=(ServiceRunner&& other) noexcept;
+
+	ServiceRunner(ServiceRunner&) = delete;
+	ServiceRunner& operator=(ServiceRunner&) = delete;
+
 	void run();
 	void stop();
 	bool is_stopped() const;

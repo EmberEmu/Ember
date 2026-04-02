@@ -17,6 +17,19 @@ ServiceRunner::ServiceRunner(ServiceContext context, opts::variables_map options
 	, opts_(std::move(options))
 	, running_(false) {}
 
+ServiceRunner::ServiceRunner(ServiceRunner&& other) noexcept {
+	*this = std::move(other);
+}
+
+ServiceRunner& ServiceRunner::operator=(ServiceRunner&& other) noexcept {
+	worker_ = std::move(other.worker_);
+	context_ = std::move(other.context_);
+	opts_ = std::move(other.opts_);
+	running_ = other.running_;
+	other.running_ = false;
+	return *this;
+}
+
 ServiceRunner::~ServiceRunner() {
 	stop();
 }
