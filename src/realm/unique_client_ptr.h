@@ -31,10 +31,10 @@ using ClientAllocator = spark::io::TLSBlockAllocator<
 	PageLockPolicy
 >;
 
-struct ClientDeleter {
+struct ClientDeleter final {
 	ClientAllocator* allocator;
 
-	explicit ClientDeleter (ClientAllocator* allocator) noexcept
+	explicit ClientDeleter(ClientAllocator* allocator) noexcept
 		: allocator(allocator) {}
 
 	void operator()(Client* ptr) const {
