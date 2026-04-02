@@ -26,8 +26,9 @@ RUN apt-get -y update \
  && apt-get install -y ccache \
  && echo "deb http://archive.ubuntu.com/ubuntu/ questing main restricted" | tee -a /etc/apt/sources.list \
  && apt update \
+ && wget https://archive.ubuntu.com/ubuntu/pool/main/p/pcre3/libpcre3_8.39-9_amd64.deb \
  && wget https://archive.ubuntu.com/ubuntu/pool/main/p/pcre3/libpcre3-dev_8.39-9_amd64.deb \
- && apt install ./libpcre3-dev_8.39-9_amd64.deb
+ && apt install ./libpcre3_8.39-9_amd64.deb ./libpcre3-dev_8.39-9_amd64.deb
 
 RUN if [ -n "$USE_CLANG" ]; then                                        \
  apt-get -y install clang;                                              \
