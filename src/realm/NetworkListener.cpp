@@ -17,10 +17,10 @@
 namespace ember::realm {
 
 NetworkListener::NetworkListener(std::string_view interface, std::uint16_t port, bool tcp_no_delay,
-                                 thread::ServicePool& pool, ClientBuilder& builder,
+                                 thread::ServicePool& pool, ClientBuilder builder,
                                  SessionManager& sessions, log::Logger& logger)
 	: sessions_(sessions)
-	, builder_(builder)
+	, builder_(std::move(builder))
 	, acceptor_(
 		pool.get_next(),
 		asio::ip::tcp::endpoint(asio::ip::make_address(interface), port)

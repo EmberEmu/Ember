@@ -12,6 +12,7 @@
 #include <logger/Sink.h>
 #include <shared/ClientIdent.h>
 #include <string>
+#include <string_view>
 #include <cstdint>
 
 namespace ember::realm {
@@ -30,6 +31,7 @@ class EventDispatcher;
  * This is purely intended for development and debugging.
  */
 class ClientSink final : public log::Sink {
+	constexpr static auto reserve_size = 128;
 
 	enum class Colour : std::uint32_t {
 		alpha_grey = 0x80808080,
@@ -51,6 +53,8 @@ class ClientSink final : public log::Sink {
 
 	Colour severity_rgb(log::Severity severity) const;
 	std::string format(const std::string_view input, log::Severity severity) const;
+	void dispatch(std::string message);
+	bool filter(log::Severity severity, log::Filter type) const;
 
 public:
 	static constexpr std::string_view sink_name = "ClientSink";

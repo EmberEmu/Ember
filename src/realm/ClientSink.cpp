@@ -23,8 +23,17 @@ ClientSink::ClientSink(EventDispatcher& dispatcher, ClientIdent client, log::Sev
 	, client_(client)
 	, type_(type) {}
 
+void ClientSink::dispatch(std::string message) {
+	auto event = std::make_unique<LogRedirect>(std::move(message), type_);
+	dispatcher_.post_event(client_, std::move(event));
+}
+
+inline bool ClientSink::filter(log::Severity severity, log::Filter type) const {
+	return severity < severity_ || filter_ & type;
+}
+
 void ClientSink::write(log::Severity severity, log::Filter type, std::span<const char> record, bool) {
-	if(severity < severity_  || filter() & type) {
+	if(filter(severity, type)) {
 		return;
 	}
 
@@ -38,14 +47,28 @@ void ClientSink::write(log::Severity severity, log::Filter type, std::span<const
 	}
 
 	auto message = format(record_sv, severity);
-	auto event = std::make_unique<LogRedirect>(std::move(message), type_);
-	dispatcher_.post_event(client_, std::move(event));
+	dispatch(std::move(message));
 }
 
 void ClientSink::batch_write(const std::span<std::pair<log::RecordDetail, std::vector<char>>>& records) {
+	std::string messages;
+	messages.reserve(reserve_size * records.size());
+
 	for(auto& [detail, data] : records) {
-		write(detail.severity, detail.type, data, false);
+		if(filter(detail.severity, detail.type)) {
+			return;
+		}
+
+		auto record = std::string_view(data);
+		messages.append(format(record, detail.severity));
 	}
+
+	// see comment in 'write'
+	if(messages.ends_with('\n')) {
+		messages.pop_back();
+	}
+
+	dispatch(std::move(messages));
 }
 
 auto ClientSink::severity_rgb(log::Severity severity) const -> Colour {
