@@ -16,6 +16,7 @@
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
 #include <boost/asio/steady_timer.hpp>
+#include <boost/asio/post.hpp>
 #include <chrono>
 #include <cstdlib>
 
@@ -60,16 +61,21 @@ class BroadcastTimer {
 	// the initial firing will be slightly offset in case any of the events
 	// do anything that could cause contention - can't guarantee separation
 	// will be maintained over time but them's the breaks
-	await<void> run() {
+	await<void> run(std::shared_ptr<boost::asio::steady_timer> timer) {
 		auto offset = std::chrono::seconds(std::rand() % max_offset);
-		auto executor = co_await boost::asio::this_coro::executor;
-		boost::asio::steady_timer timer(executor);
 
 		while(running_) {
-			co_await await_timer(timer, offset);
+			co_await await_timer(*timer, offset);
 			offset = 0s; // only set it once
 		}
 	}
+
+	struct Worker {
+		boost::asio::io_context& ioc;
+		std::shared_ptr<boost::asio::steady_timer> timer;
+	};
+
+	std::vector<Worker> workers_;
 
 public:
 	BroadcastTimer(const thread::ServicePool& pool,
@@ -92,12 +98,22 @@ public:
 		}
 
 		for(auto& ioc : pool_) {
-			boost::asio::co_spawn(*ioc, run(), boost::asio::detached);
+			auto timer = std::make_shared<boost::asio::steady_timer>(*ioc);
+			boost::asio::co_spawn(*ioc, run(timer), boost::asio::detached);
+			workers_.emplace_back(*ioc, std::move(timer));
 		}
 	}
 
 	void stop() {
 		running_ = false;
+
+		for(auto& worker : workers_) {
+			auto& timer = worker.timer;
+
+			boost::asio::post(worker.ioc, [timer] {
+				timer->cancel();
+			});
+		}
 	}
 };
 
