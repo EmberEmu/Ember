@@ -34,7 +34,7 @@ using ClientAllocator = spark::io::TLSBlockAllocator<
 >;
 
 class ClientBuilder {
-	constexpr inline static auto allocator_tag = "client_allocator";
+	constexpr static auto allocator_tag = "client_allocator";
 
 	ClientAllocator allocator_;
 	const ConfigStore& store_;

@@ -38,7 +38,7 @@ template<decltype(auto) block_sz,
 >
 requires int_gt_zero<block_sz>
 class DynamicBuffer final : public pmr::Buffer {
-	constexpr inline static auto allocator_tag = "dynamic_buffer";
+	constexpr static auto allocator_tag = "dynamic_buffer";
 
 public:
 	using storage_type = detail::IntrusiveStorage<block_sz, storage_value_type>;
