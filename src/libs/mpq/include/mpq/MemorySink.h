@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Ember
+ * Copyright (c) 2024 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -44,6 +44,10 @@ public:
 
 	auto data() {
 		return std::span(buffer_.data(), offset_);
+	}
+
+	auto data() const {
+		return std::span<const std::byte>(buffer_.data(), offset_);
 	}
 };
 

@@ -50,6 +50,10 @@ public:
 	auto data() {
 		return std::span(buffer_.data(), offset_);
 	}
+
+	auto data() const {
+		return std::span(buffer_.data(), offset_);
+	}
 };
 
 } // mpq, ember
