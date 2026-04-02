@@ -7,6 +7,7 @@
  */
 
 #include "Service.h"
+#include "ClientBuilder.h"
 #include "DBCRequired.h"
 #include "FilterTypes.h"
 #include "LoggingCallbacks.h"
@@ -238,14 +239,14 @@ void Service::initialise(const opts::variables_map& args) try {
 	const auto max_socks = utility::max_sockets_desc();
 	SLOG_INFO(logger, "Max allowed sockets: {}", max_socks);
 
-	ctx->builder = std::make_unique<ClientBuilder>(
+	ClientBuilder builder(
 		*ctx->config_store, *ctx->dispatcher, *ctx->queue, *ctx->rpc_account, *ctx->rpc_character, logger
 	);
 
 	// Start network listener
 	SLOG_INFO(logger, "Starting network service on {}:{}...", interface, port);
 	ctx->server = std::make_unique<NetworkListener>(
-		interface, port, tcp_no_delay, *ctx->service_pool, *ctx->builder, ctx->sessions, logger
+		interface, port, tcp_no_delay, *ctx->service_pool, builder, ctx->sessions, logger
 	);
 	
 	// Start timer service
