@@ -41,35 +41,38 @@ void Handler::dump_bad_packet(BufferType& buffer, std::size_t offset) {
 }
 
 void Handler::handle_new_packet(BufferType& buffer) {
+	using enum Opcode;
 	Opcode opcode;
 	buffer.copy(&opcode);
+
+	spark::io::endian::little_to_native_inplace(opcode);
 	state_ = State::read;
 
 	switch(opcode) {
-		case Opcode::cmd_auth_logon_challenge:
+		case cmd_auth_logon_challenge:
 			[[fallthrough]];
-		case Opcode::cmd_auth_reconnect_challenge:
+		case cmd_auth_reconnect_challenge:
 			create_packet<client::LoginChallenge>();
 			break;
-		case Opcode::cmd_auth_logon_proof:
+		case cmd_auth_logon_proof:
 			create_packet<client::LoginProof>();
 			break;
-		case Opcode::cmd_auth_reconnect_proof:
+		case cmd_auth_reconnect_proof:
 			create_packet<client::ReconnectProof>();
 			break;
-		case Opcode::cmd_survey_result:
+		case cmd_survey_result:
 			create_packet<client::SurveyResult>();
 			break;
-		case Opcode::cmd_realm_list:
+		case cmd_realm_list:
 			create_packet<client::RequestRealmList>();
 			break;
-		case Opcode::cmd_xfer_accept:
+		case cmd_xfer_accept:
 			create_packet<client::TransferAccept>();
 			break;
-		case Opcode::cmd_xfer_resume:
+		case cmd_xfer_resume:
 			create_packet<client::TransferResume>();
 			break;
-		case Opcode::cmd_xfer_cancel:
+		case cmd_xfer_cancel:
 			create_packet<client::TransferCancel>();
 			break;
 		default:
