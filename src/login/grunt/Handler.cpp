@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2024 Ember
+ * Copyright (c) 2015 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -42,7 +42,7 @@ void Handler::dump_bad_packet(BufferType& buffer, std::size_t offset) {
 
 void Handler::handle_new_packet(BufferType& buffer) {
 	Opcode opcode;
-	buffer.copy(&opcode, sizeof(opcode));
+	buffer.copy(&opcode);
 	state_ = State::read;
 
 	switch(opcode) {
@@ -79,10 +79,6 @@ void Handler::handle_new_packet(BufferType& buffer) {
 }
 
 void Handler::handle_read(BufferType& buffer, std::size_t offset) {
-	if(!curr_packet_) {
-		return;
-	}
-
 	PacketStream stream(buffer);
 	const auto state = curr_packet_->read_from_stream(stream);
 
@@ -102,13 +98,12 @@ void Handler::handle_read(BufferType& buffer, std::size_t offset) {
 }
 
 const std::expected<Packet*, Handler::State> Handler::process_buffer(BufferType& buffer) {
-	switch(state_) {
-		case State::new_packet:
-			handle_new_packet(buffer);
-			[[fallthrough]];
-		case State::read:
-			handle_read(buffer, buffer.size());
-			break;
+	if(state_ == State::new_packet) {
+		handle_new_packet(buffer);
+	}
+
+	if(state_ == State::read) {
+		handle_read(buffer, buffer.size());
 	}
 
 	if(state_ == State::read_error) {

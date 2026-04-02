@@ -91,9 +91,9 @@ auto ClientSink::severity_rgb(log::Severity severity) const -> Colour {
 			return Colour::green;
 		case console_error:
 			return Colour::red;
+		default:
+			return Colour::white;
 	}
-
-	return Colour::white;
 }
 
 std::string ClientSink::format(const std::string_view input, log::Severity severity) const {
