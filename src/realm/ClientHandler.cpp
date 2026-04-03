@@ -57,7 +57,7 @@ void ClientHandler::handle_message(StaticBuffer& buffer, const protocol::SizeTyp
 	update_packet[context_.state](context_, opcode);
 }
 
-bool ClientHandler::handle_top_level_event(const Event* event) {
+bool ClientHandler::handle_self_event(const Event* event) {
 	using enum EventType;
 
 	switch(event->type) {
@@ -80,7 +80,7 @@ bool ClientHandler::handle_top_level_event(const Event* event) {
 }
 
 void ClientHandler::handle_event(const Event* event) {
-	if(handle_top_level_event(event)) {
+	if(handle_self_event(event)) {
 		return;
 	}
 
@@ -88,7 +88,7 @@ void ClientHandler::handle_event(const Event* event) {
 }
 
 void ClientHandler::handle_event(std::unique_ptr<const Event> event) {
-	if(handle_top_level_event(event.get())) {
+	if(handle_self_event(event.get())) {
 		return;
 	}
 

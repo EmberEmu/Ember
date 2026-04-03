@@ -65,7 +65,7 @@ class ClientHandler final {
 	void handle_ping(BinaryStream& stream);
 	void handle_timer();
 	bool pps_flood_check();
-
+	bool handle_self_event(const Event* event);
 	void enable_packet_log();
 
 	void start_timer(const std::chrono::milliseconds& time);
@@ -100,7 +100,6 @@ public:
 	void handle_message(StaticBuffer& buffer, protocol::SizeType msg_size);
 	void handle_event(const Event* event);
 	void handle_event(std::unique_ptr<const Event> event);
-	bool handle_top_level_event(const Event* event);
 
 	void log_redirect(LogRedirect::Type type, log::Severity severity);
 	void log_redirect_stop();
