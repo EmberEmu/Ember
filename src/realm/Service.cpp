@@ -80,18 +80,16 @@ int Service::run(const opts::variables_map& args) try {
 	}
 
 	SLOG_INFO(logger, "Starting service pool with {} threads", concurrency);
-	auto ctx = context.get();
-	ctx->service_pool = std::make_unique<thread::ServicePool>(
-		concurrency, BOOST_ASIO_CONCURRENCY_HINT_UNSAFE_IO
-	);
+	thread::ServicePool service_pool(concurrency, BOOST_ASIO_CONCURRENCY_HINT_UNSAFE_IO);
+	context.get()->service_pool = &service_pool;
 
 	std::jthread runner([&] {
 		stop_flag.acquire();
-		ctx->service_pool->shutdown();
+		service_pool.shutdown();
 	});
 
 	initialise(args);
-	ctx->service_pool->run();
+	service_pool.run();
 	runner.join();
 
 	SLOG_INFO(logger, "{} stopped", app_name);

@@ -36,8 +36,8 @@ namespace ember::realm {
 struct ServiceContext::Impl {
 	Realm realm;
 	SessionManager sessions;
+	thread::ServicePool* service_pool = nullptr;
 	std::unique_ptr<utility::CommandExecutor> cmd_exec;
-	std::unique_ptr<thread::ServicePool> service_pool;
 	std::unique_ptr<ConfigStore> config_store;
 	std::unique_ptr<ports::Forward> port_daemon;
 	std::unique_ptr<EventDispatcher> dispatcher;
