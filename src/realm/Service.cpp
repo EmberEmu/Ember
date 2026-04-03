@@ -340,7 +340,6 @@ Config Service::generate_config(const opts::variables_map& args) {
 
 	return Config {
 		.realm = ctx->realm,
-		.realm_id = ctx->realm.id,
 		.max_slots = args["realm.max_slots"].as<unsigned int>(),
 		.auth_timeout = std::chrono::seconds(args["realm.auth_timeout"].as<unsigned int>()),
 		.char_list_timeout = std::chrono::seconds(args["realm.char_list_timeout"].as<unsigned int>()),
