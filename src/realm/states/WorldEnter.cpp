@@ -46,9 +46,9 @@ std::uint32_t get_time() {
 	return tm_now.tm_min + hour + dow + day + month + year;
 }
 
-void initiate_player_login(ClientContext& ctx, const PlayerLogin* event) {
+void initiate_player_login(ClientContext& ctx, const PlayerLogin& event) {
     auto& state_ctx = std::get<Context>(ctx.state_ctx);
-    state_ctx.character_id = event->character_id_;
+    state_ctx.character_id = event.character_id_;
 
 	protocol::smsg_trigger_cinematic cinematic;
 	cinematic->id = 81;
@@ -517,37 +517,37 @@ void system_notification(ClientContext& ctx, std::string_view message) {
 	ctx.handler.send(packet);
 }
 
-void log_msg(ClientContext& ctx, const LogRedirect* event) {
-	if(event->type == LogRedirect::Type::console) {
-		system_notification(ctx, event->message);
+void log_msg(ClientContext& ctx, const LogRedirect& event) {
+	if(event.type == LogRedirect::Type::console) {
+		system_notification(ctx, event.message);
 		return;
 	}
 
 	protocol::smsg_messagechat msg;
 	msg->language = 0;
 	msg->type = protocol::server::SYSTEM;
-	msg->message = event->message;
+	msg->message = event.message;
 	msg->player_guid = 0;
 	msg->player_tag = protocol::server::TAG_NONE;
 	ctx.handler.send(msg);
 }
 
-void system_msg(ClientContext& ctx, const SystemMessage* event) {
-	if(event->type == SystemMessage::Type::console) {
-		system_notification(ctx, event->message);
+void system_msg(ClientContext& ctx, const SystemMessage& event) {
+	if(event.type == SystemMessage::Type::console) {
+		system_notification(ctx, event.message);
 		return;
 	}
 
 	protocol::smsg_messagechat msg;
 	msg->language = 0;
 
-	if(event->type == SystemMessage::Type::whisper) {
+	if(event.type == SystemMessage::Type::whisper) {
 		msg->type = protocol::server::MONSTER_WHISPER;
 		msg->monster_name = "System";
-		msg->message = event->message;
+		msg->message = event.message;
 	} else {
 		msg->type = protocol::server::SYSTEM;
-		msg->message = std::format("[System] {}", event->message);
+		msg->message = std::format("[System] {}", event.message);
 	}
 
 	msg->player_guid = 0;
@@ -555,18 +555,18 @@ void system_msg(ClientContext& ctx, const SystemMessage* event) {
 	ctx.handler.send(msg);
 }
 
-void handle_event(ClientContext& ctx, const Event* event) {
+void handle_event(ClientContext& ctx, const Event& event) {
 	using enum EventType;
 
-    switch(event->type) {
+    switch(event.type) {
         case player_login:
-            initiate_player_login(ctx, static_cast<const PlayerLogin*>(event));
+            initiate_player_login(ctx, static_cast<const PlayerLogin&>(event));
             break;
 		case system_message:
-			system_msg(ctx, static_cast<const SystemMessage*>(event));
+			system_msg(ctx, static_cast<const SystemMessage&>(event));
 			break;
 		case log_redirect:
-			log_msg(ctx, static_cast<const LogRedirect*>(event));
+			log_msg(ctx, static_cast<const LogRedirect&>(event));
 			break;
         default:
             break;

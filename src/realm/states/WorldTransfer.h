@@ -22,7 +22,7 @@ void handle_packet(ClientContext& ctx, protocol::ClientOpcode opcode) {
 	assert(false && "Unused state");
 }
 
-void handle_event(ClientContext& ctx, const Event* event) {
+void handle_event(ClientContext& ctx, const Event& event) {
 	assert(false && "Unused state");
 }
 
