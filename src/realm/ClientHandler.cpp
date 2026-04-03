@@ -32,11 +32,9 @@ void ClientHandler::stop() {
 		return;
 	}
 
-	stopped_ = true;
-	log_redirect_stop();
-	timer_.cancel();
 	context_.dispatcher.remove_handler(this);
 	state_update(ClientState::cs_session_closed);
+	stopped_ = true;
 }
 
 void ClientHandler::close() {
