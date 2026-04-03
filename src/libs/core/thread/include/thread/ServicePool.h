@@ -11,6 +11,7 @@
 #include <boost/asio/executor_work_guard.hpp>
 #include <boost/asio/io_context.hpp>
 #include <memory>
+#include <ranges>
 #include <thread>
 #include <vector>
 #include <cstddef>
@@ -77,20 +78,10 @@ public:
 	 */
 	std::size_t size() const;
 
-	auto begin() const {
-		return services_.begin();
-	}
-
-	auto end() const {
-		return services_.end();
-	}
-
-	auto begin() {
-		return services_.begin();
-	}
-
-	auto end() {
-		return services_.end();
+	auto services() const {
+		return services_ | std::views::transform([](const auto& service) -> boost::asio::io_context& {
+			return *service;
+		});
 	}
 
 	ServicePool(const ServicePool&) = delete;

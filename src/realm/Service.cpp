@@ -318,8 +318,8 @@ void Service::update_config(const Config& config, bool post_only) {
 		ctx->config_store->update_default_config(config);
 	}
 
-	for(auto& service : *ctx->service_pool) {
-		boost::asio::dispatch(*service, [&, ctx, config] {
+	for(auto& service : ctx->service_pool->services()) {
+		boost::asio::dispatch(service, [&, ctx, config] {
 			ctx->config_store->update_thread_config(config);
 		});
 	}
