@@ -27,11 +27,9 @@ private:
 	ClientConnection connection_;
 
 public:
-	Client(tcp_socket socket, ClientIdent ident, const ConfigStore& store, EventDispatcher& dispatcher,
+	Client(tcp_socket socket, std::size_t index, const ConfigStore& store, EventDispatcher& dispatcher,
 		   RealmQueue& queue, AccountClient& account_rpc, CharacterClient& character_rpc, log::Logger& logger)
-		: handler_(
-			std::move(ident), socket.get_executor(), store, dispatcher, queue, account_rpc, character_rpc, logger
-		)
+		: handler_(index, socket.get_executor(), store, dispatcher, queue, account_rpc, character_rpc, logger)
 		, connection_(std::move(socket), logger) {
 		handler_.set_connection(&connection_);
 		connection_.set_handler(&handler_);

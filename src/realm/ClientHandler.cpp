@@ -320,7 +320,7 @@ std::string_view ClientHandler::client_identify() const {
 	return client_id_;
 }
 
-ClientHandler::ClientHandler(ClientIdent uuid, executor executor, const ConfigStore& cfg_store,
+ClientHandler::ClientHandler(std::size_t index, executor executor, const ConfigStore& cfg_store,
                              EventDispatcher& dispatcher, RealmQueue& queue, AccountClient& account_rpc,
                              CharacterClient& character_rpc, log::Logger& logger)
 	: context_ {
@@ -338,7 +338,7 @@ ClientHandler::ClientHandler(ClientIdent uuid, executor executor, const ConfigSt
 	  }
 	, connection_(nullptr)
 	, logger_(logger)
-	, uuid_(uuid)
+	, uuid_(index)
 	, timer_(executor)
 	, packet_counter_(0)
 	, pps_violation_(0)

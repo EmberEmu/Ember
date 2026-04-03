@@ -76,8 +76,8 @@ void NetworkListener::dispatch_socket() {
 		 * It's fine to construct the client on another thread as long as safe entrant is specified,
 		 * but it'll come at the cost of an additional check per allocation.
 		 */
-		boost::asio::dispatch(executor, [&, socket = std::move(socket_), i = index_]() mutable {
-			auto client = builder_.create(std::move(socket), ClientIdent(i));
+		boost::asio::dispatch(executor, [&, socket = std::move(socket_), index = index_]() mutable {
+			auto client = builder_.create(std::move(socket), index);
 			sessions_.start(std::move(client));
 		});
 	} else {

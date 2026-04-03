@@ -25,9 +25,9 @@ class ClientBuilder {
 	CharacterClient& character_rpc_;
 	log::Logger& logger_;
 
-	unique_client_ptr make_unique_client(tcp_socket socket, ClientIdent ident) {
+	unique_client_ptr make_unique_client(tcp_socket socket, std::size_t index) {
 		return unique_client_ptr(allocator_.allocate(
-			std::move(socket), std::move(ident), store_, dispatcher_, queue_,
+			std::move(socket), index, store_, dispatcher_, queue_,
 			account_rpc_, character_rpc_, logger_
 		), ClientDeleter(&allocator_));
 	}
@@ -47,8 +47,8 @@ public:
 		, character_rpc_(character_rpc)
 		, logger_(logger) {}
 
-	unique_client_ptr create(tcp_socket socket, ClientIdent ident) {
-		return make_unique_client(std::move(socket), std::move(ident));
+	unique_client_ptr create(tcp_socket socket, std::size_t index) {
+		return make_unique_client(std::move(socket), index);
 	}
 };
 
