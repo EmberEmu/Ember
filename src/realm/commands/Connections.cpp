@@ -126,6 +126,10 @@ void print_connection_stats_header(bprinter::TablePrinter& table) {
 	table.PrintHeader();
 }
 
+void print_connection_stats_footer(bprinter::TablePrinter& table) {
+	table.PrintFooter();
+}
+
 void print_connection_stats(bprinter::TablePrinter& table,
                             SessionManager::SessionID id,
                             const Client* client) {
@@ -170,7 +174,7 @@ void connection_statistics(const commands::Arguments& args,
 			bprinter::TablePrinter table(&stream);
 			print_connection_stats_header(table);
 			print_connection_stats(table, id, client);
-			table.PrintFooter();
+			print_connection_stats_footer(table);
 			LOG_CONSOLE(logger, "Displaying statistics for connection {}\n{}", id, stream.str());
 		});
 	} else {
@@ -184,7 +188,7 @@ void connection_statistics(const commands::Arguments& args,
 			++connections;
 		}
 
-		table.PrintFooter();
+		print_connection_stats_footer(table);
 		LOG_CONSOLE(logger, "Displaying statistics for {} connections\n{}", connections, stream.str());
 	}
 }
