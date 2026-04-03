@@ -26,6 +26,13 @@ class ClientBuilder {
 	CharacterClient& character_rpc_;
 	log::Logger& logger_;
 
+	unique_client_ptr make_unique_client(tcp_socket socket, ClientIdent ident) {
+		return unique_client_ptr(allocator_.allocate(
+			std::move(socket), std::move(ident), store_, dispatcher_, queue_,
+			account_rpc_, character_rpc_, logger_
+		), ClientDeleter(&allocator_));
+	}
+
 public:
 	ClientBuilder(const ConfigStore& store,
 	              EventDispatcher& dispatcher,
@@ -42,12 +49,7 @@ public:
 		, logger_(logger) {}
 
 	unique_client_ptr create(tcp_socket socket, ClientIdent ident) {
-		return unique_client_ptr(
-			allocator_.allocate(
-				std::move(socket), std::move(ident), store_, dispatcher_, queue_,
-				account_rpc_, character_rpc_, logger_
-			), ClientDeleter(&allocator_)
-		);
+		return make_unique_client(std::move(socket), std::move(ident));
 	}
 };
 
