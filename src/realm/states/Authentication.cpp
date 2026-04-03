@@ -281,7 +281,11 @@ void auth_success(ClientContext& ctx) {
 	send_addon_data(ctx);
 	auth_state(ctx, State::success);
 	ctx.handler.state_update(ClientState::cs_character_list);
-	CLIENT_DEBUG(ctx.logger, ctx) << "authenticated" << LOG_ASYNC;
+
+	CLIENT_DEBUG(ctx.logger, ctx)
+		<< "Authenticated as "
+		<< ctx.client_id->username
+		<< LOG_ASYNC;
 }
 
 void send_auth_result(ClientContext& ctx, protocol::Result result) {
