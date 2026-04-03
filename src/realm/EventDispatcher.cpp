@@ -101,14 +101,14 @@ void EventDispatcher::broadcast_event_thread(const Event& event) const {
 
 // todo
 void EventDispatcher::broadcast_event(const Event& event) const {
-	for(auto& ioc : pool_) {
+	for(auto& ioc : pool_.services()) {
 		broadcast(event);
 	}
 }
 
 void EventDispatcher::broadcast_event(std::shared_ptr<const Event> event) const {
-	for(auto& ioc : pool_) {
-		boost::asio::dispatch(*ioc, [event]() {
+	for(auto& ioc : pool_.services()) {
+		boost::asio::dispatch(ioc, [event]() {
 			for(auto& handler : handlers_ | std::views::values) {
 				handler->handle_event(event.get());
 			}

@@ -97,10 +97,10 @@ public:
 			return;
 		}
 
-		for(auto& ioc : pool_) {
-			auto timer = std::make_shared<boost::asio::steady_timer>(*ioc);
-			boost::asio::co_spawn(*ioc, run(timer), boost::asio::detached);
-			workers_.emplace_back(*ioc, std::move(timer));
+		for(auto& ioc : pool_.services()) {
+			auto timer = std::make_shared<boost::asio::steady_timer>(ioc);
+			boost::asio::co_spawn(ioc, run(timer), boost::asio::detached);
+			workers_.emplace_back(ioc, std::move(timer));
 		}
 	}
 
