@@ -23,7 +23,7 @@ namespace ember::realm {
 
 void ClientHandler::start() {
 	context_.dispatcher.register_handler(this);
-	enter_state[context_.state](context_);
+	state_update(ClientState::cs_authenticating);
 	stopped_ = false;
 }
 
@@ -331,8 +331,8 @@ ClientHandler::ClientHandler(std::size_t index, executor executor, const ConfigS
 		.account_rpc = account_rpc,
 		.character_rpc = character_rpc,
 		.logger = logger,
-		.state = ClientState::cs_authenticating,
-		.prev_state = ClientState::cs_authenticating,
+		.state = ClientState::cs_session_closed,
+		.prev_state = ClientState::cs_session_closed,
 	  }
 	, connection_(nullptr)
 	, logger_(logger)

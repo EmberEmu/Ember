@@ -18,7 +18,7 @@ smart_enum(ClientState, char,
 	cs_world_enter,
 	cs_world_transfer,
 	cs_world,
-	cs_session_closed
+	cs_session_closed,
 )
 
 constexpr auto states_max = cs_session_closed;

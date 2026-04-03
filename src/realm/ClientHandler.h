@@ -102,6 +102,7 @@ public:
 	void handle_event(const Event* event);
 	void handle_event(std::unique_ptr<const Event> event);
 	bool handle_top_level_event(const Event* event);
+
 	void log_redirect(LogRedirect::Type type, log::Severity severity);
 	void log_redirect_stop();
 
