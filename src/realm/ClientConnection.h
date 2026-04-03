@@ -8,17 +8,16 @@
 
 #pragma once
 
-#include "ConnectionStats.h"
 #include "ConnectionDefines.h"
-#include "PacketCrypto.h"
+#include "ConnectionStats.h"
 #include "FilterTypes.h"
+#include "PacketCrypto.h"
 #include "packet_log/PacketLogger.h"
 #include "SocketType.h"
 #include <logger/LoggerFwd.h>
-#include <spark/buffers/DynamicBuffer.h>
 #include <shared/ClientIdent.h>
 #include <shared/memory/AsioAllocator.h>
-#include <botan/bigint.h>
+#include <spark/buffers/DynamicBuffer.h>
 #include <boost/asio/ip/tcp.hpp>
 #include <array>
 #include <atomic>
