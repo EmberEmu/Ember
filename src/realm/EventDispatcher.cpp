@@ -118,7 +118,7 @@ void EventDispatcher::broadcast_event(std::shared_ptr<const Event> event) const 
 
 #ifdef EMBER_FAST_DISPATCH_CACHE
 #pragma warning(push)
-#pragma warning(disable : 28020)
+#pragma warning(disable : 28020) // ignore false positive
 bool EventDispatcher::try_insert_cache(ClientHandler* handler) {
 	std::size_t index = rng::xorshift::next() & 0xfff;
 
@@ -130,7 +130,7 @@ bool EventDispatcher::try_insert_cache(ClientHandler* handler) {
 	const std::size_t start = index;
 
 	do {
-		if(!cache_[index].is_zero()) {
+		if(cache_[index].is_zero()) {
 			handler->uuid().encode(handler, index);
 			cache_[index] = handler->uuid();
 			return true;

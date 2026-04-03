@@ -197,7 +197,7 @@ void display_ident(SessionManager& sessions, log::Logger& logger, SessionManager
 	auto ident = sessions.client_ident(id);
 
 	if(ident) {
-		LOG_CONSOLE(logger, "{} -> {}", id, ident->to_string());
+		LOG_CONSOLE(logger, "Connection {} is RPC reference {}", id, ident->to_string());
 	} else {
 		LOG_CONERR(logger, "Unable to find connection {}", id);
 	}
@@ -208,7 +208,6 @@ commands::ScopedCommand add_connections_commands(commands::Command& registry,
                                                  EventDispatcher& dispatcher,
                                                  SessionManager& sessions,
                                                  log::Logger& logger) {
-
 	auto root = commands::create("connections")
 		->description("Commands for connection & session management");
 
