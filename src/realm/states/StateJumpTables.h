@@ -12,7 +12,7 @@
 #include "Authentication.h"
 #include "CharacterList.h"
 #include "SessionClose.h"
-#include "WorldForwarder.h"
+#include "World.h"
 #include "WorldEnter.h"
 #include "WorldTransfer.h"
 #include <protocol/Opcodes.h>

@@ -39,7 +39,7 @@ set(LIBRARY_HDR
     states/ClientStates.h
     states/Authentication.h
     states/CharacterList.h
-    states/WorldForwarder.h
+    states/World.h
     states/SessionClose.h
     states/WorldTransfer.h
     states/ClientContext.h
@@ -89,7 +89,7 @@ set(LIBRARY_SRC
     NetworkListener.cpp
     states/Authentication.cpp
     states/CharacterList.cpp
-    states/WorldForwarder.cpp
+    states/World.cpp
     states/SessionClose.cpp
     states/WorldEnter.cpp
     packet_log/PacketLogger.cpp
