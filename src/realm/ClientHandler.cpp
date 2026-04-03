@@ -24,17 +24,15 @@ namespace ember::realm {
 void ClientHandler::start() {
 	context_.dispatcher.register_handler(this);
 	state_update(ClientState::cs_authenticating);
-	stopped_ = false;
 }
 
 void ClientHandler::stop() {
-	if(stopped_) {
+	if(context_.state == ClientState::cs_session_closed) {
 		return;
 	}
 
 	context_.dispatcher.remove_handler(this);
 	state_update(ClientState::cs_session_closed);
-	stopped_ = true;
 }
 
 void ClientHandler::close() {
@@ -344,9 +342,7 @@ ClientHandler::ClientHandler(std::size_t index, executor executor, const ConfigS
 	, ping_violation_(0)
 	, prev_ping_sequence_(0)
 	, timer_events_(0)
-	, last_tick_(utility::get_tick_count())
-	, stopped_(true) {
-}
+	, last_tick_(utility::get_tick_count()) {}
 
 ClientHandler::~ClientHandler() {
 	stop();

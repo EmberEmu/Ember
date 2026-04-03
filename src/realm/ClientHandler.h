@@ -46,7 +46,6 @@ class ClientHandler final {
 	ClientIdent uuid_;
 	boost::asio::steady_timer timer_;
 	log::Logger& logger_;
-	bool stopped_;
 	std::shared_ptr<ClientSink> redirect_sink_;
 
 	// client sanity check state
