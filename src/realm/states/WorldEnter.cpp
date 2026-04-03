@@ -444,6 +444,40 @@ void handle_standstate_change(ClientContext& ctx) {
 	ctx.handler.send(response);
 }
 
+void handle_world_teleport(ClientContext& ctx) {
+	message_view<protocol::cmsg_world_teleport> packet;
+
+	if(!ctx.handler.deserialise(packet, *ctx.stream)) {
+		return;
+	}
+
+	LOG_DEBUG(ctx.logger, "Worldport, map: {}, x: {}, y: {}, z: {}, o: {}",
+	          packet->map, packet->x, packet->y, packet->z, packet->o);
+
+	protocol::smsg_new_world response;
+	response->map_id = packet->map;
+	response->position.x = packet->x;
+	response->position.y = packet->y;
+	response->position.z = packet->z;
+	response->position.o = packet->o;
+	ctx.handler.send(response);
+
+	protocol::smsg_update_object update_object;
+	ctx.handler.send(update_object);
+
+}
+
+void handle_move_set_raw_position(ClientContext& ctx) {
+	message_view<protocol::cmsg_move_set_raw_position> packet;
+
+	if(!ctx.handler.deserialise(packet, *ctx.stream)) {
+		return;
+	}
+
+	protocol::msg_move_set_raw_position_ack response;
+	ctx.handler.send(response);
+}
+
 // everything in this file is for testing only
 void handle_packet(ClientContext& ctx, protocol::ClientOpcode opcode) {
 	using enum protocol::ClientOpcode;
@@ -505,6 +539,12 @@ void handle_packet(ClientContext& ctx, protocol::ClientOpcode opcode) {
 			break;
 		case cmsg_standstatechange:
 			handle_standstate_change(ctx);
+			break;
+		case cmsg_world_teleport:
+			handle_world_teleport(ctx);
+			break;
+		case cmsg_move_set_raw_position:
+			handle_move_set_raw_position(ctx);
 			break;
 		default:
 			ctx.handler.skip(*ctx.stream);

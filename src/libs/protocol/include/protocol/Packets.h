@@ -44,6 +44,8 @@
 #include <protocol/server/TriggerCinematic.h>
 #include <protocol/server/StandStateUpdate.h>
 #include <protocol/server/Notification.h>
+#include <protocol/server/MoveSetRawPositionAck.h>
+#include <protocol/server/NewWorld.h>
 #include <protocol/client/AuthSession.h>
 #include <protocol/client/Ping.h>
 #include <protocol/client/CharacterCreate.h>
@@ -69,6 +71,8 @@
 #include <protocol/client/TutorialFlag.h>
 #include <protocol/client/MessageChat.h>
 #include <protocol/client/StandStateChange.h>
+#include <protocol/client/WorldTeleport.h>
+#include <protocol/client/MoveSetRawPosition.h>
 
 namespace ember::protocol {
 
@@ -106,31 +110,35 @@ using smsg_messagechat                = ServerPacket<ServerOpcode::smsg_messagec
 using smsg_trigger_cinematic          = ServerPacket<ServerOpcode::smsg_trigger_cinematic,          server::TriggerCinematic>;
 using smsg_standstate_update          = ServerPacket<ServerOpcode::smsg_standstate_update,          server::StandStateUpdate>;
 using smsg_notification               = ServerPacket<ServerOpcode::smsg_notification,               server::Notification>;
+using msg_move_set_raw_position_ack   = ServerPacket<ServerOpcode::msg_move_set_raw_position_ack,   server::MoveSetRawPositionAck>;
+using smsg_new_world                  = ServerPacket<ServerOpcode::smsg_new_world,                  server::NewWorld>;
 
-using cmsg_auth_session           = ClientPacket<ClientOpcode::cmsg_auth_session,        client::AuthSession>;
-using cmsg_ping                   = ClientPacket<ClientOpcode::cmsg_ping,                client::Ping>;
-using cmsg_char_create            = ClientPacket<ClientOpcode::cmsg_char_create,         client::CharacterCreate>;
-using cmsg_char_delete            = ClientPacket<ClientOpcode::cmsg_char_delete,         client::CharacterDelete>;
-using cmsg_char_enum              = ClientPacket<ClientOpcode::cmsg_char_enum,           client::CharacterEnum>;
-using cmsg_char_rename            = ClientPacket<ClientOpcode::cmsg_char_rename,         client::CharacterRename>;
-using cmsg_player_login           = ClientPacket<ClientOpcode::cmsg_player_login,        client::PlayerLogin>;
-using cmsg_name_query             = ClientPacket<ClientOpcode::cmsg_name_query,          client::NameQuery>;
-using cmsg_set_active_mover       = ClientPacket<ClientOpcode::cmsg_set_active_mover,    client::SetActiveMover>;
-using cmsg_query_time             = ClientPacket<ClientOpcode::cmsg_query_time,          client::QueryTime>;
-using cmsg_request_raid_info      = ClientPacket<ClientOpcode::cmsg_request_raid_info,   client::RequestRaidInfo>;
-using cmsg_item_query_single      = ClientPacket<ClientOpcode::cmsg_item_query_single,   client::ItemQuerySingle>;
-using msg_query_next_mail_time_c  = ClientPacket<ClientOpcode::msg_query_next_mail_time, client::QueryNextMailTime>;
-using cmsg_gmticket_getticket     = ClientPacket<ClientOpcode::cmsg_gmticket_getticket,  client::GMTicketGetTicket>;
-using cmsg_battlefield_status     = ClientPacket<ClientOpcode::cmsg_battlefield_status,  client::BattlefieldStatus>;
-using cmsg_meetingstone_info      = ClientPacket<ClientOpcode::cmsg_meetingstone_info,   client::MeetingStoneInfo>;
-using cmsg_move_time_skipped      = ClientPacket<ClientOpcode::cmsg_move_time_skipped,   client::MoveTimeSkipped>;
-using move_fall_land_c            = ClientPacket<ClientOpcode::msg_move_fall_land,       client::MoveFallLand>;
-using cmsg_zone_update            = ClientPacket<ClientOpcode::cmsg_zoneupdate,          client::ZoneUpdate>;
-using cmsg_update_account_data    = ClientPacket<ClientOpcode::cmsg_update_account_data, client::UpdateAccountData>;
-using cmsg_join_channel           = ClientPacket<ClientOpcode::cmsg_join_channel,        client::JoinChannel>;
-using move_set_facing_c           = ClientPacket<ClientOpcode::msg_move_set_facing,      client::GenericMove>;
-using cmsg_tutorial_flag          = ClientPacket<ClientOpcode::cmsg_tutorial_flag,       client::TutorialFlag>;
-using cmsg_messagechat            = ClientPacket<ClientOpcode::cmsg_messagechat,         client::MessageChat>;
-using cmsg_standstatechange       = ClientPacket<ClientOpcode::cmsg_standstatechange,    client::StandStateChange>;
+using cmsg_auth_session           = ClientPacket<ClientOpcode::cmsg_auth_session,          client::AuthSession>;
+using cmsg_ping                   = ClientPacket<ClientOpcode::cmsg_ping,                  client::Ping>;
+using cmsg_char_create            = ClientPacket<ClientOpcode::cmsg_char_create,           client::CharacterCreate>;
+using cmsg_char_delete            = ClientPacket<ClientOpcode::cmsg_char_delete,           client::CharacterDelete>;
+using cmsg_char_enum              = ClientPacket<ClientOpcode::cmsg_char_enum,             client::CharacterEnum>;
+using cmsg_char_rename            = ClientPacket<ClientOpcode::cmsg_char_rename,           client::CharacterRename>;
+using cmsg_player_login           = ClientPacket<ClientOpcode::cmsg_player_login,          client::PlayerLogin>;
+using cmsg_name_query             = ClientPacket<ClientOpcode::cmsg_name_query,            client::NameQuery>;
+using cmsg_set_active_mover       = ClientPacket<ClientOpcode::cmsg_set_active_mover,      client::SetActiveMover>;
+using cmsg_query_time             = ClientPacket<ClientOpcode::cmsg_query_time,            client::QueryTime>;
+using cmsg_request_raid_info      = ClientPacket<ClientOpcode::cmsg_request_raid_info,     client::RequestRaidInfo>;
+using cmsg_item_query_single      = ClientPacket<ClientOpcode::cmsg_item_query_single,     client::ItemQuerySingle>;
+using msg_query_next_mail_time_c  = ClientPacket<ClientOpcode::msg_query_next_mail_time,   client::QueryNextMailTime>;
+using cmsg_gmticket_getticket     = ClientPacket<ClientOpcode::cmsg_gmticket_getticket,    client::GMTicketGetTicket>;
+using cmsg_battlefield_status     = ClientPacket<ClientOpcode::cmsg_battlefield_status,    client::BattlefieldStatus>;
+using cmsg_meetingstone_info      = ClientPacket<ClientOpcode::cmsg_meetingstone_info,     client::MeetingStoneInfo>;
+using cmsg_move_time_skipped      = ClientPacket<ClientOpcode::cmsg_move_time_skipped,     client::MoveTimeSkipped>;
+using move_fall_land_c            = ClientPacket<ClientOpcode::msg_move_fall_land,         client::MoveFallLand>;
+using cmsg_zone_update            = ClientPacket<ClientOpcode::cmsg_zoneupdate,            client::ZoneUpdate>;
+using cmsg_update_account_data    = ClientPacket<ClientOpcode::cmsg_update_account_data,   client::UpdateAccountData>;
+using cmsg_join_channel           = ClientPacket<ClientOpcode::cmsg_join_channel,          client::JoinChannel>;
+using move_set_facing_c           = ClientPacket<ClientOpcode::msg_move_set_facing,        client::GenericMove>;
+using cmsg_tutorial_flag          = ClientPacket<ClientOpcode::cmsg_tutorial_flag,         client::TutorialFlag>;
+using cmsg_messagechat            = ClientPacket<ClientOpcode::cmsg_messagechat,           client::MessageChat>;
+using cmsg_standstatechange       = ClientPacket<ClientOpcode::cmsg_standstatechange,      client::StandStateChange>;
+using cmsg_move_set_raw_position  = ClientPacket<ClientOpcode::cmsg_move_set_raw_position, client::MoveSetRawPosition>;
+using cmsg_world_teleport         = ClientPacket<ClientOpcode::cmsg_world_teleport,        client::WorldTeleport>;
 
 } // protocol, ember

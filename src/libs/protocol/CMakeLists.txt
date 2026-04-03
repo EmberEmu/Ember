@@ -32,6 +32,8 @@ set(CLIENT_MESSAGES
     include/protocol/client/RequestRaidInfo.h
     include/protocol/client/GMTicketGetTicket.h
     include/protocol/client/StandStateChange.h
+    include/protocol/client/WorldTeleport.h
+    include/protocol/client/MoveSetRawPosition.h
 )
 
 set(SERVER_MESSAGES
@@ -68,7 +70,9 @@ set(SERVER_MESSAGES
     include/protocol/server/GMTicketGetTicket.h
     include/protocol/server/ChannelNotify.h
     include/protocol/server/StandStateUpdate.h
-	include/protocol/server/Notification.h
+    include/protocol/server/Notification.h
+    include/protocol/server/MoveSetRawPositionAck.h
+    include/protocol/server/NewWorld.h
 )
 
 set(CORE_HEADERS
