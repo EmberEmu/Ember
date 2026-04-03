@@ -193,6 +193,16 @@ void connection_statistics(const commands::Arguments& args,
 	}
 }
 
+void display_ident(SessionManager& sessions, log::Logger& logger, SessionManager::SessionID id) {
+	auto ident = sessions.client_ident(id);
+
+	if(ident) {
+		LOG_CONSOLE(logger, "{} -> {}", id, ident->to_string());
+	} else {
+		LOG_CONERR(logger, "Unable to find connection {}", id);
+	}
+}
+
 commands::ScopedCommand add_connections_commands(commands::Command& registry,
                                                  utility::CommandExecutor& exec,
                                                  EventDispatcher& dispatcher,
@@ -257,6 +267,13 @@ commands::ScopedCommand add_connections_commands(commands::Command& registry,
 		->argument<SessionManager::SessionID>("id", commands::optional)
 		->handler(exec([&](const commands::Arguments& args) {
 			system_message(args, sessions, dispatcher, logger, SystemMessage::Type::whisper);
+		})));
+
+	root->insert(commands::create("ident")
+		->description("Display a connection's RPC identity")
+		->argument<SessionManager::SessionID>("id")
+		->handler(exec([&](const commands::Arguments& args) {
+			display_ident(sessions, logger, args["id"].as<SessionManager::SessionID>());
 		})));
 
 	// register scoped root 'connections' command
