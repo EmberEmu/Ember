@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include "Client.h"
 #include "Forwards.h"
 #include "unique_client_ptr.h"
 #include <memory>

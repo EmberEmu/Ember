@@ -9,27 +9,9 @@
 #pragma once
 
 #include "Client.h"
-#include <spark/buffers/allocators/TLSBlockAllocator.h>
+#include "ClientAllocator.h"
 
 namespace ember::realm {
-
-#ifndef PREALLOCATED_CLIENTS_PER_THREAD
-	#define PREALLOCATED_CLIENTS_PER_THREAD 4
-#endif
-
-#ifdef ENABLE_PAGE_LOCKING
-using PageLockPolicy = spark::io::PageLock;
-#else
-using PageLockPolicy = spark::io::NoPageLock;
-#endif
-
-using ClientAllocator = spark::io::TLSBlockAllocator<
-	Client,
-	PREALLOCATED_CLIENTS_PER_THREAD,
-	spark::io::NoRefCounting,
-	spark::io::UnsafeEntrant,
-	PageLockPolicy
->;
 
 struct ClientDeleter final {
 	ClientAllocator* allocator;
