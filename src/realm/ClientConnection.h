@@ -17,7 +17,6 @@
 #include <logger/LoggerFwd.h>
 #include <shared/ClientIdent.h>
 #include <shared/memory/AsioAllocator.h>
-#include <spark/buffers/DynamicBuffer.h>
 #include <boost/asio/ip/tcp.hpp>
 #include <array>
 #include <atomic>
