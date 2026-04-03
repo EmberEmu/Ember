@@ -26,7 +26,6 @@ namespace ember {
 
 class ClientIdent final {
 	static constexpr std::size_t uuid_size = 16;
-	static constexpr std::size_t service_offset = 0;
 
 	std::array<std::uint64_t, uuid_size / sizeof(std::uint64_t)> data_;
 	mutable std::size_t hash_;
