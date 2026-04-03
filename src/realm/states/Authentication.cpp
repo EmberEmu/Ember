@@ -323,8 +323,10 @@ void enter(ClientContext& ctx) {
 }
 
 void handle_packet(ClientContext& ctx, protocol::ClientOpcode opcode) {
+	using enum protocol::ClientOpcode;
+
 	switch(opcode) {
-		case protocol::ClientOpcode::cmsg_auth_session:
+		case cmsg_auth_session:
 			handle_authentication(ctx);
 			break;
 		default:

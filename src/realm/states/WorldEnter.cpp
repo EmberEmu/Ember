@@ -446,62 +446,64 @@ void handle_standstate_change(ClientContext& ctx) {
 
 // everything in this file is for testing only
 void handle_packet(ClientContext& ctx, protocol::ClientOpcode opcode) {
+	using enum protocol::ClientOpcode;
+
 	switch(opcode) {
-		case protocol::ClientOpcode::cmsg_name_query:
+		case cmsg_name_query:
 			handle_name_query(ctx);
 			break;
-		case protocol::ClientOpcode::cmsg_set_active_mover:
+		case cmsg_set_active_mover:
 			handle_active_mover(ctx);
 			break;
-		case protocol::ClientOpcode::cmsg_query_time:
+		case cmsg_query_time:
 			handle_query_time(ctx);
 			break;
-		case protocol::ClientOpcode::cmsg_request_raid_info:
+		case cmsg_request_raid_info:
 			handle_request_raid_info(ctx);
 			break;
-		case protocol::ClientOpcode::cmsg_item_query_single:
+		case cmsg_item_query_single:
 			handle_item_query(ctx);
 			break;
-		case protocol::ClientOpcode::msg_query_next_mail_time:
+		case msg_query_next_mail_time:
 			handle_mail_query(ctx);
 			break;
-		case protocol::ClientOpcode::cmsg_gmticket_getticket:
+		case cmsg_gmticket_getticket:
 			handle_gmticket_getticket(ctx);
 			break;
-		case protocol::ClientOpcode::cmsg_battlefield_status:
+		case cmsg_battlefield_status:
 			handle_battlefield_status(ctx);
 			break;
-		case protocol::ClientOpcode::cmsg_meetingstone_info:
+		case cmsg_meetingstone_info:
 			handle_meetingstone_info(ctx);
 			break;
-		case protocol::ClientOpcode::cmsg_move_time_skipped:
+		case cmsg_move_time_skipped:
 			handle_move_time_skipped(ctx);
 			break;
-		case protocol::ClientOpcode::msg_move_fall_land:
+		case msg_move_fall_land:
 			handle_move_fall_land(ctx);
 			break;
-		case protocol::ClientOpcode::cmsg_zoneupdate:
+		case cmsg_zoneupdate:
 			handle_zone_update(ctx);
 			break;
-		case protocol::ClientOpcode::cmsg_update_account_data:
+		case cmsg_update_account_data:
 			handle_update_account_data(ctx);
 			break;
-		case protocol::ClientOpcode::cmsg_join_channel:
+		case cmsg_join_channel:
 			handle_join_channel(ctx);
 			break;
-		case protocol::ClientOpcode::msg_move_set_facing:
+		case msg_move_set_facing:
 			handle_move_set_facing(ctx);
 			break;
-		case protocol::ClientOpcode::cmsg_tutorial_flag:
+		case cmsg_tutorial_flag:
 			handle_tutorial_flag(ctx);
 			break;
-		case protocol::ClientOpcode::cmsg_messagechat:
+		case cmsg_messagechat:
 			handle_messagechat(ctx);
 			break;
-		case protocol::ClientOpcode::cmsg_logout_request:
+		case cmsg_logout_request:
 			handle_logout_request(ctx);
 			break;
-		case protocol::ClientOpcode::cmsg_standstatechange:
+		case cmsg_standstatechange:
 			handle_standstate_change(ctx);
 			break;
 		default:
