@@ -66,7 +66,7 @@ class ClientHandler final {
 	void handle_timer();
 	bool pps_flood_check();
 	bool handle_self_event(const Event* event);
-	void enable_packet_log();
+	void packet_log_start();
 
 	void start_timer(const std::chrono::milliseconds& time);
 	void cancel_timer();

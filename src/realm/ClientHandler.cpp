@@ -68,7 +68,7 @@ bool ClientHandler::handle_self_event(const Event* event) {
 			close();
 			return true;
 		case packet_log_enable:
-			enable_packet_log();
+			packet_log_start();
 			return true;
 		case packet_log_disable:
 			connection_->packet_log_stop();
@@ -287,7 +287,7 @@ void ClientHandler::log_redirect_stop() {
 	redirect_sink_.reset();
 }
 
-void ClientHandler::enable_packet_log() {
+void ClientHandler::packet_log_start() {
 	log_redirect_stop(); // avoid generating an infinite packet loop
 	const auto& realm = context_.cfg_store.config().realm.name;
 	connection_->packet_log_start(uuid_.to_string(), realm);
