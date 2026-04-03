@@ -98,7 +98,7 @@ void connection_list(const commands::Arguments& args,
 	table.AddColumn("State", 25);
 	table.PrintHeader();
 
-	std::size_t connections = 0;
+	std::size_t connections = 0; // count could change outside of iteration
 
 	for(const auto& session : sessions) {
 		const auto& [id, client] = session;
@@ -228,10 +228,10 @@ commands::ScopedCommand add_connections_commands(commands::Command& registry,
 		->description("Enable or disable connection packet logging")
 		->argument<SessionManager::SessionID>("id")
 		->argument<bool>("bool")
-		->handler(exec([&](const commands::Arguments& arguments) {
+		->handler(exec([&](const commands::Arguments& args) {
 			toggle_logging(
-				arguments["id"].as<SessionManager::SessionID>(), 
-				arguments["bool"].as<bool>(), sessions, dispatcher, logger
+				args["id"].as<SessionManager::SessionID>(), 
+				args["bool"].as<bool>(), sessions, dispatcher, logger
 			);
 		})));
 
@@ -239,28 +239,28 @@ commands::ScopedCommand add_connections_commands(commands::Command& registry,
 		->description("Send a system notification to all or a specific connection")
 		->argument<std::string>("message")
 		->argument<SessionManager::SessionID>("id", commands::optional)
-		->handler(exec([&](const commands::Arguments& arguments) {
-			system_message(arguments, sessions, dispatcher, logger, SystemMessage::Type::console);
+		->handler(exec([&](const commands::Arguments& args) {
+			system_message(args, sessions, dispatcher, logger, SystemMessage::Type::console);
 		})));
 
 	root->insert(commands::create("message")
 		->description("Send a system message to all or a specific connection")
 		->argument<std::string>("message")
 		->argument<SessionManager::SessionID>("id", commands::optional)
-		->handler(exec([&](const commands::Arguments& arguments) {
-			system_message(arguments, sessions, dispatcher, logger, SystemMessage::Type::message);
+		->handler(exec([&](const commands::Arguments& args) {
+			system_message(args, sessions, dispatcher, logger, SystemMessage::Type::message);
 		})));
 
 	root->insert(commands::create("whisper")
 		->description("Send a system whisper to all or a specific connection")
 		->argument<std::string>("message")
 		->argument<SessionManager::SessionID>("id", commands::optional)
-		->handler(exec([&](const commands::Arguments& arguments) {
-			system_message(arguments, sessions, dispatcher, logger, SystemMessage::Type::whisper);
+		->handler(exec([&](const commands::Arguments& args) {
+			system_message(args, sessions, dispatcher, logger, SystemMessage::Type::whisper);
 		})));
 
 	// register scoped root 'connections' command
 	return registry.scoped_insert(root);
 }
 
-} // ream, ember
+} // realm, ember

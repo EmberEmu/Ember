@@ -199,8 +199,7 @@ bool ClientHandler::pps_flood_check() {
 bool ClientHandler::check_ping_sent() {
 	// ensure the client has been given enough time since the last timer fired
 	const auto& frequency = config::broadcast_timer_frequency;
-	const auto expected = ((frequency + ping_leeway) / ping_delta) * timer_events_;
-	++timer_events_;
+	const auto expected = ((frequency + ping_leeway) / ping_delta) * timer_events_++;
 
 	if(!expected) {
 		return true;
@@ -269,7 +268,7 @@ bool ClientHandler::validate_ping(const protocol::client::Ping& ping) {
 }
 
 void ClientHandler::log_redirect(LogRedirect::Type type, log::Severity severity) {
-	log_redirect_stop(); // remove if we're just changing settigns
+	log_redirect_stop(); // remove if we're just changing settings
 
 	auto sink = std::make_shared<ClientSink>(
 		context_.dispatcher, uuid_, severity, type, log::Filter(lf_packet_trace)
