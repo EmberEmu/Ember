@@ -40,7 +40,7 @@ using AddonData = protocol::client::AuthSession::AddonData;
 void send_auth_challenge(ClientContext& ctx);
 void send_auth_result(ClientContext& ctx, protocol::Result result);
 void handle_authentication(ClientContext& ctx);
-void handle_queue_update(ClientContext& ctx, const QueuePosition* event);
+void handle_queue_update(ClientContext& ctx, const QueuePosition& event);
 void handle_queue_success(ClientContext& ctx);
 void auth_success(ClientContext& ctx);
 void auth_queue(ClientContext& ctx);
@@ -112,15 +112,15 @@ void fetch_account_id(const ClientContext& ctx, const utf8_string& username) {
 	});
 }
 
-void handle_account_id(ClientContext& ctx, const AccountIDResponse* event) {
+void handle_account_id(ClientContext& ctx, const AccountIDResponse& event) {
 	LOG_TRACE(ctx.logger, log_func);
 	
 	auto& auth_ctx = std::get<Context>(ctx.state_ctx);
 
-	if(event->status != rpc::Account::Status::ok) {
+	if(event.status != rpc::Account::Status::ok) {
 		CLIENT_ERROR(ctx.logger, ctx)
 			<< "Account server returned "
-			<< utility::fb_status(event->status, rpc::Account::EnumNamesStatus())
+			<< utility::fb_status(event.status, rpc::Account::EnumNamesStatus())
 			<< " for " << auth_ctx.packet->username << " lookup" << LOG_ASYNC;
 
 		auth_state(ctx, State::failed);
@@ -128,9 +128,9 @@ void handle_account_id(ClientContext& ctx, const AccountIDResponse* event) {
 		return;
 	}
 
-	if(event->account_id) {
-		auth_ctx.account_id = event->account_id;
-		fetch_session_key(ctx, event->account_id);
+	if(event.account_id) {
+		auth_ctx.account_id = event.account_id;
+		fetch_session_key(ctx, event.account_id);
 	} else {
 		CLIENT_DEBUG(ctx.logger, ctx)
 			<< "Account ID lookup for failed for "
@@ -152,16 +152,16 @@ void fetch_session_key(const ClientContext& ctx, const std::uint32_t account_id)
 	});
 }
 
-void handle_session_key(ClientContext& ctx, const SessionKeyResponse* event) {
+void handle_session_key(ClientContext& ctx, const SessionKeyResponse& event) {
 	const auto& auth_ctx = std::get<Context>(ctx.state_ctx);
 
 	CLIENT_DEBUG(ctx.logger, ctx)
 		<< "Account server returned "
-		<< utility::fb_status(event->status, rpc::Account::EnumNamesStatus())
+		<< utility::fb_status(event.status, rpc::Account::EnumNamesStatus())
 		<< " for " << auth_ctx.packet->username << LOG_ASYNC;
 
-	if(event->status == rpc::Account::Status::ok) {
-		prove_session(ctx, event->key);
+	if(event.status == rpc::Account::Status::ok) {
+		prove_session(ctx, event.key);
 	} else {
 		auth_state(ctx, State::failed);
 		ctx.handler.close();
@@ -296,12 +296,12 @@ void send_auth_result(ClientContext& ctx, protocol::Result result) {
 	ctx.handler.send(response);
 }
 
-void handle_queue_update(ClientContext& ctx, const QueuePosition* event) {
+void handle_queue_update(ClientContext& ctx, const QueuePosition& event) {
 	LOG_TRACE(ctx.logger, log_func);
 
 	protocol::smsg_auth_response packet;
 	packet->result = protocol::Result::auth_wait_queue;
-	packet->queue_position = gsl::narrow_cast<std::uint32_t>(event->position);
+	packet->queue_position = gsl::narrow_cast<std::uint32_t>(event.position);
 	ctx.handler.send(packet);
 }
 
@@ -334,21 +334,23 @@ void handle_packet(ClientContext& ctx, protocol::ClientOpcode opcode) {
 	}
 }
 
-void handle_event(ClientContext& ctx, const Event* event) {
-	switch(event->type) {
-		case EventType::timer_expired:
+void handle_event(ClientContext& ctx, const Event& event) {
+	using enum EventType;
+
+	switch(event.type) {
+		case timer_expired:
 			handle_timeout(ctx);
 			break;
-		case EventType::account_id_response:
-			handle_account_id(ctx, static_cast<const AccountIDResponse*>(event));
+		case account_id_response:
+			handle_account_id(ctx, static_cast<const AccountIDResponse&>(event));
 			break;
-		case EventType::session_key_response:
-			handle_session_key(ctx, static_cast<const SessionKeyResponse*>(event));
+		case session_key_response:
+			handle_session_key(ctx, static_cast<const SessionKeyResponse&>(event));
 			break;
-		case EventType::queue_update_position:
-			handle_queue_update(ctx, static_cast<const QueuePosition*>(event));
+		case queue_update_position:
+			handle_queue_update(ctx, static_cast<const QueuePosition&>(event));
 			break;
-		case EventType::queue_success:
+		case queue_success:
 			handle_queue_success(ctx);
 			break;
 		default:

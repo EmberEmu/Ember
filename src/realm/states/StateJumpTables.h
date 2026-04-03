@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2025 Ember
+ * Copyright (c) 2016 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -29,7 +29,7 @@ struct ClientContext;
 struct Event;
 
 using state_func = void(*)(ClientContext&);
-using event_handler = void(*)(ClientContext&, const Event*);
+using event_handler = void(*)(ClientContext&, const Event&);
 using packet_handler = void(*)(ClientContext&, protocol::ClientOpcode);
 
 template<typename T>

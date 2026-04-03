@@ -27,7 +27,7 @@ void EventDispatcher::post_event(const ClientIdent& client, std::unique_ptr<Even
 
 	boost::asio::post(*service, [&, client, event = std::move(event)] {
 		if(auto handler = locate_handler(client)) {
-			handler->handle_event(event.get());
+			handler->handle_event(*event);
 		} else {
 			LOG_DEBUG(logger_, "Client disconnected, event discarded");
 		}
@@ -72,7 +72,7 @@ void EventDispatcher::broadcast_event(std::vector<ClientIdent> clients, std::sha
 
 			while(beg != end) {
 				if(auto handler = locate_handler(*beg++)) {
-					handler->handle_event(event.get());
+					handler->handle_event(*event);
 				} else {
 					LOG_DEBUG(logger_, "Client disconnected, event discarded");
 				}
@@ -83,13 +83,13 @@ void EventDispatcher::broadcast_event(std::vector<ClientIdent> clients, std::sha
 
 void EventDispatcher::broadcast(const Event& event) const {
 	for(auto& handler : handlers_ | std::views::values) {
-		handler->handle_event(&event);
+		handler->handle_event(event);
 	}
 
 #ifdef EMBER_FAST_DISPATCH_CACHE
 	for(auto& entry : cache_) {
 		if(!entry.is_zero()) {
-			entry.extract_ptr<ClientHandler>()->handle_event(&event);
+			entry.extract_ptr<ClientHandler>()->handle_event(event);
 		}
 	}
 #endif
@@ -110,7 +110,7 @@ void EventDispatcher::broadcast_event(std::shared_ptr<const Event> event) const 
 	for(auto& ioc : pool_.services()) {
 		boost::asio::dispatch(ioc, [event]() {
 			for(auto& handler : handlers_ | std::views::values) {
-				handler->handle_event(event.get());
+				handler->handle_event(*event);
 			}
 		});
 	}

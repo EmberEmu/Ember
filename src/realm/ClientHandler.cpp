@@ -57,10 +57,10 @@ void ClientHandler::handle_message(StaticBuffer& buffer, const protocol::SizeTyp
 	update_packet[context_.state](context_, opcode);
 }
 
-bool ClientHandler::handle_self_event(const Event* event) {
+bool ClientHandler::handle_self_event(const Event& event) {
 	using enum EventType;
 
-	switch(event->type) {
+	switch(event.type) {
 		case interval_timer_fire:
 			handle_timer();
 			return true;
@@ -78,20 +78,12 @@ bool ClientHandler::handle_self_event(const Event* event) {
 	}
 }
 
-void ClientHandler::handle_event(const Event* event) {
+void ClientHandler::handle_event(const Event& event) {
 	if(handle_self_event(event)) {
 		return;
 	}
 
 	update_event[context_.state](context_, event);
-}
-
-void ClientHandler::handle_event(std::unique_ptr<const Event> event) {
-	if(handle_self_event(event.get())) {
-		return;
-	}
-
-	update_event[context_.state](context_, event.get());
 }
 
 void ClientHandler::handle_timer() {

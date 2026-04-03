@@ -48,13 +48,13 @@ void send_character_list(ClientContext& ctx, std::vector<Character> characters) 
 	ctx.handler.send(response);
 }
 
-void send_character_rename(ClientContext& ctx, const CharRenameResponse* res) {
+void send_character_rename(ClientContext& ctx, const CharRenameResponse& res) {
 	LOG_TRACE(ctx.logger, log_func);
 
 	protocol::smsg_char_rename response;
-	response->result = res->result;
-	response->id = res->character_id;
-	response->name = res->name;
+	response->result = res.result;
+	response->id = res.character_id;
+	response->name = res.name;
 	ctx.handler.send(response);
 }
 
@@ -91,29 +91,29 @@ void character_enumerate(const ClientContext& ctx) {
 	);
 }
 
-void character_enumerate_completion(ClientContext& ctx, const CharEnumResponse* event) {
+void character_enumerate_completion(ClientContext& ctx, const CharEnumResponse& res) {
 	LOG_TRACE(ctx.logger, log_func);
 
-	if(event->status == rpc::Character::Status::ok) {
-		send_character_list(ctx, event->characters);
+	if(res.status == rpc::Character::Status::ok) {
+		send_character_list(ctx, res.characters);
 	} else {
 		send_character_list_fail(ctx);
 	}
 }
 
-void send_character_delete(ClientContext& ctx, const CharDeleteResponse* res) {
+void send_character_delete(ClientContext& ctx, const CharDeleteResponse& res) {
 	LOG_TRACE(ctx.logger, log_func);
 
 	protocol::smsg_char_delete response;
-	response->result = res->result;
+	response->result = res.result;
 	ctx.handler.send(response);
 }
 
-void send_character_create(ClientContext& ctx, const CharCreateResponse* res) {
+void send_character_create(ClientContext& ctx, const CharCreateResponse& res) {
 	LOG_TRACE(ctx.logger, log_func);
 
 	protocol::smsg_char_create response;
-	response->result = res->result;
+	response->result = res.result;
 	ctx.handler.send(response);
 }
 
@@ -202,22 +202,24 @@ void handle_packet(ClientContext& ctx, protocol::ClientOpcode opcode) {
 	}
 }
 
-void handle_event(ClientContext& ctx, const Event* event) {
-	switch(event->type) {
-		case EventType::timer_expired:
+void handle_event(ClientContext& ctx, const Event& event) {
+	using enum EventType;
+
+	switch(event.type) {
+		case timer_expired:
 			handle_timeout(ctx);
 			break;
-		case EventType::char_create_response:
-			send_character_create(ctx, static_cast<const CharCreateResponse*>(event));
+		case char_create_response:
+			send_character_create(ctx, static_cast<const CharCreateResponse&>(event));
 			break;
-		case EventType::char_delete_response:
-			send_character_delete(ctx, static_cast<const CharDeleteResponse*>(event));
+		case char_delete_response:
+			send_character_delete(ctx, static_cast<const CharDeleteResponse&>(event));
 			break;
-		case EventType::char_enum_response:
-			character_enumerate_completion(ctx, static_cast<const CharEnumResponse*>(event));
+		case char_enum_response:
+			character_enumerate_completion(ctx, static_cast<const CharEnumResponse&>(event));
 			break;
-		case EventType::char_rename_response:
-			send_character_rename(ctx, static_cast<const CharRenameResponse*>(event));
+		case char_rename_response:
+			send_character_rename(ctx, static_cast<const CharRenameResponse&>(event));
 			break;
 		default:
 			break;

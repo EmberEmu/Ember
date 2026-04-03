@@ -101,7 +101,7 @@ public:
 
 		boost::asio::post(*service, [&, client, event = std::move(event)] {
 			if(auto handler = locate_handler(client)) {
-				handler->handle_event(&event);
+				handler->handle_event(event);
 			} else {
 				LOG_DEBUG(logger_, "Client disconnected, event discarded");
 			}
