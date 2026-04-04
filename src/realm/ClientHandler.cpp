@@ -61,11 +61,11 @@ bool ClientHandler::handle_self_event(const Event& event) {
 	using enum EventType;
 
 	switch(event.type) {
-		case interval_timer_fire:
-			handle_timer();
-			return true;
 		case kick_self:
 			close();
+			return true;
+		case interval_timer_fire:
+			handle_timer();
 			return true;
 		case packet_log_enable:
 			packet_log_start();
