@@ -302,10 +302,10 @@ Parser::extract_attribute(spark::io::pmr::BinaryStreamReader& stream,
 			return priority(stream);
 		case Attributes::use_candidate:
 			return attributes::UseCandidate{};
+		default:
+			stream.skip(length);
+			return std::nullopt;
 	}
-
-	stream.skip(length);
-	return std::nullopt;
 }
 
 attributes::IceControlled Parser::ice_controlled(spark::io::pmr::BinaryStreamReader& stream) {
