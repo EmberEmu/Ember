@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - 2024 Ember
+ * Copyright (c) 2021 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,16 +11,9 @@
 #include "DNSDefines.h"
 #include "StreamType.h"
 #include "detail/Parser.h"
-#include <shared/smartenum.hpp>
 #include <expected>
-#include <vector>
 #include <span>
-#include <string>
-#include <string_view>
-#include <map>
-#include <unordered_map>
-#include <utility>
-#include <cstddef>
+#include <cstdint>
 
 namespace ember::dns {
 
