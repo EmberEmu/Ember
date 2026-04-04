@@ -14,6 +14,7 @@
 #include <logger/LoggerFwd.h>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/udp.hpp>
+#include <array>
 #include <span>
 #include <string_view>
 #include <cstddef>
