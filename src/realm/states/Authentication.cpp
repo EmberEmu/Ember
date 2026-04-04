@@ -74,10 +74,7 @@ void handle_authentication(ClientContext& ctx) {
 		return;
 	}
 
-	CLIENT_DEBUG(ctx.logger, ctx)
-		<< "Received session proof for "
-		<< auth_ctx.packet->username
-		<< LOG_ASYNC;
+	CLIENT_DEBUG(ctx, "Received session proof for {}", auth_ctx.packet->username);
 	
 	const auto& config = ctx.cfg_store.config_tls();
 
@@ -86,11 +83,7 @@ void handle_authentication(ClientContext& ctx) {
 	});
 
 	if(!build_res) {
-		CLIENT_DEBUG(ctx.logger, ctx)
-			<< "Build validation failed for "
-			<< auth_ctx.packet->username
-			<< LOG_ASYNC;
-
+		CLIENT_DEBUG(ctx, "Build validation failed for {}", auth_ctx.packet->username);
 		auth_state(ctx, State::failed);
 		ctx.handler.close();
 		return;
@@ -118,10 +111,10 @@ void handle_account_id(ClientContext& ctx, const AccountIDResponse& event) {
 	auto& auth_ctx = std::get<Context>(ctx.state_ctx);
 
 	if(event.status != rpc::Account::Status::ok) {
-		CLIENT_ERROR(ctx.logger, ctx)
-			<< "Account server returned "
-			<< utility::fb_status(event.status, rpc::Account::EnumNamesStatus())
-			<< " for " << auth_ctx.packet->username << " lookup" << LOG_ASYNC;
+		CLIENT_ERROR(ctx, "Account server returned {} for {} lookup",
+			utility::fb_status(event.status, rpc::Account::EnumNamesStatus()),
+			auth_ctx.packet->username
+		);
 
 		auth_state(ctx, State::failed);
 		ctx.handler.close();
@@ -132,9 +125,7 @@ void handle_account_id(ClientContext& ctx, const AccountIDResponse& event) {
 		auth_ctx.account_id = event.account_id;
 		fetch_session_key(ctx, event.account_id);
 	} else {
-		CLIENT_DEBUG(ctx.logger, ctx)
-			<< "Account ID lookup for failed for "
-			<< auth_ctx.packet->username << LOG_ASYNC;
+		CLIENT_DEBUG(ctx, "Account ID lookup for failed for {}", auth_ctx.packet->username);
 		auth_state(ctx, State::failed);
 		ctx.handler.close();
 	}
@@ -155,10 +146,10 @@ void fetch_session_key(const ClientContext& ctx, const std::uint32_t account_id)
 void handle_session_key(ClientContext& ctx, const SessionKeyResponse& event) {
 	const auto& auth_ctx = std::get<Context>(ctx.state_ctx);
 
-	CLIENT_DEBUG(ctx.logger, ctx)
-		<< "Account server returned "
-		<< utility::fb_status(event.status, rpc::Account::EnumNamesStatus())
-		<< " for " << auth_ctx.packet->username << LOG_ASYNC;
+	CLIENT_DEBUG(ctx, "Account server returned {} for {}",
+		utility::fb_status(event.status, rpc::Account::EnumNamesStatus()),
+		auth_ctx.packet->username
+	);
 
 	if(event.status == rpc::Account::Status::ok) {
 		prove_session(ctx, event.key);
@@ -193,7 +184,7 @@ void prove_session(ClientContext& ctx, const Botan::BigInt& key) {
 	};
 
 	if(!digest::validate(params, auth_ctx.packet->digest)) {
-		CLIENT_DEBUG(ctx.logger, ctx) << "Received bad digest for " << auth_ctx.packet->username << LOG_ASYNC;
+		CLIENT_DEBUG(ctx, "Received bad digest for {}", auth_ctx.packet->username);
 		auth_state(ctx, State::failed);
 		ctx.handler.close(); // key mismatch, client can't decrypt response
 		return;
@@ -238,15 +229,14 @@ void send_addon_data(ClientContext& ctx) {
 
 	// todo, use AddonData.dbc
 	for(const auto& addon : addons) {
-		CLIENT_DEBUG(ctx.logger, ctx) << "Addon: " << addon.name << ", Key version: " << addon.key_version
-			<< ", CRC: " << addon.crc << ", URL CRC: " << addon.update_url_crc << LOG_ASYNC;
-
+		CLIENT_DEBUG(ctx, "Addon: {}, Key version: {}, CRC: {}, URL CRC: {}",
+			addon.name, addon.key_version, addon.crc, addon.update_url_crc);
 		protocol::server::AddonInfo::AddonData data;
 		data.type = protocol::server::AddonInfo::AddonData::Type::blizzard;
 		data.update_available_flag = 0; // URL must be present for this to work (check URL CRC)
 
 		if(addon.key_version != 0 && addon.crc != 0x4C1C776D) { // todo, define?
-			CLIENT_DEBUG(ctx.logger, ctx) << "Repairing " << addon.name << LOG_ASYNC;
+			CLIENT_DEBUG(ctx, "Repairing {}", addon.name);
 			data.key_version = 1;
 		} else {
 			data.key_version = 0;
@@ -268,10 +258,7 @@ void auth_queue(ClientContext& ctx) {
 	ctx.timer.cancel();
 	auth_state(ctx, State::in_queue);
 
-	CLIENT_DEBUG(ctx.logger, ctx)
-		<< "added to queue, position "
-		<< ctx.queue.poll(uuid)
-		<< LOG_ASYNC;
+	CLIENT_DEBUG(ctx, "Added to queue, position {}", ctx.queue.poll(uuid));
 }
 
 void auth_success(ClientContext& ctx) {
@@ -282,10 +269,7 @@ void auth_success(ClientContext& ctx) {
 	auth_state(ctx, State::success);
 	ctx.handler.state_update(ClientState::cs_character_list);
 
-	CLIENT_DEBUG(ctx.logger, ctx)
-		<< "Authenticated as "
-		<< ctx.client_id->username
-		<< LOG_ASYNC;
+	CLIENT_DEBUG(ctx, "Authenticated as {}", ctx.client_id->username);
 }
 
 void send_auth_result(ClientContext& ctx, protocol::Result result) {
@@ -311,7 +295,7 @@ void handle_queue_success(ClientContext& ctx) {
 }
 
 void handle_timeout(ClientContext& ctx) {
-	CLIENT_DEBUG(ctx.logger, ctx) << "Authentication timed out" << LOG_ASYNC;
+	CLIENT_DEBUG(ctx, "Authentication timed out");
 	ctx.handler.close();
 }
 

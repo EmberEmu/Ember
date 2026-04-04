@@ -45,7 +45,7 @@ void ClientHandler::handle_message(StaticBuffer& buffer, const protocol::SizeTyp
 	protocol::ClientOpcode opcode;
 	stream >> opcode;
 
-	PACKET_TRACE(logger_, context_) << " -> " << protocol::to_string(opcode) << LOG_ASYNC;
+	PACKET_TRACE(context_, " -> {}", protocol::to_string(opcode));
 	++packet_counter_;
 
 	// handle ping as a special case
@@ -95,9 +95,10 @@ void ClientHandler::handle_timer() {
 }
 
 void ClientHandler::state_update(ClientState new_state) {
-	CLIENT_DEBUG(logger_, context_)
-		<< "State change, " << ClientState_to_string(context_.state)
-		<< " => " << ClientState_to_string(new_state) << LOG_SYNC;
+	CLIENT_DEBUG(context_, "State change, {} => {}",
+		ClientState_to_string(context_.state),
+		ClientState_to_string(new_state)
+	);
 
 	context_.prev_state = context_.state;
 	context_.state = new_state;
@@ -106,10 +107,7 @@ void ClientHandler::state_update(ClientState new_state) {
 }
 
 void ClientHandler::skip(BinaryStream& stream) {
-	CLIENT_TRACE(logger_, context_)
-		<< ClientState_to_string(context_.state)
-		<< " skipping message" << LOG_ASYNC;
-
+	CLIENT_TRACE(context_, "{}  skipping message", ClientState_to_string(context_.state));
 	stream.skip(stream.read_limit() - stream.total_read());
 }
 
@@ -159,19 +157,19 @@ bool ClientHandler::pps_flood_check() {
 	const auto packets_per_sec = packet_counter_ / config::broadcast_timer_frequency.count();
 
 	if(packets_per_sec > pps_hard_limit) {
-		CLIENT_DEBUG(logger_, context_) << "Packet rate > hard limit" << LOG_SYNC;
+		CLIENT_DEBUG(context_, "Packet rate > hard limit");
 		return false;
 	}
 
 	if(packets_per_sec > pps_soft_limit) {
-		CLIENT_DEBUG(logger_, context_) << "Packet rate > soft limit" << LOG_SYNC;
+		CLIENT_DEBUG(context_, "Packet rate > soft limit");
 		++pps_violation_;
 	} else if(pps_violation_) {
 		--pps_violation_;
 	}
 
 	if(pps_violation_ >= pps_grace) {
-		CLIENT_DEBUG(logger_, context_) << "Too many rate limit violations" << LOG_SYNC;
+		CLIENT_DEBUG(context_, "Too many rate limit violations");
 		return false;
 	}
 
@@ -196,16 +194,14 @@ bool ClientHandler::check_ping_sent() {
 	timer_events_ = 0;
 
 	if(prev_ping_sequence_ == ping_sequence_) {
-		CLIENT_DEBUG(logger_, context_)
-			<< "cmsg_ping missed" << LOG_ASYNC;
+		CLIENT_DEBUG(context_, "cmsg_ping missed");
 		++ping_violation_;
 	} else {
 		prev_ping_sequence_ = ping_sequence_;
 	}
 
 	if(ping_violation_ > ping_grace) {
-		CLIENT_DEBUG(logger_, context_)
-			<< "cmsg_pings absent" << LOG_ASYNC;
+		CLIENT_DEBUG(context_, "cmsg_pings absent");
 		return false;
 	}
 
@@ -220,14 +216,12 @@ bool ClientHandler::validate_ping(const protocol::client::Ping& ping) {
 	}
 
 	if(!ping.sequence_id) {
-		CLIENT_DEBUG(logger_, context_)
-			<< "Zero cmsg_ping sequence" << LOG_ASYNC;
+		CLIENT_DEBUG(context_, "Zero cmsg_ping sequence");
 		return false;
 	}
 
 	if(++ping_sequence_ != ping.sequence_id) {
-		CLIENT_DEBUG(logger_, context_)
-			<< "Non-sequential cmsg_ping sequence" << LOG_ASYNC;
+		CLIENT_DEBUG(context_, "Non-sequential cmsg_ping sequence");
 		return false;
 	}
 
@@ -243,12 +237,10 @@ bool ClientHandler::validate_ping(const protocol::client::Ping& ping) {
 		return true;
 	}
 
-	CLIENT_DEBUG(logger_, context_)
-		<< "cmsg_ping timing violation" << LOG_ASYNC;
+	CLIENT_DEBUG(context_, "cmsg_ping timing violation");
 
 	if(++ping_violation_ > ping_grace) {
-		CLIENT_DEBUG(logger_, context_)
-			<< "cmsg_ping violations exceeded grace" << LOG_ASYNC;
+		CLIENT_DEBUG(context_, "cmsg_ping violations exceeded grace");
 		return false;
 	}
 

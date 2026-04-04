@@ -19,7 +19,7 @@ namespace ember::realm {
 
 // this is a thunk to allow for outgoing logging without polluting the connection
 inline void ClientHandler::send(is_packet auto& packet) {
-	PACKET_TRACE(logger_, context_) << " <- " << protocol::to_string(packet.opcode) << LOG_ASYNC;
+	PACKET_TRACE(context_, " <- {}", protocol::to_string(packet.opcode));
 	connection_->send(packet);
 }
 
@@ -27,8 +27,7 @@ inline void ClientHandler::send(is_packet auto& packet) {
 bool ClientHandler::deserialise(is_packet auto& packet, BinaryStream& stream) {
 	if(auto result = packet.read_payload_from_stream(stream); result) {
 		if(stream.read_limit() != stream.total_read()) {
-			LOG_DEBUG(
-				logger_, "Skipping unprocessed data in message {} from {}",
+			LOG_DEBUG(logger_, "Skipping unprocessed data in message {} from {}",
 				protocol::to_string(packet.opcode), client_identify()
 			);
 
