@@ -192,11 +192,11 @@ bool page_unlock(void* address, std::size_t length) {
 
 std::uint32_t to_u32bit(const Botan::BigInt& value) {
 	if(value.is_negative()) {
-		throw Botan::Encoding_Error("BigInt::to_u32bit: Number is negative");
+		throw std::runtime_error("BigInt::to_u32bit: Number is negative");
 	}
 
 	if(value.bits() > 32) {
-		throw Botan::Encoding_Error("BigInt::to_u32bit: Number is too big to convert");
+		throw std::runtime_error("BigInt::to_u32bit: Number is too big to convert");
 	}
 
 	uint32_t out = 0;
