@@ -71,7 +71,7 @@ bool ClientHandler::deserialise(is_packet auto& packet, BinaryStream& stream) {
 		default:
 			LOG_ERROR(logger_,
 				"Deserialisation failed, stream state {}, unhandled error for {} from {}",
-				std::to_underlying(stream.state()), protocol::to_string(packet.opcode), client_identify()
+				std::to_underlying(stream.state()), packet.opcode, client_identify()
 			);
 
 			close();
