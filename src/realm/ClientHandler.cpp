@@ -87,9 +87,7 @@ void ClientHandler::handle_event(const Event& event) {
 }
 
 void ClientHandler::handle_timer() {
-	if(!pps_flood_check()) {
-		close();
-	} else if(!check_ping_sent()) {
+	if(!pps_flood_check() || !check_ping_sent()) {
 		close();
 	}
 }
