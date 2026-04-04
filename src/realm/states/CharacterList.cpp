@@ -210,16 +210,16 @@ void handle_event(ClientContext& ctx, const Event& event) {
 			handle_timeout(ctx);
 			break;
 		case char_create_response:
-			send_character_create(ctx, static_cast<const CharCreateResponse&>(event));
+			send_character_create(ctx, event.as<CharCreateResponse>());
 			break;
 		case char_delete_response:
-			send_character_delete(ctx, static_cast<const CharDeleteResponse&>(event));
+			send_character_delete(ctx, event.as<CharDeleteResponse>());
 			break;
 		case char_enum_response:
-			character_enumerate_completion(ctx, static_cast<const CharEnumResponse&>(event));
+			character_enumerate_completion(ctx, event.as<CharEnumResponse>());
 			break;
 		case char_rename_response:
-			send_character_rename(ctx, static_cast<const CharRenameResponse&>(event));
+			send_character_rename(ctx, event.as<CharRenameResponse>());
 			break;
 		default:
 			break;

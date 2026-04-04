@@ -600,13 +600,13 @@ void handle_event(ClientContext& ctx, const Event& event) {
 
     switch(event.type) {
         case player_login:
-            initiate_player_login(ctx, static_cast<const PlayerLogin&>(event));
+            initiate_player_login(ctx, event.as<PlayerLogin>());
             break;
 		case system_message:
-			system_msg(ctx, static_cast<const SystemMessage&>(event));
+			system_msg(ctx, event.as<SystemMessage>());
 			break;
 		case log_redirect:
-			log_msg(ctx, static_cast<const LogRedirect&>(event));
+			log_msg(ctx, event.as<LogRedirect>());
 			break;
         default:
             break;

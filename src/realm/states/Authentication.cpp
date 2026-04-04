@@ -342,13 +342,13 @@ void handle_event(ClientContext& ctx, const Event& event) {
 			handle_timeout(ctx);
 			break;
 		case account_id_response:
-			handle_account_id(ctx, static_cast<const AccountIDResponse&>(event));
+			handle_account_id(ctx, event.as<AccountIDResponse>());
 			break;
 		case session_key_response:
-			handle_session_key(ctx, static_cast<const SessionKeyResponse&>(event));
+			handle_session_key(ctx, event.as<SessionKeyResponse>());
 			break;
 		case queue_update_position:
-			handle_queue_update(ctx, static_cast<const QueuePosition&>(event));
+			handle_queue_update(ctx, event.as<QueuePosition>());
 			break;
 		case queue_success:
 			handle_queue_success(ctx);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2024 Ember
+ * Copyright (c) 2015 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -12,6 +12,7 @@
 #include "grunt/Packet.h"
 #include <shared/database/objects/User.h>
 #include <shared/database/daos/UserDAO.h>
+#include <concepts>
 #include <exception>
 #include <future>
 #include <string>
@@ -25,6 +26,16 @@ class Action {
 public:
 	virtual void execute() = 0;
 	virtual ~Action() = default;
+
+	template<std::derived_from<Action> _ty>
+	auto& as() {
+		return static_cast<_ty&>(*this);
+	}
+
+	template<std::derived_from<Action> _ty>
+	auto& as() const {
+		return static_cast<const _ty&>(*this);
+	}
 };
 
 class RegisterSessionAction final : public Action {
