@@ -87,7 +87,7 @@ void ClientHandler::handle_event(const Event& event) {
 }
 
 void ClientHandler::handle_timer() {
-	if(!pps_flood_check() || !check_ping_sent()) {
+	if(!pps_flood_check() || !ping_sent_check()) {
 		close();
 	}
 }
@@ -180,7 +180,7 @@ bool ClientHandler::pps_flood_check() {
  * not sending the packet at all or by sending it once to set the sequence
  * and then never again.
  */
-bool ClientHandler::check_ping_sent() {
+bool ClientHandler::ping_sent_check() {
 	// ensure the client has been given enough time since the last timer fired
 	const auto& frequency = config::broadcast_timer_frequency;
 	const auto expected = ((frequency + ping_leeway) / ping_delta) * timer_events_++;

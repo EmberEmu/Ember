@@ -61,9 +61,9 @@ class ClientHandler final {
 	mutable std::string client_id_ext_;
 
 	bool validate_ping(const protocol::client::Ping& ping);
-	bool check_ping_sent();
 	void handle_ping(BinaryStream& stream);
 	void handle_timer();
+	bool ping_sent_check();
 	bool pps_flood_check();
 	bool handle_self_event(const Event& event);
 	void packet_log_start();
