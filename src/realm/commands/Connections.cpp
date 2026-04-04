@@ -16,8 +16,8 @@
 namespace ember::realm {
 
 void system_message(const commands::Arguments& args,
-                    SessionManager& sessions,
-                    EventDispatcher& dispatcher,
+                    const SessionManager& sessions,
+					const EventDispatcher& dispatcher,
                     log::Logger& logger,
                     SystemMessage::Type type) {
 	const auto& message = args["message"].as<std::string>();
@@ -43,8 +43,8 @@ void system_message(const commands::Arguments& args,
 
 void toggle_logging(SessionManager::SessionID id,
                     bool toggle,
-                    SessionManager& sessions,
-                    EventDispatcher& dispatcher,
+					const SessionManager& sessions,
+					const EventDispatcher& dispatcher,
                     log::Logger& logger) {
 	auto ident = sessions.client_ident(id);
 
@@ -64,8 +64,8 @@ void toggle_logging(SessionManager::SessionID id,
 }
 
 void kick_connection(SessionManager::SessionID id,
-                     SessionManager& sessions,
-                     EventDispatcher& dispatcher,
+					 const SessionManager& sessions,
+					 const EventDispatcher& dispatcher,
                      log::Logger& logger) {
 	auto ident = sessions.client_ident(id);
 
@@ -130,9 +130,7 @@ void print_connection_stats_footer(bprinter::TablePrinter& table) {
 	table.PrintFooter();
 }
 
-void print_connection_stats(bprinter::TablePrinter& table,
-                            SessionManager::SessionID id,
-                            const Client* client) {
+void print_connection_stats(bprinter::TablePrinter& table, SessionManager::SessionID id, const Client* client) {
 	const auto stats = client->connection().stats();
 	table << id;
 	table << client->connection().remote_address();
@@ -146,7 +144,7 @@ void print_connection_stats(bprinter::TablePrinter& table,
 }
 
 void connection_statistics(const commands::Arguments& args,
-                           EventDispatcher& dispatcher,
+						   const EventDispatcher& dispatcher,
                            const SessionManager& sessions,
                            log::Logger& logger) {
 	if(!sessions.count()) {
@@ -193,7 +191,7 @@ void connection_statistics(const commands::Arguments& args,
 	}
 }
 
-void display_ident(SessionManager& sessions, log::Logger& logger, SessionManager::SessionID id) {
+void display_ident(const SessionManager& sessions, log::Logger& logger, SessionManager::SessionID id) {
 	auto ident = sessions.client_ident(id);
 
 	if(ident) {
@@ -205,8 +203,8 @@ void display_ident(SessionManager& sessions, log::Logger& logger, SessionManager
 
 commands::ScopedCommand add_connections_commands(commands::Command& registry,
                                                  utility::CommandExecutor& exec,
-                                                 EventDispatcher& dispatcher,
-                                                 SessionManager& sessions,
+												 const EventDispatcher& dispatcher,
+												 const SessionManager& sessions,
                                                  log::Logger& logger) {
 	auto root = commands::create("connections")
 		->description("Commands for connection & session management");

@@ -20,8 +20,8 @@ namespace ember::realm {
 commands::ScopedCommand add_connections_commands(
 	commands::Command& registry,
 	utility::CommandExecutor& exec,
-    EventDispatcher& dispatcher,
-    SessionManager& sessions,
+    const EventDispatcher& dispatcher,
+    const SessionManager& sessions,
 	log::Logger& logger
 );
 
