@@ -58,7 +58,13 @@ std::expected<std::size_t, int> decompress_adpcm(std::span<const std::byte> inpu
 	auto src = reinterpret_cast<const unsigned char*>(input.data());
 	auto dest = reinterpret_cast<unsigned char*>(output.data());
 
-	return DecompressADPCM(dest, output.size_bytes(), src, input.size_bytes(), channels);
+	const auto length = DecompressADPCM(dest, output.size_bytes(), src, input.size_bytes(), channels);
+
+	if(!length) {
+		return std::unexpected(0);
+	} else {
+		return length;
+	}
 }
 
 std::expected<std::size_t, int> decompress_lzma(std::span<const std::byte> input,

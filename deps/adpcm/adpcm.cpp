@@ -194,6 +194,12 @@ static inline int DecodeSample(int PredictedSample, int EncodedSample, int StepS
 
 int CompressADPCM(void * pvOutBuffer, int cbOutBuffer, void * pvInBuffer, int cbInBuffer, int ChannelCount, int CompressionLevel)
 {
+	if(ChannelCount <= 0 || ChannelCount > MAX_ADPCM_CHANNEL_COUNT) {
+		assert(false && "bad adpcm channel count");
+		return 0;
+	}
+
+	assert(ChannelCount && ChannelCount <= MAX_ADPCM_CHANNEL_COUNT);
     TADPCMStreamOut os(pvOutBuffer, cbOutBuffer);      // The output stream
     TADPCMStreamIn is(pvInBuffer, cbInBuffer);        // The input stream
     unsigned char BitShift = (unsigned char)(CompressionLevel - 1);
@@ -240,7 +246,7 @@ int CompressADPCM(void * pvOutBuffer, int cbOutBuffer, void * pvInBuffer, int cb
         int EncodedSample = 0;
 
         // If we have two channels, we need to flip the channel index
-        ChannelIndex = (ChannelIndex + 1) % ChannelCount;
+		ChannelIndex = (ChannelIndex + 1) % ChannelCount;
 
         // Get the difference from the previous sample.
         // If the difference is negative, set the sign bit to the encoded sample
@@ -316,6 +322,11 @@ int CompressADPCM(void * pvOutBuffer, int cbOutBuffer, void * pvInBuffer, int cb
 
 int DecompressADPCM(void * pvOutBuffer, int cbOutBuffer, const void * pvInBuffer, int cbInBuffer, int ChannelCount)
 {
+	if(ChannelCount <= 0 || ChannelCount > MAX_ADPCM_CHANNEL_COUNT) {
+		assert(false && "bad adpcm channel count");
+		return 0;
+	}
+
     TADPCMStreamOut os(pvOutBuffer, cbOutBuffer);          // Output stream
     TADPCMStreamIn is(pvInBuffer, cbInBuffer);            // Input stream
     unsigned char EncodedSample;
@@ -357,7 +368,7 @@ int DecompressADPCM(void * pvOutBuffer, int cbOutBuffer, const void * pvInBuffer
     while(is.ReadByteSample(EncodedSample))
     {
         // If we have two channels, we need to flip the channel index
-        ChannelIndex = (ChannelIndex + 1) % ChannelCount;
+		ChannelIndex = (ChannelIndex + 1) % ChannelCount;
 
         if(EncodedSample == 0x80)
         {
@@ -457,6 +468,11 @@ static const unsigned int * InitAdpcmData(PADPCM_DATA pData, unsigned char BitCo
 
 int DecompressADPCM_SC1B(void * pvOutBuffer, int cbOutBuffer, void * pvInBuffer, int cbInBuffer, int ChannelCount)
 {
+	if(ChannelCount <= 0 || ChannelCount > MAX_ADPCM_CHANNEL_COUNT) {
+		assert(false && "bad adpcm channel count");
+		return 0;
+	}
+
     TADPCMStreamOut os(pvOutBuffer, cbOutBuffer);          // Output stream
     TADPCMStreamIn is(pvInBuffer, cbInBuffer);            // Input stream
     ADPCM_DATA AdpcmData;
