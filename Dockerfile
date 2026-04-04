@@ -58,7 +58,7 @@ ENV CCACHE_DIR=${working_dir}/build/.ccache
 # These can be overriden by passing them through to `docker build`
 ARG build_optional_tools=1
 ARG build_shared_libs=0
-ARG build_type=Rel
+ARG build_type=Release
 ARG install_dir=/usr/local/bin
 
 # Generate Makefile & compile
