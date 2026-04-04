@@ -929,3 +929,6 @@ smart_enum_class(ClientOpcode, std::uint32_t,
 )
 
 } // protocol, ember
+
+CREATE_FORMATTER(ember::protocol::ClientOpcode)
+CREATE_FORMATTER(ember::protocol::ServerOpcode)

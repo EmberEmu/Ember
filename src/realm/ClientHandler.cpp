@@ -45,7 +45,7 @@ void ClientHandler::handle_message(StaticBuffer& buffer, const protocol::SizeTyp
 	protocol::ClientOpcode opcode;
 	stream >> opcode;
 
-	PACKET_TRACE(context_, " -> {}", protocol::to_string(opcode));
+	PACKET_TRACE(context_, "-> {}", opcode);
 	++packet_counter_;
 
 	// handle ping as a special case
