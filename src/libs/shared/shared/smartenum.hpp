@@ -24,8 +24,8 @@ SOFTWARE.
 
 #pragma once
 
-#include <logger/Logger.h>
 #include <algorithm>
+#include <format>
 #include <ostream>
 #include <expected>
 #include <source_location>
@@ -126,10 +126,6 @@ std::unordered_map<SizeType, std::string_view> make_enum_map(std::source_locatio
 	} \
     \
     inline std::ostream& operator<<(std::ostream& outStream, Type value) { \
-        outStream << to_string(value); \
-        return outStream; \
-    } \
-    inline log::Logger& operator <<(log::Logger& outStream, Type value) { \
         outStream << to_string(value); \
         return outStream; \
     }

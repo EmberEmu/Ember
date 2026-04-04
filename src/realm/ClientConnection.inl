@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <logger/Logger.h>
 #include <spark/buffers/BinaryStream.h>
 #include <gsl/narrow>
 
