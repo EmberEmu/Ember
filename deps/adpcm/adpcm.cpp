@@ -19,7 +19,7 @@
 #include "adpcm.h"
 
 //-----------------------------------------------------------------------------
-// Tables necessary dor decompression
+// Tables necessary for decompression
 
 static const int NextStepTable[] =
 {
