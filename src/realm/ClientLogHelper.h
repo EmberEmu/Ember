@@ -9,43 +9,43 @@
 #pragma once
 
 #include "FilterTypes.h"
-#include <logger/Logger.h>
+#include <logger/HelperMacros.h>
 
-#define PACKET_TRACE(logger, ctx) \
-	LOG_TRACE_STREAM(logger) << log::Filter(lf_packet_trace) << ctx.handler.client_identify()
+#define PACKET_TRACE(ctx, fmt_str, ...) \
+	LOG_FTRACE(ctx.logger, log::Filter(lf_packet_trace), "{}: " fmt_str, ctx.handler.client_identify(), ##__VA_ARGS__)
 
-#define CLIENT_TRACE(logger, ctx) \
-	LOG_TRACE_STREAM(logger) << ctx.handler.client_identify() << ": "
+#define CLIENT_TRACE(ctx, fmt_str, ...) \
+	LOG_TRACE(ctx.logger, "{}: " fmt_str, ctx.handler.client_identify(), ##__VA_ARGS__)
 
-#define CLIENT_DEBUG(logger, ctx) \
-	LOG_DEBUG_STREAM(logger) << ctx.handler.client_identify() << ": "
+#define CLIENT_DEBUG(ctx, fmt_str, ...) \
+	LOG_DEBUG(ctx.logger, "{}: " fmt_str, ctx.handler.client_identify(), ##__VA_ARGS__)
 
-#define CLIENT_INFO(logger, ctx) \
-	LOG_INFO_STREAM(logger) << ctx.handler.client_identify() << ": "
+#define CLIENT_INFO(ctx, fmt_str, ...) \
+	LOG_INFO(ctx.logger, "{}: " fmt_str, ctx.handler.client_identify(), ##__VA_ARGS__)
 
-#define CLIENT_WARN(logger, ctx) \
-    LOG_WARN_STREAM(logger) << ctx.handler.client_identify() << ": "
+#define CLIENT_WARN(ctx, fmt_str, ...) \
+    LOG_WARN(ctx.logger, "{}: " fmt_str, ctx.handler.client_identify(), ##__VA_ARGS__)
 
-#define CLIENT_ERROR(logger, ctx) \
-	LOG_ERROR_STREAM(logger) << ctx.handler.client_identify() << ": "
+#define CLIENT_ERROR(ctx, fmt_str, ...) \
+	LOG_ERROR(ctx.logger, "{}: " fmt_str, ctx.handler.client_identify(), ##__VA_ARGS__)
 
-#define CLIENT_FATAL(logger, ctx) \
-	LOG_FATAL_STREAM(logger) << ctx.handler.client_identify() << ": "
+#define CLIENT_FATAL(ctx, fmt_str, ...) \
+	LOG_FATAL(ctx.logger, "{}: " fmt_str, ctx.handler.client_identify(), ##__VA_ARGS__)
 
-#define CLIENT_TRACE_GLOB(ctx) \
-	CLIENT_TRACE(ember::log::global_logger(), ctx)
+#define CLIENT_TRACE_GLOB(ctx, fmt_str, ...) \
+	CLIENT_TRACE(ember::log::global_ctx.logger(), ctx, ##__VA_ARGS__)
 
-#define CLIENT_DEBUG_GLOB(ctx) \
-	CLIENT_DEBUG(ember::log::global_logger(), ctx)
+#define CLIENT_DEBUG_GLOB(ctx, fmt_str, ...) \
+	CLIENT_DEBUG(ember::log::global_ctx.logger(), ctx, ##__VA_ARGS__)
 
-#define CLIENT_INFO_GLOB(ctx) \
-	CLIENT_INFO(ember::log::global_logger(), ctx)
+#define CLIENT_INFO_GLOB(ctx, fmt_str, ...) \
+	CLIENT_INFO(ember::log::global_ctx.logger(), ctx, ##__VA_ARGS__)
 
-#define CLIENT_WARN_GLOB(ctx) \
-	CLIENT_WARN(ember::log::global_logger(), ctx)
+#define CLIENT_WARN_GLOB(ctx, fmt_str, ...) \
+	CLIENT_WARN(ember::log::global_ctx.logger(), ctx, ##__VA_ARGS__)
 
-#define CLIENT_ERROR_GLOB(ctx) \
-	CLIENT_ERROR(ember::log::global_logger(), ctx)
+#define CLIENT_ERROR_GLOB(ctx, fmt_str, ...) \
+	CLIENT_ERROR(ember::log::global_ctx.logger(), ctx, ##__VA_ARGS__)
 
-#define CLIENT_FATAL_GLOB(ctx) \
-	CLIENT_FATAL(ember::log::global_logger(), ctx)
+#define CLIENT_FATAL_GLOB(ctx, fmt_str, ...) \
+	CLIENT_FATAL(ember::log::global_ctx.logger(), ctx, ##__VA_ARGS__)

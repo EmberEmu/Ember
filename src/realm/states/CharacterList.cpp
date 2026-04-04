@@ -168,7 +168,7 @@ void player_login(ClientContext& ctx) {
 }
 
 void handle_timeout(ClientContext& ctx) {
-	CLIENT_DEBUG(ctx.logger, ctx) << "Character list timed out" << LOG_ASYNC;
+	CLIENT_DEBUG(ctx, "Character list timed out");
 	ctx.handler.close();
 }
 
