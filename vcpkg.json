@@ -1,5 +1,6 @@
 {
   "dependencies": [
+  	"boost-assert",
     "boost-asio",
     "boost-headers",
     "boost-interprocess",
