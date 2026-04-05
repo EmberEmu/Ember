@@ -67,7 +67,7 @@ Result Command::execute(std::span<std::any> arg_values) {
 		}
 
 		try {
-			args = std::move(build_argument_map(arg_values));
+			args = build_argument_map(arg_values);
 		} catch(invalid_type&) {
 			return Result::invalid_types;
 		}
