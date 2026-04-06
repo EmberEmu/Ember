@@ -105,7 +105,7 @@ void ClientHandler::state_update(ClientState new_state) {
 }
 
 void ClientHandler::skip(BinaryStream& stream) {
-	CLIENT_TRACE(context_, "{}  skipping message", ClientState_to_string(context_.state));
+	CLIENT_TRACE(context_, "{} skipping message", ClientState_to_string(context_.state));
 	stream.skip(stream.read_limit() - stream.total_read());
 }
 
