@@ -424,7 +424,7 @@ void THTreeItem::RemoveItem()
 
 THuffmannTree::THuffmannTree(bool bCompression)
 {
-    pFirst = pLast = LIST_HEAD();
+    ListHead.pNext = ListHead.pPrev = LIST_HEAD();
     MinValidValue = 1;
     ItemsUsed = 0;
     bIsCmp0 = 0;
@@ -525,7 +525,7 @@ unsigned int THuffmannTree::FixupItemPosByWeight(THTreeItem * pNewItem, unsigned
     if(pNewItem->Weight < MaxWeight)
     {
         // Find an item that has higher weight than this one
-        pHigherItem = FindHigherOrEqualItem(pLast, pNewItem->Weight);
+        pHigherItem = FindHigherOrEqualItem(ListHead.pPrev, pNewItem->Weight);
 
         // Remove the item and put it to the new position
         pNewItem->RemoveItem();
@@ -578,7 +578,7 @@ bool THuffmannTree::BuildTree(unsigned int CompressionType)
 
     // Now we need to build the tree. We start at the last entry
     // and go backwards to the first one
-    pChildLo = pLast;
+    pChildLo = ListHead.pPrev;
 
     // Work as long as both children are valid
     // pChildHi is child with higher weight, pChildLo is the one with lower weight
@@ -659,7 +659,7 @@ void THuffmannTree::IncWeightsAndRebalance(THTreeItem * pItem)
 
 bool THuffmannTree::InsertNewBranchAndRebalance(unsigned int Value1, unsigned int Value2)
 {
-    THTreeItem * pLastItem = pLast;
+    THTreeItem * pLastItem = ListHead.pPrev;
     THTreeItem * pChildHi;
     THTreeItem * pChildLo;
 
@@ -738,11 +738,11 @@ unsigned int THuffmannTree::DecodeOneByte(TInputStream * is)
     else
     {
         // Just a sanity check
-        if(pFirst == LIST_HEAD())
+        if(ListHead.pNext == LIST_HEAD())
             return HUFF_DECOMPRESS_ERROR;
 
         // We don't have the quick-link item, we need to parse the tree from its root
-        pItem = pFirst;
+        pItem = ListHead.pNext;
     }
 
     // Step down the tree until we find a terminal item
@@ -827,7 +827,7 @@ unsigned int THuffmannTree::Compress(TOutputStream * os, void * pvInBuffer, int 
             // Store the loaded byte into output stream
             os->PutBits(InputByte, 8);
 
-            if(!InsertNewBranchAndRebalance(pLast->DecompressedValue, InputByte))
+            if(!InsertNewBranchAndRebalance(ListHead.pPrev->DecompressedValue, InputByte))
                 return 0;
 
             if(bIsCmp0)
@@ -892,7 +892,7 @@ unsigned int THuffmannTree::Decompress(void * pvOutBuffer, unsigned int cbOutLen
             if(!is->Get8Bits(DecompressedValue))
                 return 0;
 
-            if(!InsertNewBranchAndRebalance(pLast->DecompressedValue, DecompressedValue))
+            if(!InsertNewBranchAndRebalance(ListHead.pPrev->DecompressedValue, DecompressedValue))
                 return 0;
 
             if(bIsCmp0 == 0)
