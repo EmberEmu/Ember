@@ -115,15 +115,15 @@ bool StreamReader::try_read(std::ifstream& file, std::span<std::uint8_t> buffer)
 
 template<typename flatbuffer_type>
 void StreamReader::dispatch(std::span<const std::uint8_t> buff) {
-	const auto message = flatbuffers::GetRoot<flatbuffer_type>(buff.data());
+	const auto root = flatbuffers::GetRoot<flatbuffer_type>(buff.data());
 	flatbuffers::Verifier verifier(buff.data(), buff.size());
 
-	if(!message->Verify(verifier)) {
+	if(!root->Verify(verifier)) {
 		throw std::runtime_error("Flatbuffer verification failed");
 	}
 
 	for(auto& sink : sinks_) {
-		sink->handle(*message);
+		sink->handle(*root);
 	}
 }
 
