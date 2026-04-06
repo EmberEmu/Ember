@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Ember
+ * Copyright (c) 2018 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -15,7 +15,8 @@ enum Direction : short {
 
 enum Type : uint {
 	header,
-	message
+	message,
+	footer
 }
 
 table Header {
@@ -31,3 +32,6 @@ table Message {
 	direction:Direction;
 	payload:[ubyte];
 }
+
+// only used to signal the end of a packet stream
+table Footer{}

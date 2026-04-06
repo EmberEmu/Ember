@@ -28,6 +28,7 @@ class FlatbuffersSink final : public PacketSink {
 
 public:
 	FlatbuffersSink(const std::string& filename, std::string_view host, std::string_view remote_host);
+	~FlatbuffersSink();
 
 	void log(std::span<const std::uint8_t> buffer, const std::time_t& time,
 	         PacketDirection dir) override;

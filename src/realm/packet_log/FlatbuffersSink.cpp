@@ -11,6 +11,7 @@
 #include <spark/buffers/Endian.h>
 #include <array>
 #include <memory>
+#include <utility>
 #include <cassert>
 #include <cstddef>
 #include <ctime>
@@ -66,6 +67,8 @@ fblog::Direction FlatbuffersSink::direction(PacketDirection direction) const {
 		default:
 			assert(false && "unhandled packet direction case");
 	}
+
+	std::unreachable();
 }
 
 void FlatbuffersSink::log(std::span<const std::uint8_t> buffer, const std::time_t& time, PacketDirection dir) {
@@ -103,6 +106,26 @@ void FlatbuffersSink::log(std::span<const std::uint8_t> buffer, const std::time_
 	if(!file_) {
 		throw std::runtime_error("Error writing to packet log");
 	}
+}
+
+FlatbuffersSink::~FlatbuffersSink() {
+	if(!file_) {
+		return;
+	}
+
+	flatbuffers::FlatBufferBuilder fbb;
+	fblog::FooterBuilder builder(fbb);
+	auto footer = builder.Finish();
+	fbb.Finish(footer);
+
+	const auto size_native = fbb.GetSize();
+	const auto size_le = spark::io::endian::native_to_little(size_native);
+	const auto type_le = spark::io::endian::native_to_little(static_cast<std::uint32_t>(fblog::Type::footer));
+
+	file_.write(reinterpret_cast<const char*>(&size_le), sizeof(size_le));
+	file_.write(reinterpret_cast<const char*>(&type_le), sizeof(type_le));
+	file_.write(reinterpret_cast<const char*>(fbb.GetBufferPointer()), size_native);
+	file_.flush();
 }
 
 } // realm, ember
