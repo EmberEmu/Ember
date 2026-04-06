@@ -113,8 +113,9 @@ bool StreamReader::try_read(std::ifstream& file, std::span<std::uint8_t> buffer)
 	}
 }
 
-void StreamReader::handle_header(std::span<const std::uint8_t> buff) {
-	const auto header = flatbuffers::GetRoot<fblog::Header>(buff.data());
+template<typename flatbuffer_type>
+void StreamReader::dispatch(std::span<const std::uint8_t> buff) {
+	const auto header = flatbuffers::GetRoot<flatbuffer_type>(buff.data());
 	flatbuffers::Verifier verifier(buff.data(), buff.size());
 
 	if(!header->Verify(verifier)) {
@@ -126,25 +127,18 @@ void StreamReader::handle_header(std::span<const std::uint8_t> buff) {
 	}
 }
 
-void StreamReader::handle_message(std::span<const std::uint8_t> buff) {
-	auto message = flatbuffers::GetRoot<fblog::Message>(buff.data());
-	flatbuffers::Verifier verifier(buff.data(), buff.size());
-	if(!message->Verify(verifier)) {
-		throw std::runtime_error("Flatbuffer verification failed");
-	}
-
-	for(auto& sink : sinks_) {
-		sink->handle(*message);
-	}
-}
-
 void StreamReader::handle_buffer(const fblog::Type type, std::span<const std::uint8_t> buff) {
+	using enum fblog::Type;
+
 	switch(type) {
-		case fblog::Type::header:
-			handle_header(buff);
+		case header:
+			dispatch<fblog::Header>(buff);
 			break;
-		case fblog::Type::message:
-			handle_message(buff);
+		case message:
+			dispatch<fblog::Message>(buff);
+			break;
+		case footer:
+			dispatch<fblog::Footer>(buff);
 			break;
 		default:
 			throw std::runtime_error("Unknown message type");

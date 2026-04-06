@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 - 2025 Ember
+ * Copyright (c) 2018 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -91,6 +91,12 @@ void ConsoleSink::handle(const fblog::Message& message) {
 
 	std::cout << utility::format_packet(payload->data(), payload->size());
 	std::cout << "\n</message>\n" << std::endl; // explicit flush to avoid stalls for ongoing streams
+}
+
+void ConsoleSink::handle(const fblog::Footer& message) {
+	std::cout << "<footer>\n";
+	std::cout << "Current logging session has finished.\n";
+	std::cout << "</footer>\n" << std::endl;
 }
 
 void ConsoleSink::print_opcode(const fblog::Message& message) const {

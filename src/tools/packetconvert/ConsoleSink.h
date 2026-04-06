@@ -21,6 +21,7 @@ class ConsoleSink final : public Sink {
 public:
 	void handle(const fblog::Header& header) override;
 	void handle(const fblog::Message& message) override;
+	void handle(const fblog::Footer& message) override;
 };
 
 } // ember

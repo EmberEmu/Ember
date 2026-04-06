@@ -37,8 +37,10 @@ class StreamReader final {
 	std::vector<std::unique_ptr<Sink>> sinks_;
 
 	void handle_buffer(const fblog::Type type, std::span<const std::uint8_t> buff);
-	void handle_message(std::span<const std::uint8_t> buff);
-	void handle_header(std::span<const std::uint8_t> buff);
+
+	template<typename flatbuffer_type>
+	void dispatch(std::span<const std::uint8_t> buff);
+
 	bool try_read(std::ifstream& file, std::span<std::uint8_t> buffer);
 	template<typename T> std::optional<T> try_read(std::ifstream& file);
 
