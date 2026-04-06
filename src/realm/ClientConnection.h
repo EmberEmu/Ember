@@ -86,21 +86,7 @@ private:
 	void close_session();
 
 public:
-	ClientConnection(tcp_socket socket, log::Logger& logger)
-		: socket_(std::move(socket))
-		, remote_ep_(socket_.remote_endpoint())
-		, stats_{}
-		, msg_size_{0}
-		, logger_(logger)
-		, read_state_(ReadState::header)
-		, stopped_(false)
-		, write_in_progress_(false)
-		, handler_(nullptr)
-		, compression_level_(0)
-		, outbound_front_(&outbound_buffers_.front())
-		, outbound_back_(&outbound_buffers_.back())
-		, stopping_(false) {}
-
+	ClientConnection(tcp_socket socket, log::Logger& logger);
 	~ClientConnection();
 
 	// session management
