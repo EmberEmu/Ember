@@ -181,7 +181,7 @@ void ClientConnection::send(std::span<const std::uint8_t> packet) {
 		return;
 	}
 
-	spark::io::BinaryStream stream(*outbound_back_, spark::io::endian::little);
+	spark::io::BinaryStream stream(*outbound_back_);
 	stream << packet;
 
 	if(!stream) {
