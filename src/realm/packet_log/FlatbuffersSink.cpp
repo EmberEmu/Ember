@@ -9,9 +9,9 @@
 #include "FlatbuffersSink.h"
 #include <logger/Utility.h>
 #include <spark/buffers/Endian.h>
-#include <PacketLog_generated.h>
 #include <array>
 #include <memory>
+#include <cassert>
 #include <cstddef>
 #include <ctime>
 
@@ -57,6 +57,17 @@ void FlatbuffersSink::start_log(const std::string& filename, std::string_view ho
 	}
 }
 
+fblog::Direction FlatbuffersSink::direction(PacketDirection direction) const {
+	switch(direction) {
+		case PacketDirection::inbound:
+			return fblog::Direction::inbound;
+		case PacketDirection::outbound:
+			return fblog::Direction::outbound;
+		default:
+			assert(false && "unhandled packet direction case");
+	}
+}
+
 void FlatbuffersSink::log(std::span<const std::uint8_t> buffer, const std::time_t& time, PacketDirection dir) {
 	std::tm utc_time;
 
@@ -72,12 +83,10 @@ void FlatbuffersSink::log(std::span<const std::uint8_t> buffer, const std::time_
 	std::array<char, 64> time_buf{};
 	const auto time_sz = log::detail::put_time(utc_time, time_fmt_, std::span(time_buf));
 	const auto fbtime = fbb.CreateString(std::data(time_buf), time_sz);
-	const auto fbdir = dir == PacketDirection::inbound?
-		fblog::Direction::inbound : fblog::Direction::outbound;
 
 	fblog::MessageBuilder mb(fbb);
 	mb.add_time(fbtime);
-	mb.add_direction(fbdir);
+	mb.add_direction(direction(dir));
 	mb.add_payload(payload);
 	auto message = mb.Finish();
 	fbb.Finish(message);

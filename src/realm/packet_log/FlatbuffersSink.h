@@ -10,6 +10,7 @@
 
 #include "PacketSink.h"
 #include <shared/utility/cstring_view.hpp>
+#include <PacketLog_generated.h>
 #include <string>
 #include <string_view>
 #include <fstream>
@@ -23,6 +24,7 @@ class FlatbuffersSink final : public PacketSink {
 	inline static cstring_view time_fmt_ = "%Y-%m-%dT%H:%M:%SZ"; // ISO 8601
 
 	void start_log(const std::string& filename, std::string_view host, std::string_view remote_host);
+	fblog::Direction direction(PacketDirection direction) const;
 
 public:
 	FlatbuffersSink(const std::string& filename, std::string_view host, std::string_view remote_host);

@@ -12,6 +12,7 @@
 #include <shared/utility/FormatPacket.h>
 #include <logger/Utility.h>
 #include <array>
+#include <format>
 #include <memory>
 #include <string_view>
 #include <cstddef>
@@ -30,8 +31,7 @@ void LogSink::start_log() {
 		<< "Starting packet logging for " << remote_host_ << log::flush;
 }
 
-void LogSink::log(std::span<const std::uint8_t> buffer, const std::time_t& time,
-                  PacketDirection dir) {
+void LogSink::log(std::span<const std::uint8_t> buffer, const std::time_t& time, PacketDirection dir) {
 	const auto output = utility::format_packet(buffer.data(), buffer.size());
 
 	cstring_view fmt("%H:%M:%S");
@@ -47,9 +47,8 @@ void LogSink::log(std::span<const std::uint8_t> buffer, const std::time_t& time,
 	std::array<char, 32> time_buf{};
 	log::detail::put_time(tm, fmt, std::span(time_buf));
 
-	logger_ << severity_ << log::Filter(lf_packet_log)
-		<< "[" << time_buf.data() << "] " << remote_host_ << ", " << direction
-		<< ":\n" << output << log::flush;
+	auto msg = std::format("[{}] {}, {}:\n{}", time_buf.data(), remote_host_, direction, output);
+	logger_ << severity_ << log::Filter(lf_packet_log) << msg;
 }
 
 LogSink::~LogSink() {
