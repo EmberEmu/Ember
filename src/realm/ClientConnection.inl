@@ -28,9 +28,7 @@ bool ClientConnection::write_packet_stream(const PacketType& packet) {
 	auto size = gsl::narrow<SizeType>(end_pos - sizeof(SizeType));
 	auto opcode = packet.opcode;
 
-	spark::io::endian::conditional_reverse_inplace<
-		std::endian::native, std::endian::big
-	>(size);
+	spark::io::endian::native_to_big_inplace(size);
 
 	if(crypt_) [[likely]] {
 		crypt_->encrypt(size);

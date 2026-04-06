@@ -33,9 +33,7 @@ void ClientConnection::parse_header() {
 
 	inbound_buffer_.read(&msg_size_);
 
-	spark::io::endian::conditional_reverse_inplace<
-		std::endian::big, std::endian::native
-	>(msg_size_);
+	spark::io::endian::big_to_native_inplace(msg_size_);
 
 	if(msg_size_ < sizeof(protocol::ClientHeader::OpcodeType)) {
 		LOG_DEBUG(logger_, "Invalid message size from {}", remote_address());
