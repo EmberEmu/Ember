@@ -162,8 +162,6 @@ void EventDispatcher::remove_handler(const ClientHandler* handler) {
 		}  else {
 			handlers_.erase(handler->uuid());
 		}
-
-		return;
 #else
 	handlers_.erase(handler->uuid());
 #endif
