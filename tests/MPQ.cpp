@@ -112,7 +112,7 @@ TEST(MPQ, Open_BadExtendedBlockTableOffset) {
 	ASSERT_THROW(mpq::open_archive("test_data/mpqs/v1_15.mpq", *result), mpq::exception);
 }
 
-// ADPCM compression, encrypted
+// ADPCM & Huffman compression, encrypted
 // todo: failing only on Clang, only under release build
 TEST(MPQ, DISABLED_Extract_WAV) {
 	auto archive = mpq::open_archive("test_data/mpqs/v1_16.mpq", 0);
