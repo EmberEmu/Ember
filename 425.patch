@@ -1,0 +1,111 @@
+From d76f42142e8dcb58d8cdb99e9646bd0309cbde4b Mon Sep 17 00:00:00 2001
+From: Ladislav Zezula <zezula@volny.cz>
+Date: Mon, 6 Apr 2026 09:54:22 +0200
+Subject: [PATCH] Fixed undefined behavior in THuffmannTree
+
+---
+ deps/huffman/huff.cpp | 16 ++++++++--------
+ deps/huffman/huff.h   | 11 ++++++-----
+ 2 files changed, 14 insertions(+), 13 deletions(-)
+
+diff --git a/deps/huffman/huff.cpp b/deps/huffman/huff.cpp
+index bbb8118..ff05d65 100644
+--- a/deps/huffman/huff.cpp
++++ b/deps/huffman/huff.cpp
+@@ -424,7 +424,7 @@ void THTreeItem::RemoveItem()
+ 
+ THuffmannTree::THuffmannTree(bool bCompression)
+ {
+-    pFirst = pLast = LIST_HEAD();
++    ListHead.pNext = ListHead.pPrev = LIST_HEAD();
+     MinValidValue = 1;
+     ItemsUsed = 0;
+     bIsCmp0 = 0;
+@@ -525,7 +525,7 @@ unsigned int THuffmannTree::FixupItemPosByWeight(THTreeItem * pNewItem, unsigned
+     if(pNewItem->Weight < MaxWeight)
+     {
+         // Find an item that has higher weight than this one
+-        pHigherItem = FindHigherOrEqualItem(pLast, pNewItem->Weight);
++        pHigherItem = FindHigherOrEqualItem(ListHead.pPrev, pNewItem->Weight);
+ 
+         // Remove the item and put it to the new position
+         pNewItem->RemoveItem();
+@@ -578,7 +578,7 @@ bool THuffmannTree::BuildTree(unsigned int CompressionType)
+ 
+     // Now we need to build the tree. We start at the last entry
+     // and go backwards to the first one
+-    pChildLo = pLast;
++    pChildLo = ListHead.pPrev;
+ 
+     // Work as long as both children are valid
+     // pChildHi is child with higher weight, pChildLo is the one with lower weight
+@@ -659,7 +659,7 @@ void THuffmannTree::IncWeightsAndRebalance(THTreeItem * pItem)
+ 
+ bool THuffmannTree::InsertNewBranchAndRebalance(unsigned int Value1, unsigned int Value2)
+ {
+-    THTreeItem * pLastItem = pLast;
++    THTreeItem * pLastItem = ListHead.pPrev;
+     THTreeItem * pChildHi;
+     THTreeItem * pChildLo;
+ 
+@@ -738,11 +738,11 @@ unsigned int THuffmannTree::DecodeOneByte(TInputStream * is)
+     else
+     {
+         // Just a sanity check
+-        if(pFirst == LIST_HEAD())
++        if(ListHead.pNext == LIST_HEAD())
+             return HUFF_DECOMPRESS_ERROR;
+ 
+         // We don't have the quick-link item, we need to parse the tree from its root
+-        pItem = pFirst;
++        pItem = ListHead.pNext;
+     }
+ 
+     // Step down the tree until we find a terminal item
+@@ -827,7 +827,7 @@ unsigned int THuffmannTree::Compress(TOutputStream * os, void * pvInBuffer, int
+             // Store the loaded byte into output stream
+             os->PutBits(InputByte, 8);
+ 
+-            if(!InsertNewBranchAndRebalance(pLast->DecompressedValue, InputByte))
++            if(!InsertNewBranchAndRebalance(ListHead.pPrev->DecompressedValue, InputByte))
+                 return 0;
+ 
+             if(bIsCmp0)
+@@ -892,7 +892,7 @@ unsigned int THuffmannTree::Decompress(void * pvOutBuffer, unsigned int cbOutLen
+             if(!is->Get8Bits(DecompressedValue))
+                 return 0;
+ 
+-            if(!InsertNewBranchAndRebalance(pLast->DecompressedValue, DecompressedValue))
++            if(!InsertNewBranchAndRebalance(ListHead.pPrev->DecompressedValue, DecompressedValue))
+                 return 0;
+ 
+             if(bIsCmp0 == 0)
+diff --git a/deps/huffman/huff.h b/deps/huffman/huff.h
+index b2c6370..c703e3d 100644
+--- a/deps/huffman/huff.h
++++ b/deps/huffman/huff.h
+@@ -55,8 +55,9 @@ class TOutputStream
+     unsigned int BitCount;              // Number of bits in the bit buffer
+ };
+ 
+-// A virtual tree item that represents the head of the item list
+-#define LIST_HEAD()  ((THTreeItem *)(&pFirst))
++// The list head sentinel - an actual THTreeItem embedded in THuffmannTree.
++// Its pNext serves as "pFirst" (highest weight) and pPrev as "pLast" (lowest weight).
++#define LIST_HEAD()  (&ListHead)
+ 
+ enum TInsertPoint
+ {
+@@ -129,9 +130,9 @@ class THuffmannTree
+     THTreeItem   ItemBuffer[HUFF_ITEM_COUNT];   // Buffer for tree items. No memory allocation is needed
+     unsigned int ItemsUsed;                     // Number of tree items used from ItemBuffer
+ 
+-    // Head of the linear item list
+-    THTreeItem * pFirst;                        // Pointer to the highest weight item
+-    THTreeItem * pLast;                         // Pointer to the lowest weight item
++    // Sentinel node for the linear item list (doubly-linked, circular).
++    // ListHead.pNext = highest weight item, ListHead.pPrev = lowest weight item
++    THTreeItem   ListHead;
+ 
+     THTreeItem * ItemsByByte[0x102];            // Array of item pointers, one for each possible byte value
+     TQuickLink   QuickLinks[LINK_ITEM_COUNT];   // Array of quick-link items

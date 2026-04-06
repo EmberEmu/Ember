@@ -55,8 +55,9 @@ class TOutputStream
     unsigned int BitCount;              // Number of bits in the bit buffer
 };
 
-// A virtual tree item that represents the head of the item list
-#define LIST_HEAD()  ((THTreeItem *)(&pFirst))
+// The list head sentinel - an actual THTreeItem embedded in THuffmannTree.
+// Its pNext serves as "pFirst" (highest weight) and pPrev as "pLast" (lowest weight).
+#define LIST_HEAD()  (&ListHead)
 
 enum TInsertPoint
 {
@@ -129,9 +130,9 @@ class THuffmannTree
     THTreeItem   ItemBuffer[HUFF_ITEM_COUNT];   // Buffer for tree items. No memory allocation is needed
     unsigned int ItemsUsed;                     // Number of tree items used from ItemBuffer
 
-    // Head of the linear item list
-    THTreeItem * pFirst;                        // Pointer to the highest weight item
-    THTreeItem * pLast;                         // Pointer to the lowest weight item
+    // Sentinel node for the linear item list (doubly-linked, circular).
+    // ListHead.pNext = highest weight item, ListHead.pPrev = lowest weight item
+    THTreeItem   ListHead;
 
     THTreeItem * ItemsByByte[0x102];            // Array of item pointers, one for each possible byte value
     TQuickLink   QuickLinks[LINK_ITEM_COUNT];   // Array of quick-link items
