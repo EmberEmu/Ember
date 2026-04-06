@@ -171,6 +171,38 @@ void ClientConnection::read() {
 	));
 }
 
+void ClientConnection::send(std::span<const std::uint8_t> packet) {
+	const auto total_size = outbound_back_->size() + packet.size();
+
+	// the buffer size is dynamic, so ensure it isn't growing too large
+	if(total_size > max_outbound_size) {
+		LOG_DEBUG(logger_, "Outbound buffer too large, dropping client");
+		close_session();
+		return;
+	}
+
+	spark::io::BinaryStream stream(*outbound_back_, spark::io::endian::little);
+	stream << packet;
+
+	if(!stream) {
+		LOG_WARN(logger_, "Failed to write packet to stream");
+		close_session();
+		return;
+	}
+
+	// initiate sending if not already in progress
+	if(!write_in_progress_) {
+		std::swap(outbound_front_, outbound_back_);
+		write();
+	}
+
+	if(packet_logger_) [[unlikely]] {
+		packet_logger_->log(packet, PacketDirection::outbound);
+	}
+
+	++stats_.messages_out;
+}
+
 void ClientConnection::set_key(std::span<const std::uint8_t> key) {
 	crypt_ = PacketCrypto<0>(key);
 }

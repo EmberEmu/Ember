@@ -25,6 +25,7 @@
 #include <memory>
 #include <mutex>
 #include <optional>
+#include <span>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -93,6 +94,9 @@ public:
 	void start();
 	void stop();
 
+	void send(const is_packet auto& packet);
+	void send(std::span<const std::uint8_t> packet);
+
 	void set_key(std::span<const std::uint8_t> key);
 	void compression_level(unsigned int level);
 	void latency(std::uint32_t latency);
@@ -104,7 +108,6 @@ public:
 	void packet_log_stop();
 	bool packet_logging() const;
 
-	void send(const is_packet auto& packet);
 	void set_handler(ClientHandler* handler);
 	void set_on_disconnect(OnDisconnect on_disconnect);
 
