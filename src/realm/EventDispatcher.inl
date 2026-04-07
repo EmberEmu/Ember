@@ -95,7 +95,7 @@ void EventDispatcher::broadcast_event_worker(std::size_t index, std::derived_fro
 	auto service = pool_.get_if(index);
 
 	if(service == nullptr) {
-		LOG_ERROR(logger_, "Invalid service index, {}", service);
+		LOG_ERROR(logger_, "Invalid service index, {}", index);
 	}
 
 	boost::asio::post(*service, [event = std::move(event)]() {
