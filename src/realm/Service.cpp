@@ -13,6 +13,7 @@
 #include "LoggingCallbacks.h"
 #include "ServiceContextImpl.h"
 #include "commands/Connections.h"
+#include "commands/Messaging.h"
 #include <conpool/ConnectionPool.h>
 #include <conpool/Policies.h>
 #include <conpool/drivers/AutoSelect.h>
@@ -307,6 +308,11 @@ void Service::register_commands(boost::asio::io_context& ioc) {
 		registry, *ctx->cmd_exec, *ctx->dispatcher, ctx->sessions, logger
 	);
 
+	auto msging_root = add_message_commands(
+		registry, *ctx->cmd_exec, *ctx->dispatcher, ctx->sessions, logger
+	);
+
+	ctx->commands.emplace_back(std::move(msging_root));
 	ctx->commands.emplace_back(std::move(conn_root));
 	ctx->commands.emplace_back(std::move(cmd));
 }

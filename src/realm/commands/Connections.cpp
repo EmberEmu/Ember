@@ -15,36 +15,10 @@
 
 namespace ember::realm {
 
-void system_message(const commands::Arguments& args,
-                    const SessionManager& sessions,
-					const EventDispatcher& dispatcher,
-                    log::Logger& logger,
-                    SystemMessage::Type type) {
-	const auto& message = args["message"].as<std::string>();
-
-	if(args.contains("id")) {
-		SystemMessage event(message, type);
-		const auto id = args["id"].as<SessionManager::SessionID>();
-		auto ident = sessions.client_ident(id);
-
-		if(!ident) {
-			LOG_CONERR(logger, "Could not locate connection {}", id);
-			return;
-		}
-
-		dispatcher.post_event(*ident, std::move(event));
-		LOG_CONSOLE(logger, "Message sent to connection {}", id);
-	} else {
-		auto event = std::make_shared<SystemMessage>(message, type);
-		dispatcher.broadcast_event(event);
-		LOG_CONSOLE(logger, "Message sent to all connections");
-	}
-}
-
 void toggle_logging(SessionManager::SessionID id,
                     bool toggle,
-					const SessionManager& sessions,
-					const EventDispatcher& dispatcher,
+                    const SessionManager& sessions,
+                    const EventDispatcher& dispatcher,
                     log::Logger& logger) {
 	auto ident = sessions.client_ident(id);
 
@@ -64,8 +38,8 @@ void toggle_logging(SessionManager::SessionID id,
 }
 
 void kick_connection(SessionManager::SessionID id,
-					 const SessionManager& sessions,
-					 const EventDispatcher& dispatcher,
+                     const SessionManager& sessions,
+                     const EventDispatcher& dispatcher,
                      log::Logger& logger) {
 	auto ident = sessions.client_ident(id);
 
@@ -144,7 +118,7 @@ void print_connection_stats(bprinter::TablePrinter& table, SessionManager::Sessi
 }
 
 void connection_statistics(const commands::Arguments& args,
-						   const EventDispatcher& dispatcher,
+                           const EventDispatcher& dispatcher,
                            const SessionManager& sessions,
                            log::Logger& logger) {
 	if(!sessions.count()) {
@@ -203,8 +177,8 @@ void display_ident(const SessionManager& sessions, log::Logger& logger, SessionM
 
 commands::ScopedCommand add_connections_commands(commands::Command& registry,
                                                  utility::CommandExecutor& exec,
-												 const EventDispatcher& dispatcher,
-												 const SessionManager& sessions,
+                                                 const EventDispatcher& dispatcher,
+                                                 const SessionManager& sessions,
                                                  log::Logger& logger) {
 	auto root = commands::create("connections")
 		->description("Commands for connection & session management");
@@ -240,30 +214,6 @@ commands::ScopedCommand add_connections_commands(commands::Command& registry,
 				args["id"].as<SessionManager::SessionID>(), 
 				args["bool"].as<bool>(), sessions, dispatcher, logger
 			);
-		}));
-
-	root->insert("notify")
-		->description("Send a system notification to all or a specific connection")
-		->argument<std::string>("message")
-		->argument<SessionManager::SessionID>("id", commands::optional)
-		->handler(exec([&](const commands::Arguments& args) {
-			system_message(args, sessions, dispatcher, logger, SystemMessage::Type::console);
-		}));
-
-	root->insert("message")
-		->description("Send a system message to all or a specific connection")
-		->argument<std::string>("message")
-		->argument<SessionManager::SessionID>("id", commands::optional)
-		->handler(exec([&](const commands::Arguments& args) {
-			system_message(args, sessions, dispatcher, logger, SystemMessage::Type::message);
-		}));
-
-	root->insert("whisper")
-		->description("Send a system whisper to all or a specific connection")
-		->argument<std::string>("message")
-		->argument<SessionManager::SessionID>("id", commands::optional)
-		->handler(exec([&](const commands::Arguments& args) {
-			system_message(args, sessions, dispatcher, logger, SystemMessage::Type::whisper);
 		}));
 
 	root->insert("ident")

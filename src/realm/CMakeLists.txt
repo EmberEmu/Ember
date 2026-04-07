@@ -71,6 +71,7 @@ set(LIBRARY_HDR
     unique_client_ptr.h
     ClientAllocator.h
     commands/Connections.h
+    commands/Messaging.h
 )
 
 set(LIBRARY_SRC
@@ -103,6 +104,7 @@ set(LIBRARY_SRC
     ClientTimer.cpp
     ClientSink.cpp
     commands/Connections.cpp
+    commands/Messaging.cpp
 )
 
 add_library(${LIBRARY_NAME} ${SERVICE_LIB_LINKAGE} 
