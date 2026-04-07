@@ -68,7 +68,7 @@ class ClientIdent final {
 	}
 
 public:
-	constexpr static auto max_slot_value = 0xfff;
+	constexpr static auto max_slot_value = 0xfffu; // todo, sz literal when compiler bump
 	static_assert(max_slot_value < 0x1000, "Slot count exceeds bits assigned for encoding");
 
 	ClientIdent()

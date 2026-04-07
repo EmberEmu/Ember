@@ -36,7 +36,7 @@ void system_message(const commands::Arguments& args,
 		LOG_CONSOLE(logger, "Message sent to connection {}", id);
 	} else {
 		auto event = std::make_shared<SystemMessage>(message, type);
-		dispatcher.broadcast_event(event);
+		dispatcher.broadcast_event(std::move(event));
 		LOG_CONSOLE(logger, "Message sent to all connections");
 	}
 }
@@ -57,8 +57,8 @@ commands::ScopedCommand add_message_commands(commands::Command& registry,
 			system_message(args, sessions, dispatcher, logger, SystemMessage::Type::console);
 		}));
 
-	root->insert("message")
-		->description("Send a system message to all or a specific connection")
+	root->insert("chat")
+		->description("Send a system chat message to all or a specific connection")
 		->argument<std::string>("message")
 		->argument<SessionManager::SessionID>("id", commands::optional)
 		->handler(exec([&](const commands::Arguments& args) {

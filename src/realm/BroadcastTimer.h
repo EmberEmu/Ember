@@ -55,7 +55,7 @@ class BroadcastTimer {
 			co_return;
 		}
 
-		dispatcher_.broadcast_event_thread(event);
+		dispatcher_.broadcast_event_self(event);
 	}
 
 	// the initial firing will be slightly offset in case any of the events

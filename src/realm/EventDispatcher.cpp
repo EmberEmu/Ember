@@ -13,6 +13,7 @@
 #include <boost/asio/post.hpp>
 #include <ranges>
 #include <type_traits>
+#include <cassert>
 
 namespace ember::realm {
 
@@ -81,37 +82,10 @@ void EventDispatcher::broadcast_event(std::vector<ClientIdent> clients, std::sha
 	}
 }
 
-void EventDispatcher::broadcast(const Event& event) const {
-	for(auto& handler : handlers_ | std::views::values) {
-		handler->handle_event(event);
-	}
-
-#ifdef EMBER_FAST_DISPATCH_CACHE
-	for(auto& entry : cache_) {
-		if(!entry.is_zero()) {
-			entry.extract_ptr<ClientHandler>()->handle_event(event);
-		}
-	}
-#endif
-}
-
-void EventDispatcher::broadcast_event_thread(const Event& event) const {
-	broadcast(event);
-}
-
-// todo
-void EventDispatcher::broadcast_event(const Event& event) const {
-	for(auto& ioc : pool_.services()) {
-		broadcast(event);
-	}
-}
-
 void EventDispatcher::broadcast_event(std::shared_ptr<const Event> event) const {
 	for(auto& ioc : pool_.services()) {
-		boost::asio::dispatch(ioc, [event]() {
-			for(auto& handler : handlers_ | std::views::values) {
-				handler->handle_event(*event);
-			}
+		boost::asio::dispatch(ioc, [&, event]() {
+			dispatch_event(*event.get());
 		});
 	}
 }
@@ -119,10 +93,13 @@ void EventDispatcher::broadcast_event(std::shared_ptr<const Event> event) const 
 #ifdef EMBER_FAST_DISPATCH_CACHE
 #pragma warning(push)
 #pragma warning(disable : 28020) // ignore false positive
-bool EventDispatcher::try_insert_cache(ClientHandler* handler) {
+bool EventDispatcher::try_insert(ClientHandler* handler) {
+	assert(handler);
+
 	std::size_t index = rng::xorshift::next() & 0xfff;
 
 	// modulo avoidance, mask needs to be a power of two
+	// bump down if we were unlucky enough to hit the max
 	if(index == 0xfff) {
 		index = 0;
 	}
@@ -146,8 +123,10 @@ bool EventDispatcher::try_insert_cache(ClientHandler* handler) {
 #endif
 
 void EventDispatcher::register_handler(ClientHandler* handler) {
+	assert(handler);
+
 #ifdef EMBER_FAST_DISPATCH_CACHE
-	if(!try_insert_cache(handler)) {
+	if(!try_insert(handler)) {
 #endif
 		handlers_.insert_or_assign(handler->uuid(), handler);
 #ifdef EMBER_FAST_DISPATCH_CACHE
