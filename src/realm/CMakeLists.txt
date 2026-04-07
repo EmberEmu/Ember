@@ -52,6 +52,7 @@ set(LIBRARY_HDR
     packet_log/PacketSink.h
     packet_log/FlatbuffersSink.h
     packet_log/LogSink.h
+    packet_log/Helper.h
     Service.h
     LoggingCallbacks.h
     WorldRPCClient.h

@@ -253,25 +253,8 @@ void ClientConnection::compression_level(unsigned int level) {
 	compression_level_ = level;
 }
 
-bool ClientConnection::packet_log_start(std::string file, std::string host) try {
-	// these can throw - they succeed or fail together
-	auto logger = std::make_unique<PacketLogger>();
-
-	auto sink_fb = std::make_unique<FlatbuffersSink>(
-		std::move(file), std::move(host), remote_address()
-	);
-
-	auto sink_log = std::make_unique<LogSink>(
-		logger_, log::Severity::debug, remote_address()
-	);
-
-	logger->add_sink(std::move(sink_fb));
-	logger->add_sink(std::move(sink_log));
+void ClientConnection::packet_log_start(std::unique_ptr<PacketLogger> logger) {
 	packet_logger_.swap(logger);
-
-	return true;
-} catch(std::exception& e) {
-	return false;
 }
 
 void ClientConnection::packet_log_stop() {

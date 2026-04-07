@@ -11,6 +11,7 @@
 #include "Config.h"
 #include "ConfigStore.h"
 #include "EventDispatcher.h"
+#include "packet_log/Helper.h"
 #include "states/StateJumpTables.h"
 #include <logger/Logger.h>
 #include <protocol/Packets.h>
@@ -272,7 +273,12 @@ void ClientHandler::log_redirect_stop() {
 void ClientHandler::packet_log_start() {
 	log_redirect_stop(); // avoid generating an infinite packet loop
 	const auto& realm = context_.cfg_store.config().realm.name;
-	connection_->packet_log_start(uuid_.to_string(), realm);
+
+	auto logger = create_packet_logger(
+		realm, connection_->remote_address(), uuid_.to_string(), context_.logger, false
+	);
+
+	connection_->packet_log_start(std::move(logger));
 }
 
 /*

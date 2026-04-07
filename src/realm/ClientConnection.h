@@ -104,7 +104,7 @@ public:
 	const ConnectionStats& stats() const;
 	std::string remote_address() const;
 
-	bool packet_log_start(std::string file, std::string host);
+	void packet_log_start(std::unique_ptr<PacketLogger> logger);
 	void packet_log_stop();
 	bool packet_logging() const;
 
