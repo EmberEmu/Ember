@@ -209,29 +209,29 @@ commands::ScopedCommand add_connections_commands(commands::Command& registry,
 	auto root = commands::create("connections")
 		->description("Commands for connection & session management");
 
-	root->insert(commands::create("list")
+	root->insert("list")
 		->description("Display connections overview")
 		->handler(exec([&](const commands::Arguments& args) {
 			connection_list(args, sessions, logger);
-		})));
+		}));
 
-	root->insert(commands::create("kick")
+	root->insert("kick")
 		->description("Kick a specified connection")
 		->argument<SessionManager::SessionID>("id")
 		->handler(exec([&](const commands::Arguments& args) {
 			kick_connection(
 				args["id"].as<SessionManager::SessionID>(), sessions, dispatcher, logger
 			);
-		})));
+		}));
 
-	root->insert(commands::create("netstat")
+	root->insert("netstat")
 		->description("Display network stats for specified or all connections")
 		->argument<SessionManager::SessionID>("id", commands::optional)
 		->handler(exec([&](const commands::Arguments& args) {
 			connection_statistics(args, dispatcher, sessions, logger);
-		})));
+		}));
 
-	root->insert(commands::create("log")
+	root->insert("log")
 		->description("Enable or disable connection packet logging")
 		->argument<SessionManager::SessionID>("id")
 		->argument<bool>("bool")
@@ -240,38 +240,38 @@ commands::ScopedCommand add_connections_commands(commands::Command& registry,
 				args["id"].as<SessionManager::SessionID>(), 
 				args["bool"].as<bool>(), sessions, dispatcher, logger
 			);
-		})));
+		}));
 
-	root->insert(commands::create("notify")
+	root->insert("notify")
 		->description("Send a system notification to all or a specific connection")
 		->argument<std::string>("message")
 		->argument<SessionManager::SessionID>("id", commands::optional)
 		->handler(exec([&](const commands::Arguments& args) {
 			system_message(args, sessions, dispatcher, logger, SystemMessage::Type::console);
-		})));
+		}));
 
-	root->insert(commands::create("message")
+	root->insert("message")
 		->description("Send a system message to all or a specific connection")
 		->argument<std::string>("message")
 		->argument<SessionManager::SessionID>("id", commands::optional)
 		->handler(exec([&](const commands::Arguments& args) {
 			system_message(args, sessions, dispatcher, logger, SystemMessage::Type::message);
-		})));
+		}));
 
-	root->insert(commands::create("whisper")
+	root->insert("whisper")
 		->description("Send a system whisper to all or a specific connection")
 		->argument<std::string>("message")
 		->argument<SessionManager::SessionID>("id", commands::optional)
 		->handler(exec([&](const commands::Arguments& args) {
 			system_message(args, sessions, dispatcher, logger, SystemMessage::Type::whisper);
-		})));
+		}));
 
-	root->insert(commands::create("ident")
+	root->insert("ident")
 		->description("Display a connection's RPC identity")
 		->argument<SessionManager::SessionID>("id")
 		->handler(exec([&](const commands::Arguments& args) {
 			display_ident(sessions, logger, args["id"].as<SessionManager::SessionID>());
-		})));
+		}));
 
 	// register scoped root 'connections' command
 	return registry.scoped_insert(root);
