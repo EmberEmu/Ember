@@ -208,15 +208,13 @@ void ClientConnection::set_key(std::span<const std::uint8_t> key) {
 }
 
 void ClientConnection::start() {
+	assert(handler_);
+
 	if(stopped_) {
 		return;
 	}
 
-	// when using DynamicTLSBuffer, we need to ensure the first write
-	// (triggered by handler_) is invoked from the service thread
-	boost::asio::dispatch(socket_.get_executor(), [&] {
-		read();
-	});
+	read();
 }
 
 void ClientConnection::stop() {
