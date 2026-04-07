@@ -341,6 +341,61 @@ TEST_F(Commands, CommandFlagsUpdate) {
 	ASSERT_EQ(command->flags().security, 0x8BADF00D);
 }
 
-TEST_F(Commands, ScopedCommand) {
-	auto command = registry->scoped_insert("dd");
+TEST_F(Commands, ScopedCommandInsertReset) {
+	auto command = registry->scoped_insert("scoped_test");
+	auto result = registry->find("scoped_test");
+	ASSERT_TRUE(result.command);
+	command.reset();
+	result = registry->find("scoped_test");
+	ASSERT_FALSE(result.command);
+}
+
+TEST_F(Commands, ScopedSubcommandInsertReset) {
+	auto command = registry->scoped_insert("scoped_test");
+	command->insert("scoped_subcommand");
+	auto result = registry->find("scoped_test scoped_subcommand");
+	ASSERT_TRUE(result.command);
+	command.reset();
+	result = registry->find("scoped_test scoped_subcommand");
+	ASSERT_FALSE(result.command);
+}
+
+TEST_F(Commands, ScopedCommandPtrInsertReset) {
+	auto root = commands::create("foo");
+	root->insert("bar");
+	auto scoped = registry->scoped_insert(root);
+	auto result = registry->find("foo bar");
+	ASSERT_TRUE(result.command);
+	scoped.reset();
+	result = registry->find("foo bar");
+	ASSERT_FALSE(result.command);
+}
+
+TEST_F(Commands, ScopedCommandRAIIScope) {
+	auto root = commands::create("foo");
+	root->insert("bar");
+
+	{
+		auto scoped = registry->scoped_insert(root);
+		auto result = registry->find("foo bar");
+		ASSERT_TRUE(result.command);
+	}
+
+	auto result = registry->find("foo bar");
+	ASSERT_FALSE(result.command);
+}
+
+TEST_F(Commands, ScopedCommandRelease) {
+	auto root = commands::create("foo");
+	root->insert("bar");
+
+	{
+		auto scoped = registry->scoped_insert(root);
+		auto result = registry->find("foo bar");
+		ASSERT_TRUE(result.command);
+		scoped.release(); // not a leak, just downgrades to non-scoped
+	}
+
+	auto result = registry->find("foo bar");
+	ASSERT_TRUE(result.command);
 }
