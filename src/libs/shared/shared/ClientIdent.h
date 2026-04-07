@@ -24,6 +24,27 @@
 
 namespace ember {
 
+/*
+ * This is used primarily to allow remote services to identify particular clients
+ * over the network. The realm gateway is the central authority for a cluster that
+ * generates and maintains identities. If a remote service wishes to communicate
+ * with a particular client/game session, it must do so using its ClientIdent.
+ * 
+ * To all services except the realm's dispatcher, the ident should be opaque -
+ * which is to say that it's just a bunch of random bytes and nothing more.
+ * 
+ * Internally, the dispatcher encodes several pieces of information within the
+ * identity; the client's service index (which thread services it), an encoded
+ * pointer to the client's message handler, a lookup index, and random bytes.
+ * 
+ * This encoding allows the dispatcher to efficiently check whether the referenced
+ * client/game session still exists and ensure that the message is dispatched
+ * to the correct thread, with no need for a central registry or locking.
+ * 
+ * In the unlikely event that the pointer cannot be encoded on a particular
+ * architecture, the dispatcher can fall back to using an associative map via a
+ * compile-time flag. There are still no locks but dispatching won't be as fast.
+ */
 class ClientIdent final {
 	static constexpr std::size_t uuid_size = 16;
 
