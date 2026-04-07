@@ -11,6 +11,7 @@ set(LIBRARY_HDR
     Config.h
     Event.h
     EventDispatcher.h
+	EventDispatcher.inl
     Events.h
     EventTypes.h
     SessionManager.h
