@@ -188,9 +188,13 @@ std::shared_ptr<Command> Command::insert(std::string name) {
 	return entry->second;
 }
 
+ScopedCommand Command::scoped_insert(std::string name) {
+	return scoped_insert(create(std::move(name)));
+}
+
 ScopedCommand Command::scoped_insert(std::shared_ptr<Command> command) {
 	insert(command);
-	return ScopedCommand(command, this->weak_from_this());
+	return ScopedCommand(std::move(command), this->weak_from_this());
 }
 
 void Command::insert(std::shared_ptr<Command> command) {

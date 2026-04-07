@@ -340,3 +340,7 @@ TEST_F(Commands, CommandFlagsUpdate) {
 	ASSERT_EQ(command->flags().custom, 0xB105F00D);
 	ASSERT_EQ(command->flags().security, 0x8BADF00D);
 }
+
+TEST_F(Commands, ScopedCommand) {
+	auto command = registry->scoped_insert("dd");
+}

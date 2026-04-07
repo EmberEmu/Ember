@@ -60,10 +60,13 @@ public:
 	Command& operator=(Command&) = delete;
 	Command& operator=(Command&&) = delete;
 
+	void insert(std::shared_ptr<Command> command);
 	std::shared_ptr<Command> insert(std::string name);
 	std::shared_ptr<Command> description(std::string description);
 	std::shared_ptr<Command> handler(CommandHandler handler);
 	std::shared_ptr<Command> flags(const Flags& flags);
+	ScopedCommand scoped_insert(std::string name);
+	ScopedCommand scoped_insert(std::shared_ptr<Command> command);
 
 	template<typename _ty>
 	std::shared_ptr<Command> argument(std::string argument, required_t = required) {
@@ -75,8 +78,6 @@ public:
 		return insert_optional_argument(std::move(argument), typeid(_ty));
 	}
 
-	void insert(std::shared_ptr<Command> command);
-	ScopedCommand scoped_insert(std::shared_ptr<Command> command);
 	bool erase_argument(const std::string& argument);
 	void clear_arguments();
 	std::optional<std::shared_ptr<Command>> erase(const std::string_view name);
