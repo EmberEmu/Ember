@@ -33,6 +33,14 @@ public:
 	ScopedCommand(ScopedCommand&) = delete;
 	ScopedCommand& operator=(ScopedCommand&) = delete;
 
+	Command* operator->() {
+		return command_.get();
+	}
+
+	const Command* operator->() const {
+		return command_.get();
+	}
+
 	void reset();
 	std::shared_ptr<Command> command();
 };
