@@ -279,7 +279,7 @@ void ClientHandler::packet_log_start() {
 	);
 
 	if(!plogger ) {
-		LOG_WARN(logger_, "Packet logger creation failed!");
+		LOG_ERROR(logger_, "Packet logger creation failed!");
 		return;
 	}
 
