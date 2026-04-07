@@ -98,7 +98,7 @@ void EventDispatcher::broadcast_event_worker(std::size_t index, std::derived_fro
 		LOG_ERROR(logger_, "Invalid service index, {}", index);
 	}
 
-	boost::asio::post(*service, [event = std::move(event)]() {
+	boost::asio::post(*service, [&, event = std::move(event)]() {
 		dispatch_event(event);
 	});
 }
