@@ -274,11 +274,16 @@ void ClientHandler::packet_log_start() {
 	log_redirect_stop(); // avoid generating an infinite packet loop
 	const auto& realm = context_.cfg_store.config().realm.name;
 
-	auto logger = create_packet_logger(
-		realm, connection_->remote_address(), uuid_.to_string(), context_.logger, false
+	auto plogger = create_packet_logger(
+		realm, connection_->remote_address(), uuid_.to_string(), logger_, false
 	);
 
-	connection_->packet_log_start(std::move(logger));
+	if(!plogger ) {
+		LOG_WARN(logger_, "Packet logger creation failed!");
+		return;
+	}
+
+	connection_->packet_log_start(std::move(plogger));
 }
 
 /*
