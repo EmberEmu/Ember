@@ -11,7 +11,7 @@
 #include <logger/Logger.h>
 #include <bprinter/table_printer.h>
 #include <memory>
-#include <sstream>
+#include <string>
 
 namespace ember::realm {
 
