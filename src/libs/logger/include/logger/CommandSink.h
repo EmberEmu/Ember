@@ -77,7 +77,7 @@ class CommandSink final : public Sink {
 	std::string truncate_description(int cols, const std::string_view description);
 
 	void clear_line();
-	void redraw_prompt();
+	void redraw_prompt(bool update_cursor = true);
 	void history_scroll(ScrollDirection dir);
 	void buffer_scroll(CursorDirection dir);
 	void insert_character(char ch);

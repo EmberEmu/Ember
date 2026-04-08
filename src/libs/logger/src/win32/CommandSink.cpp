@@ -145,7 +145,7 @@ void CommandSink::write(Severity severity, Filter type, std::span<const char> re
 		write_buffer(out_buf_, false);
 	}
 
-	redraw_prompt();
+	redraw_prompt(false);
 
 	if(flush) {
 		if(std::fflush(stdout) != 0) {
@@ -219,7 +219,7 @@ std::string_view CommandSink::suggestion_substring() {
 	}
 }
 
-void CommandSink::redraw_prompt() {
+void CommandSink::redraw_prompt(bool update_cursor) {
     std::lock_guard guard(console_lock_);
 
     HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -274,12 +274,14 @@ void CommandSink::redraw_prompt() {
 
 	WriteConsoleOutput(handle, buffer.data(), buf_size, buf_coord, &region);
 
-    COORD cursor{
-		.X = gsl::narrow_cast<SHORT>(prompt_.size() + clamp),
-        .Y = bottom
-    };
+	if(update_cursor) {
+		COORD cursor{
+			.X = gsl::narrow_cast<SHORT>(prompt_.size() + clamp),
+			.Y = bottom
+		};
 
-    SetConsoleCursorPosition(handle, cursor);
+		SetConsoleCursorPosition(handle, cursor);
+	}
 }
 
 void CommandSink::insert_history(const std::string& command) {
