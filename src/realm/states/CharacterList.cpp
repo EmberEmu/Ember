@@ -73,7 +73,7 @@ void character_rename(ClientContext& ctx) {
 	ctx.character_rpc.rename_character(ctx.client_id->id, packet->id, packet->name,
 	                                  [dispatcher, uuid](auto result, auto id, const auto& name) {
 		CharRenameResponse event(result, id, name);
-		dispatcher.post_event(uuid, std::move(event));
+		dispatcher.post(uuid, std::move(event));
 	});
 }
 
@@ -86,7 +86,7 @@ void character_enumerate(const ClientContext& ctx) {
 	ctx.character_rpc.retrieve_characters(ctx.client_id->id,
 		[dispatcher, uuid](auto status, auto characters) {
 			CharEnumResponse event(status, std::move(characters));
-			dispatcher.post_event(uuid, std::move(event));
+			dispatcher.post(uuid, std::move(event));
 		}
 	);
 }
@@ -130,7 +130,7 @@ void character_create(ClientContext& ctx) {
 	auto& dispatcher = ctx.dispatcher;
 
 	ctx.character_rpc.create_character(ctx.client_id->id, packet->character, [dispatcher, uuid](auto result) {
-		dispatcher.post_event(uuid, CharCreateResponse(result));
+		dispatcher.post(uuid, CharCreateResponse(result));
 	});
 }
 
@@ -147,7 +147,7 @@ void character_delete(ClientContext& ctx) {
 	auto& dispatcher = ctx.dispatcher;
 
 	ctx.character_rpc.delete_character(ctx.client_id->id, packet->id, [dispatcher, uuid](auto result) {
-		dispatcher.post_event(uuid, CharDeleteResponse(result));
+		dispatcher.post(uuid, CharDeleteResponse(result));
 	});
 }
 
@@ -160,7 +160,7 @@ void player_login(ClientContext& ctx) {
 		return;
 	}
 
-	ctx.dispatcher.post_event(
+	ctx.dispatcher.post(
 		ctx.handler.uuid(), PlayerLogin(packet->character_id)
 	);
 

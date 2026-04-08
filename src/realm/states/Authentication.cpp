@@ -101,7 +101,7 @@ void fetch_account_id(const ClientContext& ctx, const utf8_string& username) {
 
 	ctx.account_rpc.locate_account_id(username, [dispatcher, uuid](auto status, auto id) {
 		AccountIDResponse event(status, id);
-		dispatcher.post_event(uuid, event);
+		dispatcher.post(uuid, event);
 	});
 }
 
@@ -139,7 +139,7 @@ void fetch_session_key(const ClientContext& ctx, const std::uint32_t account_id)
 		
 	ctx.account_rpc.locate_session(account_id, [dispatcher, uuid](auto status, auto key) {
 		SessionKeyResponse event(status, key);
-		dispatcher.post_event(uuid, event);
+		dispatcher.post(uuid, event);
 	});
 }
 

@@ -33,7 +33,7 @@ void toggle_logging(SessionManager::SessionID id,
 		.type = type
 	};
 
-	dispatcher.post_event(*ident, event);
+	dispatcher.post(*ident, event);
 	LOG_CONSOLE(logger, "Packet logging {} for connection {}", (toggle? "enabled" : "disabled"), id);
 }
 
@@ -52,7 +52,7 @@ void kick_connection(SessionManager::SessionID id,
 		.type = EventType::kick_self
 	};
 
-	dispatcher.post_event(*ident, event);
+	dispatcher.post(*ident, event);
 	LOG_CONSOLE(logger, "Connection {} kicked", id);
 }
 

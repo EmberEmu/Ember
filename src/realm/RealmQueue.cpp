@@ -44,7 +44,7 @@ void RealmQueue::update_clients() {
 	std::size_t position = 1;
 
 	for(auto& entry : queue_) {
-		dispatcher_.post_event(entry.client, QueuePosition(position));
+		dispatcher_.post(entry.client, QueuePosition(position));
 		++position;
 	}
 
@@ -93,7 +93,7 @@ void RealmQueue::free_slot() {
 
 	auto& entry = queue_.front();
 	const Event event { EventType::queue_success };
-	dispatcher_.post_event(entry.client, event);
+	dispatcher_.post(entry.client, event);
 	queue_.pop_front();
 	dirty_ = true;
 }

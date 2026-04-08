@@ -14,7 +14,7 @@
 
 namespace ember::realm {
 
-inline void EventDispatcher::dispatch_event(const std::derived_from<Event> auto& event) const {
+inline void EventDispatcher::dispatch(const std::derived_from<Event> auto& event) const {
 #ifdef EMBER_FAST_DISPATCH_CACHE
 	for(auto& entry : cache_) {
 		if(!entry.is_zero()) {
@@ -63,7 +63,7 @@ void EventDispatcher::exec(const ClientIdent& client, auto work) const {
 	});
 }
 
-auto EventDispatcher::post_event(const ClientIdent& client, std::derived_from<Event> auto event) const {
+auto EventDispatcher::post(const ClientIdent& client, std::derived_from<Event> auto event) const {
 	auto service = pool_.get_if(client.service());
 
 	// bad service index encoded in the UUID
@@ -81,17 +81,17 @@ auto EventDispatcher::post_event(const ClientIdent& client, std::derived_from<Ev
 	});
 }
 
-void EventDispatcher::broadcast_event(const std::derived_from<Event> auto& event) const {
+void EventDispatcher::broadcast(const std::derived_from<Event> auto& event) const {
 	for(auto i = 0u; i < pool_.size(); ++i) { // todo size_t literal when min. compiler bump
-		broadcast_event_worker(i, event);
+		broadcast_worker(i, event);
 	}
 }
 
-void EventDispatcher::broadcast_event_self(std::derived_from<Event> auto event) const {
-	dispatch_event(event);
+void EventDispatcher::broadcast_self(std::derived_from<Event> auto event) const {
+	dispatch(event);
 }
 
-void EventDispatcher::broadcast_event_worker(std::size_t index, std::derived_from<Event> auto event) const {
+void EventDispatcher::broadcast_worker(std::size_t index, std::derived_from<Event> auto event) const {
 	auto service = pool_.get_if(index);
 
 	// bad service index encoded in the UUID
@@ -101,7 +101,7 @@ void EventDispatcher::broadcast_event_worker(std::size_t index, std::derived_fro
 	}
 
 	boost::asio::post(*service, [&, event = std::move(event)]() {
-		dispatch_event(event);
+		dispatch(event);
 	});
 }
 

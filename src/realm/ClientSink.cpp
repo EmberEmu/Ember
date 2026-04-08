@@ -25,7 +25,7 @@ ClientSink::ClientSink(EventDispatcher& dispatcher, ClientIdent client, log::Sev
 
 void ClientSink::dispatch(std::string message) {
 	auto event = std::make_unique<LogRedirect>(std::move(message), type_);
-	dispatcher_.post_event(client_, std::move(event));
+	dispatcher_.post(client_, std::move(event));
 }
 
 inline bool ClientSink::filter(log::Severity severity, log::Filter type) const {

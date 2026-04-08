@@ -31,11 +31,11 @@ void system_message(const commands::Arguments& args,
 		}
 
 		SystemMessage event(message, type);
-		dispatcher.post_event(*ident, std::move(event));
+		dispatcher.post(*ident, std::move(event));
 		LOG_CONSOLE(logger, "Message sent to connection {}", id);
 	} else {
 		SystemMessage event(message, type);
-		dispatcher.broadcast_event(event);
+		dispatcher.broadcast(event);
 		LOG_CONSOLE(logger, "Message sent to all connections");
 	}
 }

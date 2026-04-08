@@ -38,7 +38,7 @@ class EventDispatcher final {
 	log::Logger& logger_;
 
 	inline ClientHandler* locate_handler(const ClientIdent& client) const;
-	inline void dispatch_event(const std::derived_from<Event> auto& event) const;
+	inline void dispatch(const std::derived_from<Event> auto& event) const;
 
 #ifdef EMBER_FAST_DISPATCH_CACHE
 	bool try_insert(ClientHandler* handler);
@@ -53,26 +53,26 @@ public:
 	void exec(const ClientIdent& client, auto work) const;
 
 	// post an event to a specific client, if it's still connected
-	auto post_event(const ClientIdent& client, std::derived_from<Event> auto event) const;
+	auto post(const ClientIdent& client, std::derived_from<Event> auto event) const;
 
 	// post an event to a specific client, if it's still connected
-	void post_event(const ClientIdent& client, std::unique_ptr<Event> event) const;
+	void post(const ClientIdent& client, std::unique_ptr<Event> event) const;
 
 	// broadcasts an event to all handlers, across all service threads/workers
-	void broadcast_event(const std::derived_from<Event> auto& event) const;
+	void broadcast(const std::derived_from<Event> auto& event) const;
 
 	// broadcasts an event to all handlers registered to the specified thread
-	void broadcast_event_worker(std::size_t index, std::derived_from<Event> auto event) const;
+	void broadcast_worker(std::size_t index, std::derived_from<Event> auto event) const;
 
 	// broadcasts an event to all handlers registered with the worker residing on the current thread
 	// this should only be called from within a worker
-	void broadcast_event_self(std::derived_from<Event> auto event) const;
+	void broadcast_self(std::derived_from<Event> auto event) const;
 
 	// broadcasts an event to all handlers, across all service threads
-	void broadcast_event(std::shared_ptr<const Event> event) const;
+	void broadcast(std::shared_ptr<const Event> event) const;
 
 	// broadcasts an event to a vector of clients - the vector is sorted to minimise the number of messages
-	void broadcast_event(std::vector<ClientIdent> clients, std::shared_ptr<const Event> event) const;
+	void broadcast(std::vector<ClientIdent> clients, std::shared_ptr<const Event> event) const;
 
 	void register_handler(ClientHandler* handler);
 	void remove_handler(const ClientHandler* handler);

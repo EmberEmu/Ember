@@ -17,7 +17,7 @@
 
 namespace ember::realm {
 
-void EventDispatcher::post_event(const ClientIdent& client, std::unique_ptr<Event> event) const {
+void EventDispatcher::post(const ClientIdent& client, std::unique_ptr<Event> event) const {
 	auto service = pool_.get_if(client.service());
 
 	// bad service index encoded in the UUID
@@ -43,7 +43,7 @@ void EventDispatcher::post_event(const ClientIdent& client, std::unique_ptr<Even
  *
  * Callers should move the client UUID vector into this function.
  */
-void EventDispatcher::broadcast_event(std::vector<ClientIdent> clients, std::shared_ptr<const Event> event) const {
+void EventDispatcher::broadcast(std::vector<ClientIdent> clients, std::shared_ptr<const Event> event) const {
 	std::ranges::sort(clients, [](auto& lhs, auto& rhs) {
 		return lhs.service() < rhs.service();
 	});
@@ -82,10 +82,10 @@ void EventDispatcher::broadcast_event(std::vector<ClientIdent> clients, std::sha
 	}
 }
 
-void EventDispatcher::broadcast_event(std::shared_ptr<const Event> event) const {
+void EventDispatcher::broadcast(std::shared_ptr<const Event> event) const {
 	for(auto& ioc : pool_.services()) {
 		boost::asio::dispatch(ioc, [&, event]() {
-			dispatch_event(*event.get());
+			dispatch(*event.get());
 		});
 	}
 }
