@@ -21,6 +21,7 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
 
 namespace ember {
 
@@ -44,6 +45,8 @@ namespace ember {
  * In the unlikely event that the pointer cannot be encoded on a particular
  * architecture, the dispatcher can fall back to using an associative map via a
  * compile-time flag. There are still no locks but dispatching won't be as fast.
+ * 
+ * Warning: xorshift must be seeded before using this class!
  */
 class ClientIdent final {
 	static constexpr std::size_t uuid_size = 16;
@@ -54,6 +57,7 @@ class ClientIdent final {
 
 	void generate(const std::size_t service_index) {
 		assert(service_index < 256);
+		assert(rng::xorshift::seed[0] && rng::xorshift::seed[1]);
 
 		for(auto& val : data_) {
 			val = rng::xorshift::next();
@@ -83,7 +87,7 @@ public:
 
 	explicit ClientIdent(std::span<const std::uint8_t, uuid_size> data)
 		: ClientIdent() {
-		std::ranges::copy(data, data_.data());
+		std::memcpy(data_.data(), data.data(), uuid_size);
 	}
 
 	// Encodes a pointer using 48 bits (widens on 32-bit platforms) and a 12-bit array index
@@ -149,6 +153,10 @@ public:
 		return data_[0] == 0 && data_[1] == 0;
 	}
 
+	auto& data() const {
+		return data_;
+	}
+
 	static consteval auto size() {
 		return uuid_size;
 	}
@@ -158,7 +166,7 @@ public:
 
 inline bool operator==(const ClientIdent& lhs, const ClientIdent& rhs) {
 	return rhs.data_[0] == lhs.data_[0]
-		&& lhs.data_[1] == lhs.data_[1];
+		&& rhs.data_[1] == lhs.data_[1];
 }
 
 inline std::size_t hash_value(const ClientIdent& uuid) {

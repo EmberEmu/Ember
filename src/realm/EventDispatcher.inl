@@ -94,6 +94,7 @@ void EventDispatcher::broadcast_event_self(std::derived_from<Event> auto event) 
 void EventDispatcher::broadcast_event_worker(std::size_t index, std::derived_from<Event> auto event) const {
 	auto service = pool_.get_if(index);
 
+	// bad service index encoded in the UUID
 	if(service == nullptr) {
 		LOG_ERROR(logger_, "Invalid service index, {}", index);
 		return;
