@@ -36,7 +36,7 @@ void ClientSink::write(log::Severity severity, log::Filter type, std::span<const
 		return;
 	}
 
-	auto record_sv = std::string_view(record);
+	std::string_view record_sv(record);
 
 	// log entries always end with a newline to allow for fast bulk processing
 	// without manipulating the data but the game client handles its own newlines,
