@@ -6,11 +6,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include "Connections.h"
+#include "Set.h"
 #include "../Events.h"
 #include <logger/Logger.h>
-#include <bprinter/table_printer.h>
-#include <string>
 
 namespace ember::realm {
 
