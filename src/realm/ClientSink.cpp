@@ -9,7 +9,6 @@
 #include "ClientSink.h"
 #include "EventDispatcher.h"
 #include <logger/Utility.h>
-#include <memory>
 #include <utility>
 
 namespace ember::realm {
@@ -24,7 +23,7 @@ ClientSink::ClientSink(EventDispatcher& dispatcher, ClientIdent client, log::Sev
 	, type_(type) {}
 
 void ClientSink::dispatch(std::string message) {
-	auto event = std::make_unique<LogRedirect>(std::move(message), type_);
+	LogRedirect event(std::move(message), type_);
 	dispatcher_.post(client_, std::move(event));
 }
 
