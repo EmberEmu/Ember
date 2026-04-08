@@ -10,7 +10,6 @@
 #include "../Events.h"
 #include <logger/Logger.h>
 #include <bprinter/table_printer.h>
-#include <memory>
 #include <string>
 
 namespace ember::realm {
@@ -23,7 +22,6 @@ void system_message(const commands::Arguments& args,
 	const auto& message = args["message"].as<std::string>();
 
 	if(args.contains("id")) {
-		SystemMessage event(message, type);
 		const auto id = args["id"].as<SessionManager::SessionID>();
 		auto ident = sessions.client_ident(id);
 
@@ -32,11 +30,12 @@ void system_message(const commands::Arguments& args,
 			return;
 		}
 
+		SystemMessage event(message, type);
 		dispatcher.post_event(*ident, std::move(event));
 		LOG_CONSOLE(logger, "Message sent to connection {}", id);
 	} else {
-		auto event = std::make_shared<SystemMessage>(message, type);
-		dispatcher.broadcast_event(std::move(event));
+		SystemMessage event(message, type);
+		dispatcher.broadcast_event(event);
 		LOG_CONSOLE(logger, "Message sent to all connections");
 	}
 }
