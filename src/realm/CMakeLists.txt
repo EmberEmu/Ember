@@ -11,7 +11,7 @@ set(LIBRARY_HDR
     Config.h
     Event.h
     EventDispatcher.h
-	EventDispatcher.inl
+    EventDispatcher.inl
     Events.h
     EventTypes.h
     SessionManager.h
@@ -73,6 +73,7 @@ set(LIBRARY_HDR
     ClientAllocator.h
     commands/Connections.h
     commands/Messaging.h
+    commands/Set.h
 )
 
 set(LIBRARY_SRC
@@ -106,6 +107,7 @@ set(LIBRARY_SRC
     ClientSink.cpp
     commands/Connections.cpp
     commands/Messaging.cpp
+    commands/Set.cpp
 )
 
 add_library(${LIBRARY_NAME} ${SERVICE_LIB_LINKAGE} 

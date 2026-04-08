@@ -14,6 +14,7 @@
 #include "ServiceContextImpl.h"
 #include "commands/Connections.h"
 #include "commands/Messaging.h"
+#include "commands/Set.h"
 #include <conpool/ConnectionPool.h>
 #include <conpool/Policies.h>
 #include <conpool/drivers/AutoSelect.h>
@@ -282,6 +283,7 @@ void Service::register_commands(boost::asio::io_context& ioc) {
 		}
 	);
 
+	// todo, move this out of here
 	auto cmd = registry.scoped_insert(commands::create("config_reload")
 		->argument<std::string>("filename", commands::optional)
 		->description("Reload the service configuration")
@@ -308,11 +310,16 @@ void Service::register_commands(boost::asio::io_context& ioc) {
 		registry, *ctx->cmd_exec, *ctx->dispatcher, ctx->sessions, logger
 	);
 
-	auto msging_root = add_message_commands(
+	auto msg_root = add_message_commands(
 		registry, *ctx->cmd_exec, *ctx->dispatcher, ctx->sessions, logger
 	);
 
-	ctx->commands.emplace_back(std::move(msging_root));
+	auto set_root = add_set_commands(
+		registry, *ctx->cmd_exec, *ctx->dispatcher, *ctx->rpc_realm, logger
+	);
+
+	ctx->commands.emplace_back(std::move(set_root));
+	ctx->commands.emplace_back(std::move(msg_root));
 	ctx->commands.emplace_back(std::move(conn_root));
 	ctx->commands.emplace_back(std::move(cmd));
 }
