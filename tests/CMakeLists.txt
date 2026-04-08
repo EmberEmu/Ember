@@ -36,6 +36,7 @@ set(EXECUTABLE_SRC
     NullBuffer.cpp
     Utilities.cpp
     Commands.cpp
+    ClientIdent.cpp
 )
 
 if(WIN32)
@@ -45,7 +46,7 @@ endif()
 add_executable(${EXECUTABLE_NAME}
     ${EXECUTABLE_SRC}
     $<TARGET_OBJECTS:liblogin>
-	$<TARGET_OBJECTS:libmdns>
+    $<TARGET_OBJECTS:libmdns>
 )
 
 target_include_directories(${EXECUTABLE_NAME} PUBLIC ../src)
