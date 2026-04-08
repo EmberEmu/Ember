@@ -111,7 +111,8 @@ void CommandSink::do_batch_write(const std::span<std::pair<RecordDetail, std::ve
 		}
 	}
 
-	write_buffer(out_buf_);
+	write_buffer(out_buf_, false);
+	redraw_prompt(false);
 	out_buf_.clear();
 
 	if(out_buf_.capacity() > max_buf_size) [[unlikely]] {
