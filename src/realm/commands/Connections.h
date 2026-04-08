@@ -9,7 +9,6 @@
 #pragma once
 
 #include "../EventDispatcher.h"
-#include "../ServiceContextImpl.h"
 #include "../SessionManager.h"
 #include <commands/Commands.h>
 #include <logger/LoggerFwd.h>
