@@ -263,7 +263,7 @@ void ClientHandler::log_redirect_stop() {
 	}
 
 	if(!logger_.remove_sink(redirect_sink_)) {
-		LOG_ERROR(logger_, "Could not remove client logging sink!");
+		LOG_WARN(logger_, "Client logging sink not found, remove failed");
 	}
 
 	redirect_sink_.reset();
