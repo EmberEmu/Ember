@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include "ClientHandlerBuilder.h"
+#include "ClientConnectionBuilder.h"
 #include "Forwards.h"
 #include "unique_client_ptr.h"
 #include <memory>
@@ -17,37 +19,23 @@ namespace ember::realm {
 class ClientBuilder {
 	constexpr static auto allocator_tag = "client_allocator";
 
-	ClientAllocator allocator_;
-	const ConfigStore& store_;
-	EventDispatcher& dispatcher_;
-	RealmQueue& queue_;
-	AccountClient& account_rpc_;
-	CharacterClient& character_rpc_;
-	log::Logger& logger_;
+	mutable ClientAllocator allocator_;
+	ClientHandlerBuilder ch_builder_;
+	ClientConnectionBuilder cc_builder_;
 
-	unique_client_ptr make_unique_client(tcp_socket socket, std::size_t index) {
+	unique_client_ptr make_unique_client(tcp_socket socket, std::size_t index) const {
 		return unique_client_ptr(allocator_.allocate(
-			std::move(socket), index, store_, dispatcher_, queue_,
-			account_rpc_, character_rpc_, logger_
+			ch_builder_, cc_builder_, std::move(socket), index
 		), ClientDeleter(&allocator_));
 	}
 
 public:
-	ClientBuilder(const ConfigStore& store,
-	              EventDispatcher& dispatcher,
-	              RealmQueue& queue,
-	              AccountClient& account_rpc,
-	              CharacterClient& character_rpc,
-	              log::Logger& logger)
+	ClientBuilder(ClientHandlerBuilder ch_builder, ClientConnectionBuilder cc_builder)
 		: allocator_(allocator_tag)
-		, store_(store)
-		, dispatcher_(dispatcher)
-		, queue_(queue)
-		, account_rpc_(account_rpc)
-		, character_rpc_(character_rpc)
-		, logger_(logger) {}
+		, ch_builder_(ch_builder)
+		, cc_builder_(cc_builder) {}
 
-	unique_client_ptr create(tcp_socket socket, std::size_t index) {
+	unique_client_ptr create(tcp_socket socket, std::size_t index) const {
 		return make_unique_client(std::move(socket), index);
 	}
 };

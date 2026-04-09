@@ -63,6 +63,8 @@ set(LIBRARY_HDR
     ServiceContextImpl.h
     ConfigStore.h
     ClientBuilder.h
+    ClientHandlerBuilder.h
+    ClientConnectionBuilder.h
     Client.h
     BroadcastTimer.h
     Forwards.h

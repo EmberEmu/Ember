@@ -20,7 +20,6 @@
 #include <boost/asio/ip/tcp.hpp>
 #include <array>
 #include <atomic>
-#include <condition_variable>
 #include <functional>
 #include <memory>
 #include <mutex>
@@ -65,11 +64,7 @@ private:
 	unsigned int compression_level_;
 	std::unique_ptr<PacketLogger> packet_logger_;
 	OnDisconnect on_disconnect_;
-
-	std::condition_variable stop_condvar_;
-	std::mutex stop_lock_;
 	std::atomic_bool stopped_;
-	bool stopping_;
 
 	// socket I/O
 	void read();

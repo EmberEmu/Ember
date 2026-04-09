@@ -86,6 +86,7 @@ int Service::run(const opts::variables_map& args) try {
 	context.get()->service_pool = &service_pool;
 
 	std::jthread runner([&] {
+		thread::set_name("Realm service runner");
 		stop_flag.acquire();
 		service_pool.shutdown();
 	});
@@ -239,9 +240,13 @@ void Service::initialise(const opts::variables_map& args) try {
 	const auto max_socks = utility::max_sockets_desc();
 	SLOG_INFO(logger, "Max allowed sockets: {}", max_socks);
 
-	ClientBuilder builder(
+	ClientConnectionBuilder cc_builder(logger);
+
+	ClientHandlerBuilder ch_builder(
 		*ctx->config_store, *ctx->dispatcher, *ctx->queue, *ctx->rpc_account, *ctx->rpc_character, logger
 	);
+
+	ClientBuilder builder(ch_builder, cc_builder);
 
 	// Start network listener
 	SLOG_INFO(logger, "Starting network service on {}:{}...", interface, port);
