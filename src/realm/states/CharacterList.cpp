@@ -181,18 +181,30 @@ void enter(ClientContext& ctx) {
 	}
 }
 
-void send_offline(ClientContext& ctx) {
-	protocol::smsg_auth_response response;
-	response->result = protocol::Result::realm_list_realm_not_found;
-	ctx.handler.send(response);
+/*
+ * If smsg_auth_response is sent when the game is on the loading screen,
+ * it gets ignored and will require a restart, so we'll send the expected
+ * login failed packet instead.
+ */
+void offline_response(ClientContext& ctx, protocol::ClientOpcode opcode) {
+	if(opcode == protocol::ClientOpcode::cmsg_player_login) {
+		protocol::smsg_character_login_failed response;
+		response->reason = protocol::Result::char_login_no_world;
+		ctx.handler.send(response);
+	} else {
+		protocol::smsg_auth_response response;
+		response->result = protocol::Result::realm_list_realm_not_found;
+		ctx.handler.send(response);
+	}
+
+	ctx.handler.skip(*ctx.stream);
 }
 
 void handle_packet(ClientContext& ctx, protocol::ClientOpcode opcode) {
 	using enum protocol::ClientOpcode;
 
 	if(!ctx.realm_rpc.online()) {
-		send_offline(ctx);
-		ctx.handler.skip(*ctx.stream);
+		offline_response(ctx, opcode);
 		return;
 	}
 
