@@ -10,7 +10,6 @@
 
 #include "ClientConnectionBuilder.h"
 #include "ClientHandlerBuilder.h"
-#include "Forwards.h"
 #include "SocketType.h"
 #include <logger/Logger.h>
 #include <shared/ClientIdent.h>
@@ -49,9 +48,9 @@ public:
 	}
 
 	void on_close(OnClose on_close) {
-		connection_.set_on_disconnect([&, on_close]() {
+		connection_.set_on_disconnect([&, fn = std::move(on_close)]() {
 			handler_.stop();
-			on_close();
+			fn();
 		});
 	}
 

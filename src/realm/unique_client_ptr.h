@@ -20,9 +20,7 @@ struct ClientDeleter final {
 		: allocator(allocator) {}
 
 	void operator()(Client* ptr) const {
-		if(ptr) {
-			allocator->deallocate(ptr);
-		}
+		allocator->deallocate(ptr);
 	}
 };
 

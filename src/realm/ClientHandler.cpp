@@ -104,9 +104,8 @@ void ClientHandler::state_update(ClientState new_state) {
 		ClientState_to_string(new_state)
 	);
 
-	context_.prev_state = context_.state;
+	exit_state[context_.state](context_);
 	context_.state = new_state;
-	exit_state[context_.prev_state](context_);
 	enter_state[context_.state](context_);
 }
 
@@ -282,7 +281,7 @@ void ClientHandler::packet_log_start() {
 		realm, connection_->remote_address(), uuid_.to_string(), logger_, false
 	);
 
-	if(!plogger ) {
+	if(!plogger) {
 		LOG_ERROR(logger_, "Packet logger creation failed!");
 		return;
 	}
@@ -328,7 +327,6 @@ ClientHandler::ClientHandler(std::size_t index, executor executor, const ConfigS
 		.realm_rpc = realm_rpc,
 		.logger = logger,
 		.state = ClientState::cs_session_closed,
-		.prev_state = ClientState::cs_session_closed,
 	  }
 	, connection_(nullptr)
 	, logger_(logger)

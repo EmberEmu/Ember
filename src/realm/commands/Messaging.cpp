@@ -35,7 +35,7 @@ void system_message(const commands::Arguments& args,
 		LOG_CONSOLE(logger, "Message sent to connection {}", id);
 	} else {
 		SystemMessage event(message, type);
-		dispatcher.broadcast(event);
+		dispatcher.broadcast(std::move(event));
 		LOG_CONSOLE(logger, "Message sent to all connections");
 	}
 }

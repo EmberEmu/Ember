@@ -58,7 +58,7 @@ void ClientSink::batch_write(const std::span<std::pair<log::RecordDetail, std::v
 			return;
 		}
 
-		auto record = std::string_view(data);
+		std::string_view record(data);
 		messages.append(format(record, detail.severity));
 	}
 

@@ -50,7 +50,6 @@ struct ClientContext {
 	log::Logger& logger;
 	BinaryStream* stream;
 	ClientState state;
-	ClientState prev_state;
 	StateContext state_ctx;
 	std::optional<ClientID> client_id;
 };
