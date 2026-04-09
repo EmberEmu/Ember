@@ -243,7 +243,8 @@ void Service::initialise(const opts::variables_map& args) try {
 	ClientConnectionBuilder cc_builder(logger);
 
 	ClientHandlerBuilder ch_builder(
-		*ctx->config_store, *ctx->dispatcher, *ctx->queue, *ctx->rpc_account, *ctx->rpc_character, logger
+		*ctx->config_store, *ctx->dispatcher, *ctx->queue, *ctx->rpc_account,
+		*ctx->rpc_character, *ctx->rpc_realm, logger
 	);
 
 	ClientBuilder builder(ch_builder, cc_builder);

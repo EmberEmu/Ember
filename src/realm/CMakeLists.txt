@@ -40,6 +40,7 @@ set(LIBRARY_HDR
     states/ClientStates.h
     states/Authentication.h
     states/CharacterList.h
+    states/Connected.h
     states/World.h
     states/SessionClose.h
     states/WorldTransfer.h
@@ -95,6 +96,7 @@ set(LIBRARY_SRC
     NetworkListener.cpp
     states/Authentication.cpp
     states/CharacterList.cpp
+    states/Connected.cpp
     states/World.cpp
     states/SessionClose.cpp
     states/WorldEnter.cpp

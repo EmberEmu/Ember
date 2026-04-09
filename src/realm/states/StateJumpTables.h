@@ -11,6 +11,7 @@
 #include "ClientStates.h"
 #include "Authentication.h"
 #include "CharacterList.h"
+#include "Connected.h"
 #include "SessionClose.h"
 #include "World.h"
 #include "WorldEnter.h"
@@ -36,6 +37,7 @@ template<typename T>
 using JumpTable = std::array<T, states_num>;
 
 constexpr JumpTable<event_handler> update_event {
+	&connected::handle_event,
 	&authentication::handle_event,
 	&character_list::handle_event,
 	&world_enter::handle_event,
@@ -45,6 +47,7 @@ constexpr JumpTable<event_handler> update_event {
 };
 
 constexpr JumpTable<packet_handler> update_packet {
+	&connected::handle_packet,
 	&authentication::handle_packet,
 	&character_list::handle_packet,
 	&world_enter::handle_packet,
@@ -54,6 +57,7 @@ constexpr JumpTable<packet_handler> update_packet {
 };
 
 constexpr JumpTable<state_func> exit_state {
+	&connected::exit,
 	&authentication::exit,
 	&character_list::exit,
 	&world_enter::exit,
@@ -63,6 +67,7 @@ constexpr JumpTable<state_func> exit_state {
 };
 
 constexpr JumpTable<state_func> enter_state {
+	&connected::enter,
 	&authentication::enter,
 	&character_list::enter,
 	&world_enter::enter,

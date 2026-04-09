@@ -24,7 +24,7 @@ namespace ember::realm {
 
 void ClientHandler::start() {
 	context_.dispatcher.register_handler(this);
-	state_update(ClientState::cs_authenticating);
+	state_update(ClientState::cs_connected);
 }
 
 void ClientHandler::stop() {
@@ -310,7 +310,7 @@ std::string_view ClientHandler::client_identify() const {
 
 ClientHandler::ClientHandler(std::size_t index, executor executor, const ConfigStore& cfg_store,
                              EventDispatcher& dispatcher, RealmQueue& queue, AccountClient& account_rpc,
-                             CharacterClient& character_rpc, log::Logger& logger)
+                             CharacterClient& character_rpc, const RealmService& realm_rpc, log::Logger& logger)
 	: context_ {
 		.timer = ClientTimer(*this),
 		.handler = *this,
@@ -320,6 +320,7 @@ ClientHandler::ClientHandler(std::size_t index, executor executor, const ConfigS
 		.queue = queue,
 		.account_rpc = account_rpc,
 		.character_rpc = character_rpc,
+		.realm_rpc = realm_rpc,
 		.logger = logger,
 		.state = ClientState::cs_session_closed,
 		.prev_state = ClientState::cs_session_closed,
