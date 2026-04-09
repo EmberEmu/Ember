@@ -77,7 +77,7 @@ void RealmService::broadcast_status() {
 }
 
 bool RealmService::online() const {
-	return (realm_.flags & ~Realm::Flags::offline) == Realm::Flags::none;
+	return (realm_.flags & Realm::Flags::offline) == Realm::Flags::none;
 }
 
 } // realm, ember
