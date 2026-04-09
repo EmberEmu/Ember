@@ -32,8 +32,7 @@ ClientConnection::ClientConnection(tcp_socket socket, log::Logger& logger)
 	, handler_(nullptr)
 	, compression_level_(0)
 	, outbound_front_(&outbound_buffers_.front())
-	, outbound_back_(&outbound_buffers_.back())
-	, stopping_(false) {}
+	, outbound_back_(&outbound_buffers_.back()) {}
 
 void ClientConnection::parse_header() {
 	LOG_TRACE(logger_, log_func);
