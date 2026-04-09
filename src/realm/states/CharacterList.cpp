@@ -184,7 +184,7 @@ void enter(ClientContext& ctx) {
 /*
  * If smsg_auth_response is sent when the game is on the loading screen,
  * it gets ignored and will require a restart, so we'll send the expected
- * login failed packet instead.
+ * login failed packet instead
  * 
  * cmsg_cancel_trade is triggered by the client unregistering its handler when
  * it leaves the world, so we'll just ignore it
