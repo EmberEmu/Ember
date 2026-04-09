@@ -79,7 +79,7 @@ public:
 
 	RealmList() : Packet(Opcode::cmd_realm_list) {}
 
-	std::uint32_t unknown = 0; // appears to be ignored in public clients
+	std::uint32_t unknown = 0; // appears to be ignored in public clients, probably protocol version
 	boost::container::small_vector<RealmListEntry, default_realms> realms;
 	std::uint16_t unknown2 = 5; // appears to be ignored in public clients
 
