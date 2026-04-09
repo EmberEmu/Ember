@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 - 2025 Ember
+ * Copyright (c) 2024 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -15,9 +15,9 @@ using namespace rpc::Realm;
 using namespace spark;
 
 RealmService::RealmService(Server& server, Realm realm, log::Logger& logger)
-	: services::RealmService(server),
-	  realm_(realm),
-	  logger_(logger) { }
+	: services::RealmService(server)
+	, realm_(realm)
+	, logger_(logger) { }
 
 void RealmService::on_link_up(const Link& link) {
 	LOG_DEBUG(logger_, "Link up: {}", link.peer_banner);
@@ -74,6 +74,10 @@ void RealmService::broadcast_status() {
 	for(auto& link : links_) {
 		send(realm_info, link);
 	}
+}
+
+bool RealmService::online() const {
+	return (realm_.flags & Realm::Flags::offline) == Realm::Flags::none;
 }
 
 } // realm, ember

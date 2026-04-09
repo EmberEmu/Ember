@@ -14,6 +14,7 @@
 #include "ServiceContextImpl.h"
 #include "commands/Connections.h"
 #include "commands/Messaging.h"
+#include "commands/Set.h"
 #include <conpool/ConnectionPool.h>
 #include <conpool/Policies.h>
 #include <conpool/drivers/AutoSelect.h>
@@ -85,7 +86,7 @@ int Service::run(const opts::variables_map& args) try {
 	context.get()->service_pool = &service_pool;
 
 	std::jthread runner([&] {
-		thread::set_name("Realm service runner");
+		thread::set_name("Realm runner");
 		stop_flag.acquire();
 		service_pool.shutdown();
 	});
@@ -242,7 +243,8 @@ void Service::initialise(const opts::variables_map& args) try {
 	ClientConnectionBuilder cc_builder(logger);
 
 	ClientHandlerBuilder ch_builder(
-		*ctx->config_store, *ctx->dispatcher, *ctx->queue, *ctx->rpc_account, *ctx->rpc_character, logger
+		*ctx->config_store, *ctx->dispatcher, *ctx->queue, *ctx->rpc_account,
+		*ctx->rpc_character, *ctx->rpc_realm, logger
 	);
 
 	ClientBuilder builder(ch_builder, cc_builder);
@@ -287,6 +289,7 @@ void Service::register_commands(boost::asio::io_context& ioc) {
 		}
 	);
 
+	// todo, move this out of here
 	auto cmd = registry.scoped_insert(commands::create("config_reload")
 		->argument<std::string>("filename", commands::optional)
 		->description("Reload the service configuration")
@@ -313,11 +316,16 @@ void Service::register_commands(boost::asio::io_context& ioc) {
 		registry, *ctx->cmd_exec, *ctx->dispatcher, ctx->sessions, logger
 	);
 
-	auto msging_root = add_message_commands(
+	auto msg_root = add_message_commands(
 		registry, *ctx->cmd_exec, *ctx->dispatcher, ctx->sessions, logger
 	);
 
-	ctx->commands.emplace_back(std::move(msging_root));
+	auto set_root = add_set_commands(
+		registry, *ctx->cmd_exec, *ctx->dispatcher, *ctx->rpc_realm, logger
+	);
+
+	ctx->commands.emplace_back(std::move(set_root));
+	ctx->commands.emplace_back(std::move(msg_root));
 	ctx->commands.emplace_back(std::move(conn_root));
 	ctx->commands.emplace_back(std::move(cmd));
 }

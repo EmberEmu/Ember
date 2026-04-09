@@ -24,7 +24,7 @@ class RequestRealmList final : public Packet {
 public:
 	RequestRealmList() : Packet(Opcode::cmd_realm_list) {}
 
-	std::uint32_t unknown = 0; // hardcoded to zero in public client, probably some kind of filter
+	std::uint32_t unknown = 0; // hardcoded to zero in public client, probably protocol version
 
 	State read_from_stream(PacketStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::done, "Packet already complete - check your logic!");

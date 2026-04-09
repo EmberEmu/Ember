@@ -8,20 +8,18 @@
 
 #pragma once
 
+#include "../RealmService.h"
 #include "../EventDispatcher.h"
-#include "../SessionManager.h"
 #include <commands/Commands.h>
 #include <logger/LoggerFwd.h>
 #include <shared/utility/CommandExecutor.h>
 
 namespace ember::realm {
 
-commands::ScopedCommand add_connections_commands(
-	commands::Command& registry,
-	utility::CommandExecutor& exec,
-    const EventDispatcher& dispatcher,
-    const SessionManager& sessions,
-	log::Logger& logger
-);
+commands::ScopedCommand add_set_commands(commands::Command& registry,
+                                         utility::CommandExecutor& exec,
+                                         EventDispatcher& dispatcher,
+                                         RealmService& service,
+                                         log::Logger& logger);
 
 } // realm, ember

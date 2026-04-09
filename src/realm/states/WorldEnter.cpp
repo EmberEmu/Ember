@@ -427,7 +427,7 @@ void handle_logout_request(ClientContext& ctx) {
 	ctx.handler.skip(*ctx.stream);
 
 	protocol::smsg_character_login_failed response;
-	response->reason = 0x3e;
+	response->reason = protocol::Result::char_login_no_world;
 	ctx.handler.send(response);
 	ctx.handler.state_update(ClientState::cs_character_list);
 }

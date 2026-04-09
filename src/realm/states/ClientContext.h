@@ -46,6 +46,7 @@ struct ClientContext {
 	RealmQueue& queue;
 	AccountClient& account_rpc;
 	CharacterClient& character_rpc;
+	const RealmService& realm_rpc;
 	log::Logger& logger;
 	BinaryStream* stream;
 	ClientState state;

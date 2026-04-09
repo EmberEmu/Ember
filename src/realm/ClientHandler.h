@@ -74,7 +74,7 @@ class ClientHandler final {
 public:
 	ClientHandler(std::size_t index, executor executor, const ConfigStore& cfg_store,
 	              EventDispatcher& dispatcher, RealmQueue& queue, AccountClient& account_rpc,
-	              CharacterClient& character_rpc, log::Logger& logger);
+	              CharacterClient& character_rpc, const RealmService& realm_rpc, log::Logger& logger);
 	~ClientHandler();
 
 	void set_connection(ClientConnection* connection) {
