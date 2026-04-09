@@ -11,7 +11,7 @@ set(LIBRARY_HDR
     Config.h
     Event.h
     EventDispatcher.h
-	EventDispatcher.inl
+    EventDispatcher.inl
     Events.h
     EventTypes.h
     SessionManager.h
@@ -63,6 +63,8 @@ set(LIBRARY_HDR
     ServiceContextImpl.h
     ConfigStore.h
     ClientBuilder.h
+    ClientHandlerBuilder.h
+    ClientConnectionBuilder.h
     Client.h
     BroadcastTimer.h
     Forwards.h
