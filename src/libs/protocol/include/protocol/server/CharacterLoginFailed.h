@@ -17,7 +17,7 @@
 namespace ember::protocol::server {
 
 struct CharacterLoginFailed final {
-	std::uint8_t reason;
+	Result reason;
 
 	StreamResult read_from_stream(le_stream auto& stream) {
 		stream >> reason;

@@ -13,7 +13,6 @@
 namespace ember::realm {
 
 smart_enum(ClientState, char,
-	cs_connected,
 	cs_authenticating,
 	cs_character_list,
 	cs_world_enter,

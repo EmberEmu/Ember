@@ -24,7 +24,7 @@ namespace ember::realm {
 
 void ClientHandler::start() {
 	context_.dispatcher.register_handler(this);
-	state_update(ClientState::cs_connected);
+	state_update(ClientState::cs_authenticating);
 }
 
 void ClientHandler::stop() {

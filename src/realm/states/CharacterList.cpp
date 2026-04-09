@@ -17,6 +17,7 @@
 #include "../Events.h"
 #include "../EventDispatcher.h"
 #include "../FilterTypes.h"
+#include "../RealmService.h"
 #include "../RealmQueue.h"
 #include <logger/Logger.h>
 #include <protocol/Opcodes.h>
@@ -180,21 +181,35 @@ void enter(ClientContext& ctx) {
 	}
 }
 
+void respond_offline(ClientContext& ctx) {
+	ctx.handler.skip(*ctx.stream);
+	protocol::smsg_auth_response response;
+	response->result = protocol::Result::realm_list_realm_not_found;
+	ctx.handler.send(response);
+}
+
 void handle_packet(ClientContext& ctx, protocol::ClientOpcode opcode) {
+	using enum protocol::ClientOpcode;
+
+	if(!ctx.realm_rpc.online() && opcode != cmsg_player_login) {
+		respond_offline(ctx);
+		return;
+	}
+
 	switch(opcode) {
-		case protocol::ClientOpcode::cmsg_char_enum:
+		case cmsg_char_enum:
 			character_enumerate(ctx);
 			break;
-		case protocol::ClientOpcode::cmsg_char_create:
+		case cmsg_char_create:
 			character_create(ctx);
 			break;
-		case protocol::ClientOpcode::cmsg_char_delete:
+		case cmsg_char_delete:
 			character_delete(ctx);
 			break;
-		case protocol::ClientOpcode::cmsg_char_rename:
+		case cmsg_char_rename:
 			character_rename(ctx);
 			break;
-		case protocol::ClientOpcode::cmsg_player_login:
+		case cmsg_player_login:
 			player_login(ctx);
 			break;
 		default:
