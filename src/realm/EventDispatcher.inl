@@ -54,12 +54,11 @@ void EventDispatcher::exec(const ClientIdent& client, auto work) const {
 	}
 
 	boost::asio::post(*service, [&, client, work = std::move(work)] {
-		if(!handlers_.contains(client)) {
+		if(auto handler = locate_handler(client)) {
+			work();
+		} else {
 			LOG_DEBUG(logger_, "Client disconnected, work discarded");
-			return;
 		}
-
-		work();
 	});
 }
 
