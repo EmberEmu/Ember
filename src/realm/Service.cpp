@@ -85,6 +85,7 @@ int Service::run(const opts::variables_map& args) try {
 	context.get()->service_pool = &service_pool;
 
 	std::jthread runner([&] {
+		thread::set_name("Realm service runner");
 		stop_flag.acquire();
 		service_pool.shutdown();
 	});
