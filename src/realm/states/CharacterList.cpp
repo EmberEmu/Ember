@@ -228,7 +228,7 @@ void handle_packet(ClientContext& ctx, protocol::ClientOpcode opcode) {
 			player_login(ctx);
 			break;
 		default:
-			ctx.handler.skip(*ctx.stream);
+			break;
 	}
 }
 

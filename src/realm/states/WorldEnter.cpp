@@ -547,7 +547,7 @@ void handle_packet(ClientContext& ctx, protocol::ClientOpcode opcode) {
 			handle_move_set_raw_position(ctx);
 			break;
 		default:
-			ctx.handler.skip(*ctx.stream);
+			break;
 	}
 }
 

@@ -56,6 +56,11 @@ void ClientHandler::handle_message(StaticBuffer& buffer, const protocol::SizeTyp
 	}
 
 	update_packet[context_.state](context_, opcode);
+
+	// if the state didn't handle this message, skip it
+	if(!stream.empty()) {
+		skip(stream);
+	}
 }
 
 bool ClientHandler::handle_self_event(const Event& event) {

@@ -309,12 +309,10 @@ void enter(ClientContext& ctx) {
 void handle_packet(ClientContext& ctx, protocol::ClientOpcode opcode) {
 	using enum protocol::ClientOpcode;
 
-	switch(opcode) {
-		case cmsg_auth_session:
-			handle_authentication(ctx);
-			break;
-		default:
-			ctx.handler.skip(*ctx.stream);
+	if(opcode == cmsg_auth_session) {
+		handle_authentication(ctx);
+	} else {
+		CLIENT_DEBUG(ctx, "Unexpected opcode ({}) during auth", opcode);
 	}
 }
 
