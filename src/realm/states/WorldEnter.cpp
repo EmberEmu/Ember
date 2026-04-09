@@ -10,7 +10,6 @@
 #include "ClientContext.h"
 #include "../ClientHandler.h"
 #include "../ClientConnection.h"
-#include "../RealmService.h"
 #include "../RealmQueue.h"
 #include <commands/Utility.h>
 #include <logger/CommandSink.h>
@@ -39,7 +38,7 @@ std::uint32_t get_time() {
 #endif
 
 	int year = (tm_now.tm_year + 1900 - 2000) << 24;
-	int month = tm_now.tm_mon << 20;
+	int month = tm_now.tm_mon << 20;  
 	int day = (tm_now.tm_mday - 1) << 14;
 	int dow = tm_now.tm_wday << 11;
 	int hour = tm_now.tm_hour << 6;
@@ -48,13 +47,6 @@ std::uint32_t get_time() {
 }
 
 void initiate_player_login(ClientContext& ctx, const PlayerLogin& event) {
-	if(!ctx.realm_rpc.online()) {
-		protocol::smsg_character_login_failed response;
-		response->reason = protocol::Result::char_login_no_world;
-		ctx.handler.send(response);
-		return;
-	}
-
     auto& state_ctx = std::get<Context>(ctx.state_ctx);
     state_ctx.character_id = event.character_id_;
 

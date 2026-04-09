@@ -181,8 +181,7 @@ void enter(ClientContext& ctx) {
 	}
 }
 
-void respond_offline(ClientContext& ctx) {
-	ctx.handler.skip(*ctx.stream);
+void send_offline(ClientContext& ctx) {
 	protocol::smsg_auth_response response;
 	response->result = protocol::Result::realm_list_realm_not_found;
 	ctx.handler.send(response);
@@ -191,8 +190,9 @@ void respond_offline(ClientContext& ctx) {
 void handle_packet(ClientContext& ctx, protocol::ClientOpcode opcode) {
 	using enum protocol::ClientOpcode;
 
-	if(!ctx.realm_rpc.online() && opcode != cmsg_player_login) {
-		respond_offline(ctx);
+	if(!ctx.realm_rpc.online()) {
+		send_offline(ctx);
+		ctx.handler.skip(*ctx.stream);
 		return;
 	}
 
