@@ -424,8 +424,6 @@ void handle_messagechat(ClientContext& ctx) {
 }
 
 void handle_logout_request(ClientContext& ctx) {
-	ctx.handler.skip(*ctx.stream);
-
 	protocol::smsg_character_login_failed response;
 	response->reason = protocol::Result::char_login_no_world;
 	ctx.handler.send(response);

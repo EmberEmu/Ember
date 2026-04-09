@@ -196,8 +196,6 @@ void offline_response(ClientContext& ctx, protocol::ClientOpcode opcode) {
 		response->result = protocol::Result::realm_list_realm_not_found;
 		ctx.handler.send(response);
 	}
-
-	ctx.handler.skip(*ctx.stream);
 }
 
 void handle_packet(ClientContext& ctx, protocol::ClientOpcode opcode) {

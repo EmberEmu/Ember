@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2025 Ember
+ * Copyright (c) 2016 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -19,7 +19,7 @@ void enter(ClientContext& ctx) {
 }
 
 void handle_packet(ClientContext& ctx, protocol::ClientOpcode opcode) {
-	ctx.handler.skip(*ctx.stream);
+	// don't care for now
 }
 
 void handle_event(ClientContext& ctx, const Event& event) {
