@@ -127,7 +127,7 @@ void ClientHandler::handle_ping(BinaryStream& stream) {
 	protocol::smsg_pong response;
 	response->sequence_id = packet->sequence_id;
 	connection_->latency(packet->latency);
-	connection_->send(response);
+	send(response);
 }
 
 void ClientHandler::start_timer(const std::chrono::milliseconds& time) {
