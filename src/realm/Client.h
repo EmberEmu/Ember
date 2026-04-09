@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include "ClientConnection.h"
-#include "ClientHandler.h"
+#include "ClientConnectionBuilder.h"
+#include "ClientHandlerBuilder.h"
 #include "Forwards.h"
 #include "SocketType.h"
 #include <logger/Logger.h>
@@ -27,10 +27,9 @@ private:
 	ClientConnection connection_;
 
 public:
-	Client(tcp_socket socket, std::size_t index, const ConfigStore& store, EventDispatcher& dispatcher,
-		   RealmQueue& queue, AccountClient& account_rpc, CharacterClient& character_rpc, log::Logger& logger)
-		: handler_(index, socket.get_executor(), store, dispatcher, queue, account_rpc, character_rpc, logger)
-		, connection_(std::move(socket), logger) {
+	Client(ClientHandlerBuilder ch_builder, ClientConnectionBuilder cc_builder, tcp_socket socket, std::size_t index)
+		: handler_(ch_builder.create(index, socket.get_executor()))
+		, connection_(cc_builder.create(std::move(socket))) {
 		handler_.set_connection(&connection_);
 		connection_.set_handler(&handler_);
 	}
