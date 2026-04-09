@@ -185,13 +185,16 @@ void enter(ClientContext& ctx) {
  * If smsg_auth_response is sent when the game is on the loading screen,
  * it gets ignored and will require a restart, so we'll send the expected
  * login failed packet instead.
+ * 
+ * cmsg_cancel_trade is triggered by the client unregistering its handler when
+ * it leaves the world, so we'll just ignore it
  */
 void offline_response(ClientContext& ctx, protocol::ClientOpcode opcode) {
 	if(opcode == protocol::ClientOpcode::cmsg_player_login) {
 		protocol::smsg_character_login_failed response;
 		response->reason = protocol::Result::char_login_no_world;
 		ctx.handler.send(response);
-	} else {
+	} else if(opcode != protocol::ClientOpcode::cmsg_cancel_trade) {
 		protocol::smsg_auth_response response;
 		response->result = protocol::Result::realm_list_realm_not_found;
 		ctx.handler.send(response);
