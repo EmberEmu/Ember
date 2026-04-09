@@ -161,10 +161,7 @@ void player_login(ClientContext& ctx) {
 		return;
 	}
 
-	ctx.dispatcher.post(
-		ctx.handler.uuid(), PlayerLogin(packet->character_id)
-	);
-
+	ctx.dispatcher.post(ctx.handler.uuid(), PlayerLogin(packet->character_id));
 	ctx.handler.state_update(ClientState::cs_world_enter);
 }
 
