@@ -126,12 +126,9 @@ void EventDispatcher::register_handler(ClientHandler* handler) {
 	assert(handler);
 
 #ifdef EMBER_FAST_DISPATCH_CACHE
-	if(!try_insert(handler)) {
+	if(!try_insert(handler))
 #endif
 		handlers_.insert_or_assign(handler->uuid(), handler);
-#ifdef EMBER_FAST_DISPATCH_CACHE
-	}
-#endif
 }
 
 void EventDispatcher::remove_handler(const ClientHandler* handler) {
