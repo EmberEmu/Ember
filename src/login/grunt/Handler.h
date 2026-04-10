@@ -44,7 +44,7 @@ class Handler final {
 
 	log::Logger& logger_;
 
-	template<typename T> void create_packet();
+	template<std::derived_from<Packet> T> void create_packet();
 	void handle_new_packet(BufferType& buffer);
 	void handle_read(BufferType& buffer, std::size_t offset);
 	void dump_bad_packet(BufferType& buffer, std::size_t offset);

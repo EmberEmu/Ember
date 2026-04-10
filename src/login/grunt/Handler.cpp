@@ -17,7 +17,7 @@
 
 namespace ember::grunt {
 
-template<typename T>
+template<std::derived_from<Packet> T>
 void Handler::create_packet() {
 	curr_packet_ = &packet_.emplace<T>();
 }
