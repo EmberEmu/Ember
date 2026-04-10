@@ -11,6 +11,7 @@
 #include <boost/container/small_vector.hpp>
 #include <limits>
 #include <span>
+#include <stdexcept>
 #include <cstdint>
 #include <cstddef>
 
