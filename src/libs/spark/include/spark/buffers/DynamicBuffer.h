@@ -78,6 +78,9 @@ private:
 			return;
 		}
 
+		// deallocate our current nodes
+		clear();
+
 		// nothing to do
 		if(rhs.empty()) {
 			return;
@@ -188,13 +191,11 @@ public:
 	}
 
 	DynamicBuffer& operator=(DynamicBuffer&& rhs) noexcept {
-		clear();
 		move(rhs);
 		return *this;
 	}
 
 	DynamicBuffer& operator=(const DynamicBuffer& rhs) {
-		clear();
 		copy(rhs);
 		return *this;
 	}
