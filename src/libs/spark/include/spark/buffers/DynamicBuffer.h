@@ -78,12 +78,24 @@ private:
 			return;
 		}
 
-		clear(); // clear our current blocks rather than swapping them
+		// nothing to do
+		if(rhs.empty()) {
+			return;
+		}
 
+		// take the nodes from rhs
 		size_ = rhs.size_;
-		root_ = rhs.root_;
-		root_.next->prev = &root_;
+		root_.next = rhs.root_.next;
+		root_.prev = rhs.root_.prev;
+
+		// update the head & tail nodes to point to the new root
 		root_.prev->next = &root_;
+		root_.next->prev = &root_;
+
+		// make sure we have the allocator state
+		rhs.allocator_ = std::move(allocator_);
+
+		// reset rhs - can't use clear() as it'd deallocate the nodes
 		rhs.size_ = 0;
 		rhs.root_.next = &rhs.root_;
 		rhs.root_.prev = &rhs.root_;
@@ -94,11 +106,20 @@ private:
 			return;
 		}
 
+		// deallocate our current nodes
+		clear();
+
+		// nothing to do
+		if(rhs.empty()) {
+			return;
+		}
+
 		const node_type* head = rhs.root_.next;
 		root_.next = &root_;
 		root_.prev = &root_;
 		size_ = 0;
 
+		// copy all of the data from rhs
 		while(head != &rhs.root_) {
 			auto buffer = allocate();
 			*buffer = *buffer_from_node(head);
@@ -167,22 +188,25 @@ public:
 	}
 
 	DynamicBuffer& operator=(DynamicBuffer&& rhs) noexcept {
+		clear();
 		move(rhs);
 		return *this;
-	}
-
-	DynamicBuffer(DynamicBuffer&& rhs) noexcept {
-		move(rhs);
-	}
-
-	DynamicBuffer(const DynamicBuffer& rhs) {
-		copy(rhs);
 	}
 
 	DynamicBuffer& operator=(const DynamicBuffer& rhs) {
 		clear();
 		copy(rhs);
 		return *this;
+	}
+
+	DynamicBuffer(DynamicBuffer&& rhs) noexcept
+		: DynamicBuffer() {
+		move(rhs);
+	}
+
+	DynamicBuffer(const DynamicBuffer& rhs) 
+		: DynamicBuffer() {
+		copy(rhs);
 	}
 
 	template<typename T>
@@ -425,7 +449,7 @@ public:
 
 	void clear() {
 		node_type* head = root_.next;
-
+;
 		while(head != &root_) {
 			auto next = head->next;
 			deallocate(buffer_from_node(head));

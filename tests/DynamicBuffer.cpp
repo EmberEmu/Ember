@@ -377,3 +377,32 @@ TEST(DynamicBuffer, FindFirstOf) {
 	pos = dynbuf.find_first_of(std::byte('t'));
 	ASSERT_EQ(pos, 32);
 }
+
+TEST(DynamicBuffer, EmptyMoveCtorRegressionTest) {
+	spark::io::DynamicBuffer<64> buffer;
+	ASSERT_TRUE(buffer.empty());
+	auto buffer2(std::move(buffer));
+	// not empty() just so it prints the size on failure (same for the rest)
+	ASSERT_EQ(buffer2.size(), 0);
+}
+
+TEST(DynamicBuffer, EmptyMoveAssignRegressionTest) {
+	spark::io::DynamicBuffer<64> buffer;
+	ASSERT_TRUE(buffer.empty());
+	auto buffer2 = std::move(buffer);
+	ASSERT_EQ(buffer2.size(), 0);
+}
+
+TEST(DynamicBuffer, EmptyCopyCtorRegressionTest) {
+	spark::io::DynamicBuffer<64> buffer;
+	ASSERT_TRUE(buffer.empty());
+	auto buffer2(buffer);
+	ASSERT_EQ(buffer2.size(), 0);
+}
+
+TEST(DynamicBuffer, EmptyCopyAssignRegressionTest) {
+	spark::io::DynamicBuffer<64> buffer;
+	ASSERT_TRUE(buffer.empty());
+	auto buffer2 = buffer;
+	ASSERT_EQ(buffer2.size(), 0);
+}
