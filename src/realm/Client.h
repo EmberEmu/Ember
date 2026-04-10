@@ -12,7 +12,6 @@
 #include "ClientHandlerBuilder.h"
 #include "SocketType.h"
 #include <logger/Logger.h>
-#include <shared/ClientIdent.h>
 #include <functional>
 
 namespace ember::realm {
