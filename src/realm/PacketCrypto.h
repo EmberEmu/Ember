@@ -8,8 +8,6 @@
 
 #pragma once
 
-#include <botan/bigint.h>
-#include <boost/assert.hpp>
 #include <boost/container/small_vector.hpp>
 #include <limits>
 #include <span>
@@ -17,7 +15,6 @@
 #include <cstddef>
 
 namespace ember::realm {
-
 
 /*
  * This uses key doubling to simplify the conditional checks that need to be performed
