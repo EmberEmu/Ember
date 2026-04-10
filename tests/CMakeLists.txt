@@ -37,6 +37,7 @@ set(EXECUTABLE_SRC
     Utilities.cpp
     Commands.cpp
     ClientIdent.cpp
+    PacketCrypto.cpp
 )
 
 if(WIN32)
