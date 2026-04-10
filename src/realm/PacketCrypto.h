@@ -36,7 +36,7 @@ namespace ember::realm {
  * 
  */
 template<std::size_t _key_size = 0>
-requires(_key_size < 256)
+requires(_key_size <= 256)
 class PacketCrypto final {
 	static constexpr auto key_size_hint = _key_size > 0? _key_size * 2 : 128;
 
@@ -53,7 +53,7 @@ public:
 			if(key.size() != _key_size) {
 				throw std::runtime_error("Session key did not match expected size");
 			}
-		} else if(key.size() > std::numeric_limits<std::uint8_t>::max()) {
+		} else if(key.size() > std::numeric_limits<std::uint8_t>::max() + 1) {
 			throw std::runtime_error("Session key too big");
 		} else if(key.empty()) {
 			throw std::runtime_error("Session key empty");
