@@ -132,12 +132,14 @@ void EventDispatcher::register_handler(ClientHandler* handler) {
 }
 
 void EventDispatcher::remove_handler(const ClientHandler* handler) {
+	assert(handler);
+
 #ifdef EMBER_FAST_DISPATCH_CACHE
-		if(auto slot = handler->uuid().extract_slot(); slot != slot_npos) {
-			cache_[slot].set_zero();
-		}  else {
-			handlers_.erase(handler->uuid());
-		}
+	if(auto slot = handler->uuid().extract_slot(); slot != slot_npos) {
+		cache_[slot].set_zero();
+	}  else {
+		handlers_.erase(handler->uuid());
+	}
 #else
 	handlers_.erase(handler->uuid());
 #endif
