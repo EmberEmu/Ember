@@ -40,8 +40,7 @@ void ClientHandler::close() {
 	connection_->close_session();
 }
 
-void ClientHandler::handle_message(StaticBuffer& buffer, const protocol::SizeType msg_size) {
-	BinaryStream stream(buffer, msg_size);
+void ClientHandler::handle_message(BinaryStream& stream) {
 	context_.stream = &stream;
 	protocol::ClientOpcode opcode;
 	stream >> opcode;

@@ -12,6 +12,7 @@
 #include "packet_log/LogSink.h"
 #include <logger/Logger.h>
 #include <protocol/PacketHeaders.h>
+#include <spark/buffers/BinaryStream.h>
 #include <spark/buffers/BufferSequence.h>
 #include <boost/asio/dispatch.hpp>
 #include <boost/asio/post.hpp>
@@ -67,7 +68,8 @@ void ClientConnection::completion_check() {
 }
 
 void ClientConnection::dispatch_message() {
-	handler_->handle_message(inbound_buffer_, msg_size_);
+	BinaryStream stream(inbound_buffer_, msg_size_);
+	handler_->handle_message(stream);
 }
 
 void ClientConnection::process_buffered_data() {

@@ -97,7 +97,7 @@ public:
 	void skip(BinaryStream& stream);
 
 	void state_update(ClientState new_state);
-	void handle_message(StaticBuffer& buffer, protocol::SizeType msg_size);
+	void handle_message(BinaryStream& stream);
 	void handle_event(const Event& event);
 
 	void log_redirect(LogRedirect::Type type, log::Severity severity);
