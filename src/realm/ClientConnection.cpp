@@ -182,14 +182,7 @@ void ClientConnection::send(std::span<const std::uint8_t> packet) {
 		return;
 	}
 
-	spark::io::BinaryStream stream(*outbound_back_);
-	stream << packet;
-
-	if(!stream) {
-		LOG_WARN(logger_, "Failed to write packet to stream");
-		close_session();
-		return;
-	}
+	outbound_back_->write(packet);
 
 	// initiate sending if not already in progress
 	if(!write_in_progress_) {
