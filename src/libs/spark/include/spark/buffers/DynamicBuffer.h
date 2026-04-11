@@ -74,9 +74,6 @@ private:
 	}
 
 	void move(DynamicBuffer& rhs) noexcept {
-		// deallocate our current nodes
-		clear();
-
 		// nothing to do
 		if(rhs.empty()) {
 			return;
@@ -101,9 +98,6 @@ private:
 	}
 
 	void copy(const DynamicBuffer& rhs) {
-		// deallocate our current nodes
-		clear();
-
 		// nothing to do
 		if(rhs.empty()) {
 			return;
@@ -184,6 +178,7 @@ public:
 			return *this;
 		}
 
+		clear(); // deallocate our current nodes
 		move(rhs);
 		return *this;
 	}
@@ -193,6 +188,7 @@ public:
 			return *this;
 		}
 
+		clear(); // deallocate our current nodes
 		copy(rhs);
 		return *this;
 	}
