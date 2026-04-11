@@ -8,6 +8,7 @@
 
 #include <shared/ClientIdent.h>
 #include <gtest/gtest.h>
+#include <algorithm>
 #include <array>
 #include <random>
 
