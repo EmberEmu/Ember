@@ -74,10 +74,6 @@ private:
 	}
 
 	void move(DynamicBuffer& rhs) noexcept {
-		if(this == &rhs) { // self-assignment
-			return;
-		}
-
 		// deallocate our current nodes
 		clear();
 
@@ -105,10 +101,6 @@ private:
 	}
 
 	void copy(const DynamicBuffer& rhs) {
-		if(this == &rhs) { // self-assignment
-			return;
-		}
-
 		// deallocate our current nodes
 		clear();
 
@@ -118,9 +110,6 @@ private:
 		}
 
 		const node_type* head = rhs.root_.next;
-		root_.next = &root_;
-		root_.prev = &root_;
-		size_ = 0;
 
 		// copy all of the data from rhs
 		while(head != &rhs.root_) {
@@ -191,11 +180,19 @@ public:
 	}
 
 	DynamicBuffer& operator=(DynamicBuffer&& rhs) noexcept {
+		if(this == &rhs) { // self-assignment
+			return *this;
+		}
+
 		move(rhs);
 		return *this;
 	}
 
 	DynamicBuffer& operator=(const DynamicBuffer& rhs) {
+		if(this == &rhs) { // self-assignment
+			return *this;
+		}
+
 		copy(rhs);
 		return *this;
 	}
