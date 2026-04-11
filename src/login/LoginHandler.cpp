@@ -590,10 +590,10 @@ void LoginHandler::send_realm_list(const grunt::Packet& packet) {
 		return;
 	}
 
-	const auto& [_, region] = *it;
 	const std::shared_ptr<const RealmMap> realms = realm_list_.realms();
 	const auto& char_count = std::get<CharacterCount>(state_data_);
 	grunt::server::RealmList response;
+	const auto& region = it->second;
 
 	for(const auto& realm : *realms | std::views::values) {
 		if(!opts_.locales || realm.region == region) {
