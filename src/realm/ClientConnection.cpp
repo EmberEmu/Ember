@@ -24,7 +24,7 @@ ClientConnection::ClientConnection(tcp_socket socket, log::Logger& logger)
 	: socket_(std::move(socket))
 	, remote_ep_(socket_.remote_endpoint())
 	, stats_{}
-	, msg_size_{0}
+	, msg_size_(0)
 	, logger_(logger)
 	, read_state_(ReadState::header)
 	, stopped_(false)
