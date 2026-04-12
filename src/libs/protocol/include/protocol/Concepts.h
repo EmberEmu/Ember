@@ -14,8 +14,8 @@
 
 namespace ember::protocol {
 
-template<typename T, typename stream_type>
-concept is_packet = requires(T s, stream_type& stream) {
+template<typename T>
+concept is_packet = requires(T s) {
 	T::opcode;
 	//{ s.write_to_stream(stream) } -> std::same_as<StreamResult>;
 };

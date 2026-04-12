@@ -25,8 +25,11 @@ struct StreamResult {
 		compression_failed   = 0x05,
 		too_big              = 0x06,
 		stream_error         = 0x07,
+		unprocessed_data     = 0x08,
+		framing_lost         = 0x09,
+		overrun              = 0x10,
 
-		stream_result_max    = stream_error + 1
+		stream_result_max    = overrun + 1
 	} val_;
 
 	std::array<std::string_view, stream_result_max> result_strings {
@@ -37,7 +40,10 @@ struct StreamResult {
 		"decompression failed",
 		"compression failed",
 		"data size too large",
-		"underlying stream error"
+		"underlying stream error",
+		"encountered unprocessed data",
+		"message framing lost",
+		"attempted to read outside of message bounds"
 	};
 
 	StreamResult(decltype(val_) value) : val_(value) {}

@@ -76,6 +76,7 @@ set(SERVER_MESSAGES
 )
 
 set(CORE_HEADERS
+    include/protocol/Deserialise.h
     include/protocol/Opcodes.h
     include/protocol/Packet.h
     include/protocol/Packets.h
