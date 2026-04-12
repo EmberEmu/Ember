@@ -11,6 +11,7 @@
 #include <protocol/Concepts.h>
 #include <protocol/PacketHeaders.h>
 #include <protocol/StreamResult.h>
+#include <optional>
 
 namespace ember::protocol {
 
@@ -51,7 +52,5 @@ std::optional<PacketType> deserialise(le_stream auto& stream) {
 	const auto result = deserialise(packet, stream);
 	return result? packet : std::nullopt;
 }
-
-
 
 } // protocol, ember
