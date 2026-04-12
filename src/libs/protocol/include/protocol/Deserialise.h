@@ -15,7 +15,7 @@
 namespace ember::protocol {
 
 [[nodiscard]] StreamResult deserialise(is_packet auto& packet, le_stream auto& stream) {
-	if(auto result = packet.read_payload_from_stream(stream); result) {
+	if(packet.read_payload_from_stream(stream)) {
 		if(stream.read_limit() == stream.total_read()) {
 			return StreamResult::success;
 		} else {
