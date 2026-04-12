@@ -9,6 +9,7 @@
 #pragma once
 
 #include <array>
+#include <format>
 #include <ostream>
 #include <string_view>
 #include <cassert>
@@ -27,7 +28,7 @@ struct StreamResult {
 		stream_error         = 0x07,
 		unprocessed_data     = 0x08,
 		framing_lost         = 0x09,
-		overrun              = 0x10,
+		overrun              = 0x0a,
 
 		stream_result_max    = overrun + 1
 	} val_;
@@ -52,7 +53,7 @@ struct StreamResult {
 		return val_ == StreamResult::success;
 	}
 
-	friend std::ostream& operator<< (std::ostream& os, const StreamResult& ec) {
+	friend std::ostream& operator<<(std::ostream& os, const StreamResult& ec) {
 		return os << ec.val_;
 	}
 
@@ -75,3 +76,10 @@ inline bool operator!=(const StreamResult& lhs, const StreamResult& rhs) {
 }
 
 } // protocol, ember
+
+template<>
+struct std::formatter<ember::protocol::StreamResult> : std::formatter<std::string_view> {
+	auto format(const auto result, auto& context) const {
+		return std::formatter<std::string_view>::format(result.what(), context);
+	}
+};
