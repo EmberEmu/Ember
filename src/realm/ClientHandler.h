@@ -14,6 +14,7 @@
 #include "ClientSink.h"
 #include "ConnectionDefines.h"
 #include "states/ClientContext.h"
+#include "states/ClientStates.h"
 #include <logger/LoggerFwd.h>
 #include <protocol/client/Ping.h>
 #include <protocol/Packet.h>
@@ -44,6 +45,8 @@ class ClientHandler final {
 	ClientConnection* connection_;
 	ClientContext context_;
 	ClientIdent uuid_;
+	ClientState state_;
+
 	boost::asio::steady_timer timer_;
 	log::Logger& logger_;
 	std::shared_ptr<ClientSink> redirect_sink_;
@@ -112,7 +115,7 @@ public:
 	}
 
 	ClientState state() const {
-		return context_.state;
+		return state_;
 	}
 
 	friend class ClientTimer;

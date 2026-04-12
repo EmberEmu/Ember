@@ -254,7 +254,7 @@ void handle_event(ClientContext& ctx, const Event& event) {
 void exit(ClientContext& ctx) {
 	ctx.timer.cancel();
 
-	if(ctx.state == ClientState::cs_session_closed) {
+	if(ctx.handler.state() == ClientState::cs_session_closed) {
 		//--test;
 		ctx.queue.free_slot();
 	}

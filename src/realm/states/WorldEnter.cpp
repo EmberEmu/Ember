@@ -93,7 +93,7 @@ void initiate_player_login(ClientContext& ctx, const PlayerLogin& event) {
 }
 
 void enter(ClientContext& ctx) {
-    ctx.state_ctx = Context{};
+	ctx.state_ctx = Context{};
 }
 
 void handle_name_query(ClientContext& ctx) {

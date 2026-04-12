@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include "ClientStates.h"
 #include "AuthenticationContext.h"
 #include "WorldEnterContext.h"
 #include "../ClientTimer.h"
@@ -49,7 +48,6 @@ struct ClientContext {
 	const RealmService& realm_rpc;
 	log::Logger& logger;
 	BinaryStream* stream;
-	ClientState state;
 	StateContext state_ctx;
 	std::optional<ClientID> client_id;
 };

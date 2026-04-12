@@ -28,7 +28,7 @@ void ClientHandler::start() {
 }
 
 void ClientHandler::stop() {
-	if(context_.state == ClientState::cs_session_closed) {
+	if(state_ == ClientState::cs_session_closed) {
 		return;
 	}
 
@@ -54,7 +54,7 @@ void ClientHandler::handle_message(BinaryStream& stream) {
 		return;
 	}
 
-	update_packet[context_.state](context_, opcode);
+	update_packet[state_](context_, opcode);
 
 	// if the state didn't handle this message, skip it
 	if(!stream.empty()) {
@@ -88,7 +88,7 @@ void ClientHandler::handle_event(const Event& event) {
 		return;
 	}
 
-	update_event[context_.state](context_, event);
+	update_event[state_](context_, event);
 }
 
 void ClientHandler::handle_timer() {
@@ -99,17 +99,17 @@ void ClientHandler::handle_timer() {
 
 void ClientHandler::state_update(ClientState new_state) {
 	CLIENT_DEBUG(context_, "State change, {} => {}",
-		ClientState_to_string(context_.state),
+		ClientState_to_string(state_),
 		ClientState_to_string(new_state)
 	);
 
-	exit_state[context_.state](context_);
-	context_.state = new_state;
-	enter_state[context_.state](context_);
+	exit_state[state_](context_);
+	state_ = new_state;
+	enter_state[state_](context_);
 }
 
 void ClientHandler::skip(BinaryStream& stream) {
-	CLIENT_TRACE(context_, "{} skipping message", ClientState_to_string(context_.state));
+	CLIENT_TRACE(context_, "{} skipping message", ClientState_to_string(state_));
 	stream.skip(stream.read_limit() - stream.total_read());
 }
 
@@ -325,8 +325,8 @@ ClientHandler::ClientHandler(std::size_t index, executor executor, const ConfigS
 		.character_rpc = character_rpc,
 		.realm_rpc = realm_rpc,
 		.logger = logger,
-		.state = ClientState::cs_session_closed,
 	  }
+	, state_(ClientState::cs_session_closed)
 	, connection_(nullptr)
 	, logger_(logger)
 	, uuid_(index)
