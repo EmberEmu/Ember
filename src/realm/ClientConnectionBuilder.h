@@ -12,7 +12,7 @@
 
 namespace ember::realm {
 
-class ClientConnectionBuilder {
+class ClientConnectionBuilder final {
 	log::Logger& logger_;
 
 public:

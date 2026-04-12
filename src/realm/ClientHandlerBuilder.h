@@ -12,7 +12,7 @@
 
 namespace ember::realm {
 
-class ClientHandlerBuilder {
+class ClientHandlerBuilder final {
 	const ConfigStore& store_;
 	EventDispatcher& dispatcher_;
 	RealmQueue& queue_;
