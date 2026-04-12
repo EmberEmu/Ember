@@ -10,7 +10,7 @@
 
 #include <protocol/Concepts.h>
 #include <protocol/StreamResult.h>
-#include <optional>
+#include <expected>
 
 namespace ember::protocol {
 
@@ -46,10 +46,10 @@ namespace ember::protocol {
 }
 
 template<is_packet PacketType>
-std::optional<PacketType> deserialise(le_stream auto& stream) {
+std::expected<PacketType, StreamResult> deserialise(le_stream auto& stream) {
 	PacketType packet;
 	const auto result = deserialise(packet, stream);
-	return result? packet : std::nullopt;
+	return result? packet : std::unexpected(result);
 }
 
 } // protocol, ember
