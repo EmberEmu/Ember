@@ -9,7 +9,6 @@
 #pragma once
 
 #include <protocol/Concepts.h>
-#include <protocol/PacketHeaders.h>
 #include <protocol/StreamResult.h>
 #include <optional>
 
