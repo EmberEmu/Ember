@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include "TickClock.h"
+#include "TickCount.h"
 #include <cstdint>
 #ifdef _WIN32
 #include <Windows.h>
