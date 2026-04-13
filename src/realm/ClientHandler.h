@@ -118,7 +118,7 @@ public:
 		return state_;
 	}
 
-	friend class ClientTimer;
+	friend class ClientContext;
 };
 
 } // realm, ember

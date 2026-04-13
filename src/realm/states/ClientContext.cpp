@@ -6,23 +6,16 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#pragma once
-
-#include <chrono>
+#include "../ClientHandler.h"
 
 namespace ember::realm {
 
-class ClientHandler;
+void ClientContext::start_timer(std::chrono::milliseconds time) {
+	handler.start_timer(time);
+}
 
-class ClientTimer {
-	ClientHandler& handler_;
-
-public:
-	ClientTimer(ClientHandler& handler)
-		: handler_(handler) {}
-
-	void start(const std::chrono::milliseconds& expiry);
-	void cancel();
-};
+void ClientContext::cancel_timer() {
+	handler.cancel_timer();
+}
 
 } // realm, ember

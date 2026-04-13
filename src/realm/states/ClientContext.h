@@ -10,7 +10,6 @@
 
 #include "AuthenticationContext.h"
 #include "WorldEnterContext.h"
-#include "../ClientTimer.h"
 #include "../ConnectionDefines.h"
 #include "../Forwards.h"
 #include <logger/LoggerFwd.h>
@@ -37,7 +36,6 @@ struct ClientID {
 };
 
 struct ClientContext {
-	ClientTimer timer;
 	ClientHandler& handler;
 	ClientConnection* connection;
 	const ConfigStore& cfg_store;
@@ -50,6 +48,10 @@ struct ClientContext {
 	BinaryStream* stream;
 	StateContext state_ctx;
 	std::optional<ClientID> client_id;
+
+public:
+	void start_timer(std::chrono::milliseconds time);
+	void cancel_timer();
 };
 
 } // realm, ember

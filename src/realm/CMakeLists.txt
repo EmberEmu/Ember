@@ -68,7 +68,6 @@ set(LIBRARY_HDR
     Client.h
     BroadcastTimer.h
     Forwards.h
-    ClientTimer.h
     SessionIterator.h
     ClientSink.h
     unique_client_ptr.h
@@ -99,6 +98,7 @@ set(LIBRARY_SRC
     states/World.cpp
     states/SessionClose.cpp
     states/WorldEnter.cpp
+    states/ClientContext.cpp
     packet_log/PacketLogger.cpp
     packet_log/FlatbuffersSink.cpp
     packet_log/LogSink.cpp
@@ -106,7 +106,6 @@ set(LIBRARY_SRC
     WorldRPCClient.cpp
     Digest.cpp
     ServiceContext.cpp
-    ClientTimer.cpp
     ClientSink.cpp
     commands/Connections.cpp
     commands/Messaging.cpp

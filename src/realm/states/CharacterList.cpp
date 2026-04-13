@@ -174,7 +174,7 @@ void enter(ClientContext& ctx) {
 	const auto& config = ctx.cfg_store.config_tls();
 
 	if(auto timeout = config.char_list_timeout; timeout != 0s) {
-		ctx.timer.start(timeout);
+		ctx.start_timer(timeout);
 	}
 }
 
@@ -252,7 +252,7 @@ void handle_event(ClientContext& ctx, const Event& event) {
 }
 
 void exit(ClientContext& ctx) {
-	ctx.timer.cancel();
+	ctx.cancel_timer();
 
 	if(ctx.handler.state() == ClientState::cs_session_closed) {
 		//--test;

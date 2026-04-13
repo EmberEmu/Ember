@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include "ClientTimer.h"
 #include "states/ClientContext.h"
 #include "Forwards.h"
 
@@ -30,14 +29,13 @@ public:
 		: cfg_store_(cfg_store)
 		, dispatcher_(dispatcher)
 		, queue_(queue)
-		, account_rpc_(account_rpc_)
+		, account_rpc_(account_rpc)
 		, character_rpc_(character_rpc)
 		, realm_rpc_(realm_rpc)
 		, logger_(logger) {}
 
 	ClientContext create(ClientHandler& handler) const {
 		return ClientContext {
-			.timer = ClientTimer(handler),
 			.handler = handler,
 			.connection = nullptr,
 			.cfg_store = cfg_store_,

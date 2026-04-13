@@ -255,7 +255,7 @@ void auth_queue(ClientContext& ctx) {
 	auto& dispatcher = ctx.dispatcher;
 
 	ctx.queue.enqueue(uuid);
-	ctx.timer.cancel();
+	ctx.cancel_timer();
 	auth_state(ctx, State::in_queue);
 
 	CLIENT_DEBUG(ctx, "Added to queue, position {}", ctx.queue.poll(uuid));
@@ -302,7 +302,7 @@ void handle_timeout(ClientContext& ctx) {
 void enter(ClientContext& ctx) {
 	ctx.state_ctx = Context{};
 	const auto& config = ctx.cfg_store.config_tls();
-	ctx.timer.start(config.auth_timeout);
+	ctx.start_timer(config.auth_timeout);
 	send_auth_challenge(ctx);
 }
 
@@ -346,7 +346,7 @@ void exit(ClientContext& ctx) {
 	if(auth_ctx.state == State::in_queue) {
 		ctx.queue.dequeue(ctx.handler.uuid());
 	} else {
-		ctx.timer.cancel();
+		ctx.cancel_timer();
 	}
 }
 
