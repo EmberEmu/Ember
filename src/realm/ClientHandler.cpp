@@ -24,7 +24,8 @@
 
 namespace ember::realm {
 
-void ClientHandler::start() {
+void ClientHandler::start(ClientConnection& connection) {
+	set_connection(connection);
 	context_.dispatcher.register_handler(this);
 	state_update(ClientState::cs_authenticating);
 }
@@ -282,6 +283,11 @@ void ClientHandler::stream_err(const protocol::StreamResult& result) {
 
 std::string_view ClientHandler::client_identify() const {	
 	return context_.client_identify();
+}
+
+void ClientHandler::set_connection(ClientConnection& connection) {
+	connection_ = &connection;
+	context_.connection(connection);
 }
 
 ClientHandler::ClientHandler(std::size_t index, ClientContext context, EventDispatcher& dispatcher, log::Logger& logger)

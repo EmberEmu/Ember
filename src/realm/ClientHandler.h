@@ -69,20 +69,15 @@ class ClientHandler final {
 	void send(protocol::is_packet auto& packet);
 	void skip(BinaryStream& stream);
 	void stream_err(const protocol::StreamResult& result);
+	void set_connection(ClientConnection& connection);
 
 public:
 	ClientHandler(std::size_t index, ClientContext context, EventDispatcher& dispatcher, log::Logger& logger);
 	~ClientHandler();
 
-	void set_connection(ClientConnection* connection) {
-		assert(connection);
-		connection_ = connection;
-		context_.connection(*connection);
-	}
-
-	void start();
+	void start(ClientConnection& connection);
 	void stop();
-	
+
 	std::string_view client_identify() const;
 
 	void handle_message(BinaryStream& stream);

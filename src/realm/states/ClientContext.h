@@ -103,7 +103,7 @@ public:
 	StateContext state_ctx;
 	std::optional<ClientID> client_id;
 	const ConfigStore& cfg_store;
-	EventDispatcher& dispatcher;
+	EventDispatcher& dispatcher; // this won't be needed once RPCs use coroutines
 	RealmQueue& queue;
 	AccountClient& account_rpc;
 	CharacterClient& character_rpc;

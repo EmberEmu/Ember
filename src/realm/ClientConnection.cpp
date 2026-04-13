@@ -201,8 +201,8 @@ void ClientConnection::set_key(std::span<const std::uint8_t> key) {
 	crypt_ = PacketCrypto<0>(key);
 }
 
-void ClientConnection::start() {
-	assert(handler_);
+void ClientConnection::start(ClientHandler& handler) {
+	set_handler(handler);
 
 	if(stopped_) {
 		return;
@@ -277,9 +277,8 @@ inline std::size_t ClientConnection::minimum_transfer() const {
 	}
 }
 
-void ClientConnection::set_handler(ClientHandler* handler) {
-	assert(handler);
-	handler_ = handler;
+void ClientConnection::set_handler(ClientHandler& handler) {
+	handler_ = &handler;
 }
 
 void ClientConnection::set_on_disconnect(OnDisconnect on_disconnect) {

@@ -27,18 +27,17 @@ private:
 public:
 	Client(ClientHandlerBuilder ch_builder, ClientConnectionBuilder cc_builder, tcp_socket socket, std::size_t index)
 		: handler_(ch_builder.create(index, socket.get_executor()))
-		, connection_(cc_builder.create(std::move(socket))) {
-		handler_.set_connection(&connection_);
-		connection_.set_handler(&handler_);
-	}
+		, connection_(cc_builder.create(std::move(socket))) {}
 
 	~Client() {
 		stop();
 	}
 
 	void start() {
-		connection_.start();
-		handler_.start();
+		// Referencing each other like this is fine because they won't start running umtil we return given
+		// that this should be called on the same thread
+		handler_.start(connection_);
+		connection_.start(handler_);
 	}
 
 	void stop() {

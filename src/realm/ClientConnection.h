@@ -81,13 +81,14 @@ private:
 	bool write_packet_stream(const protocol::is_packet auto& packet);
 	std::size_t minimum_transfer() const;
 	void close_session();
+	void set_handler(ClientHandler& handler);
 
 public:
 	ClientConnection(tcp_socket socket, log::Logger& logger);
 	~ClientConnection();
 
 	// session management
-	void start();
+	void start(ClientHandler& handler);
 	void stop();
 
 	void send(const protocol::is_packet auto& packet);
@@ -104,7 +105,6 @@ public:
 	void packet_log_stop();
 	bool packet_logging() const;
 
-	void set_handler(ClientHandler* handler);
 	void set_on_disconnect(OnDisconnect on_disconnect);
 
 	friend class ClientHandler;
