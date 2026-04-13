@@ -25,7 +25,17 @@ private:
 	ClientConnection connection_;
 
 public:
-	Client(ClientHandlerBuilder ch_builder, ClientConnectionBuilder cc_builder, tcp_socket socket, std::size_t index)
+	/*
+	 * We're referencing builders rather than moving the objects in because they're non-movable types
+	 * and making them safely movable under *all* conditions isn't worth the additional complexity and
+	 * performance penalties we'd have to pay - fast event dispatching would no longer play nicely with
+	 * RPC and we don't want to allocate the objects individually.
+	 * 
+	 * They'd safe to move as long as it's done before calling start but it's best not to add the ability
+	 * at all unless it's always safe to do so.
+ 	 */
+	Client(const ClientHandlerBuilder& ch_builder, const ClientConnectionBuilder& cc_builder,
+	       tcp_socket socket, std::size_t index)
 		: handler_(ch_builder.create(index, socket.get_executor()))
 		, connection_(cc_builder.create(std::move(socket))) {}
 

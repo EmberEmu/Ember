@@ -24,7 +24,7 @@ public:
 		, dispatcher_(dispatcher)
 		, logger_(logger) {}
 
-	ClientHandler create(std::size_t index, executor executor) {
+	ClientHandler create(std::size_t index, executor executor) const {
 		return ClientHandler(
 			index, builder_.create(executor), dispatcher_, logger_
 		);
