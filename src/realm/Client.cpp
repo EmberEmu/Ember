@@ -101,6 +101,7 @@ void Client::handle_event(const Event& event) {
 }
 
 void Client::start() {
+	assert(!running_);
 	// Referencing each other like this is fine because they won't start running until we return
 	// - that's assuming we're running on the same Asio worker, which we really should be
 	handler_.start(connection_);
@@ -109,6 +110,10 @@ void Client::start() {
 }
 
 void Client::stop() {
+	if(!running_) {
+		return;
+	}
+
 	dispatcher_.remove_client(this);
 	handler_.stop();
 	connection_.stop();
