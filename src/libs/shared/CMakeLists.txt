@@ -81,8 +81,8 @@ set(UTIL_SRC
     shared/utility/HashDefines.h
     shared/utility/CommandExecutor.h
     shared/utility/cstring_view.hpp
-    shared/utility/TickClock.h
-    shared/utility/TickClock.cpp
+    shared/utility/TickCount.h
+    shared/utility/TickCount.cpp
 )
 
 set(METRICS_SRC

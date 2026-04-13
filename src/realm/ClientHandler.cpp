@@ -18,7 +18,7 @@
 #include <protocol/Deserialise.h>
 #include <protocol/Packets.h>
 #include <shared/Realm.h>
-#include <shared/utility/TickClock.h>
+#include <shared/utility/TickCount.h>
 #include <utility>
 
 namespace ember::realm {
