@@ -19,7 +19,6 @@
 #include <protocol/Packets.h>
 #include <shared/Realm.h>
 #include <shared/utility/TickClock.h>
-#include <format>
 #include <utility>
 
 namespace ember::realm {
