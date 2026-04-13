@@ -11,9 +11,9 @@
 #include "Events.h"
 #include "FilterTypes.h"
 #include "ClientConnection.h"
+#include "ClientContext.h"
 #include "ClientSink.h"
 #include "ConnectionDefines.h"
-#include "states/ClientContext.h"
 #include "states/ClientStates.h"
 #include <logger/LoggerFwd.h>
 #include <protocol/client/Ping.h>

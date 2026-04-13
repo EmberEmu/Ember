@@ -7,7 +7,7 @@
  */
 
 #include "WorldEnter.h"
-#include "ClientContext.h"
+#include "../ClientContext.h"
 #include "../ClientHandler.h"
 #include "../ClientConnection.h"
 #include "../RealmQueue.h"

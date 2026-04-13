@@ -43,7 +43,6 @@ set(LIBRARY_HDR
     states/World.h
     states/SessionClose.h
     states/WorldTransfer.h
-    states/ClientContext.h
     states/StateJumpTables.h
     states/AuthenticationContext.h
     states/WorldEnter.h
@@ -76,6 +75,7 @@ set(LIBRARY_HDR
     commands/Messaging.h
     commands/Set.h
     ClientContextBuilder.h
+    ClientContext.h
 )
 
 set(LIBRARY_SRC
@@ -98,7 +98,6 @@ set(LIBRARY_SRC
     states/World.cpp
     states/SessionClose.cpp
     states/WorldEnter.cpp
-    states/ClientContext.cpp
     packet_log/PacketLogger.cpp
     packet_log/FlatbuffersSink.cpp
     packet_log/LogSink.cpp
@@ -110,6 +109,7 @@ set(LIBRARY_SRC
     commands/Connections.cpp
     commands/Messaging.cpp
     commands/Set.cpp
+    ClientContext.cpp
 )
 
 add_library(${LIBRARY_NAME} ${SERVICE_LIB_LINKAGE} 

@@ -7,7 +7,7 @@
  */
 
 #include "World.h"
-#include "ClientContext.h"
+#include "../ClientContext.h"
 #include "../Events.h"
 #include "../Routing.h"
 #include "../FilterTypes.h"

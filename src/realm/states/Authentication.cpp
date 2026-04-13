@@ -7,9 +7,9 @@
  */
 
 #include "Authentication.h"
-#include "ClientContext.h"
 #include "../AccountClient.h"
 #include "../ClientConnection.h"
+#include "../ClientContext.h"
 #include "../ClientHandler.h"
 #include "../ClientLogHelper.h"
 #include "../ConfigStore.h"

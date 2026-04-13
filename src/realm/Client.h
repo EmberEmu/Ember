@@ -31,8 +31,8 @@ public:
 	 * performance penalties we'd have to pay - fast event dispatching would no longer play nicely with
 	 * RPC and we don't want to allocate the objects individually.
 	 * 
-	 * They'd safe to move as long as it's done before calling start but it's best not to add the ability
-	 * at all unless it's always safe to do so.
+	 * They'd be safe to move as long as it's done before calling start but it's best not to add the ability
+	 * at all unless it's always safe to do so. I did it and promptly undid it. Trust me, bro.
  	 */
 	Client(const ClientHandlerBuilder& ch_builder, const ClientConnectionBuilder& cc_builder,
 	       tcp_socket socket, std::size_t index)

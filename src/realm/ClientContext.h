@@ -8,13 +8,13 @@
 
 #pragma once
 
-#include "ClientStates.h"
-#include "AuthenticationContext.h"
-#include "WorldEnterContext.h"
-#include "../ClientConnection.h"
-#include "../ClientLogHelper.h"
-#include "../ConnectionDefines.h"
-#include "../Forwards.h"
+#include "states/ClientStates.h"
+#include "states/AuthenticationContext.h"
+#include "states/WorldEnterContext.h"
+#include "ClientConnection.h"
+#include "ClientLogHelper.h"
+#include "ConnectionDefines.h"
+#include "Forwards.h"
 #include <protocol/Concepts.h>
 #include <protocol/StreamResult.h>
 #include <logger/Logger.h>
