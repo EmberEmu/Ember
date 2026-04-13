@@ -72,7 +72,7 @@ class ClientHandler final {
 	void set_connection(ClientConnection& connection);
 
 public:
-	ClientHandler(std::size_t index, ClientContext context, EventDispatcher& dispatcher, log::Logger& logger);
+	ClientHandler(std::size_t index, ClientContext context, log::Logger& logger);
 	~ClientHandler();
 
 	void start(ClientConnection& connection);

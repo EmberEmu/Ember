@@ -247,7 +247,7 @@ void Service::initialise(const opts::variables_map& args) try {
 	);
 
 	ClientConnectionBuilder cc_builder(logger);
-	ClientHandlerBuilder ch_builder(ctx_builder, *ctx->dispatcher, logger);
+	ClientHandlerBuilder ch_builder(ctx_builder, logger);
 	ClientBuilder builder(ch_builder, cc_builder);
 
 	// Start network listener

@@ -289,7 +289,7 @@ void ClientHandler::set_connection(ClientConnection& connection) {
 	context_.connection(connection);
 }
 
-ClientHandler::ClientHandler(std::size_t index, ClientContext context, EventDispatcher& dispatcher, log::Logger& logger)
+ClientHandler::ClientHandler(std::size_t index, ClientContext context, log::Logger& logger)
 	: context_(std::move(context))
 	, state_(ClientState::cs_session_closed)
 	, connection_(nullptr)
