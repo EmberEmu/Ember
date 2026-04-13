@@ -34,8 +34,8 @@ public:
 	}
 
 	void start() {
-		// Referencing each other like this is fine because they won't start running umtil we return given
-		// that this should be called on the same thread
+		// Referencing each other like this is fine because they won't start running until we return
+		// - that's assuming we're running on the same Asio worker, which we really should be
 		handler_.start(connection_);
 		connection_.start(handler_);
 	}
