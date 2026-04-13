@@ -35,18 +35,9 @@ public:
 		, logger_(logger) {}
 
 	ClientContext create(ClientHandler& handler) const {
-		return ClientContext {
-			.handler = handler,
-			.connection = nullptr,
-			.cfg_store = cfg_store_,
-			.dispatcher = dispatcher_,
-			.queue = queue_,
-			.account_rpc = account_rpc_,
-			.character_rpc = character_rpc_,
-			.realm_rpc = realm_rpc_,
-			.logger = logger_,
-			.stream = nullptr
-		};
+		return ClientContext(
+			handler, cfg_store_, dispatcher_, queue_, account_rpc_, character_rpc_, realm_rpc_, logger_
+		);
 	}
 };
 

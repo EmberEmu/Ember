@@ -25,7 +25,7 @@
 
 namespace ember::realm { 
 
-struct ClientContext;
+class ClientContext;
 struct Event;
 
 using state_func = void(*)(ClientContext&);

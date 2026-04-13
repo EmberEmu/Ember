@@ -15,6 +15,7 @@
 #include "packet_log/PacketLogger.h"
 #include "SocketType.h"
 #include <logger/LoggerFwd.h>
+#include <protocol/Concepts.h>
 #include <shared/ClientIdent.h>
 #include <shared/memory/AsioAllocator.h>
 #include <boost/asio/ip/tcp.hpp>
@@ -77,7 +78,7 @@ private:
 	void dispatch_message();
 
 	void log_packet();
-	bool write_packet_stream(const is_packet auto& packet);
+	bool write_packet_stream(const protocol::is_packet auto& packet);
 	std::size_t minimum_transfer() const;
 	void close_session();
 
@@ -89,7 +90,7 @@ public:
 	void start();
 	void stop();
 
-	void send(const is_packet auto& packet);
+	void send(const protocol::is_packet auto& packet);
 	void send(std::span<const std::uint8_t> packet);
 
 	void set_key(std::span<const std::uint8_t> key);

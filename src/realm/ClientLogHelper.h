@@ -12,25 +12,25 @@
 #include <logger/HelperMacros.h>
 
 #define PACKET_TRACE(ctx, fmt_str, ...) \
-	LOG_FTRACE(ctx.logger, log::Filter(lf_packet_trace), "{}: " fmt_str, ctx.handler.client_identify(), ##__VA_ARGS__)
+	LOG_FTRACE(ctx.logger, log::Filter(lf_packet_trace), "{}: " fmt_str, ctx.client_identify(), ##__VA_ARGS__)
 
 #define CLIENT_TRACE(ctx, fmt_str, ...) \
-	LOG_TRACE(ctx.logger, "{}: " fmt_str, ctx.handler.client_identify(), ##__VA_ARGS__)
+	LOG_TRACE(ctx.logger, "{}: " fmt_str, ctx.client_identify(), ##__VA_ARGS__)
 
 #define CLIENT_DEBUG(ctx, fmt_str, ...) \
-	LOG_DEBUG(ctx.logger, "{}: " fmt_str, ctx.handler.client_identify(), ##__VA_ARGS__)
+	LOG_DEBUG(ctx.logger, "{}: " fmt_str, ctx.client_identify(), ##__VA_ARGS__)
 
 #define CLIENT_INFO(ctx, fmt_str, ...) \
-	LOG_INFO(ctx.logger, "{}: " fmt_str, ctx.handler.client_identify(), ##__VA_ARGS__)
+	LOG_INFO(ctx.logger, "{}: " fmt_str, ctx.client_identify(), ##__VA_ARGS__)
 
 #define CLIENT_WARN(ctx, fmt_str, ...) \
-    LOG_WARN(ctx.logger, "{}: " fmt_str, ctx.handler.client_identify(), ##__VA_ARGS__)
+    LOG_WARN(ctx.logger, "{}: " fmt_str, ctx.client_identify(), ##__VA_ARGS__)
 
 #define CLIENT_ERROR(ctx, fmt_str, ...) \
-	LOG_ERROR(ctx.logger, "{}: " fmt_str, ctx.handler.client_identify(), ##__VA_ARGS__)
+	LOG_ERROR(ctx.logger, "{}: " fmt_str, ctx.client_identify(), ##__VA_ARGS__)
 
 #define CLIENT_FATAL(ctx, fmt_str, ...) \
-	LOG_FATAL(ctx.logger, "{}: " fmt_str, ctx.handler.client_identify(), ##__VA_ARGS__)
+	LOG_FATAL(ctx.logger, "{}: " fmt_str, ctx.client_identify(), ##__VA_ARGS__)
 
 #define CLIENT_TRACE_GLOB(ctx, fmt_str, ...) \
 	CLIENT_TRACE(ember::log::global_ctx.logger(), ctx, ##__VA_ARGS__)

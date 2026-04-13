@@ -17,7 +17,8 @@
 #include "states/ClientStates.h"
 #include <logger/LoggerFwd.h>
 #include <protocol/client/Ping.h>
-#include <protocol/Packet.h>
+#include <protocol/Concepts.h>
+#include <protocol/StreamResult.h>
 #include <shared/ClientIdent.h>
 #include <spark/buffers/BinaryStream.h>
 #include <boost/asio/steady_timer.hpp>
@@ -61,19 +62,21 @@ class ClientHandler final {
 	std::chrono::milliseconds last_tick_;
 	unsigned int timer_events_;
 
-	mutable std::string client_id_;
-	mutable std::string client_id_ext_;
-
 	bool validate_ping(const protocol::client::Ping& ping);
 	void handle_ping(BinaryStream& stream);
 	void handle_timer();
+	void state_update(ClientState new_state);
 	bool ping_sent_check();
 	bool pps_flood_check();
 	bool handle_self_event(const Event& event);
 	void packet_log_start();
-
+	
 	void start_timer(const std::chrono::milliseconds& time);
 	void cancel_timer();
+
+	void send(protocol::is_packet auto& packet);
+	void skip(BinaryStream& stream);
+	void stream_err(const protocol::StreamResult& result);
 
 public:
 	ClientHandler(std::size_t index, executor executor, ClientContextBuilder& builder, 
@@ -83,23 +86,14 @@ public:
 	void set_connection(ClientConnection* connection) {
 		assert(connection);
 		connection_ = connection;
-		context_.connection = connection;
+		context_.connection(*connection);
 	}
 
 	void start();
 	void stop();
-	void close();
 	
 	std::string_view client_identify() const;
 
-	template<is_packet PacketType>
-	std::optional<PacketType> deserialise(BinaryStream& stream);
-
-	void send(is_packet auto& packet);
-	bool deserialise(is_packet auto& packet, BinaryStream& stream);
-	void skip(BinaryStream& stream);
-
-	void state_update(ClientState new_state);
 	void handle_message(BinaryStream& stream);
 	void handle_event(const Event& event);
 

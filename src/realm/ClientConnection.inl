@@ -14,7 +14,7 @@
 
 namespace ember::realm {
 
-template<is_packet PacketType>
+template<protocol::is_packet PacketType>
 bool ClientConnection::write_packet_stream(const PacketType& packet) {
 	using SizeType = typename PacketType::SizeType;
 
@@ -41,7 +41,7 @@ bool ClientConnection::write_packet_stream(const PacketType& packet) {
 	return true;
 }
 
-void ClientConnection::send(const is_packet auto& packet) {
+void ClientConnection::send(const protocol::is_packet auto& packet) {
 	// we're in a bad state if writing fails, we can't recover
 	if(!write_packet_stream(packet)) [[unlikely]] {
 		LOG_WARN(logger_, "Failed to write packet to stream");

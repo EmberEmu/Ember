@@ -18,8 +18,7 @@
 #include "../Events.h"
 #include "../RealmQueue.h"
 #include <logger/Logger.h>
-#include <protocol/Opcodes.h>
-#include <protocol/PacketHeaders.h>
+#include <protocol/Deserialise.h>
 #include <protocol/Packets.h>
 #include <spark/buffers/pmr/Buffer.h>
 #include <shared/game/GameVersion.h>
@@ -70,8 +69,8 @@ void handle_authentication(ClientContext& ctx) {
 
 	auto& auth_ctx = std::get<Context>(ctx.state_ctx);
 
-	if(!ctx.handler.deserialise(auth_ctx.packet, *ctx.stream)) {
-		return;
+	if(auto result = protocol::deserialise(auth_ctx.packet, ctx.stream()); !result) {
+		return ctx.stream_err(result);
 	}
 
 	CLIENT_DEBUG(ctx, "Received session proof for {}", auth_ctx.packet->username);
@@ -85,7 +84,7 @@ void handle_authentication(ClientContext& ctx) {
 	if(!build_res) {
 		CLIENT_DEBUG(ctx, "Build validation failed for {}", auth_ctx.packet->username);
 		auth_state(ctx, State::failed);
-		ctx.handler.close();
+		ctx.state_update(ClientState::cs_session_closed);
 		return;
 	}
 
@@ -117,7 +116,7 @@ void handle_account_id(ClientContext& ctx, const AccountIDResponse& event) {
 		);
 
 		auth_state(ctx, State::failed);
-		ctx.handler.close();
+		ctx.state_update(ClientState::cs_session_closed);
 		return;
 	}
 
@@ -127,7 +126,7 @@ void handle_account_id(ClientContext& ctx, const AccountIDResponse& event) {
 	} else {
 		CLIENT_DEBUG(ctx, "Account ID lookup for failed for {}", auth_ctx.packet->username);
 		auth_state(ctx, State::failed);
-		ctx.handler.close();
+		ctx.state_update(ClientState::cs_session_closed);
 	}
 }
 
@@ -155,7 +154,7 @@ void handle_session_key(ClientContext& ctx, const SessionKeyResponse& event) {
 		prove_session(ctx, event.key);
 	} else {
 		auth_state(ctx, State::failed);
-		ctx.handler.close();
+		ctx.state_update(ClientState::cs_session_closed);
 	}
 }
 
@@ -186,11 +185,11 @@ void prove_session(ClientContext& ctx, const Botan::BigInt& key) {
 	if(!digest::validate(params, auth_ctx.packet->digest)) {
 		CLIENT_DEBUG(ctx, "Received bad digest for {}", auth_ctx.packet->username);
 		auth_state(ctx, State::failed);
-		ctx.handler.close(); // key mismatch, client can't decrypt response
+		ctx.state_update(ClientState::cs_session_closed); // key mismatch, client can't decrypt response
 		return;
 	}
 
-	ctx.connection->set_key(k_bytes);
+	ctx.set_key(k_bytes);
 
 	ctx.client_id = ClientID { 
 		.id = auth_ctx.account_id,
@@ -217,7 +216,7 @@ void send_auth_challenge(ClientContext& ctx) {
 	auto& auth_ctx = std::get<Context>(ctx.state_ctx);
 	protocol::smsg_auth_challenge response;
 	response->seed = auth_ctx.seed = gsl::narrow_cast<std::uint32_t>(rng::xorshift::next());
-	ctx.handler.send(response);
+	ctx.send(response);
 }
 
 void send_addon_data(ClientContext& ctx) {
@@ -245,7 +244,7 @@ void send_addon_data(ClientContext& ctx) {
 		response->addon_data.emplace_back(std::move(data));
 	}
 
-	ctx.handler.send(response);
+	ctx.send(response);
 }
 
 void auth_queue(ClientContext& ctx) {
@@ -267,7 +266,7 @@ void auth_success(ClientContext& ctx) {
 	send_auth_result(ctx, protocol::Result::auth_ok);
 	send_addon_data(ctx);
 	auth_state(ctx, State::success);
-	ctx.handler.state_update(ClientState::cs_character_list);
+	ctx.state_update(ClientState::cs_character_list);
 
 	CLIENT_DEBUG(ctx, "Authenticated as {}", ctx.client_id->username);
 }
@@ -277,7 +276,7 @@ void send_auth_result(ClientContext& ctx, protocol::Result result) {
 
 	protocol::smsg_auth_response response;
 	response->result = result;
-	ctx.handler.send(response);
+	ctx.send(response);
 }
 
 void handle_queue_update(ClientContext& ctx, const QueuePosition& event) {
@@ -286,7 +285,7 @@ void handle_queue_update(ClientContext& ctx, const QueuePosition& event) {
 	protocol::smsg_auth_response packet;
 	packet->result = protocol::Result::auth_wait_queue;
 	packet->queue_position = gsl::narrow_cast<std::uint32_t>(event.position);
-	ctx.handler.send(packet);
+	ctx.send(packet);
 }
 
 void handle_queue_success(ClientContext& ctx) {
@@ -296,7 +295,7 @@ void handle_queue_success(ClientContext& ctx) {
 
 void handle_timeout(ClientContext& ctx) {
 	CLIENT_DEBUG(ctx, "Authentication timed out");
-	ctx.handler.close();
+	ctx.state_update(ClientState::cs_session_closed);
 }
 
 void enter(ClientContext& ctx) {

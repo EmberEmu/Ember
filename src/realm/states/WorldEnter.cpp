@@ -13,6 +13,7 @@
 #include "../RealmQueue.h"
 #include <commands/Utility.h>
 #include <logger/CommandSink.h>
+#include <protocol/Deserialise.h>
 #include <protocol/Packets.h>
 #include <chrono>
 #include <format>
@@ -52,7 +53,7 @@ void initiate_player_login(ClientContext& ctx, const PlayerLogin& event) {
 
 	protocol::smsg_trigger_cinematic cinematic;
 	cinematic->id = 81;
-	ctx.handler.send(cinematic);
+	ctx.send(cinematic);
 
 	protocol::smsg_login_verify_world verify_world;
 	verify_world->map_id = 0;
@@ -60,28 +61,28 @@ void initiate_player_login(ClientContext& ctx, const PlayerLogin& event) {
 	verify_world->position.y = 331.033f;
 	verify_world->position.z = 382.758;
 	verify_world->position.o = 0.f;
-	ctx.handler.send(verify_world);
+	ctx.send(verify_world);
 
 	protocol::smsg_tutorial_flags tutorial_flags;
-	ctx.handler.send(tutorial_flags);
+	ctx.send(tutorial_flags);
 
 	protocol::smsg_update_object update_object;
-	ctx.handler.send(update_object);
+	ctx.send(update_object);
 
 	protocol::smsg_login_settimespeed time_speed;
 	time_speed->speed = 0.01666667f;
 	time_speed->time = get_time();
-	ctx.handler.send(time_speed);
+	ctx.send(time_speed);
 
 	protocol::smsg_account_data_times adt;
-	ctx.handler.send(adt);
+	ctx.send(adt);
 
 	/*protocol::smsg_weather weather;
 	weather->change = weather->INSTANT;
 	weather->grade = 1.f;
 	weather->type = weather->RAIN;
 	weather->sound_id = 8535;
-	ctx.handler.send(weather);*/
+	ctx.send(weather);*/
 
 	protocol::smsg_messagechat motd;
 	motd->language = 0;
@@ -89,7 +90,7 @@ void initiate_player_login(ClientContext& ctx, const PlayerLogin& event) {
 	motd->message = "Welcome to a hacked together Ember test.";
 	motd->player_guid = 0;
 	motd->player_tag = protocol::server::TAG_NONE;
-	ctx.handler.send(motd);
+	ctx.send(motd);
 }
 
 void enter(ClientContext& ctx) {
@@ -99,107 +100,107 @@ void enter(ClientContext& ctx) {
 void handle_name_query(ClientContext& ctx) {
 	message_view<protocol::cmsg_name_query> packet;
 
-	if(!ctx.handler.deserialise(packet, *ctx.stream)) {
-		return;
+	if(auto result = protocol::deserialise(packet, ctx.stream()); !result) {
+		return ctx.stream_err(result);
 	}
 
 	protocol::smsg_name_query_response response{};
 	response->name = "Chaosvex";
 	response->guid = packet->guid;
-	ctx.handler.send(response);
+	ctx.send(response);
 }
 
 void handle_active_mover(ClientContext& ctx) {
 	message_view<protocol::cmsg_set_active_mover> packet;
 
-	if(!ctx.handler.deserialise(packet, *ctx.stream)) {
-		return;
+	if(auto result = protocol::deserialise(packet, ctx.stream()); !result) {
+		return ctx.stream_err(result);
 	}
 }
 
 void handle_query_time(ClientContext& ctx) {
 	protocol::cmsg_query_time packet;
 
-	if(!ctx.handler.deserialise(packet, *ctx.stream)) {
-		return;
+	if(auto result = protocol::deserialise(packet, ctx.stream()); !result) {
+		return ctx.stream_err(result);
 	}
 
 	protocol::smsg_query_time_response response;
 	response->time = get_time();
-	ctx.handler.send(response);
+	ctx.send(response);
 }
 
 void handle_request_raid_info(ClientContext& ctx) {
 	protocol::cmsg_request_raid_info packet;
 
-	if(!ctx.handler.deserialise(packet, *ctx.stream)) {
-		return;
+	if(auto result = protocol::deserialise(packet, ctx.stream()); !result) {
+		return ctx.stream_err(result);
 	}
 
 	protocol::smsg_raid_instance_info response;
-	ctx.handler.send(response);
+	ctx.send(response);
 }
 
 void handle_item_query(ClientContext& ctx) {
 	message_view<protocol::cmsg_item_query_single> packet;
 
-	if(!ctx.handler.deserialise(packet, *ctx.stream)) {
-		return;
+	if(auto result = protocol::deserialise(packet, ctx.stream()); !result) {
+		return ctx.stream_err(result);
 	}
 
 	protocol::smsg_item_query_single_response response;
 	response->item = packet->item;
-	ctx.handler.send(response);
+	ctx.send(response);
 }
 
 void handle_mail_query(ClientContext& ctx) {
 	protocol::msg_query_next_mail_time_c packet;
 
-	if(!ctx.handler.deserialise(packet, *ctx.stream)) {
-		return;
+	if(auto result = protocol::deserialise(packet, ctx.stream()); !result) {
+		return ctx.stream_err(result);
 	}
 
 	protocol::msg_query_next_mail_time_s response;
 	response->next_time = -1.f;
-	ctx.handler.send(response);
+	ctx.send(response);
 }
 
 void handle_gmticket_getticket(ClientContext& ctx) {
 	protocol::msg_query_next_mail_time_c packet;
 
-	if(!ctx.handler.deserialise(packet, *ctx.stream)) {
-		return;
+	if(auto result = protocol::deserialise(packet, ctx.stream()); !result) {
+		return ctx.stream_err(result);
 	}
 
 	protocol::smsg_gmticket_getticket response;
 	response->status = 0;
-	ctx.handler.send(response);
+	ctx.send(response);
 }
 
 void handle_battlefield_status(ClientContext& ctx) {
 	protocol::cmsg_battlefield_status packet;
 
-	if(!ctx.handler.deserialise(packet, *ctx.stream)) {
-		return;
+	if(auto result = protocol::deserialise(packet, ctx.stream()); !result) {
+		return ctx.stream_err(result);
 	}
 
 	protocol::smsg_battlefield_status response;
 	response->map = 0;
 	response->position = 0;
-	ctx.handler.send(response);
+	ctx.send(response);
 }
 
 void handle_meetingstone_info(ClientContext& ctx) {
 	message_view<protocol::cmsg_meetingstone_info> packet;
 
-	if(!ctx.handler.deserialise(packet, *ctx.stream)) {
-		return;
+	if(auto result = protocol::deserialise(packet, ctx.stream()); !result) {
+		return ctx.stream_err(result);
 	}
 
 	protocol::smsg_meetingstone_setqueue response;
 	response->area = 0;
 	response->status = 5;
-	ctx.handler.send(response);
+	ctx.send(response);
 }
 
 std::uint64_t packed_guid = 0;
@@ -207,8 +208,8 @@ std::uint64_t packed_guid = 0;
 void handle_move_time_skipped(ClientContext& ctx) {
 	message_view<protocol::cmsg_move_time_skipped> packet;
 
-	if(!ctx.handler.deserialise(packet, *ctx.stream)) {
-		return;
+	if(auto result = protocol::deserialise(packet, ctx.stream()); !result) {
+		return ctx.stream_err(result);
 	}
 
 	// squirrel this away :)
@@ -217,62 +218,62 @@ void handle_move_time_skipped(ClientContext& ctx) {
 	protocol::move_time_skipped_s response;
 	response->guid = packet->guid;
 	response->lag = packet->lag;
-	ctx.handler.send(response);
+	ctx.send(response);
 }
 
 void handle_move_fall_land(ClientContext& ctx) {
 	protocol::move_fall_land_c packet;
 
-	if(!ctx.handler.deserialise(packet, *ctx.stream)) {
-		return;
+	if(auto result = protocol::deserialise(packet, ctx.stream()); !result) {
+		return ctx.stream_err(result);
 	}
 
 	protocol::move_fall_land_s response;
 	response->guid = packed_guid;
 	response->info = packet->info;
-	ctx.handler.send(response);
+	ctx.send(response);
 }
 
 void handle_move_set_facing(ClientContext& ctx) {
 	protocol::move_set_facing_c packet;
 
-	if(!ctx.handler.deserialise(packet, *ctx.stream)) {
-		return;
+	if(auto result = protocol::deserialise(packet, ctx.stream()); !result) {
+		return ctx.stream_err(result);
 	}
 
 	protocol::msg_move_set_facing_s response;
 	response->guid = packed_guid;
 	response->info = packet->info;
-	ctx.handler.send(response);
+	ctx.send(response);
 }
 
 void handle_zone_update(ClientContext& ctx) {
 	message_view<protocol::cmsg_zone_update> packet;
 
-	if(!ctx.handler.deserialise(packet, *ctx.stream)) {
-		return;
+	if(auto result = protocol::deserialise(packet, ctx.stream()); !result) {
+		return ctx.stream_err(result);
 	}
 }
 
 void handle_update_account_data(ClientContext& ctx) {
 	message_view<protocol::cmsg_update_account_data> packet;
 
-	if(!ctx.handler.deserialise(packet, *ctx.stream)) {
-		return;
+	if(auto result = protocol::deserialise(packet, ctx.stream()); !result) {
+		return ctx.stream_err(result);
 	}
 }
 
 void handle_join_channel(ClientContext& ctx) {
 	message_view<protocol::cmsg_join_channel> packet;
 
-	if(!ctx.handler.deserialise(packet, *ctx.stream)) {
-		return;
+	if(auto result = protocol::deserialise(packet, ctx.stream()); !result) {
+		return ctx.stream_err(result);
 	}
 
 	protocol::smsg_channel_notify response;
 	response->type = response->YOU_JOINED_NOTICE;
 	response->name = packet->name;
-	ctx.handler.send(response);
+	ctx.send(response);
 
 	LOG_DEBUG(ctx.logger, "{}", response->name);
 }
@@ -280,8 +281,8 @@ void handle_join_channel(ClientContext& ctx) {
 void handle_tutorial_flag(ClientContext& ctx) {
 	protocol::cmsg_tutorial_flag packet;
 
-	if(!ctx.handler.deserialise(packet, *ctx.stream)) {
-		return;
+	if(auto result = protocol::deserialise(packet, ctx.stream()); !result) {
+		return ctx.stream_err(result);
 	}
 }
 
@@ -367,13 +368,13 @@ bool handle_command(ClientContext& ctx, std::string_view message) try {
 			return false;
 		}
 
-		if(!ctx.connection->packet_logging()) {
+		if(!ctx.packet_logging()) {
 			ctx.handler.log_redirect(type, severity);
 		} else {
 			protocol::smsg_notification resp;
 			resp->console = "Disable packet logging for yourself first - "
 			                "this would wipe out time, forwards and backwards";
-			ctx.handler.send(resp);
+			ctx.send(resp);
 			return false;
 		}
 
@@ -388,8 +389,8 @@ bool handle_command(ClientContext& ctx, std::string_view message) try {
 void handle_messagechat(ClientContext& ctx) {
 	message_view<protocol::cmsg_messagechat> packet;
 
-	if(!ctx.handler.deserialise(packet, *ctx.stream)) {
-		return;
+	if(auto result = protocol::deserialise(packet, ctx.stream()); !result) {
+		return ctx.stream_err(result);
 	}
 
 	LOG_DEBUG(ctx.logger, "{}: {}", packet->destination, packet->message);
@@ -398,7 +399,7 @@ void handle_messagechat(ClientContext& ctx) {
 		if(!handle_command(ctx, packet->message)) {
 			protocol::smsg_notification resp;
 			resp->console = "Could not execute command";
-			ctx.handler.send(resp);
+			ctx.send(resp);
 		}
 
 		return;
@@ -420,33 +421,33 @@ void handle_messagechat(ClientContext& ctx) {
 		response->speech_bubble_attr = packed_guid;
 	}
 
-	ctx.handler.send(response);
+	ctx.send(response);
 }
 
 void handle_logout_request(ClientContext& ctx) {
 	protocol::smsg_character_login_failed response;
 	response->reason = protocol::Result::char_login_no_world;
-	ctx.handler.send(response);
-	ctx.handler.state_update(ClientState::cs_character_list);
+	ctx.send(response);
+	ctx.state_update(ClientState::cs_character_list);
 }
 
 void handle_standstate_change(ClientContext& ctx) {
 	message_view<protocol::cmsg_standstatechange> packet;
 
-	if(!ctx.handler.deserialise(packet, *ctx.stream)) {
-		return;
+	if(auto result = protocol::deserialise(packet, ctx.stream()); !result) {
+		return ctx.stream_err(result);
 	}
 
 	protocol::smsg_standstate_update response;
 	response->state = packet->state;
-	ctx.handler.send(response);
+	ctx.send(response);
 }
 
 void handle_world_teleport(ClientContext& ctx) {
 	message_view<protocol::cmsg_world_teleport> packet;
 
-	if(!ctx.handler.deserialise(packet, *ctx.stream)) {
-		return;
+	if(auto result = protocol::deserialise(packet, ctx.stream()); !result) {
+		return ctx.stream_err(result);
 	}
 
 	LOG_DEBUG(ctx.logger, "Worldport, map: {}, x: {}, y: {}, z: {}, o: {}",
@@ -458,22 +459,22 @@ void handle_world_teleport(ClientContext& ctx) {
 	response->position.y = packet->y;
 	response->position.z = packet->z;
 	response->position.o = packet->o;
-	ctx.handler.send(response);
+	ctx.send(response);
 
 	protocol::smsg_update_object update_object;
-	ctx.handler.send(update_object);
+	ctx.send(update_object);
 
 }
 
 void handle_move_set_raw_position(ClientContext& ctx) {
 	message_view<protocol::cmsg_move_set_raw_position> packet;
 
-	if(!ctx.handler.deserialise(packet, *ctx.stream)) {
-		return;
+	if(auto result = protocol::deserialise(packet, ctx.stream()); !result) {
+		return ctx.stream_err(result);
 	}
 
 	protocol::msg_move_set_raw_position_ack response;
-	ctx.handler.send(response);
+	ctx.send(response);
 }
 
 // everything in this file is for testing only
@@ -552,7 +553,7 @@ void handle_packet(ClientContext& ctx, protocol::ClientOpcode opcode) {
 void system_notification(ClientContext& ctx, std::string_view message) {
 	protocol::smsg_notification packet;
 	packet->console = message;
-	ctx.handler.send(packet);
+	ctx.send(packet);
 }
 
 void log_msg(ClientContext& ctx, const LogRedirect& event) {
@@ -567,7 +568,7 @@ void log_msg(ClientContext& ctx, const LogRedirect& event) {
 	msg->message = event.message;
 	msg->player_guid = 0;
 	msg->player_tag = protocol::server::TAG_NONE;
-	ctx.handler.send(msg);
+	ctx.send(msg);
 }
 
 void system_msg(ClientContext& ctx, const SystemMessage& event) {
@@ -590,7 +591,7 @@ void system_msg(ClientContext& ctx, const SystemMessage& event) {
 
 	msg->player_guid = 0;
 	msg->player_tag = protocol::server::TAG_NONE;
-	ctx.handler.send(msg);
+	ctx.send(msg);
 }
 
 void handle_event(ClientContext& ctx, const Event& event) {

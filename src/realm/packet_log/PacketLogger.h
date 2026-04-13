@@ -47,7 +47,7 @@ public:
 		}
 	}
 
-	void log(const is_packet auto& packet, PacketDirection dir) {
+	void log(const protocol::is_packet auto& packet, PacketDirection dir) {
 		const auto time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
 		boost::container::small_vector<std::uint8_t, reserve_len> buffer;
 		spark::io::BufferAdaptor adaptor(buffer);

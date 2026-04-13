@@ -20,7 +20,7 @@
 #include "../RealmService.h"
 #include "../RealmQueue.h"
 #include <logger/Logger.h>
-#include <protocol/Opcodes.h>
+#include <protocol/Deserialise.h>
 #include <protocol/Packets.h>
 #include <shared/utility/UTF8String.h>
 #include <memory>
@@ -38,7 +38,7 @@ void send_character_list_fail(ClientContext& ctx) {
 	// displays an error dialogue on the client
 	protocol::smsg_char_create response;
 	response->result = protocol::Result::char_list_failed;
-	ctx.handler.send(response);
+	ctx.send(response);
 }
 
 void send_character_list(ClientContext& ctx, std::vector<Character> characters) {
@@ -46,7 +46,7 @@ void send_character_list(ClientContext& ctx, std::vector<Character> characters) 
 
 	protocol::smsg_char_enum response;
 	response->characters = std::move(characters);
-	ctx.handler.send(response);
+	ctx.send(response);
 }
 
 void send_character_rename(ClientContext& ctx, const CharRenameResponse& res) {
@@ -56,7 +56,7 @@ void send_character_rename(ClientContext& ctx, const CharRenameResponse& res) {
 	response->result = res.result;
 	response->id = res.character_id;
 	response->name = res.name;
-	ctx.handler.send(response);
+	ctx.send(response);
 }
 
 void character_rename(ClientContext& ctx) {
@@ -64,8 +64,8 @@ void character_rename(ClientContext& ctx) {
 
 	protocol::cmsg_char_rename packet;
 
-	if(!ctx.handler.deserialise(packet, *ctx.stream)) {
-		return;
+	if(auto result = protocol::deserialise(packet, ctx.stream()); !result) {
+		return ctx.stream_err(result);
 	}
 
 	const auto& uuid = ctx.handler.uuid();
@@ -107,7 +107,7 @@ void send_character_delete(ClientContext& ctx, const CharDeleteResponse& res) {
 
 	protocol::smsg_char_delete response;
 	response->result = res.result;
-	ctx.handler.send(response);
+	ctx.send(response);
 }
 
 void send_character_create(ClientContext& ctx, const CharCreateResponse& res) {
@@ -115,7 +115,7 @@ void send_character_create(ClientContext& ctx, const CharCreateResponse& res) {
 
 	protocol::smsg_char_create response;
 	response->result = res.result;
-	ctx.handler.send(response);
+	ctx.send(response);
 }
 
 void character_create(ClientContext& ctx) {
@@ -123,8 +123,8 @@ void character_create(ClientContext& ctx) {
 
 	protocol::cmsg_char_create packet;
 
-	if(!ctx.handler.deserialise(packet, *ctx.stream)) {
-		return;
+	if(auto result = protocol::deserialise(packet, ctx.stream()); !result) {
+		return ctx.stream_err(result);
 	}
 
 	const auto& uuid = ctx.handler.uuid();
@@ -140,8 +140,8 @@ void character_delete(ClientContext& ctx) {
 
 	protocol::cmsg_char_delete packet;
 
-	if(!ctx.handler.deserialise(packet, *ctx.stream)) {
-		return;
+	if(auto result = protocol::deserialise(packet, ctx.stream()); !result) {
+		return ctx.stream_err(result);
 	}
 
 	const auto& uuid = ctx.handler.uuid();
@@ -157,17 +157,17 @@ void player_login(ClientContext& ctx) {
 
 	protocol::cmsg_player_login packet;
 
-	if(!ctx.handler.deserialise(packet, *ctx.stream)) {
-		return;
+	if(auto result = protocol::deserialise(packet, ctx.stream()); !result) {
+		return ctx.stream_err(result);
 	}
 
 	ctx.dispatcher.post(ctx.handler.uuid(), PlayerLogin(packet->character_id));
-	ctx.handler.state_update(ClientState::cs_world_enter);
+	ctx.state_update(ClientState::cs_world_enter);
 }
 
 void handle_timeout(ClientContext& ctx) {
 	CLIENT_DEBUG(ctx, "Character list timed out");
-	ctx.handler.close();
+	ctx.state_update(ClientState::cs_session_closed);
 }
 
 void enter(ClientContext& ctx) {
@@ -190,11 +190,11 @@ void offline_response(ClientContext& ctx, protocol::ClientOpcode opcode) {
 	if(opcode == protocol::ClientOpcode::cmsg_player_login) {
 		protocol::smsg_character_login_failed response;
 		response->reason = protocol::Result::char_login_no_world;
-		ctx.handler.send(response);
+		ctx.send(response);
 	} else if(opcode != protocol::ClientOpcode::cmsg_cancel_trade) {
 		protocol::smsg_auth_response response;
 		response->result = protocol::Result::realm_list_realm_not_found;
-		ctx.handler.send(response);
+		ctx.send(response);
 	}
 }
 

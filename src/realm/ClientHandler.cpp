@@ -15,6 +15,7 @@
 #include "packet_log/Helper.h"
 #include "states/StateJumpTables.h"
 #include <logger/Logger.h>
+#include <protocol/Deserialise.h>
 #include <protocol/Packets.h>
 #include <shared/Realm.h>
 #include <shared/utility/TickClock.h>
@@ -35,14 +36,11 @@ void ClientHandler::stop() {
 
 	context_.dispatcher.remove_handler(this);
 	state_update(ClientState::cs_session_closed);
-}
-
-void ClientHandler::close() {
 	connection_->close_session();
 }
 
 void ClientHandler::handle_message(BinaryStream& stream) {
-	context_.stream = &stream;
+	context_.stream(stream);
 	protocol::ClientOpcode opcode;
 	stream >> opcode;
 
@@ -68,7 +66,7 @@ bool ClientHandler::handle_self_event(const Event& event) {
 
 	switch(event.type) {
 		case kick_self:
-			close();
+			stop();
 			return true;
 		case interval_timer_fire:
 			handle_timer();
@@ -94,7 +92,7 @@ void ClientHandler::handle_event(const Event& event) {
 
 void ClientHandler::handle_timer() {
 	if(!pps_flood_check() || !ping_sent_check()) {
-		close();
+		stop();
 	}
 }
 
@@ -119,12 +117,12 @@ void ClientHandler::handle_ping(BinaryStream& stream) {
 
 	protocol::cmsg_ping packet;
 
-	if(!deserialise(packet, stream)) {
-		return;
+	if(auto result = protocol::deserialise(packet, stream); !result) {
+		return stream_err(result);
 	}
 
 	if(!validate_ping(packet.payload)) {
-		close();
+		stop();
 		return;
 	}
 
@@ -140,7 +138,7 @@ void ClientHandler::start_timer(const std::chrono::milliseconds& time) {
 
 	timer_.async_wait([dispatcher, uuid = uuid_](const boost::system::error_code& ec) {
 		if(!ec) {
-			Event event{ EventType::timer_expired };
+			Event event { EventType::timer_expired };
 			dispatcher.post(uuid, event);
 		}
 	});
@@ -289,27 +287,17 @@ void ClientHandler::packet_log_start() {
 	connection_->packet_log_start(std::move(plogger));
 }
 
-/*
- * Helper that decides whether to print the IP address or username
- * and IP address in log outputs, based on whether authentication
- * has completed
- */
+void ClientHandler::stream_err(const protocol::StreamResult& result) {
+	CLIENT_DEBUG(context_, "Deserialisation error encountered, {}", result);
+
+	// this is the only one we'll try to recover from
+	if(result != protocol::StreamResult::unprocessed_data) {
+		stop();
+	}
+}
+
 std::string_view ClientHandler::client_identify() const {	
-	if(context_.client_id) {
-		if(client_id_ext_.empty()) {
-			client_id_ext_ = std::format(
-				"{} ({}, {})", client_id_, context_.client_id->username, context_.client_id->id
-			);
-		}
-
-		return client_id_ext_;
-	}
-
-	if(client_id_.empty()) [[unlikely]] {
-		client_id_ = connection_->remote_address();
-	}
-
-	return client_id_;
+	return context_.client_identify();
 }
 
 ClientHandler::ClientHandler(std::size_t index, executor executor, ClientContextBuilder& builder,
