@@ -22,7 +22,12 @@
 
 namespace ember::realm {
 
+template<typename T>
+concept is_event = std::derived_from<T, Event>;
+
 class EventDispatcher final {
+	using ClientType = Client;
+
 	using HandlerMap = boost::unordered_flat_map<
 		ClientIdent, Client*, boost::hash<ClientIdent>
 	>;
@@ -39,10 +44,10 @@ class EventDispatcher final {
 	log::Logger& logger_;
 
 	inline Client* locate_handler(const ClientIdent& client) const;
-	inline void dispatch(const std::derived_from<Event> auto& event) const;
+	inline void deliver(const is_event auto& event) const;
 
 #ifdef EMBER_FAST_DISPATCH_CACHE
-	bool try_insert(Client* handler, ClientIdent& ident);
+	bool try_insert(ClientType* handler, ClientIdent& ident);
 #endif
 
 public:
@@ -54,20 +59,24 @@ public:
 	void exec(const ClientIdent& client, auto work) const;
 
 	// post an event to a specific client, if it's still connected
-	auto post(const ClientIdent& client, std::derived_from<Event> auto event) const;
+	auto post(const ClientIdent& client, is_event auto event) const;
+
+	// dispatch an event to a specific client, if it's still connected
+	// if caller resides on same worker as client, event will be handled synchronously
+	auto dispatch(const ClientIdent& client, is_event auto event) const;
 
 	// post an event to a specific client, if it's still connected
 	void post(const ClientIdent& client, std::unique_ptr<Event> event) const;
 
 	// broadcasts an event to all handlers, across all service threads/workers
-	void broadcast(const std::derived_from<Event> auto& event) const;
+	void broadcast(const is_event auto& event) const;
 
 	// broadcasts an event to all handlers registered to the specified thread
-	void broadcast_worker(std::size_t index, std::derived_from<Event> auto event) const;
+	void broadcast_worker(std::size_t index, is_event auto event) const;
 
 	// broadcasts an event to all handlers registered with the worker residing on the current thread
-	// this should only be called from within a worker
-	void broadcast_self(std::derived_from<Event> auto event) const;
+	// has no effect if not called from within a worker
+	void broadcast_self(is_event auto event) const;
 
 	// broadcasts an event to all handlers, across all service threads
 	void broadcast(std::shared_ptr<const Event> event) const;

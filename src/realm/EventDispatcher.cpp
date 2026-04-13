@@ -85,7 +85,7 @@ void EventDispatcher::broadcast(std::vector<ClientIdent> clients, std::shared_pt
 void EventDispatcher::broadcast(std::shared_ptr<const Event> event) const {
 	for(auto& ioc : pool_.services()) {
 		boost::asio::dispatch(ioc, [&, event]() {
-			dispatch(*event.get());
+			deliver(*event.get());
 		});
 	}
 }
@@ -93,7 +93,7 @@ void EventDispatcher::broadcast(std::shared_ptr<const Event> event) const {
 #ifdef EMBER_FAST_DISPATCH_CACHE
 #pragma warning(push)
 #pragma warning(disable : 28020) // ignore false positive
-bool EventDispatcher::try_insert(Client* handler, ClientIdent& ident) {
+bool EventDispatcher::try_insert(ClientType* handler, ClientIdent& ident) {
 	assert(handler);
 
 	std::size_t index = rng::xorshift::next() & 0xfff;
@@ -122,7 +122,7 @@ bool EventDispatcher::try_insert(Client* handler, ClientIdent& ident) {
 #pragma warning(pop)
 #endif
 
-ClientIdent EventDispatcher::register_client(Client* client, std::size_t service_index) {
+ClientIdent EventDispatcher::register_client(ClientType* client, std::size_t service_index) {
 	assert(client);
 	ClientIdent ident(service_index);
 
@@ -134,7 +134,7 @@ ClientIdent EventDispatcher::register_client(Client* client, std::size_t service
 	return ident;
 }
 
-void EventDispatcher::remove_client(const Client* client) {
+void EventDispatcher::remove_client(const ClientType* client) {
 	assert(client);
 
 #ifdef EMBER_FAST_DISPATCH_CACHE

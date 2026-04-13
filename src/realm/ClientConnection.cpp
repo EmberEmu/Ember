@@ -73,7 +73,6 @@ void ClientConnection::completion_check() {
 
 void ClientConnection::dispatch_message() {
 	BinaryStream stream(inbound_buffer_, msg_size_);
-	LOG_WARN(logger_, "handler is at 0x{:x}", (std::uintptr_t)handler_);
 	handler_->handle_message(stream);
 }
 
@@ -230,7 +229,7 @@ void ClientConnection::stop() {
 
 void ClientConnection::close_session() {
 	Event event { EventType::request_stop_connection };
-	dispatcher_.post(ident_, event);
+	dispatcher_.dispatch(ident_, event);
 	stop();
 }
 
