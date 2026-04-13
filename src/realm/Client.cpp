@@ -9,7 +9,6 @@
 #include "Client.h"
 #include "EventDispatcher.h"
 #include <logger/Logger.h>
-#include <string_view>
 
 using namespace std::string_view_literals;
 
