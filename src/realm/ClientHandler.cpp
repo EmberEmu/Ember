@@ -42,7 +42,7 @@ void ClientHandler::handle_message(BinaryStream& stream) {
 
 	PACKET_TRACE(context_, "-> {}", opcode);
 	++packet_counter_;
-	CLIENT_DEBUG(context_, "sequence {}, this 0x{:x}", ping_sequence_, (std::uintptr_t)this);
+
 	// handle ping as a special case
 	if(opcode == protocol::ClientOpcode::cmsg_ping) {
 		handle_ping(stream);

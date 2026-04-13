@@ -18,7 +18,7 @@ inline void EventDispatcher::dispatch(const std::derived_from<Event> auto& event
 #ifdef EMBER_FAST_DISPATCH_CACHE
 	for(auto& entry : cache_) {
 		if(!entry.is_zero()) {
-			entry.extract_ptr<ClientHandler>()->handle_event(event);
+			entry.extract_ptr<Client>()->handle_event(event);
 		}
 	}
 #endif
