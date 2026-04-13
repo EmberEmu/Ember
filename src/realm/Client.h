@@ -68,9 +68,7 @@ public:
 		return ident_;
 	}
 
-	ClientConnection& connection();
 	const ClientConnection& connection() const;
-	ClientHandler& handler();
 	const ClientHandler& handler() const;
 };
 

@@ -125,16 +125,8 @@ void Client::on_close(OnClose on_close) {
 	close_fn_ = on_close;
 }
 
-ClientConnection& Client::connection() {
-	return connection_;
-}
-
 const ClientConnection& Client::connection() const {
 	return connection_;
-}
-
-ClientHandler& Client::handler() {
-	return handler_;
 }
 
 const ClientHandler& Client::handler() const {
