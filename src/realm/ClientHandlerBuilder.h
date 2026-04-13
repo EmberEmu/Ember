@@ -10,6 +10,7 @@
 
 #include "ClientHandler.h"
 #include "ClientContextBuilder.h"
+#include <shared/ClientIdent.h>
 
 namespace ember::realm {
 
@@ -22,10 +23,8 @@ public:
 		: builder_(builder)
 		, logger_(logger) {}
 
-	ClientHandler create(std::size_t index, executor executor) const {
-		return ClientHandler(
-			index, builder_.create(executor), logger_
-		);
+	ClientHandler create(ClientIdent ident, executor executor) const {
+		return ClientHandler(ident, builder_.create(executor), logger_);
 	}
 };
 

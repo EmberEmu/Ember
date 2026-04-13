@@ -246,9 +246,9 @@ void Service::initialise(const opts::variables_map& args) try {
 		*ctx->rpc_character, *ctx->rpc_realm, logger
 	);
 
-	ClientConnectionBuilder cc_builder(logger);
+	ClientConnectionBuilder cc_builder(*ctx->dispatcher, logger);
 	ClientHandlerBuilder ch_builder(ctx_builder, logger);
-	ClientBuilder builder(ch_builder, cc_builder);
+	ClientBuilder builder(ch_builder, cc_builder, *ctx->dispatcher, logger);
 
 	// Start network listener
 	SLOG_INFO(logger, "Starting network service on {}:{}...", interface, port);

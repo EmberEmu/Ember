@@ -14,11 +14,11 @@
 
 namespace ember::realm {
 
-inline void EventDispatcher::dispatch(const std::derived_from<Event> auto& event) const {
+inline void EventDispatcher::deliver(const is_event auto& event) const {
 #ifdef EMBER_FAST_DISPATCH_CACHE
 	for(auto& entry : cache_) {
 		if(!entry.is_zero()) {
-			entry.extract_ptr<ClientHandler>()->handle_event(event);
+			entry.extract_ptr<ClientType>()->handle_event(event);
 		}
 	}
 #endif
@@ -27,12 +27,12 @@ inline void EventDispatcher::dispatch(const std::derived_from<Event> auto& event
 	}
 }
 
-inline ClientHandler* EventDispatcher::locate_handler(const ClientIdent& client) const {
+inline Client* EventDispatcher::locate_handler(const ClientIdent& client) const {
 #ifdef EMBER_FAST_DISPATCH_CACHE
 	const auto slot = client.extract_slot();
 
 	if(slot != slot_npos) {
-		return cache_[slot] == client? client.extract_ptr<ClientHandler>() : nullptr;
+		return cache_[slot] == client? client.extract_ptr<ClientType>() : nullptr;
 	}
 #endif
 
@@ -62,7 +62,25 @@ void EventDispatcher::exec(const ClientIdent& client, auto work) const {
 	});
 }
 
-auto EventDispatcher::post(const ClientIdent& client, std::derived_from<Event> auto event) const {
+auto EventDispatcher::dispatch(const ClientIdent& client, is_event auto event) const {
+	auto service = pool_.get_if(client.service());
+
+	// bad service index encoded in the UUID
+	if(service == nullptr) {
+		LOG_ERROR(logger_, "Invalid service index, {}", client.service());
+		return;
+	}
+
+	boost::asio::dispatch(*service, [&, client, event = std::move(event)] {
+		if(auto handler = locate_handler(client)) {
+			handler->handle_event(event);
+		} else {
+			LOG_DEBUG(logger_, "Client disconnected, event discarded");
+		}
+	});
+}
+
+auto EventDispatcher::post(const ClientIdent& client, is_event auto event) const {
 	auto service = pool_.get_if(client.service());
 
 	// bad service index encoded in the UUID
@@ -80,17 +98,17 @@ auto EventDispatcher::post(const ClientIdent& client, std::derived_from<Event> a
 	});
 }
 
-void EventDispatcher::broadcast(const std::derived_from<Event> auto& event) const {
+void EventDispatcher::broadcast(const is_event auto& event) const {
 	for(auto i = 0u; i < pool_.size(); ++i) { // todo size_t literal when min. compiler bump
 		broadcast_worker(i, event);
 	}
 }
 
-void EventDispatcher::broadcast_self(std::derived_from<Event> auto event) const {
-	dispatch(event);
+void EventDispatcher::broadcast_self(is_event auto event) const {
+	deliver(event);
 }
 
-void EventDispatcher::broadcast_worker(std::size_t index, std::derived_from<Event> auto event) const {
+void EventDispatcher::broadcast_worker(std::size_t index, is_event auto event) const {
 	auto service = pool_.get_if(index);
 
 	// bad service index encoded in the UUID
@@ -100,7 +118,7 @@ void EventDispatcher::broadcast_worker(std::size_t index, std::derived_from<Even
 	}
 
 	boost::asio::post(*service, [&, event = std::move(event)]() {
-		dispatch(event);
+		deliver(event);
 	});
 }
 

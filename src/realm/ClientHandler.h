@@ -64,20 +64,21 @@ class ClientHandler final {
 	bool ping_sent_check();
 	bool pps_flood_check();
 	bool handle_self_event(const Event& event);
-	void packet_log_start();
-	
+
 	void send(protocol::is_packet auto& packet);
 	void skip(BinaryStream& stream);
 	void stream_err(const protocol::StreamResult& result);
 	void set_connection(ClientConnection& connection);
+	void request_stop();
 
 public:
-	ClientHandler(std::size_t index, ClientContext context, log::Logger& logger);
+	ClientHandler(const ClientIdent& ident, ClientContext context, log::Logger& logger);
 	~ClientHandler();
 
 	void start(ClientConnection& connection);
 	void stop();
 
+	const ClientIdent& uuid() const;
 	std::string_view client_identify() const;
 
 	void handle_message(BinaryStream& stream);
@@ -85,14 +86,6 @@ public:
 
 	void log_redirect(LogRedirect::Type type, log::Severity severity);
 	void log_redirect_stop();
-
-	ClientIdent& uuid() {
-		return uuid_;
-	}
-
-	const ClientIdent& uuid() const {
-		return uuid_;
-	}
 
 	ClientState state() const {
 		return state_;

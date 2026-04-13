@@ -12,7 +12,6 @@
 #include "Config.h"
 #include "ConfigStore.h"
 #include "EventDispatcher.h"
-#include "packet_log/Helper.h"
 #include "states/StateJumpTables.h"
 #include <logger/Logger.h>
 #include <protocol/Deserialise.h>
@@ -25,7 +24,6 @@ namespace ember::realm {
 
 void ClientHandler::start(ClientConnection& connection) {
 	set_connection(connection);
-	context_.dispatcher.register_handler(this);
 	state_update(ClientState::cs_authenticating);
 }
 
@@ -34,9 +32,7 @@ void ClientHandler::stop() {
 		return;
 	}
 
-	context_.dispatcher.remove_handler(this);
 	state_update(ClientState::cs_session_closed);
-	connection_->close_session();
 }
 
 void ClientHandler::handle_message(BinaryStream& stream) {
@@ -65,17 +61,8 @@ bool ClientHandler::handle_self_event(const Event& event) {
 	using enum EventType;
 
 	switch(event.type) {
-		case kick_self:
-			stop();
-			return true;
 		case interval_timer_fire:
 			handle_timer();
-			return true;
-		case packet_log_enable:
-			packet_log_start();
-			return true;
-		case packet_log_disable:
-			connection_->packet_log_stop();
 			return true;
 		default:
 			return false;
@@ -130,6 +117,12 @@ void ClientHandler::handle_ping(BinaryStream& stream) {
 	response->sequence_id = packet->sequence_id;
 	connection_->latency(packet->latency);
 	send(response);
+}
+
+void ClientHandler::request_stop() {
+	Event event { EventType::request_stop_handler };
+	context_.dispatcher.dispatch(uuid_, event);
+	stop();
 }
 
 /*
@@ -255,22 +248,6 @@ void ClientHandler::log_redirect_stop() {
 	redirect_sink_.reset();
 }
 
-void ClientHandler::packet_log_start() {
-	log_redirect_stop(); // avoid generating an infinite packet loop
-	const auto& realm = context_.cfg_store.config().realm.name;
-
-	auto plogger = create_packet_logger(
-		realm, connection_->remote_address(), uuid_.to_string(), logger_, false
-	);
-
-	if(!plogger) {
-		LOG_ERROR(logger_, "Packet logger creation failed!");
-		return;
-	}
-
-	connection_->packet_log_start(std::move(plogger));
-}
-
 void ClientHandler::stream_err(const protocol::StreamResult& result) {
 	CLIENT_DEBUG(context_, "Deserialisation error encountered, {}", result);
 
@@ -278,6 +255,10 @@ void ClientHandler::stream_err(const protocol::StreamResult& result) {
 	if(result != protocol::StreamResult::unprocessed_data) {
 		stop();
 	}
+}
+
+const ClientIdent& ClientHandler::uuid() const {
+	return uuid_;
 }
 
 std::string_view ClientHandler::client_identify() const {	
@@ -289,12 +270,12 @@ void ClientHandler::set_connection(ClientConnection& connection) {
 	context_.connection(connection);
 }
 
-ClientHandler::ClientHandler(std::size_t index, ClientContext context, log::Logger& logger)
+ClientHandler::ClientHandler(const ClientIdent& ident, ClientContext context, log::Logger& logger)
 	: context_(std::move(context))
 	, state_(ClientState::cs_session_closed)
 	, connection_(nullptr)
 	, logger_(logger)
-	, uuid_(index)
+	, uuid_(ident)
 	, packet_counter_(0)
 	, pps_violation_(0)
 	, ping_sequence_(0)

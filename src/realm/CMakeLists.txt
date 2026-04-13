@@ -110,6 +110,7 @@ set(LIBRARY_SRC
     commands/Messaging.cpp
     commands/Set.cpp
     ClientContext.cpp
+    Client.cpp
 )
 
 add_library(${LIBRARY_NAME} ${SERVICE_LIB_LINKAGE} 

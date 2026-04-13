@@ -9,18 +9,21 @@
 #pragma once
 
 #include "ClientConnection.h"
+#include "Forwards.h"
 
 namespace ember::realm {
 
 class ClientConnectionBuilder final {
 	log::Logger& logger_;
+	EventDispatcher& dispatcher_;
 
 public:
-	ClientConnectionBuilder(log::Logger& logger)
-		: logger_(logger) {}
+	ClientConnectionBuilder(EventDispatcher& dispatcher, log::Logger& logger)
+		: dispatcher_(dispatcher)
+		, logger_(logger) {}
 
-	ClientConnection create(tcp_socket socket) const {
-		return ClientConnection(std::move(socket), logger_);
+	ClientConnection create(tcp_socket socket, const ClientIdent& ident) const {
+		return ClientConnection(std::move(socket), ident, dispatcher_, logger_);
 	}
 };
 
