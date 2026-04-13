@@ -6,8 +6,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#pragma once
-
 #include "Client.h"
 #include "EventDispatcher.h"
 #include <logger/Logger.h>
