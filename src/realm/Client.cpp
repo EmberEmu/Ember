@@ -28,7 +28,7 @@ bool Client::handle_self_event(const Event& event) {
 
 	switch(event.type) {
 		case kick_self:
-			stop();
+			handle_kick();
 			return true;
 		case packet_log_enable:
 			packet_log_start();
@@ -46,13 +46,20 @@ bool Client::handle_self_event(const Event& event) {
 	}
 }
 
-void Client::handle_request_stop(EventType type) {
-	LOG_DEBUG(logger_, "Client {} signalled stop", component_name(type));
+void Client::handle_kick() {
+	LOG_DEBUG(logger_, "{}, kicking self", handler_.client_identify());
 	stop();
 	close_fn_();
 }
 
-std::string_view Client::component_name(EventType type) const {
+void Client::handle_request_stop(EventType type) {
+	LOG_DEBUG(logger_, "{}, {} requested stop",
+		handler_.client_identify(), stop_component_name(type));
+	stop();
+	close_fn_();
+}
+
+std::string_view Client::stop_component_name(EventType type) const {
 	using enum EventType;
 
 	switch(type) {

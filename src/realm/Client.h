@@ -34,6 +34,7 @@ private:
 	bool running_;
 
 	bool handle_self_event(const Event& event);
+	void handle_kick();
 	void handle_request_stop(EventType type);
 	void packet_log_start();
 	std::string_view stop_component_name(EventType type) const;
