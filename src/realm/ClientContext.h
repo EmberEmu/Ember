@@ -93,7 +93,7 @@ public:
 
 	// connection proxies
 	void set_key(std::span<const std::uint8_t> key);
-	bool packet_logging();
+	bool packet_logging() const;
 
 	inline void send(protocol::is_packet auto& packet) {
 		PACKET_TRACE((*this), "<- {}", packet.opcode);

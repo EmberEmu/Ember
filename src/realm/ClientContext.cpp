@@ -56,7 +56,7 @@ void ClientContext::set_key(std::span<const std::uint8_t> key) {
 	connection_->set_key(key);
 }
 
-bool ClientContext::packet_logging() {
+bool ClientContext::packet_logging() const {
 	return connection_->packet_logging();
 }
 
