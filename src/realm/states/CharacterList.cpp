@@ -68,7 +68,7 @@ void character_rename(ClientContext& ctx) {
 		return ctx.stream_err(result);
 	}
 
-	const auto& uuid = ctx.handler.uuid();
+	const auto& uuid = ctx.handler().uuid();
 	auto& dispatcher = ctx.dispatcher;
 
 	ctx.character_rpc.rename_character(ctx.client_id->id, packet->id, packet->name,
@@ -81,7 +81,7 @@ void character_rename(ClientContext& ctx) {
 void character_enumerate(const ClientContext& ctx) {
 	LOG_TRACE(ctx.logger, log_func);
 
-	const auto& uuid = ctx.handler.uuid();
+	const auto& uuid = ctx.handler().uuid();
 	auto& dispatcher = ctx.dispatcher;
 
 	ctx.character_rpc.retrieve_characters(ctx.client_id->id,
@@ -127,7 +127,7 @@ void character_create(ClientContext& ctx) {
 		return ctx.stream_err(result);
 	}
 
-	const auto& uuid = ctx.handler.uuid();
+	const auto& uuid = ctx.handler().uuid();
 	auto& dispatcher = ctx.dispatcher;
 
 	ctx.character_rpc.create_character(ctx.client_id->id, packet->character, [dispatcher, uuid](auto result) {
@@ -144,7 +144,7 @@ void character_delete(ClientContext& ctx) {
 		return ctx.stream_err(result);
 	}
 
-	const auto& uuid = ctx.handler.uuid();
+	const auto& uuid = ctx.handler().uuid();
 	auto& dispatcher = ctx.dispatcher;
 
 	ctx.character_rpc.delete_character(ctx.client_id->id, packet->id, [dispatcher, uuid](auto result) {
@@ -161,7 +161,7 @@ void player_login(ClientContext& ctx) {
 		return ctx.stream_err(result);
 	}
 
-	ctx.dispatcher.post(ctx.handler.uuid(), PlayerLogin(packet->character_id));
+	ctx.dispatcher.post(ctx.handler().uuid(), PlayerLogin(packet->character_id));
 	ctx.state_update(ClientState::cs_world_enter);
 }
 
@@ -254,7 +254,7 @@ void handle_event(ClientContext& ctx, const Event& event) {
 void exit(ClientContext& ctx) {
 	ctx.cancel_timer();
 
-	if(ctx.handler.state() == ClientState::cs_session_closed) {
+	if(ctx.handler().state() == ClientState::cs_session_closed) {
 		//--test;
 		ctx.queue.free_slot();
 	}

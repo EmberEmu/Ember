@@ -19,6 +19,8 @@
 #include <protocol/StreamResult.h>
 #include <logger/Logger.h>
 #include <shared/utility/UTF8String.h>
+#include <boost/asio/steady_timer.hpp>
+#include <chrono>
 #include <string>
 #include <span>
 #include <string_view>
@@ -45,10 +47,13 @@ struct ClientID {
 };
 
 class ClientContext {
-	BinaryStream* stream_;
+	BinaryStream* stream_ = nullptr;
+	ClientConnection* connection_ = nullptr;
+	ClientHandler* handler_ = nullptr;
+
+	boost::asio::steady_timer timer_;
 	mutable std::string client_id_str_;
 	mutable std::string client_id_ext_;
-	ClientConnection* connection_;
 
 	void connection(ClientConnection& connection) {
 		connection_ = &connection;
@@ -58,8 +63,12 @@ class ClientContext {
 		stream_ = &stream;
 	}
 
+	void set_handler(ClientHandler& handler) {
+		handler_ = &handler;
+	}
+
 public:
-	ClientContext(ClientHandler& handler, const ConfigStore& cfg_store, EventDispatcher& dispatcher,
+	ClientContext(executor& executor, const ConfigStore& cfg_store, EventDispatcher& dispatcher,
 	              RealmQueue& queue, AccountClient& account_rpc, CharacterClient& character_rpc,
 	              const RealmService& realm_rpc, log::Logger& logger);
 
@@ -70,9 +79,15 @@ public:
 		return *stream_;
 	}
 
-	// handler proxies
-	void start_timer(std::chrono::milliseconds time);
+	ClientHandler& handler() const {
+		assert(handler_);
+		return *handler_;
+	}
+
+	void start_timer(const std::chrono::milliseconds& time);
 	void cancel_timer();
+
+	// handler proxies
 	void stream_err(const protocol::StreamResult& result);
 	void state_update(ClientState state);
 
@@ -87,7 +102,6 @@ public:
 
 	StateContext state_ctx;
 	std::optional<ClientID> client_id;
-	ClientHandler& handler;
 	const ConfigStore& cfg_store;
 	EventDispatcher& dispatcher;
 	RealmQueue& queue;

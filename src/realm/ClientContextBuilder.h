@@ -23,7 +23,7 @@ class ClientContextBuilder final {
 	log::Logger& logger_;
 
 public:
-	ClientContextBuilder(const ConfigStore& cfg_store, EventDispatcher& dispatcher,	RealmQueue& queue,
+	ClientContextBuilder(const ConfigStore& cfg_store, EventDispatcher& dispatcher, RealmQueue& queue,
 	                     AccountClient& account_rpc, CharacterClient& character_rpc,
 	                     const RealmService& realm_rpc, log::Logger& logger)
 		: cfg_store_(cfg_store)
@@ -34,9 +34,9 @@ public:
 		, realm_rpc_(realm_rpc)
 		, logger_(logger) {}
 
-	ClientContext create(ClientHandler& handler) const {
+	ClientContext create(executor& executor) const {
 		return ClientContext(
-			handler, cfg_store_, dispatcher_, queue_, account_rpc_, character_rpc_, realm_rpc_, logger_
+			executor, cfg_store_, dispatcher_, queue_, account_rpc_, character_rpc_, realm_rpc_, logger_
 		);
 	}
 };

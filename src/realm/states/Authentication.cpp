@@ -95,7 +95,7 @@ void handle_authentication(ClientContext& ctx) {
 void fetch_account_id(const ClientContext& ctx, const utf8_string& username) {
 	LOG_TRACE(ctx.logger, log_func);
 
-	const auto& uuid = ctx.handler.uuid();
+	const auto& uuid = ctx.handler().uuid();
 	auto& dispatcher = ctx.dispatcher;
 
 	ctx.account_rpc.locate_account_id(username, [dispatcher, uuid](auto status, auto id) {
@@ -133,7 +133,7 @@ void handle_account_id(ClientContext& ctx, const AccountIDResponse& event) {
 void fetch_session_key(const ClientContext& ctx, const std::uint32_t account_id) {
 	LOG_TRACE(ctx.logger, log_func);
 
-	const auto& uuid = ctx.handler.uuid();
+	const auto& uuid = ctx.handler().uuid();
 	auto& dispatcher = ctx.dispatcher;
 		
 	ctx.account_rpc.locate_session(account_id, [dispatcher, uuid](auto status, auto key) {
@@ -250,7 +250,7 @@ void send_addon_data(ClientContext& ctx) {
 void auth_queue(ClientContext& ctx) {
 	LOG_TRACE(ctx.logger, log_func);
 
-	const auto& uuid = ctx.handler.uuid();
+	const auto& uuid = ctx.handler().uuid();
 	auto& dispatcher = ctx.dispatcher;
 
 	ctx.queue.enqueue(uuid);
@@ -343,7 +343,7 @@ void exit(ClientContext& ctx) {
 	const auto& auth_ctx = std::get<Context>(ctx.state_ctx);
 
 	if(auth_ctx.state == State::in_queue) {
-		ctx.queue.dequeue(ctx.handler.uuid());
+		ctx.queue.dequeue(ctx.handler().uuid());
 	} else {
 		ctx.cancel_timer();
 	}

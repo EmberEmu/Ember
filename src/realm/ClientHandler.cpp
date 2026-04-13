@@ -132,22 +132,6 @@ void ClientHandler::handle_ping(BinaryStream& stream) {
 	send(response);
 }
 
-void ClientHandler::start_timer(const std::chrono::milliseconds& time) {
-	timer_.expires_after(time);
-	auto& dispatcher = context_.dispatcher;
-
-	timer_.async_wait([dispatcher, uuid = uuid_](const boost::system::error_code& ec) {
-		if(!ec) {
-			Event event { EventType::timer_expired };
-			dispatcher.post(uuid, event);
-		}
-	});
-}
-
-void ClientHandler::cancel_timer() {
-	timer_.cancel_one();
-}
-
 /*
  * Ensures the client does not flood the server with a rate of packets that's
  * unlikely to have been generated through normal play. This can be tripped
@@ -300,21 +284,21 @@ std::string_view ClientHandler::client_identify() const {
 	return context_.client_identify();
 }
 
-ClientHandler::ClientHandler(std::size_t index, executor executor, ClientContextBuilder& builder,
-                             EventDispatcher& dispatcher, log::Logger& logger)
-	: context_(builder.create(*this))
+ClientHandler::ClientHandler(std::size_t index, ClientContext context, EventDispatcher& dispatcher, log::Logger& logger)
+	: context_(std::move(context))
 	, state_(ClientState::cs_session_closed)
 	, connection_(nullptr)
 	, logger_(logger)
 	, uuid_(index)
-	, timer_(executor)
 	, packet_counter_(0)
 	, pps_violation_(0)
 	, ping_sequence_(0)
 	, ping_violation_(0)
 	, prev_ping_sequence_(0)
 	, timer_events_(0)
-	, last_tick_(utility::get_tick_count()) {}
+	, last_tick_(utility::get_tick_count()) {
+	context_.set_handler(*this);
+}
 
 ClientHandler::~ClientHandler() {
 	stop();

@@ -20,13 +20,9 @@
 #include <protocol/Concepts.h>
 #include <protocol/StreamResult.h>
 #include <shared/ClientIdent.h>
-#include <spark/buffers/BinaryStream.h>
-#include <boost/asio/steady_timer.hpp>
-#include <chrono>
 #include <memory>
-#include <optional>
-#include <string>
 #include <string_view>
+#include <cstddef>
 
 namespace ember::realm {
 
@@ -49,7 +45,6 @@ class ClientHandler final {
 	ClientIdent uuid_;
 	ClientState state_;
 
-	boost::asio::steady_timer timer_;
 	log::Logger& logger_;
 	std::shared_ptr<ClientSink> redirect_sink_;
 
@@ -71,16 +66,12 @@ class ClientHandler final {
 	bool handle_self_event(const Event& event);
 	void packet_log_start();
 	
-	void start_timer(const std::chrono::milliseconds& time);
-	void cancel_timer();
-
 	void send(protocol::is_packet auto& packet);
 	void skip(BinaryStream& stream);
 	void stream_err(const protocol::StreamResult& result);
 
 public:
-	ClientHandler(std::size_t index, executor executor, ClientContextBuilder& builder, 
-	              EventDispatcher& dispatcher, log::Logger& logger);
+	ClientHandler(std::size_t index, ClientContext context, EventDispatcher& dispatcher, log::Logger& logger);
 	~ClientHandler();
 
 	void set_connection(ClientConnection* connection) {

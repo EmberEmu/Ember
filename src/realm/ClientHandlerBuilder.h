@@ -26,7 +26,7 @@ public:
 
 	ClientHandler create(std::size_t index, executor executor) {
 		return ClientHandler(
-			index, executor, builder_, dispatcher_, logger_
+			index, builder_.create(executor), dispatcher_, logger_
 		);
 	}
 };

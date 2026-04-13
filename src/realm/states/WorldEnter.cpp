@@ -346,7 +346,7 @@ bool handle_command(ClientContext& ctx, std::string_view message) try {
 		}
 
 		if(token_span.front() == "stop") {
-			ctx.handler.log_redirect_stop();
+			ctx.handler().log_redirect_stop();
 			return true;
 		}
 
@@ -369,7 +369,7 @@ bool handle_command(ClientContext& ctx, std::string_view message) try {
 		}
 
 		if(!ctx.packet_logging()) {
-			ctx.handler.log_redirect(type, severity);
+			ctx.handler().log_redirect(type, severity);
 		} else {
 			protocol::smsg_notification resp;
 			resp->console = "Disable packet logging for yourself first - "

@@ -6,17 +6,16 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+#include "../EventDispatcher.h"
 #include "../ClientHandler.h"
 #include <format>
 
 namespace ember::realm {
 
-ClientContext::ClientContext(ClientHandler& handler, const ConfigStore& cfg_store, EventDispatcher& dispatcher,
+ClientContext::ClientContext(executor& executor, const ConfigStore& cfg_store, EventDispatcher& dispatcher,
                              RealmQueue& queue, AccountClient& account_rpc, CharacterClient& character_rpc,
                              const RealmService& realm_rpc, log::Logger& logger)
-	: stream_(nullptr)
-	, connection_(nullptr)
-	, handler(handler)
+	: timer_(executor)
 	, cfg_store(cfg_store)
 	, dispatcher(dispatcher)
 	, queue(queue)
@@ -25,23 +24,30 @@ ClientContext::ClientContext(ClientHandler& handler, const ConfigStore& cfg_stor
 	, realm_rpc(realm_rpc)
 	, logger(logger) {}
 
-void ClientContext::start_timer(std::chrono::milliseconds time) {
-	handler.start_timer(time);
+void ClientContext::start_timer(const std::chrono::milliseconds& time) {
+	timer_.expires_after(time);
+
+	timer_.async_wait([dispatcher = dispatcher, uuid = handler().uuid()](const boost::system::error_code& ec) {
+		if(!ec) {
+			Event event { EventType::timer_expired };
+			dispatcher.post(uuid, event);
+		}
+	});
 }
 
 void ClientContext::cancel_timer() {
-	handler.cancel_timer();
+	timer_.cancel_one();
 }
 
 void ClientContext::stream_err(const protocol::StreamResult& result) {
-	handler.stream_err(result);
+	handler().stream_err(result);
 }
 
 void ClientContext::state_update(ClientState state) {
 	if(state == ClientState::cs_session_closed) {
-		handler.stop();
+		handler().stop();
 	} else {
-		handler.state_update(state);
+		handler().state_update(state);
 	}
 }
 

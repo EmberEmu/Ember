@@ -15,7 +15,7 @@ namespace ember::realm::session_close {
 
 void enter(ClientContext& ctx) {
 	ctx.cancel_timer();
-	ctx.handler.log_redirect_stop();
+	ctx.handler().log_redirect_stop();
 }
 
 void handle_packet(ClientContext& ctx, protocol::ClientOpcode opcode) {
