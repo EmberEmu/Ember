@@ -69,6 +69,7 @@ void ClientConnection::completion_check() {
 
 void ClientConnection::dispatch_message() {
 	BinaryStream stream(inbound_buffer_, msg_size_);
+	LOG_WARN(logger_, "handler is at 0x{:x}", (std::uintptr_t)handler_);
 	handler_->handle_message(stream);
 }
 

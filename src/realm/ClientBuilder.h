@@ -10,7 +10,9 @@
 
 #include "ClientHandlerBuilder.h"
 #include "ClientConnectionBuilder.h"
+#include "Forwards.h"
 #include "unique_client_ptr.h"
+#include <logger/LoggerFwd.h>
 #include <memory>
 
 namespace ember::realm {
@@ -21,18 +23,23 @@ class ClientBuilder {
 	mutable ClientAllocator allocator_;
 	ClientHandlerBuilder ch_builder_;
 	ClientConnectionBuilder cc_builder_;
+	EventDispatcher& dispatcher_;
+	log::Logger& logger_;
 
 	unique_client_ptr make_unique_client(tcp_socket socket, std::size_t index) const {
 		return unique_client_ptr(allocator_.allocate(
-			ch_builder_, cc_builder_, std::move(socket), index
+			std::move(socket), index, dispatcher_, logger_, ch_builder_, cc_builder_
 		), ClientDeleter(&allocator_));
 	}
 
 public:
-	ClientBuilder(ClientHandlerBuilder ch_builder, ClientConnectionBuilder cc_builder)
+	ClientBuilder(ClientHandlerBuilder ch_builder, ClientConnectionBuilder cc_builder,
+	              EventDispatcher& dispatcher, log::Logger& logger)
 		: allocator_(allocator_tag)
 		, ch_builder_(ch_builder)
-		, cc_builder_(cc_builder) {}
+		, cc_builder_(cc_builder)
+		, dispatcher_(dispatcher)
+		, logger_(logger) {}
 
 	unique_client_ptr create(tcp_socket socket, std::size_t index) const {
 		return make_unique_client(std::move(socket), index);

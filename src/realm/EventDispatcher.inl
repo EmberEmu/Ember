@@ -27,12 +27,12 @@ inline void EventDispatcher::dispatch(const std::derived_from<Event> auto& event
 	}
 }
 
-inline ClientHandler* EventDispatcher::locate_handler(const ClientIdent& client) const {
+inline Client* EventDispatcher::locate_handler(const ClientIdent& client) const {
 #ifdef EMBER_FAST_DISPATCH_CACHE
 	const auto slot = client.extract_slot();
 
 	if(slot != slot_npos) {
-		return cache_[slot] == client? client.extract_ptr<ClientHandler>() : nullptr;
+		return cache_[slot] == client? client.extract_ptr<Client>() : nullptr;
 	}
 #endif
 

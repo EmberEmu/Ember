@@ -93,7 +93,7 @@ void EventDispatcher::broadcast(std::shared_ptr<const Event> event) const {
 #ifdef EMBER_FAST_DISPATCH_CACHE
 #pragma warning(push)
 #pragma warning(disable : 28020) // ignore false positive
-bool EventDispatcher::try_insert(ClientHandler* handler) {
+bool EventDispatcher::try_insert(Client* handler, ClientIdent& ident) {
 	assert(handler);
 
 	std::size_t index = rng::xorshift::next() & 0xfff;
@@ -108,40 +108,43 @@ bool EventDispatcher::try_insert(ClientHandler* handler) {
 
 	do {
 		if(cache_[index].is_zero()) {
-			handler->uuid().encode(handler, index);
-			cache_[index] = handler->uuid();
+			ident.encode(handler, index);
+			cache_[index] = ident;
 			return true;
 		} else if(++index == slot_npos) {
 			index = 0;
 		}
 	} while(index != start);
 
-	handler->uuid().encode(0, slot_npos); // encode sentinel
+	ident.encode(0, slot_npos); // encode sentinel
 	return false;
 }
 #pragma warning(pop)
 #endif
 
-void EventDispatcher::register_handler(ClientHandler* handler) {
-	assert(handler);
+ClientIdent EventDispatcher::register_client(Client* client, std::size_t service_index) {
+	assert(client);
+	ClientIdent ident(service_index);
 
 #ifdef EMBER_FAST_DISPATCH_CACHE
-	if(!try_insert(handler))
+	if(!try_insert(client, ident))
 #endif
-		handlers_.insert_or_assign(handler->uuid(), handler);
+		handlers_.insert_or_assign(ident, client);
+
+	return ident;
 }
 
-void EventDispatcher::remove_handler(const ClientHandler* handler) {
-	assert(handler);
+void EventDispatcher::remove_client(const Client* client) {
+	assert(client);
 
 #ifdef EMBER_FAST_DISPATCH_CACHE
-	if(auto slot = handler->uuid().extract_slot(); slot != slot_npos) {
+	if(auto slot = client->uuid().extract_slot(); slot != slot_npos) {
 		cache_[slot].set_zero();
 	}  else {
-		handlers_.erase(handler->uuid());
+		handlers_.erase(client->uuid());
 	}
 #else
-	handlers_.erase(handler->uuid());
+	handlers_.erase(client->uuid());
 #endif
 }
 

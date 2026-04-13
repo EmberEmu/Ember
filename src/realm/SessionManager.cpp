@@ -87,7 +87,7 @@ std::optional<ClientIdent> SessionManager::client_ident(const SessionID id) cons
 	std::lock_guard guard(sessions_lock_);
 
 	if(auto it = sessions_.find(id); it != sessions_.end()) {
-		return it->second->handler().uuid();
+		return it->second->uuid();
 	}
 
 	return std::nullopt;

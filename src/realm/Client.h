@@ -10,8 +10,11 @@
 
 #include "ClientConnectionBuilder.h"
 #include "ClientHandlerBuilder.h"
+#include "Forwards.h"
 #include "SocketType.h"
-#include <logger/Logger.h>
+#include "packet_log/Helper.h"
+#include <logger/LoggerFwd.h>
+#include <shared/ClientIdent.h>
 #include <functional>
 
 namespace ember::realm {
@@ -21,8 +24,15 @@ public:
 	using OnClose = std::function<void()>;
 
 private:
+	ClientIdent ident_;
 	ClientHandler handler_;
 	ClientConnection connection_;
+	EventDispatcher& dispatcher_;
+	log::Logger& logger_;
+	bool running_;
+
+	bool handle_self_event(const Event& event);
+	void packet_log_start();
 
 public:
 	/*
@@ -34,49 +44,29 @@ public:
 	 * They'd be safe to move as long as it's done before calling start but it's best not to add the ability
 	 * at all unless it's always safe to do so. I did it and promptly undid it. Trust me, bro.
  	 */
-	Client(const ClientHandlerBuilder& ch_builder, const ClientConnectionBuilder& cc_builder,
-	       tcp_socket socket, std::size_t index)
-		: handler_(ch_builder.create(index, socket.get_executor()))
-		, connection_(cc_builder.create(std::move(socket))) {}
+	Client(tcp_socket socket, std::size_t index, EventDispatcher& dispatcher, log::Logger& logger,
+	       const ClientHandlerBuilder& ch_builder, const ClientConnectionBuilder& cc_builder);
+	~Client();
 
-	~Client() {
-		stop();
+	Client(Client&) = delete;
+	Client(Client&&) = delete;
+	Client& operator=(Client&) = delete;
+	Client& operator=(Client&&) = delete;
+
+	void start();
+	void stop();
+	void on_close(OnClose on_close);
+
+	void handle_event(const Event& event);
+
+	const ClientIdent& uuid() const {
+		return ident_;
 	}
 
-	void start() {
-		// Referencing each other like this is fine because they won't start running until we return
-		// - that's assuming we're running on the same Asio worker, which we really should be
-		handler_.start(connection_);
-		connection_.start(handler_);
-	}
-
-	void stop() {
-		handler_.stop();
-		connection_.stop();
-	}
-
-	void on_close(OnClose on_close) {
-		connection_.set_on_disconnect([&, fn = std::move(on_close)]() {
-			handler_.stop();
-			fn();
-		});
-	}
-
-	ClientConnection& connection() {
-		return connection_;
-	}
-
-	const ClientConnection& connection() const {
-		return connection_;
-	}
-
-	ClientHandler& handler() {
-		return handler_;
-	}
-
-	const ClientHandler& handler() const {
-		return handler_;
-	}
+	ClientConnection& connection();
+	const ClientConnection& connection() const;
+	ClientHandler& handler();
+	const ClientHandler& handler() const;
 };
 
 } // realm, ember
