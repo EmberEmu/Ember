@@ -17,14 +17,12 @@ class ClientHandler;
 class ClientTimer {
 	ClientHandler& handler_;
 
+public:
 	ClientTimer(ClientHandler& handler)
 		: handler_(handler) {}
 
-public:
 	void start(const std::chrono::milliseconds& expiry);
 	void cancel();
-
-	friend class ClientHandler;
 };
 
 } // realm, ember

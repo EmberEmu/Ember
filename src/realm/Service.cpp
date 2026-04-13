@@ -8,6 +8,7 @@
 
 #include "Service.h"
 #include "ClientBuilder.h"
+#include "ClientContextBuilder.h"
 #include "DBCRequired.h"
 #include "FilterTypes.h"
 #include "LoggingCallbacks.h"
@@ -240,13 +241,13 @@ void Service::initialise(const opts::variables_map& args) try {
 	const auto max_socks = utility::max_sockets_desc();
 	SLOG_INFO(logger, "Max allowed sockets: {}", max_socks);
 
-	ClientConnectionBuilder cc_builder(logger);
-
-	ClientHandlerBuilder ch_builder(
+	ClientContextBuilder ctx_builder(
 		*ctx->config_store, *ctx->dispatcher, *ctx->queue, *ctx->rpc_account,
 		*ctx->rpc_character, *ctx->rpc_realm, logger
 	);
 
+	ClientConnectionBuilder cc_builder(logger);
+	ClientHandlerBuilder ch_builder(ctx_builder, *ctx->dispatcher, logger);
 	ClientBuilder builder(ch_builder, cc_builder);
 
 	// Start network listener

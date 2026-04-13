@@ -76,6 +76,7 @@ set(LIBRARY_HDR
     commands/Connections.h
     commands/Messaging.h
     commands/Set.h
+    ClientContextBuilder.h
 )
 
 set(LIBRARY_SRC

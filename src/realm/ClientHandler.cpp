@@ -7,6 +7,7 @@
  */
 
 #include "ClientHandler.h"
+#include "ClientContextBuilder.h"
 #include "ClientLogHelper.h"
 #include "Config.h"
 #include "ConfigStore.h"
@@ -311,21 +312,9 @@ std::string_view ClientHandler::client_identify() const {
 	return client_id_;
 }
 
-ClientHandler::ClientHandler(std::size_t index, executor executor, const ConfigStore& cfg_store,
-                             EventDispatcher& dispatcher, RealmQueue& queue, AccountClient& account_rpc,
-                             CharacterClient& character_rpc, const RealmService& realm_rpc, log::Logger& logger)
-	: context_ {
-		.timer = ClientTimer(*this),
-		.handler = *this,
-		.connection = nullptr,
-		.cfg_store = cfg_store,
-		.dispatcher = dispatcher,
-		.queue = queue,
-		.account_rpc = account_rpc,
-		.character_rpc = character_rpc,
-		.realm_rpc = realm_rpc,
-		.logger = logger,
-	  }
+ClientHandler::ClientHandler(std::size_t index, executor executor, ClientContextBuilder& builder,
+                             EventDispatcher& dispatcher, log::Logger& logger)
+	: context_(builder.create(*this))
 	, state_(ClientState::cs_session_closed)
 	, connection_(nullptr)
 	, logger_(logger)

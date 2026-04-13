@@ -32,6 +32,7 @@ namespace ember::realm {
 using namespace std::chrono_literals;
 
 class ClientConnection;
+class ClientContextBuilder;
 
 class ClientHandler final {
 	// client sanity check rules
@@ -75,9 +76,8 @@ class ClientHandler final {
 	void cancel_timer();
 
 public:
-	ClientHandler(std::size_t index, executor executor, const ConfigStore& cfg_store,
-	              EventDispatcher& dispatcher, RealmQueue& queue, AccountClient& account_rpc,
-	              CharacterClient& character_rpc, const RealmService& realm_rpc, log::Logger& logger);
+	ClientHandler(std::size_t index, executor executor, ClientContextBuilder& builder, 
+	              EventDispatcher& dispatcher, log::Logger& logger);
 	~ClientHandler();
 
 	void set_connection(ClientConnection* connection) {
