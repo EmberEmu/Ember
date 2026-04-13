@@ -9,6 +9,7 @@
 #include "Client.h"
 #include "EventDispatcher.h"
 #include <logger/Logger.h>
+#include <cassert>
 
 using namespace std::string_view_literals;
 
@@ -47,12 +48,14 @@ bool Client::handle_self_event(const Event& event) {
 }
 
 void Client::handle_kick() {
+	assert(close_fn_);
 	LOG_DEBUG(logger_, "{}, kicking self", handler_.client_identify());
 	stop();
 	close_fn_();
 }
 
 void Client::handle_request_stop(EventType type) {
+	assert(close_fn_);
 	LOG_DEBUG(logger_, "{}, {} requested stop",
 		handler_.client_identify(), stop_component_name(type));
 	stop();
