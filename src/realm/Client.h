@@ -16,6 +16,7 @@
 #include <logger/LoggerFwd.h>
 #include <shared/ClientIdent.h>
 #include <functional>
+#include <string_view>
 
 namespace ember::realm {
 
@@ -28,11 +29,14 @@ private:
 	ClientHandler handler_;
 	ClientConnection connection_;
 	EventDispatcher& dispatcher_;
+	OnClose close_fn_;
 	log::Logger& logger_;
 	bool running_;
 
 	bool handle_self_event(const Event& event);
+	void handle_request_stop(EventType type);
 	void packet_log_start();
+	std::string_view component_name(EventType type) const;
 
 public:
 	/*

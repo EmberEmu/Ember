@@ -64,11 +64,12 @@ class ClientHandler final {
 	bool ping_sent_check();
 	bool pps_flood_check();
 	bool handle_self_event(const Event& event);
-	
+
 	void send(protocol::is_packet auto& packet);
 	void skip(BinaryStream& stream);
 	void stream_err(const protocol::StreamResult& result);
 	void set_connection(ClientConnection& connection);
+	void request_stop();
 
 public:
 	ClientHandler(const ClientIdent& ident, ClientContext context, log::Logger& logger);

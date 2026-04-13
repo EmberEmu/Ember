@@ -8,6 +8,7 @@
 
 #include "ClientConnection.h"
 #include "ClientHandler.h"
+#include "EventDispatcher.h"
 #include "packet_log/FlatbuffersSink.h"
 #include "packet_log/LogSink.h"
 #include <logger/Logger.h>
@@ -21,7 +22,8 @@
 
 namespace ember::realm {
 
-ClientConnection::ClientConnection(tcp_socket socket, log::Logger& logger)
+ClientConnection::ClientConnection(tcp_socket socket, const ClientIdent& ident,
+                                   EventDispatcher& dispatcher, log::Logger& logger)
 	: socket_(std::move(socket))
 	, remote_ep_(socket_.remote_endpoint())
 	, stats_{}
@@ -33,7 +35,9 @@ ClientConnection::ClientConnection(tcp_socket socket, log::Logger& logger)
 	, handler_(nullptr)
 	, compression_level_(0)
 	, outbound_front_(&outbound_buffers_.front())
-	, outbound_back_(&outbound_buffers_.back()) {}
+	, outbound_back_(&outbound_buffers_.back())
+	, dispatcher_(dispatcher)
+	, ident_(ident) {}
 
 void ClientConnection::parse_header() {
 	LOG_TRACE(logger_, log_func);
@@ -225,11 +229,9 @@ void ClientConnection::stop() {
 }
 
 void ClientConnection::close_session() {
-	boost::asio::post(socket_.get_executor(), [&] {
-		if(on_disconnect_) {
-			on_disconnect_();
-		}
-	});
+	Event event { EventType::request_stop_connection };
+	dispatcher_.post(ident_, event);
+	stop();
 }
 
 std::string ClientConnection::remote_address() const {
@@ -280,10 +282,6 @@ inline std::size_t ClientConnection::minimum_transfer() const {
 
 void ClientConnection::set_handler(ClientHandler& handler) {
 	handler_ = &handler;
-}
-
-void ClientConnection::set_on_disconnect(OnDisconnect on_disconnect) {
-	on_disconnect_ = std::move(on_disconnect);
 }
 
 ClientConnection::~ClientConnection() {

@@ -11,6 +11,7 @@
 #include "ClientLogHelper.h"
 #include "Config.h"
 #include "ConfigStore.h"
+#include "EventDispatcher.h"
 #include "states/StateJumpTables.h"
 #include <logger/Logger.h>
 #include <protocol/Deserialise.h>
@@ -32,7 +33,6 @@ void ClientHandler::stop() {
 	}
 
 	state_update(ClientState::cs_session_closed);
-	connection_->close_session();
 }
 
 void ClientHandler::handle_message(BinaryStream& stream) {
@@ -117,6 +117,12 @@ void ClientHandler::handle_ping(BinaryStream& stream) {
 	response->sequence_id = packet->sequence_id;
 	connection_->latency(packet->latency);
 	send(response);
+}
+
+void ClientHandler::request_stop() {
+	Event event { EventType::request_stop_handler };
+	context_.dispatcher.post(uuid_, event);
+	stop();
 }
 
 /*

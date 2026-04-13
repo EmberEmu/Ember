@@ -11,6 +11,7 @@
 #include "ConnectionDefines.h"
 #include "ConnectionStats.h"
 #include "FilterTypes.h"
+#include "Forwards.h"
 #include "PacketCrypto.h"
 #include "packet_log/PacketLogger.h"
 #include "SocketType.h"
@@ -64,8 +65,9 @@ private:
 	bool write_in_progress_;
 	unsigned int compression_level_;
 	std::unique_ptr<PacketLogger> packet_logger_;
-	OnDisconnect on_disconnect_;
+	EventDispatcher& dispatcher_;
 	std::atomic_bool stopped_;
+	ClientIdent ident_;
 
 	// socket I/O
 	void read();
@@ -84,7 +86,7 @@ private:
 	void set_handler(ClientHandler& handler);
 
 public:
-	ClientConnection(tcp_socket socket, log::Logger& logger);
+	ClientConnection(tcp_socket socket, const ClientIdent& ident, EventDispatcher& dispatcher, log::Logger& logger);
 	~ClientConnection();
 
 	// session management
@@ -104,8 +106,6 @@ public:
 	void packet_log_start(std::unique_ptr<PacketLogger> logger);
 	void packet_log_stop();
 	bool packet_logging() const;
-
-	void set_on_disconnect(OnDisconnect on_disconnect);
 
 	friend class ClientHandler;
 };

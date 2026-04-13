@@ -9,6 +9,9 @@
 #include "Client.h"
 #include "EventDispatcher.h"
 #include <logger/Logger.h>
+#include <string_view>
+
+using namespace std::string_view_literals;
 
 namespace ember::realm {
 
@@ -16,7 +19,7 @@ Client::Client(tcp_socket socket, std::size_t index, EventDispatcher& dispatcher
                const ClientHandlerBuilder& ch_builder, const ClientConnectionBuilder& cc_builder)
 	: ident_(dispatcher.register_client(this, index))
 	, handler_(ch_builder.create(ident_, socket.get_executor()))
-	, connection_(cc_builder.create(std::move(socket)))
+	, connection_(cc_builder.create(std::move(socket), ident_))
 	, dispatcher_(dispatcher)
 	, logger_(logger)
 	, running_(false) {}
@@ -34,8 +37,32 @@ bool Client::handle_self_event(const Event& event) {
 		case packet_log_disable:
 			connection_.packet_log_stop();
 			return true;
+		case request_stop_connection:
+			[[fallthrough]];
+		case request_stop_handler:
+			handle_request_stop(event.type);
+			return true;
 		default:
 			return false;
+	}
+}
+
+void Client::handle_request_stop(EventType type) {
+	LOG_DEBUG(logger_, "Client {} signalled stop", component_name(type));
+	stop();
+	close_fn_();
+}
+
+std::string_view Client::component_name(EventType type) const {
+	using enum EventType;
+
+	switch(type) {
+		case request_stop_connection:
+			return "connection";
+		case request_stop_handler:
+			return "handler";
+		default:
+			return "unknown";
 	}
 }
 
@@ -80,10 +107,8 @@ void Client::stop() {
 }
 
 void Client::on_close(OnClose on_close) {
-	connection_.set_on_disconnect([&, fn = std::move(on_close)]() {
-		handler_.stop();
-		fn();
-	});
+	assert(on_close);
+	close_fn_ = on_close;
 }
 
 ClientConnection& Client::connection() {

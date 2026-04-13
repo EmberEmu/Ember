@@ -26,7 +26,9 @@ enum class EventType {
 	packet_log_enable,
 	packet_log_disable,
 	system_message,
-	log_redirect
+	log_redirect,
+	request_stop_connection,
+	request_stop_handler
 };
 
 } // realm, ember
