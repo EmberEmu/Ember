@@ -14,14 +14,15 @@ namespace ember::realm {
 
 namespace impl {
 
-commands::ScopedCommand add_uptime(commands::Command& registry, utility::CommandExecutor& exec,
-                                   std::chrono::steady_clock::time_point& time, log::Logger& logger) {
-	return registry.scoped_insert(commands::create("uptime")
+std::shared_ptr<commands::Command> uptime(utility::CommandExecutor& exec,
+                                          std::chrono::steady_clock::time_point& time,
+                                          log::Logger& logger) {
+	return commands::create("uptime")
 		->description("Display service uptime")
 		->handler(exec([&, time](auto&) {
 			const auto uptime = std::chrono::steady_clock::now() - time;
 			LOG_CONSOLE(logger, "Server has been up for {}", utility::time_duration_format(uptime));
-		})
+		}
 	));
 }
 
@@ -30,9 +31,9 @@ commands::ScopedCommand add_uptime(commands::Command& registry, utility::Command
 void add_ungrouped_commands(ServiceContext& context, commands::Command& registry, log::Logger& logger) {
 	auto impl = context.get();
 
-	impl->commands.emplace_back(
-		impl::add_uptime(registry, *impl->cmd_exec, impl->start_time, logger)
-	);
+	impl->commands.emplace_back(registry.scoped_insert(
+		impl::uptime(*impl->cmd_exec, impl->start_time, logger)
+	));
 }
 
 } // realm, ember
