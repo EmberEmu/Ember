@@ -145,7 +145,7 @@ void service_stop(const std::string& service, log::Logger& logger) {
 	runners.erase(it);
 }
 
-void service_restart(std::string service, log::Logger& logger) {
+void service_restart(const std::string& service, log::Logger& logger) {
 	service_stop(service, logger);
 	service_start(service, logger);
 }
