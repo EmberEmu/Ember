@@ -15,6 +15,7 @@
 #include "RealmList.h"
 #include "Survey.h"
 #include "grunt/Packets.h"
+#include "grunt/Utility.h"
 #include <logger/Logger.h>
 #include <shared/database/daos/UserDAO.h>
 #include <shared/game/GameVersion.h>
@@ -122,6 +123,12 @@ void LoginHandler::handle_login_challenge(const grunt::Packet& packet) {
 	LOG_TRACE(logger_, log_func);
 
 	auto& challenge = packet.as<grunt::client::LoginChallenge>();
+
+	if(!grunt::validate_opcode<grunt::client::LoginChallenge>(challenge.opcode)
+	   && !grunt::validate_opcode<grunt::client::ReconnectChallenge>(challenge.opcode)) {
+		update_state(LoginState::closed);
+		return;
+	}
 
 	/*
 	 * Older clients are likely to be using an older protocol version
@@ -419,6 +426,11 @@ void LoginHandler::handle_login_proof(const grunt::Packet& packet) {
 
 	auto& proofs = packet.as<grunt::client::LoginProof>();
 
+	if(!grunt::validate_opcode<grunt::client::LoginProof>(proofs.opcode)) {
+		update_state(LoginState::closed);
+		return;
+	}
+
 	if(opts_.integrity_check && !validate_client_integrity(proofs.client_checksum, proofs.A, false)) {
 		send_login_proof(grunt::Result::fail_version_invalid);
 		return;
@@ -467,6 +479,11 @@ void LoginHandler::handle_login_spoof(const grunt::Packet& packet) {
 	LOG_TRACE(logger_, log_func);
 
 	auto& proof_packet = packet.as<grunt::client::LoginProof>();
+
+	if(!grunt::validate_opcode<grunt::client::LoginProof>(proof_packet.opcode)) {
+		update_state(LoginState::closed);
+		return;
+	}
 
 	if(opts_.integrity_check && !validate_client_integrity(proof_packet.client_checksum, proof_packet.A, false)) {
 		send_login_proof(grunt::Result::fail_version_invalid);
@@ -559,16 +576,21 @@ void LoginHandler::on_session_write(const RegisterSessionAction& action) {
 void LoginHandler::handle_reconnect_proof(const grunt::Packet& packet) {
 	LOG_TRACE(logger_, log_func);
 
-	auto& reconn_proof = packet.as<grunt::client::ReconnectProof>();
+	auto& proof = packet.as<grunt::client::ReconnectProof>();
 
-	if(opts_.integrity_check && !validate_client_integrity(reconn_proof.client_checksum, reconn_proof.salt, true)) {
+	if(!grunt::validate_opcode<grunt::client::ReconnectProof>(proof.opcode)) {
+		update_state(LoginState::closed);
+		return;
+	}
+
+	if(opts_.integrity_check && !validate_client_integrity(proof.client_checksum, proof.salt, true)) {
 		send_reconnect_proof(grunt::Result::fail_version_invalid);
 		return;
 	}
 
 	const auto& authenticator = std::get<ReconnectAuthenticator>(state_data_);
 
-	if(authenticator.proof_check(reconn_proof.salt, reconn_proof.proof)) {
+	if(authenticator.proof_check(proof.salt, proof.proof)) {
 		update_state(LoginState::fetching_character_data);
 		execute_async(std::make_unique<FetchCharacterCounts>(user_->id(), user_src_, true));
 	} else {
@@ -579,8 +601,9 @@ void LoginHandler::handle_reconnect_proof(const grunt::Packet& packet) {
 void LoginHandler::send_realm_list(const grunt::Packet& packet) {
 	LOG_TRACE(logger_, log_func);
 
-	if(packet.opcode != grunt::Opcode::cmd_realm_list) {
-		throw std::runtime_error("Expected CMD_REALM_LIST");
+	if(!grunt::validate_opcode<grunt::client::RequestRealmList>(packet.opcode)) {
+		update_state(LoginState::closed);
+		return;
 	}
 
 	// look the client's locale up for sending the correct realm category
@@ -662,6 +685,11 @@ void LoginHandler::handle_survey_result(const grunt::Packet& packet) {
 
 	auto& survey = packet.as<grunt::client::SurveyResult>();
 
+	if(!grunt::validate_opcode<grunt::client::SurveyResult>(survey.opcode)) {
+		update_state(LoginState::closed);
+		return;
+	}
+
 	// allow the client to request the realmlist without waiting on the survey write callback
 	update_state(LoginState::request_realms);
 
@@ -700,6 +728,12 @@ void LoginHandler::set_transfer_offset(const grunt::Packet& packet) {
 	LOG_TRACE(logger_, log_func);
 
 	auto& resume = packet.as<grunt::client::TransferResume>();
+
+	if(!grunt::validate_opcode<grunt::client::TransferResume>(resume.opcode)) {
+		update_state(LoginState::closed);
+		return;
+	}
+
 	transfer_state_.offset = resume.offset;
 }
 

@@ -17,6 +17,7 @@ set(GRUNT_SRC
     grunt/Packet.h
     grunt/PacketFwd.h
     grunt/Opcodes.h
+    grunt/Utility.h
     grunt/client/LoginChallenge.h
     grunt/client/LoginProof.h
     grunt/client/ReconnectProof.h
