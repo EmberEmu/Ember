@@ -122,13 +122,7 @@ bool LoginHandler::update_state(const Action& action) try {
 void LoginHandler::handle_login_challenge(const grunt::Packet& packet) {
 	LOG_TRACE(logger_, log_func);
 
-	auto& challenge = packet.as<grunt::client::LoginChallenge>();
-
-	if(!grunt::validate_opcode<grunt::client::LoginChallenge>(challenge.opcode)
-	   && !grunt::validate_opcode<grunt::client::ReconnectChallenge>(challenge.opcode)) {
-		update_state(LoginState::closed);
-		return;
-	}
+	auto& challenge = grunt::packet_cast<grunt::client::LoginChallenge>(packet);
 
 	/*
 	 * Older clients are likely to be using an older protocol version
@@ -424,12 +418,7 @@ bool LoginHandler::validate_client_integrity(std::span<const std::uint8_t> clien
 void LoginHandler::handle_login_proof(const grunt::Packet& packet) {
 	LOG_TRACE(logger_, log_func);
 
-	auto& proofs = packet.as<grunt::client::LoginProof>();
-
-	if(!grunt::validate_opcode<grunt::client::LoginProof>(proofs.opcode)) {
-		update_state(LoginState::closed);
-		return;
-	}
+	auto& proofs = grunt::packet_cast<grunt::client::LoginProof>(packet);
 
 	if(opts_.integrity_check && !validate_client_integrity(proofs.client_checksum, proofs.A, false)) {
 		send_login_proof(grunt::Result::fail_version_invalid);
@@ -478,12 +467,7 @@ void LoginHandler::handle_login_proof(const grunt::Packet& packet) {
 void LoginHandler::handle_login_spoof(const grunt::Packet& packet) {
 	LOG_TRACE(logger_, log_func);
 
-	auto& proof_packet = packet.as<grunt::client::LoginProof>();
-
-	if(!grunt::validate_opcode<grunt::client::LoginProof>(proof_packet.opcode)) {
-		update_state(LoginState::closed);
-		return;
-	}
+	auto& proof_packet = grunt::packet_cast<grunt::client::LoginProof>(packet);
 
 	if(opts_.integrity_check && !validate_client_integrity(proof_packet.client_checksum, proof_packet.A, false)) {
 		send_login_proof(grunt::Result::fail_version_invalid);
@@ -576,12 +560,7 @@ void LoginHandler::on_session_write(const RegisterSessionAction& action) {
 void LoginHandler::handle_reconnect_proof(const grunt::Packet& packet) {
 	LOG_TRACE(logger_, log_func);
 
-	auto& proof = packet.as<grunt::client::ReconnectProof>();
-
-	if(!grunt::validate_opcode<grunt::client::ReconnectProof>(proof.opcode)) {
-		update_state(LoginState::closed);
-		return;
-	}
+	auto& proof = grunt::packet_cast<grunt::client::ReconnectProof>(packet);
 
 	if(opts_.integrity_check && !validate_client_integrity(proof.client_checksum, proof.salt, true)) {
 		send_reconnect_proof(grunt::Result::fail_version_invalid);
@@ -601,7 +580,7 @@ void LoginHandler::handle_reconnect_proof(const grunt::Packet& packet) {
 void LoginHandler::send_realm_list(const grunt::Packet& packet) {
 	LOG_TRACE(logger_, log_func);
 
-	if(!grunt::validate_opcode<grunt::client::RequestRealmList>(packet.opcode)) {
+	if(packet.opcode != grunt::Opcode::cmd_realm_list) {
 		update_state(LoginState::closed);
 		return;
 	}
@@ -683,12 +662,7 @@ void LoginHandler::initiate_file_transfer(const FileMeta& meta) {
 void LoginHandler::handle_survey_result(const grunt::Packet& packet) {
 	LOG_TRACE(logger_, log_func);
 
-	auto& survey = packet.as<grunt::client::SurveyResult>();
-
-	if(!grunt::validate_opcode<grunt::client::SurveyResult>(survey.opcode)) {
-		update_state(LoginState::closed);
-		return;
-	}
+	auto& survey = grunt::packet_cast<grunt::client::SurveyResult>(packet);
 
 	// allow the client to request the realmlist without waiting on the survey write callback
 	update_state(LoginState::request_realms);
@@ -727,13 +701,7 @@ void LoginHandler::on_survey_write(const SaveSurveyAction& action) {
 void LoginHandler::set_transfer_offset(const grunt::Packet& packet) {
 	LOG_TRACE(logger_, log_func);
 
-	auto& resume = packet.as<grunt::client::TransferResume>();
-
-	if(!grunt::validate_opcode<grunt::client::TransferResume>(resume.opcode)) {
-		update_state(LoginState::closed);
-		return;
-	}
-
+	auto& resume = grunt::packet_cast<grunt::client::TransferResume>(packet);
 	transfer_state_.offset = resume.offset;
 }
 

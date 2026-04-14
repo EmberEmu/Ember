@@ -46,4 +46,4 @@ struct Packet {
 	}
 };
 
-} // client, grunt, ember
+} // grunt, ember

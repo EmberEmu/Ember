@@ -17,6 +17,7 @@ template<std::derived_from<Packet> _ty>
 constexpr bool validate_opcode(Opcode opcode) {
 	using enum Opcode;
 
+	// done this way so it's only a single conditional when compiled
 	if constexpr(std::same_as<_ty, client::LoginChallenge>) {
 		return opcode == cmd_auth_logon_challenge
 			|| opcode == cmd_auth_reconnect_challenge;
@@ -39,6 +40,24 @@ constexpr bool validate_opcode(Opcode opcode) {
 	} else {
 		return false;
 	}
+}
+
+template<std::derived_from<Packet> _ty>
+auto& packet_cast(Packet& packet) {
+	if(!validate_opcode<_ty>(packet.opcode)) {
+		throw grunt::bad_packet("packet opcode did not match type");
+	}
+
+	return packet.as<_ty>();
+}
+
+template<std::derived_from<Packet> _ty>
+auto& packet_cast(const Packet& packet) {
+	if(!validate_opcode<_ty>(packet.opcode)) {
+		throw grunt::bad_packet("packet opcode did not match type");
+	}
+
+	return packet.as<const _ty>();
 }
 
 } // grunt, ember
