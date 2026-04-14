@@ -180,7 +180,11 @@ commands::ScopedCommand add_connections_commands(commands::Command& registry,
                                                  const SessionManager& sessions,
                                                  log::Logger& logger) {
 	auto root = commands::create("connections")
-		->description("Commands for connection & session management");
+		->description("Commands for connection & session management")
+		->handler(exec([&](auto& command) {
+			LOG_CONSOLE(logger, "{} active connection(s), {} peak",
+				sessions.count(), sessions.peak_count());
+		}));
 
 	root->insert("list")
 		->description("Display connections overview")

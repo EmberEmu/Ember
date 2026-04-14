@@ -30,6 +30,7 @@ private:
 
 	SessionsMap sessions_;
 	SessionID next_id_ = 0;
+	std::size_t peak_count_ = 0;
 
 	mutable std::mutex sessions_lock_;
 
@@ -48,6 +49,7 @@ public:
 	void start(unique_client_ptr client);
 
 	std::size_t count() const;
+	std::size_t peak_count() const;
 	std::optional<ClientIdent> client_ident(SessionID id) const;
 	Client* client(const SessionID id) const;
 

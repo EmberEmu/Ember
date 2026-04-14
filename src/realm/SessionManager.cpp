@@ -7,6 +7,7 @@
  */
 
 #include "SessionManager.h"
+#include <algorithm>
 #include <utility>
 
 namespace ember::realm {
@@ -20,6 +21,7 @@ void SessionManager::start(unique_client_ptr client) {
 		auto id = generate_id();
 		sessions_.emplace(id, std::move(client));
 		assigned_id = id;
+		peak_count_ = std::max(sessions_.size(), peak_count_);
 	}
 
 	ptr->on_close([&, assigned_id]() {
@@ -72,7 +74,13 @@ auto SessionManager::generate_id() -> SessionID {
 }
 
 std::size_t SessionManager::count() const {
+	std::lock_guard guard(sessions_lock_);
 	return sessions_.size();
+}
+
+std::size_t SessionManager::peak_count() const {
+	std::lock_guard guard(sessions_lock_);
+	return peak_count_;
 }
 
 auto SessionManager::begin() const -> locked_const_iterator {
