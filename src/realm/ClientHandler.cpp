@@ -121,7 +121,7 @@ void ClientHandler::handle_ping(BinaryStream& stream) {
 
 void ClientHandler::request_stop() {
 	Event event { EventType::request_stop_handler };
-	context_.dispatcher.dispatch(uuid_, event);
+	context_.dispatcher.post(uuid_, event);
 	stop();
 }
 
