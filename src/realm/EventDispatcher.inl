@@ -37,8 +37,7 @@ inline Client* EventDispatcher::locate_handler(const ClientIdent& client) const 
 #endif
 
 	if(auto it = handlers_.find(client); it != handlers_.end()) {
-		auto& [_, handler] = *it;
-		return handler;
+		return it->second;
 	} else {
 		return nullptr;
 	}
