@@ -274,7 +274,7 @@ void Service::initialise(const opts::variables_map& args) try {
 		SLOG_INFO(logger, "{} started successfully in {}", app_name,
 			utility::time_elapsed_format(time));
 
-		start_time = std::chrono::steady_clock::now();
+		ctx->start_time = std::chrono::steady_clock::now();
 	});
 } catch(...) {
 	stop_flag.release();

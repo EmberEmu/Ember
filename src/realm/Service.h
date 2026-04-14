@@ -19,7 +19,6 @@
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/variables_map.hpp>
 #include <exception>
-#include <chrono>
 #include <memory>
 #include <semaphore>
 
@@ -30,7 +29,6 @@ static inline constexpr cstring_view app_name { "Realm Gateway" };
 class EMBER_EXPORT_SERVICE Service final : public IService {
 	log::Logger& logger;
 	commands::Command& registry;
-	std::chrono::steady_clock::time_point start_time;
 	ServiceContext context;
 	std::binary_semaphore stop_flag;
 	std::atomic_bool stopped;

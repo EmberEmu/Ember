@@ -28,12 +28,14 @@
 #include <shared/Realm.h>
 #include <spark/Server.h>
 #include <thread/ServicePool.h>
+#include <chrono>
 #include <memory>
 #include <vector>
 
 namespace ember::realm {
 
 struct ServiceContext::Impl {
+	std::chrono::steady_clock::time_point start_time;
 	Realm realm;
 	SessionManager sessions;
 	thread::ServicePool* service_pool = nullptr;

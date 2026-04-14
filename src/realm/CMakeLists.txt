@@ -74,6 +74,7 @@ set(LIBRARY_HDR
     commands/Connections.h
     commands/Messaging.h
     commands/Set.h
+    commands/Ungrouped.h
     ClientContextBuilder.h
     ClientContext.h
 )
@@ -109,6 +110,7 @@ set(LIBRARY_SRC
     commands/Connections.cpp
     commands/Messaging.cpp
     commands/Set.cpp
+    commands/Ungrouped.cpp
     ClientContext.cpp
     Client.cpp
 )
