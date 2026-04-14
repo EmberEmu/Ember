@@ -38,7 +38,7 @@ class ClientHandler final {
 	constexpr static auto pps_hard_limit = 50u;
 	constexpr static auto ping_grace = 5u;
 	constexpr static auto ping_delta = 30000ms;
-	constexpr static auto ping_leeway = 2000ms;
+	constexpr static auto ping_leeway = 500ms;
 
 	ClientConnection* connection_;
 	ClientContext context_;
