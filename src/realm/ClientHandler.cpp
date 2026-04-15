@@ -133,6 +133,7 @@ void ClientHandler::close_session() {
  * official servers used to behave.
  */
 bool ClientHandler::pps_flood_check() {
+	static_assert(config::broadcast_timer_frequency != 0s);
 	const auto packets_per_sec = packet_counter_ / config::broadcast_timer_frequency.count();
 
 	if(packets_per_sec > pps_hard_limit) {
