@@ -46,7 +46,7 @@ void ClientContext::stream_err(const protocol::StreamResult& result) {
 
 void ClientContext::state_update(ClientState state) {
 	if(state == ClientState::cs_session_closed) {
-		handler().stop();
+		handler().close_session();
 	} else {
 		handler().state_update(state);
 	}

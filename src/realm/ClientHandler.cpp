@@ -79,7 +79,7 @@ void ClientHandler::handle_event(const Event& event) {
 
 void ClientHandler::handle_timer() {
 	if(!pps_flood_check() || !ping_sent_check()) {
-		stop();
+		close_session();
 	}
 }
 
@@ -109,7 +109,7 @@ void ClientHandler::handle_ping(BinaryStream& stream) {
 	}
 
 	if(!validate_ping(packet.payload)) {
-		stop();
+		close_session();
 		return;
 	}
 
@@ -119,7 +119,8 @@ void ClientHandler::handle_ping(BinaryStream& stream) {
 	send(response);
 }
 
-void ClientHandler::request_stop() {
+// stops the handler and requests for the session to be terminated
+void ClientHandler::close_session() {
 	Event event { EventType::request_stop_handler };
 	context_.dispatcher.post(uuid_, event);
 	stop();
@@ -253,7 +254,7 @@ void ClientHandler::stream_err(const protocol::StreamResult& result) {
 
 	// this is the only one we'll try to recover from
 	if(result != protocol::StreamResult::unprocessed_data) {
-		stop();
+		close_session();
 	}
 }
 

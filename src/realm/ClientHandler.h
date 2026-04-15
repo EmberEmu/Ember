@@ -69,7 +69,7 @@ class ClientHandler final {
 	void skip(BinaryStream& stream);
 	void stream_err(const protocol::StreamResult& result);
 	void set_connection(ClientConnection& connection);
-	void request_stop();
+	void close_session();
 
 public:
 	ClientHandler(const ClientIdent& ident, ClientContext context, log::Logger& logger);
