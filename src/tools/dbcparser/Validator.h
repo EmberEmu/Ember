@@ -87,7 +87,10 @@ private:
 	void print_type_tree(const TreeNode<std::string>* types, std::size_t depth = 0);
 
 public:
-	Validator() = default;
+	Validator()
+		: definitions_(nullptr)
+		, options_{}{};
+
 	void validate(const types::Definitions& definitions_, Options options = val_default);
 };
 
