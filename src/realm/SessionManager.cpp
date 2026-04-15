@@ -44,11 +44,7 @@ bool SessionManager::stop(const SessionID session_id) {
 
 void SessionManager::stop_all() {
 	std::lock_guard guard(sessions_lock_);
-
-	while(!sessions_.empty()) {
-		auto [_, client] = sessions_.pull(sessions_.begin());
-		client->stop();
-	}
+	sessions_.clear();
 }
 
 /*
