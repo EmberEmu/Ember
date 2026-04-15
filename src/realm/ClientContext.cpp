@@ -52,7 +52,7 @@ void ClientContext::state_update(ClientState state) {
 	}
 }
 
-void ClientContext::set_key(std::span<const std::uint8_t> key) {
+void ClientContext::set_key(std::span<const std::uint8_t, ClientConnection::key_size> key) {
 	connection_->set_key(key);
 }
 

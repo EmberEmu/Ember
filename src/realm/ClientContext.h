@@ -92,7 +92,7 @@ public:
 	void state_update(ClientState state);
 
 	// connection proxies
-	void set_key(std::span<const std::uint8_t> key);
+	void set_key(std::span<const std::uint8_t, ClientConnection::key_size> key);
 	bool packet_logging() const;
 
 	inline void send(protocol::is_packet auto& packet) {

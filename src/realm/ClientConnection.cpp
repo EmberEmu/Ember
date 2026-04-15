@@ -201,8 +201,8 @@ void ClientConnection::send(std::span<const std::uint8_t> packet) {
 	++stats_.messages_out;
 }
 
-void ClientConnection::set_key(std::span<const std::uint8_t> key) {
-	crypt_ = PacketCrypto<0>(key);
+void ClientConnection::set_key(std::span<const std::uint8_t, key_size> key) {
+	crypt_ = PacketCrypto<key_size>(key);
 }
 
 void ClientConnection::start(ClientHandler& handler) {

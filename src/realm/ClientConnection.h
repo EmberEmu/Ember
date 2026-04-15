@@ -39,6 +39,8 @@ class ClientHandler;
 
 class ClientConnection final {
 public:
+	static constexpr auto key_size = 40;
+
 	using OnDisconnect = std::function<void()>;
 
 private:
@@ -58,7 +60,7 @@ private:
 
 	ClientHandler* handler_;
 	ConnectionStats stats_;
-	std::optional<PacketCrypto<0>> crypt_;
+	std::optional<PacketCrypto<key_size>> crypt_;
 	protocol::SizeType msg_size_;
 	AsioAllocator<thread_safe> allocator_; // todo - should be shared & passed in
 	log::Logger& logger_;
@@ -96,7 +98,7 @@ public:
 	void send(const protocol::is_packet auto& packet);
 	void send(std::span<const std::uint8_t> packet);
 
-	void set_key(std::span<const std::uint8_t> key);
+	void set_key(std::span<const std::uint8_t, key_size> key);
 	void compression_level(unsigned int level);
 	void latency(std::uint32_t latency);
 

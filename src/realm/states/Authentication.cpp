@@ -25,7 +25,6 @@
 #include <shared/utility/EnumHelper.h>
 #include <shared/utility/UTF8String.h>
 #include <shared/utility/xoroshiro128plus.h>
-#include <boost/container/small_vector.hpp>
 #include <gsl/narrow>
 #include <algorithm>
 #include <utility>
@@ -161,23 +160,25 @@ void handle_session_key(ClientContext& ctx, const SessionKeyResponse& event) {
 void prove_session(ClientContext& ctx, const Botan::BigInt& key) {
 	LOG_TRACE(ctx.logger, log_func);
 
-	// Encode the key without requiring an allocation
-	static constexpr auto key_size_hint = 40u;
+	// Packet encryption is slightly faster if we fix the key size at compile-time
+	std::array<std::uint8_t, ClientConnection::key_size> k_bytes;
 
-	boost::container::small_vector<std::uint8_t, key_size_hint> k_bytes(
-		key.bytes(), boost::container::default_init
-	);
+	if(key.bytes() != k_bytes.size()) {
+		auth_state(ctx, State::failed);
+		ctx.state_update(ClientState::cs_session_closed);
+		return;
+	}
 
 	key.serialize_to(k_bytes);
 
-	// hardcoded to zero in the client, either proto ID or challenge version
-	const std::uint32_t protocol_id = 0;
+	// hardcoded to zero in the client, either protocol ID or challenge version
+	const std::uint32_t challenge_version = 0;
 	auto& auth_ctx = std::get<Context>(ctx.state_ctx);
 
 	const digest::Context params {
 		.key = k_bytes,
 		.username = auth_ctx.packet->username,
-		.protocol_id = protocol_id,
+		.protocol_id = challenge_version,
 		.client_seed = auth_ctx.packet->seed,
 		.server_seed = auth_ctx.seed,
 	};
