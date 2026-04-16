@@ -35,6 +35,7 @@ namespace opts = boost::program_options;
 opts::variables_map parse_arguments(int argc, const char* argv[]);
 int run(const opts::variables_map& args, log::Logger& logger, commands::Command& registry);
 void register_shutdown(commands::Command& registry, boost::asio::io_context& ioc, log::Logger& logger);
+std::shared_ptr<commands::Command> init_registry(const opts::variables_map& args, log::Logger& logger);
 
 /*
  * We want to do the minimum amount of work required to get 
@@ -55,14 +56,13 @@ int main(int argc, const char* argv[]) try {
 	log::global_logger(logger);
 	SLOG_INFO(logger, "Logger configured successfully");
 
-	SLOG_DEBUG(logger, "Registering command handlers...");
-	const auto suggestions = args["console_log.suggestions"].as<bool>();
-	
-	auto root = commands::create("root");
-	utility::register_command_handlers(*root, logger, suggestions);
-	utility::register_shared_commands(*root, logger);
+	auto registry = init_registry(args, logger);
 
-	const auto ret = run(args, logger, *root);
+	if(!registry) {
+		return EXIT_FAILURE;
+	}
+
+	const auto ret = run(args, logger, *registry);
 	SLOG_INFO(logger, "{} terminated (returned '{}')", login::app_name, ret);
 	return ret;
 } catch(const std::exception& e) {
@@ -98,6 +98,17 @@ int run(const opts::variables_map& args, log::Logger& logger, commands::Command&
 } catch(const std::exception& e) {
 	SLOG_FATAL(logger, e.what());
 	return EXIT_FAILURE;
+}
+
+std::shared_ptr<commands::Command> init_registry(const opts::variables_map& args, log::Logger& logger) try {
+	const auto suggestions = args["console_log.suggestions"].as<bool>();
+	auto registry = commands::create("root");
+	utility::register_command_handlers(*registry, logger, suggestions);
+	utility::register_shared_commands(*registry, logger);
+	return registry;
+} catch(const std::exception& e) {
+	SLOG_FATAL(logger, e.what());
+	return nullptr;
 }
 
 void register_shutdown(commands::Command& registry, boost::asio::io_context& ioc, log::Logger& logger) {
