@@ -84,15 +84,15 @@ int Service::run(const opts::variables_map& args) try {
 	thread::ServicePool service_pool(concurrency, BOOST_ASIO_CONCURRENCY_HINT_UNSAFE_IO);
 	context.get()->service_pool = &service_pool;
 
-	std::jthread runner([&] {
-		thread::set_name("Realm runner");
+	std::jthread stop_wait([&] {
+		thread::set_name("Waiter");
 		stop_flag.acquire();
 		service_pool.shutdown();
 	});
 
 	initialise(args);
 	service_pool.run();
-	runner.join();
+	stop_wait.join();
 
 	SLOG_INFO(logger, "{} stopped", app_name);
 	return EXIT_SUCCESS;
