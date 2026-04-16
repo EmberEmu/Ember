@@ -222,7 +222,7 @@ void Service::initialise(const opts::variables_map& args) {
 	);
 
 	ctx->login_session_builder = std::make_unique<LoginSessionBuilder>(
-		*ctx->login_handler_builder, *ctx->thread_pool
+		*ctx->login_handler_builder, *ctx->thread_pool, logger
 	);
 
 	const auto& interface = args["network.interface"].as<std::string>();

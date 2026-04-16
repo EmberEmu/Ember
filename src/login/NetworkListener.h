@@ -83,7 +83,7 @@ class NetworkListener final {
 
 	void start_session(tcp_strand_socket socket) {
 		LOG_TRACE(logger_, log_func);
-		auto session = session_builder_.create(sessions_, std::move(socket), logger_);
+		auto session = session_builder_.create(sessions_, std::move(socket));
 		sessions_.start(std::move(session));
 	}
 
