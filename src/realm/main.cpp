@@ -29,7 +29,7 @@ using namespace ember;
 namespace opts = boost::program_options;
 
 opts::variables_map parse_arguments(int argc, const char* argv[]);
-std::shared_ptr<commands::Command> init_registry(const opts::variables_map& args, log::Logger& logger);
+std::shared_ptr<commands::Command> init_commands(const opts::variables_map& args, log::Logger& logger);
 int run(const opts::variables_map& args, log::Logger& logger, commands::Command& registry);
 
 /*
@@ -51,12 +51,7 @@ int main(int argc, const char* argv[]) try {
 	log::global_logger(logger);
 	SLOG_INFO(logger, "Logger configured successfully");
 
-	auto registry = init_registry(args, logger);
-
-	if(!registry) {
-		return EXIT_FAILURE;
-	}
-
+	auto registry = init_commands(args, logger);
 	const auto ret = run(args, logger, *registry);
 	SLOG_INFO(logger, "{} terminated (returned '{}')", realm::app_name, ret);
 	return ret;
@@ -94,15 +89,12 @@ int run(const opts::variables_map& args, log::Logger& logger, commands::Command&
 	return EXIT_FAILURE;
 }
 
-std::shared_ptr<commands::Command> init_registry(const opts::variables_map& args, log::Logger& logger) try {
+std::shared_ptr<commands::Command> init_commands(const opts::variables_map& args, log::Logger& logger) {
 	auto registry = commands::create("root");
 	const auto suggestions = args["console_log.suggestions"].as<bool>();
 	utility::register_command_handlers(*registry, logger, suggestions);
 	utility::register_common_commands(*registry, logger);
 	return registry;
-} catch(const std::exception& e) {
-	SLOG_FATAL(logger, e.what());
-	return nullptr;
 }
 
 opts::variables_map parse_arguments(const int argc, const char* argv[]) {

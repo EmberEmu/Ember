@@ -35,7 +35,7 @@ namespace opts = boost::program_options;
 opts::variables_map parse_arguments(int argc, const char* argv[]);
 int run(const opts::variables_map& args, log::Logger& logger, commands::Command& registry);
 void register_shutdown(commands::Command& registry, boost::asio::io_context& ioc, log::Logger& logger);
-std::shared_ptr<commands::Command> init_registry(const opts::variables_map& args, log::Logger& logger);
+std::shared_ptr<commands::Command> init_commands(const opts::variables_map& args, log::Logger& logger);
 
 /*
  * We want to do the minimum amount of work required to get 
@@ -56,12 +56,7 @@ int main(int argc, const char* argv[]) try {
 	log::global_logger(logger);
 	SLOG_INFO(logger, "Logger configured successfully");
 
-	auto registry = init_registry(args, logger);
-
-	if(!registry) {
-		return EXIT_FAILURE;
-	}
-
+	auto registry = init_commands(args, logger);
 	const auto ret = run(args, logger, *registry);
 	SLOG_INFO(logger, "{} terminated (returned '{}')", login::app_name, ret);
 	return ret;
@@ -100,15 +95,12 @@ int run(const opts::variables_map& args, log::Logger& logger, commands::Command&
 	return EXIT_FAILURE;
 }
 
-std::shared_ptr<commands::Command> init_registry(const opts::variables_map& args, log::Logger& logger) try {
+std::shared_ptr<commands::Command> init_commands(const opts::variables_map& args, log::Logger& logger) {
 	auto registry = commands::create("root");
 	const auto suggestions = args["console_log.suggestions"].as<bool>();
 	utility::register_command_handlers(*registry, logger, suggestions);
 	utility::register_common_commands(*registry, logger);
 	return registry;
-} catch(const std::exception& e) {
-	SLOG_FATAL(logger, e.what());
-	return nullptr;
 }
 
 void register_shutdown(commands::Command& registry, boost::asio::io_context& ioc, log::Logger& logger) {

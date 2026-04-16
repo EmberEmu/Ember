@@ -264,12 +264,11 @@ grunt::Result LoginHandler::process_fetch_user_action(const FetchUserAction& act
 		return grunt::Result::fail_unknown_account;
 	}
 
-	user_ = std::move(user);
-
 	state_data_.emplace<LoginAuthenticator>(
-		user_->username(), user_->verifier(), user_->salt()
+		user->username(), user->verifier(), user->salt()
 	);
 
+	user_ = std::move(user);
 	return grunt::Result::success;
 } catch(const dal::exception& e) {
 	metrics_.increment("login_internal_failure");

@@ -224,9 +224,6 @@ void register_command_handlers(commands::Command& root, log::Logger& logger, con
 	if(sinks.empty()) {
 		SLOG_INFO(logger, "Console commands disabled, no suitable logging sink found");
 		return;
-	} else if(sinks.size() > 1) {
-		SLOG_ERROR(logger, "Console commands disabled, multiple command logging sinks found");
-		return;
 	}
 
 	auto sink = static_cast<log::CommandSink*>(sinks.front().get());
