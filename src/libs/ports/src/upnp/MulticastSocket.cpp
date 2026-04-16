@@ -61,25 +61,16 @@ auto MulticastSocket::receive() -> asio::awaitable<ReceiveType> {
 	co_return std::span{ buffer_.data(), size };
 }
 
-asio::awaitable<bool> MulticastSocket::send(std::vector<std::uint8_t> buffer, asio::ip::udp::endpoint ep) {
-	auto ptr = std::make_shared<decltype(buffer)>(std::move(buffer));
-	co_return co_await send(std::move(ptr), ep);
+asio::awaitable<bool> MulticastSocket::send(std::span<std::uint8_t> buffer) {
+	co_return co_await send(std::move(buffer), ep_);
 }
 
-asio::awaitable<bool> MulticastSocket::send(std::vector<std::uint8_t> buffer) {
-	auto ptr = std::make_shared<decltype(buffer)>(std::move(buffer));
-	co_return co_await send(std::move(ptr));
-}
-
-asio::awaitable<bool> MulticastSocket::send(std::shared_ptr<std::vector<std::uint8_t>> buffer,
-										  asio::ip::udp::endpoint ep) {
+asio::awaitable<bool> MulticastSocket::send(std::span<std::uint8_t> buffer, asio::ip::udp::endpoint ep) {
 	if(!socket_.is_open()) {
 		co_return false;
 	}
 
-	const auto ba_buf = asio::buffer(*buffer);
-
-	const auto& [ec, _] = co_await socket_.async_send_to(ba_buf, ep, asio::as_tuple);
+	const auto& [ec, _] = co_await socket_.async_send_to(buffer, ep, asio::as_tuple);
 
 	if(ec) {
 		socket_.close();
@@ -89,9 +80,6 @@ asio::awaitable<bool> MulticastSocket::send(std::shared_ptr<std::vector<std::uin
 	co_return true;
 }
 
-asio::awaitable<bool> MulticastSocket::send(std::shared_ptr<std::vector<std::uint8_t>> buffer) {
-	co_return co_await send(std::move(buffer), ep_);
-}
 
 void MulticastSocket::close() {
 	boost::system::error_code ec; // we don't care about any errors

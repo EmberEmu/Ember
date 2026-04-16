@@ -21,7 +21,7 @@ namespace asio = boost::asio;
 SSDP::SSDP(const std::string& bind, boost::asio::io_context& ctx)
 	: ctx_(ctx),
 	  strand_(ctx),
-	  transport_(ctx, bind, MULTICAST_IPV4_ADDR, DEST_PORT) {
+	  transport_(ctx, bind, mcast_ipv4_addr, mcast_dest_port) {
 	asio::co_spawn(ctx_, read_broadcasts(), asio::detached);
 }
 
@@ -118,16 +118,15 @@ std::vector<std::uint8_t> SSDP::build_ssdp_request(const std::string_view type,
 
 	std::vector<std::uint8_t> buffer;
 	buffer.reserve(4096);
-	std::format_to(std::back_inserter(buffer), request, MULTICAST_IPV4_ADDR,
-	               DEST_PORT, type, subtype, version);
+	std::format_to(std::back_inserter(buffer), request, mcast_ipv4_addr, mcast_dest_port, type, subtype, version);
 	return buffer;
 }
 
 asio::awaitable<void> SSDP::start_ssdp_search(const std::string_view type,
-                                            std::string_view subtype,
-                                            const int version) {
+                                              const std::string_view subtype,
+                                              const int version) {
 	auto buffer = build_ssdp_request(type, subtype, version);
-	const auto result = co_await transport_.send(std::move(buffer));
+	const auto result = co_await transport_.send(buffer);
 
 	if(!result) {
 		handler_(std::unexpected(ErrorCode::network_failure));
@@ -137,14 +136,14 @@ asio::awaitable<void> SSDP::start_ssdp_search(const std::string_view type,
 asio::awaitable<LocateResult> SSDP::locate_gateways(use_awaitable_t) {
 	// this isn't great but it'd need a design rethink
 	auto buffer = build_ssdp_request("service", "WANIPConnection", 1);
-	auto result = co_await transport_.send(std::move(buffer));
+	auto result = co_await transport_.send(buffer);
 
 	if(!result) {
 		co_return std::unexpected(ErrorCode::network_failure);
 	}
 
 	buffer = build_ssdp_request("service", "WANIPConnection", 2);
-	result = co_await transport_.send(std::move(buffer));
+	result = co_await transport_.send(buffer);
 
 	if(!result) {
 		co_return std::unexpected(ErrorCode::network_failure);

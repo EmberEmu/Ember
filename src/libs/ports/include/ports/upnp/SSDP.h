@@ -26,9 +26,9 @@
 
 namespace ember::ports::upnp {
 
-constexpr std::string_view MULTICAST_IPV4_ADDR { "239.255.255.250" };
-constexpr std::string_view MULTICAST_IPV6_ADDR { "ff05::c" };
-constexpr std::uint16_t DEST_PORT { 1900 };
+constexpr std::string_view mcast_ipv4_addr { "239.255.255.250" };
+constexpr std::string_view mcast_ipv6_addr { "ff05::c" };
+constexpr std::uint16_t mcast_dest_port { 1900 };
 
 struct DeviceResult {
 	HTTPHeader header;
@@ -49,7 +49,7 @@ class SSDP final {
 	                                             const int version);
 
 	ErrorCode validate_message(std::span<const std::uint8_t> datagram);
-	boost::asio::awaitable<void> start_ssdp_search(const std::string_view type, std::string_view subtype, int version);
+	boost::asio::awaitable<void> start_ssdp_search(const std::string_view type, const std::string_view subtype, int version);
 	boost::asio::awaitable<void> read_broadcasts();
 	LocateResult build_locate_result(std::span<const std::uint8_t> datagram);
 
@@ -60,8 +60,7 @@ public:
 	boost::asio::awaitable<LocateResult> locate_gateways(use_awaitable_t);
 	std::future<LocateResult> locate_gateways(use_future_t);
 
-	void search(const std::string& type, const std::string& subtype,
-	            int version, LocateHandler&& handler);
+	void search(const std::string& type, const std::string& subtype, int version, LocateHandler&& handler);
 };
 
 } // upnp, ports, ember

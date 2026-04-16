@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 - 2025 Ember
+ * Copyright (c) 2024 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -18,7 +18,6 @@
 #include <span>
 #include <string>
 #include <string_view>
-#include <vector>
 #include <cstdint>
 
 namespace ember::ports {
@@ -39,10 +38,8 @@ public:
                     std::uint16_t port);
 	~MulticastSocket();
 
-	boost::asio::awaitable<bool> send(std::vector<std::uint8_t> buffer, boost::asio::ip::udp::endpoint);
-	boost::asio::awaitable<bool> send(std::vector<std::uint8_t> buffer);
-	boost::asio::awaitable<bool> send(std::shared_ptr<std::vector<std::uint8_t>> buffer);
-	boost::asio::awaitable<bool> send(std::shared_ptr<std::vector<std::uint8_t>> buffer, boost::asio::ip::udp::endpoint);
+	boost::asio::awaitable<bool> send(std::span<std::uint8_t> buffer, boost::asio::ip::udp::endpoint);
+	boost::asio::awaitable<bool> send(std::span<std::uint8_t> buffer);
 	boost::asio::awaitable<ReceiveType> receive();
 	std::string local_address() const;
 	void close();
