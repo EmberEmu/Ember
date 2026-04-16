@@ -42,9 +42,9 @@ struct StreamResult {
 		"compression failed",
 		"data size too large",
 		"underlying stream error",
-		"encountered unprocessed data",
+		"unprocessed data",
 		"message framing lost",
-		"attempted to read outside of message bounds"
+		"out of bounds read attempt"
 	};
 
 	StreamResult(decltype(val_) value) : val_(value) {}
