@@ -62,7 +62,7 @@ auto MulticastSocket::receive() -> asio::awaitable<Result> {
 }
 
 asio::awaitable<bool> MulticastSocket::send(std::span<const std::uint8_t> buffer) {
-	co_return co_await send(std::move(buffer), ep_);
+	co_return co_await send(buffer, ep_);
 }
 
 asio::awaitable<bool> MulticastSocket::send(std::span<const std::uint8_t> buffer, asio::ip::udp::endpoint ep) {
