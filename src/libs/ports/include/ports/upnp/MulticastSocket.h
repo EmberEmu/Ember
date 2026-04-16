@@ -38,8 +38,8 @@ public:
                     std::uint16_t port);
 	~MulticastSocket();
 
-	boost::asio::awaitable<bool> send(std::span<std::uint8_t> buffer, boost::asio::ip::udp::endpoint);
-	boost::asio::awaitable<bool> send(std::span<std::uint8_t> buffer);
+	boost::asio::awaitable<bool> send(std::span<const std::uint8_t> buffer, boost::asio::ip::udp::endpoint);
+	boost::asio::awaitable<bool> send(std::span<const std::uint8_t> buffer);
 	boost::asio::awaitable<Result> receive();
 	std::string local_address() const;
 	void close();

@@ -11,9 +11,9 @@
 #include <boost/asio/ip/multicast.hpp>
 #include <utility>
 
-namespace ember::ports {
-
 namespace asio = boost::asio;
+
+namespace ember::ports {
 
 MulticastSocket::MulticastSocket(asio::io_context& context,
 								 std::string_view listen_iface,
@@ -58,14 +58,14 @@ auto MulticastSocket::receive() -> asio::awaitable<Result> {
 		co_return std::unexpected(ec);
 	}
 
-	co_return std::span{ buffer_.data(), size };
+	co_return std::span { buffer_.data(), size };
 }
 
-asio::awaitable<bool> MulticastSocket::send(std::span<std::uint8_t> buffer) {
+asio::awaitable<bool> MulticastSocket::send(std::span<const std::uint8_t> buffer) {
 	co_return co_await send(std::move(buffer), ep_);
 }
 
-asio::awaitable<bool> MulticastSocket::send(std::span<std::uint8_t> buffer, asio::ip::udp::endpoint ep) {
+asio::awaitable<bool> MulticastSocket::send(std::span<const std::uint8_t> buffer, asio::ip::udp::endpoint ep) {
 	if(!socket_.is_open()) {
 		co_return false;
 	}
@@ -79,7 +79,6 @@ asio::awaitable<bool> MulticastSocket::send(std::span<std::uint8_t> buffer, asio
 
 	co_return true;
 }
-
 
 void MulticastSocket::close() {
 	boost::system::error_code ec; // we don't care about any errors
