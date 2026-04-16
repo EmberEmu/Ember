@@ -69,7 +69,7 @@ void LoginSession::execute(std::unique_ptr<Action> action) {
 	pool_.run([&, action = std::move(action), self]() mutable {
 		action->execute();
 
-		boost::asio::dispatch(get_executor(), [&, action = std::move(action), self] {
+		boost::asio::post(get_executor(), [&, action = std::move(action), self] {
 			if(!is_stopped()) {
 				completion(*action.get());
 			}
