@@ -104,7 +104,7 @@ std::shared_ptr<commands::Command> init_registry(const opts::variables_map& args
 	const auto suggestions = args["console_log.suggestions"].as<bool>();
 	auto registry = commands::create("root");
 	utility::register_command_handlers(*registry, logger, suggestions);
-	utility::register_shared_commands(*registry, logger);
+	utility::register_common_commands(*registry, logger);
 	return registry;
 } catch(const std::exception& e) {
 	SLOG_FATAL(logger, e.what());

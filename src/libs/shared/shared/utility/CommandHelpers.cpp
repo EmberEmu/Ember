@@ -200,7 +200,7 @@ void handle_cls_command(log::Logger& logger) {
 }
 #endif
 
-void register_shared_commands(commands::Command& root, log::Logger& logger) {
+void register_common_commands(commands::Command& root, log::Logger& logger) {
 	root.insert("help")
 		->description("Display console command usage information")
 		->argument<std::string>("command", commands::optional)

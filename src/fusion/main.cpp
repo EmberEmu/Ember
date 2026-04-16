@@ -62,7 +62,7 @@ int main(int argc, const char* argv[]) try {
 	root = commands::create("root");
 	create_service_subcommands(*root);
 	utility::register_command_handlers(*root, logger, true);
-	utility::register_shared_commands(*root, logger);
+	utility::register_common_commands(*root, logger);
 	register_service_commands(*root, logger);
 
 	glob_params = Params {
