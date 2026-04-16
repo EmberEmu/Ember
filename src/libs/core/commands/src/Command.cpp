@@ -16,7 +16,7 @@
 
 namespace ember::commands {
 
-Command::Command(std::string name)
+Command::Command(std::string name, _constructor_tag)
 	: name_(std::move(name)) {
 	if(name_.empty()) {
 		throw exception("Command name cannot be empty");
@@ -24,7 +24,7 @@ Command::Command(std::string name)
 }
 
 std::shared_ptr<Command> Command::create(std::string name) {
-	return std::shared_ptr<Command>(new Command(std::move(name))); // make_shared can't access ctor
+	return std::make_shared<Command>(std::move(name), _constructor_tag{});
 }
 
 auto Command::validate_arg_count(const std::size_t count) const -> Result {
@@ -56,7 +56,7 @@ Result Command::execute() {
 }
 
 Result Command::execute(std::span<std::any> arg_values) {
-	std::shared_ptr<CommandHandler> handler;
+	std::shared_ptr<Handler> handler;
 	ArgMap args;
 
 	{
@@ -119,13 +119,13 @@ std::shared_ptr<Command> Command::description(std::string description) {
 	return this->shared_from_this();
 }
 
-std::shared_ptr<Command> Command::handler(CommandHandler handler) {
+std::shared_ptr<Command> Command::handler(Handler handler) {
 	std::lock_guard guard(mutex_);
 
 	// shared_ptr to avoid having to copy a potentially heavyweight handler
 	// during invocation for thread safety reasons - guaranteeing the lifetime
 	// of the handler rather than copying is sufficient
-	handler_ = std::make_shared<CommandHandler>(handler);
+	handler_ = std::make_shared<Handler>(handler);
 	return this->shared_from_this();
 }
 

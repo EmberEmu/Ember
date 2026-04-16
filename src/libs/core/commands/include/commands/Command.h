@@ -30,15 +30,19 @@ namespace ember::commands {
 
 class Command;
 
-using CommandHandler = std::function<void(const Arguments&)>;
+using Handler = std::function<void(const Arguments&)>;
 
 class Command : public std::enable_shared_from_this<Command> {
+	struct _constructor_tag {
+		explicit _constructor_tag() = default;
+	};
+
 	mutable std::mutex mutex_;
 
 	std::string description_;
 	std::string name_;
 	std::vector<Argument> args_;
-	std::shared_ptr<CommandHandler> handler_;
+	std::shared_ptr<Handler> handler_;
 	CommandMap commands_;
 	Flags flags_;
 
@@ -50,9 +54,10 @@ class Command : public std::enable_shared_from_this<Command> {
 	Result can_execute_handler() const;
 	std::shared_ptr<Command> insert_argument(std::string argument, const std::type_info& type);
 	std::shared_ptr<Command> insert_optional_argument(std::string argument, const std::type_info& type);
-	explicit Command(std::string name);
 
 public:
+	explicit Command(std::string name, _constructor_tag);
+
 	static std::shared_ptr<Command> create(std::string name);
 
 	Command(Command&) = delete;
@@ -63,7 +68,7 @@ public:
 	void insert(std::shared_ptr<Command> command);
 	std::shared_ptr<Command> insert(std::string name);
 	std::shared_ptr<Command> description(std::string description);
-	std::shared_ptr<Command> handler(CommandHandler handler);
+	std::shared_ptr<Command> handler(Handler handler);
 	std::shared_ptr<Command> flags(const Flags& flags);
 	ScopedCommand scoped_insert(std::string name);
 	ScopedCommand scoped_insert(std::shared_ptr<Command> command);
