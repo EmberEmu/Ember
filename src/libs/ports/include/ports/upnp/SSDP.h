@@ -17,7 +17,6 @@
 #include <boost/asio/strand.hpp>
 #include <expected>
 #include <functional>
-#include <memory>
 #include <span>
 #include <string>
 #include <string_view>
