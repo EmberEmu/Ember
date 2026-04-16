@@ -20,14 +20,7 @@ namespace ember {
 class LoginHandlerBuilder;
 class SessionManager;
 
-class NetworkSessionBuilder {
-public:
-	virtual std::shared_ptr<LoginSession> create(SessionManager& sessions, tcp_strand_socket socket) const = 0;
-
-	virtual ~NetworkSessionBuilder() = default;
-};
-
-class LoginSessionBuilder final : public NetworkSessionBuilder {
+class LoginSessionBuilder final {
 	const LoginHandlerBuilder& builder_;
 	thread::ThreadPool& pool_;
 	log::Logger& logger_;
@@ -38,7 +31,7 @@ public:
 		, pool_(pool)
 		, logger_(logger) { }
 
-	std::shared_ptr<LoginSession> create(SessionManager& sessions, tcp_strand_socket socket) const override {
+	std::shared_ptr<LoginSession> create(SessionManager& sessions, tcp_strand_socket socket) const {
 		return std::make_shared<LoginSession>(
 			sessions, std::move(socket), logger_, pool_, builder_
 		);
