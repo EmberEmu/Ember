@@ -20,7 +20,7 @@ void SessionManager::start(std::shared_ptr<LoginNetSession>&& session) {
 
 void SessionManager::stop(const std::shared_ptr<LoginNetSession>& session) {
 	std::lock_guard guard(sessions_lock_);
-	sessions_.erase(std::move(session));
+	sessions_.erase(session);
 	session->stop();
 }
 
