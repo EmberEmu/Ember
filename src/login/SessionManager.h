@@ -25,7 +25,7 @@ class SessionManager final {
 	std::mutex sessions_lock_;
 
 public:
-	void start(const std::shared_ptr<LoginNetSession>& session);
+	void start(std::shared_ptr<LoginNetSession>&& session);
 	void stop(const std::shared_ptr<LoginNetSession>& session);
 	void stop_all();
 	std::size_t count() const;
