@@ -274,7 +274,7 @@ void Service::initialise(const opts::variables_map& args) try {
 	});
 } catch(...) {
 	stop_flag.release();
-	std::rethrow_exception(std::current_exception());
+	throw;
 }
 
 void Service::register_commands(boost::asio::io_context& ioc) {
