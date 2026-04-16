@@ -30,7 +30,7 @@ class MulticastSocket final {
     boost::asio::ip::udp::endpoint ep_, remote_ep_;
 
 public:
-	using ReceiveType = std::expected<std::span<std::uint8_t>, boost::system::error_code>;
+	using Result = std::expected<std::span<std::uint8_t>, boost::system::error_code>;
 
     MulticastSocket(boost::asio::io_context& context,
                     std::string_view listen_addr,
@@ -40,7 +40,7 @@ public:
 
 	boost::asio::awaitable<bool> send(std::span<std::uint8_t> buffer, boost::asio::ip::udp::endpoint);
 	boost::asio::awaitable<bool> send(std::span<std::uint8_t> buffer);
-	boost::asio::awaitable<ReceiveType> receive();
+	boost::asio::awaitable<Result> receive();
 	std::string local_address() const;
 	void close();
 };

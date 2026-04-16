@@ -19,10 +19,10 @@ MulticastSocket::MulticastSocket(asio::io_context& context,
 								 std::string_view listen_iface,
 								 std::string_view mcast_group,
 								 const std::uint16_t port)
-	: context_(context),
-	  socket_(context),
-	  buffer_{},
-	ep_(asio::ip::make_address(mcast_group), port) {
+	: context_(context)
+	, socket_(context)
+	, buffer_{}
+	, ep_(asio::ip::make_address(mcast_group), port) {
 	const auto mcast_iface = asio::ip::make_address(listen_iface);
 	const auto group_ip = asio::ip::make_address(mcast_group);
 
@@ -46,7 +46,7 @@ MulticastSocket::~MulticastSocket() {
 	close();
 }
 
-auto MulticastSocket::receive() -> asio::awaitable<ReceiveType> {
+auto MulticastSocket::receive() -> asio::awaitable<Result> {
 	if(!socket_.is_open()) {
 		co_return std::unexpected(asio::error::not_connected);
 	}
