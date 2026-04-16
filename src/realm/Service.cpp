@@ -13,9 +13,7 @@
 #include "FilterTypes.h"
 #include "LoggingCallbacks.h"
 #include "ServiceContextImpl.h"
-#include "commands/Connections.h"
-#include "commands/Messaging.h"
-#include "commands/Set.h"
+#include "commands/Commands.h"
 #include <conpool/ConnectionPool.h>
 #include <conpool/Policies.h>
 #include <conpool/drivers/AutoSelect.h>
@@ -105,7 +103,7 @@ int Service::run(const opts::variables_map& args) try {
 
 void Service::initialise(const opts::variables_map& args) try {
 	auto ctx = context.get();
-	const auto time = std::chrono::steady_clock::now();
+	ctx->start_time = std::chrono::steady_clock::now();
 
 	print_lib_versions(logger);
 
@@ -268,13 +266,11 @@ void Service::initialise(const opts::variables_map& args) try {
 	register_commands(service);
 
 	// All done setting up
-	boost::asio::dispatch(service, [&, time, ctx]() {
+	boost::asio::dispatch(service, [&, ctx]() {
 		ctx->rpc_realm->set_online();
 
 		SLOG_INFO(logger, "{} started successfully in {}", app_name,
-			utility::time_elapsed_format(time));
-
-		ctx->start_time = std::chrono::steady_clock::now();
+			utility::time_elapsed_format(ctx->start_time));
 	});
 } catch(...) {
 	stop_flag.release();
@@ -313,21 +309,7 @@ void Service::register_commands(boost::asio::io_context& ioc) {
 		})
 	));
 	
-	auto conn_root = add_connections_commands(
-		registry, *ctx->cmd_exec, *ctx->dispatcher, ctx->sessions, logger
-	);
-
-	auto msg_root = add_message_commands(
-		registry, *ctx->cmd_exec, *ctx->dispatcher, ctx->sessions, logger
-	);
-
-	auto set_root = add_set_commands(
-		registry, *ctx->cmd_exec, *ctx->dispatcher, *ctx->rpc_realm, logger
-	);
-
-	ctx->commands.emplace_back(std::move(set_root));
-	ctx->commands.emplace_back(std::move(msg_root));
-	ctx->commands.emplace_back(std::move(conn_root));
+	install_commands(context, registry, logger);
 	ctx->commands.emplace_back(std::move(cmd));
 }
 

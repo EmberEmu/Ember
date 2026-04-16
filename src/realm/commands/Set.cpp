@@ -8,9 +8,12 @@
 
 #include "Set.h"
 #include "../Events.h"
+#include "../ServiceContextImpl.h"
 #include <logger/Logger.h>
 
 namespace ember::realm {
+
+namespace {
 
 void set_offline(const commands::Arguments& args, RealmService& service,
                  EventDispatcher& dispatcher, log::Logger& logger) {
@@ -24,7 +27,7 @@ void set_offline(const commands::Arguments& args, RealmService& service,
 	const bool disconnect = args["disconnect"].as<bool>();
 
 	if(disconnect) {
-		const Event event {
+		const Event event{
 			.type = EventType::kick_self
 		};
 
@@ -38,9 +41,12 @@ void set_online(RealmService& service, log::Logger& logger) {
 	LOG_CONSOLE(logger, "Set realm status to online");
 }
 
-commands::ScopedCommand add_set_commands(commands::Command& registry, utility::CommandExecutor& exec,
-										 EventDispatcher& dispatcher, RealmService& service,
-                                         log::Logger& logger) {
+} // unnamed
+
+void add_set_commands(ServiceContext& context, commands::Command& registry, log::Logger& logger) {
+	auto impl = context.get();
+	auto& exec = *impl->cmd_exec;
+
 	auto root = commands::create("set")
 		->description("Commands for realm state configuration");
 
@@ -48,17 +54,17 @@ commands::ScopedCommand add_set_commands(commands::Command& registry, utility::C
 		->description("Sets the realm list listing to offline, optionally disconnecting players")
 		->argument<bool>("disconnect", commands::optional)
 		->handler(exec([&](const commands::Arguments& args) {
-			set_offline(args, service, dispatcher, logger);
+			set_offline(args, *impl->rpc_realm, *impl->dispatcher, logger);
 		}));
 
 	root->insert("online")
 		->description("Sets the realm list listing to online")
 		->handler(exec([&](const commands::Arguments& args) {
-			set_online(service, logger);
+			set_online(*impl->rpc_realm, logger);
 		}));
 
-	// register scoped root 'message' command
-	return registry.scoped_insert(root);
+	auto scoped = registry.scoped_insert(root);
+	impl->commands.emplace_back(std::move(scoped));
 }
 
 } // realm, ember

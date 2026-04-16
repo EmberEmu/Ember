@@ -12,28 +12,25 @@
 
 namespace ember::realm {
 
-namespace impl {
+namespace {
 
-std::shared_ptr<commands::Command> uptime(utility::CommandExecutor& exec,
-                                          std::chrono::steady_clock::time_point& time,
-                                          log::Logger& logger) {
+auto uptime(utility::CommandExecutor& exec, std::chrono::steady_clock::time_point start, log::Logger& logger) 
+-> std::shared_ptr<commands::Command> {
 	return commands::create("uptime")
 		->description("Display service uptime")
-		->handler(exec([&, time](auto&) {
-			const auto uptime = std::chrono::steady_clock::now() - time;
+		->handler(exec([&, start](auto&) {
+			const auto uptime = std::chrono::steady_clock::now() - start;
 			LOG_CONSOLE(logger, "Server has been up for {}", utility::time_duration_format(uptime));
 		}
 	));
 }
 
-} // impl
+} // unnamed
 
 void add_ungrouped_commands(ServiceContext& context, commands::Command& registry, log::Logger& logger) {
 	auto impl = context.get();
-
-	impl->commands.emplace_back(registry.scoped_insert(
-		impl::uptime(*impl->cmd_exec, impl->start_time, logger)
-	));
+	auto scoped = registry.scoped_insert(uptime(*impl->cmd_exec, impl->start_time, logger));
+	impl->commands.emplace_back(std::move(scoped));
 }
 
 } // realm, ember

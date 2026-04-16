@@ -6,8 +6,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+#include "Message.h"
 #include "Connections.h"
 #include "../Events.h"
+#include "../ServiceContextImpl.h"
 #include <logger/Logger.h>
 #include <bprinter/table_printer.h>
 #include <string>
@@ -40,19 +42,20 @@ void system_message(const commands::Arguments& args,
 	}
 }
 
-commands::ScopedCommand add_message_commands(commands::Command& registry,
-                                             utility::CommandExecutor& exec,
-                                             const EventDispatcher& dispatcher,
-                                             const SessionManager& sessions,
-                                             log::Logger& logger) {
+void add_message_commands(ServiceContext& context, commands::Command& registry, log::Logger& logger) {
+	auto impl = context.get();
+	auto& exec = *impl->cmd_exec;
+	auto& sessions = impl->sessions;
+	auto& dispatcher = *impl->dispatcher;
+
 	auto root = commands::create("message")
-		->description("Commands for messaging players");
+		->description("Broadcast system messages or message players");
 
 	root->insert("notify")
 		->description("Send a system notification to all or a specific connection")
 		->argument<std::string>("message")
 		->argument<SessionManager::SessionID>("id", commands::optional)
-		->handler(exec([&](const commands::Arguments& args) {
+		->handler(exec([&](const auto& args) {
 			system_message(args, sessions, dispatcher, logger, SystemMessage::Type::console);
 		}));
 
@@ -60,7 +63,7 @@ commands::ScopedCommand add_message_commands(commands::Command& registry,
 		->description("Send a system chat message to all or a specific connection")
 		->argument<std::string>("message")
 		->argument<SessionManager::SessionID>("id", commands::optional)
-		->handler(exec([&](const commands::Arguments& args) {
+		->handler(exec([&](const auto& args) {
 			system_message(args, sessions, dispatcher, logger, SystemMessage::Type::message);
 		}));
 
@@ -68,12 +71,12 @@ commands::ScopedCommand add_message_commands(commands::Command& registry,
 		->description("Send a system whisper to all or a specific connection")
 		->argument<std::string>("message")
 		->argument<SessionManager::SessionID>("id", commands::optional)
-		->handler(exec([&](const commands::Arguments& args) {
+		->handler(exec([&](const auto& args) {
 			system_message(args, sessions, dispatcher, logger, SystemMessage::Type::whisper);
 		}));
 
-	// register scoped root 'message' command
-	return registry.scoped_insert(root);
+	auto scoped = registry.scoped_insert(root);
+	impl->commands.emplace_back(std::move(scoped));
 }
 
 } // realm, ember

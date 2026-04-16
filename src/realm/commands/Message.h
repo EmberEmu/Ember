@@ -8,21 +8,12 @@
 
 #pragma once
 
-#include "../EventDispatcher.h"
-#include "../ServiceContextImpl.h"
-#include "../SessionManager.h"
+#include "../ServiceContext.h"
 #include <commands/Commands.h>
 #include <logger/LoggerFwd.h>
-#include <shared/utility/CommandExecutor.h>
 
 namespace ember::realm {
 
-commands::ScopedCommand add_message_commands(
-	commands::Command& registry,
-	utility::CommandExecutor& exec,
-    const EventDispatcher& dispatcher,
-    const SessionManager& sessions,
-	log::Logger& logger
-);
+void add_message_commands(ServiceContext& context, commands::Command& registry, log::Logger& logger);
 
 } // realm, ember

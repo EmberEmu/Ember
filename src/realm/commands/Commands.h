@@ -9,11 +9,11 @@
 #pragma once
 
 #include "../ServiceContext.h"
-#include <commands/Commands.h>
+#include <commands/Command.h>
 #include <logger/LoggerFwd.h>
 
 namespace ember::realm {
 
-void add_set_commands(ServiceContext& context, commands::Command& registry, log::Logger& logger);
+void install_commands(ServiceContext& context, commands::Command& registry, log::Logger& logger);
 
 } // realm, ember

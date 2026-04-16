@@ -8,11 +8,14 @@
 
 #include "Connections.h"
 #include "../Events.h"
+#include "../ServiceContextImpl.h"
 #include <logger/Logger.h>
 #include <bprinter/table_printer.h>
 #include <sstream>
 
 namespace ember::realm {
+
+namespace {
 
 void toggle_logging(SessionManager::SessionID id,
                     bool toggle,
@@ -28,7 +31,7 @@ void toggle_logging(SessionManager::SessionID id,
 
 	const auto type = toggle? EventType::packet_log_enable : EventType::packet_log_disable;
 
-	const auto event = Event {
+	const auto event = Event{
 		.type = type
 	};
 
@@ -47,7 +50,7 @@ void kick_connection(SessionManager::SessionID id,
 		return;
 	}
 
-	const auto event = Event {
+	const auto event = Event{
 		.type = EventType::kick_self
 	};
 
@@ -147,7 +150,7 @@ void connection_statistics(const commands::Arguments& args,
 			print_connection_stats(table, id, client);
 			print_connection_stats_footer(table);
 			LOG_CONSOLE(logger, "Displaying statistics for connection {}\n{}", id, stream.str());
-		});
+						});
 	} else {
 		std::stringstream stream;
 		bprinter::TablePrinter table(&stream);
@@ -174,11 +177,14 @@ void display_ident(const SessionManager& sessions, log::Logger& logger, SessionM
 	}
 }
 
-commands::ScopedCommand add_connections_commands(commands::Command& registry,
-                                                 utility::CommandExecutor& exec,
-                                                 const EventDispatcher& dispatcher,
-                                                 const SessionManager& sessions,
-                                                 log::Logger& logger) {
+} // unnamed
+
+void add_connections_commands(ServiceContext& context, commands::Command& registry, log::Logger& logger) {
+	auto impl = context.get();
+	auto& sessions = impl->sessions;
+	auto& exec = *impl->cmd_exec;
+	auto& dispatcher = *impl->dispatcher;
+
 	auto root = commands::create("connections")
 		->description("Commands for connection & session management")
 		->handler(exec([&](auto&) {
@@ -226,8 +232,8 @@ commands::ScopedCommand add_connections_commands(commands::Command& registry,
 			display_ident(sessions, logger, args["id"].as<SessionManager::SessionID>());
 		}));
 
-	// register scoped root 'connections' command
-	return registry.scoped_insert(root);
+	auto scoped = registry.scoped_insert(root);
+	impl->commands.emplace_back(std::move(scoped));
 }
 
 } // realm, ember
