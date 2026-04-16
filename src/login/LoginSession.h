@@ -28,9 +28,9 @@ class LoginSession final : public NetworkSession<LoginSession> {
 	log::Logger& logger_;
 	grunt::Handler grunt_handler_;
 
-	void async_completion(Action& action);
+	void completion(Action& action);
 	void write_packet(const grunt::Packet& packet, WriteCallback&& cb);
-	void execute_async(std::unique_ptr<Action> action);
+	void execute(std::unique_ptr<Action> action);
 
 public:
 	LoginSession(SessionManager& sessions,

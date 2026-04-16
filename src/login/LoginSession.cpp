@@ -37,8 +37,8 @@ LoginSession::LoginSession(SessionManager& sessions,
 		write_packet(packet, std::move(cb));
 	};
 
-	handler_.execute_async = [&](auto action) {
-		execute_async(std::move(action));
+	handler_.execute = [&](auto action) {
+		execute(std::move(action));
 	};
 }
 
@@ -61,24 +61,23 @@ bool LoginSession::handle_packet(BufferType& buffer) {
 	return true;
 }
 
-void LoginSession::execute_async(std::unique_ptr<Action> action) {
+void LoginSession::execute(std::unique_ptr<Action> action) {
 	LOG_TRACE(logger_, log_func);
 
 	auto self(shared_from_this());
-	std::shared_ptr<Action> shared_act(std::move(action));
 
-	pool_.run([&, action = std::move(shared_act), self]() mutable {
+	pool_.run([&, action = std::move(action), self]() mutable {
 		action->execute();
 
-		boost::asio::post(get_executor(), [&, action = std::move(action), self] {
+		boost::asio::dispatch(get_executor(), [&, action = std::move(action), self] {
 			if(!is_stopped()) {
-				async_completion(*action.get());
+				completion(*action.get());
 			}
 		});
 	});
 }
 
-void LoginSession::async_completion(Action& action) try {
+void LoginSession::completion(Action& action) try {
 	LOG_TRACE(logger_, log_func);
 
 	if(!handler_.update_state(action)) {

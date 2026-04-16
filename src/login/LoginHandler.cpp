@@ -193,7 +193,7 @@ void LoginHandler::fetch_user(grunt::Opcode opcode, const utf8_string& username)
 	}
 
 	auto action = std::make_unique<FetchUserAction>(username, user_src_);
-	execute_async(std::move(action));
+	execute(std::move(action));
 }
 
 void LoginHandler::fetch_session_key(const FetchUserAction& action_res) {
@@ -206,7 +206,7 @@ void LoginHandler::fetch_session_key(const FetchUserAction& action_res) {
 
 	update_state(LoginState::fetching_session);
 	auto action = std::make_unique<FetchSessionKeyAction>(acct_svc_, user_->id());
-	execute_async(std::move(action));
+	execute(std::move(action));
 }
 
 void LoginHandler::reject_client(const GameVersion& version) {
@@ -460,7 +460,7 @@ void LoginHandler::handle_login_proof(const grunt::Packet& packet) {
 			authenticator.session_key(proofs.A)
 		);
 
-		execute_async(std::move(action));
+		execute(std::move(action));
 	} else {
 		send_login_proof(result);
 	}
@@ -553,7 +553,7 @@ void LoginHandler::on_session_write(const RegisterSessionAction& action) {
 
 	// defer sending the response until we've fetched the character data
 	if(result == rpc::Account::Status::ok) {
-		execute_async(std::make_unique<FetchCharacterCounts>(user_->id(), user_src_));
+		execute(std::make_unique<FetchCharacterCounts>(user_->id(), user_src_));
 	} else {
 		send_login_proof(response);
 	}
@@ -573,7 +573,7 @@ void LoginHandler::handle_reconnect_proof(const grunt::Packet& packet) {
 
 	if(authenticator.proof_check(proof.salt, proof.proof)) {
 		update_state(LoginState::fetching_character_data);
-		execute_async(std::make_unique<FetchCharacterCounts>(user_->id(), user_src_, true));
+		execute(std::make_unique<FetchCharacterCounts>(user_->id(), user_src_, true));
 	} else {
 		send_reconnect_proof(grunt::Result::fail_incorrect_password);
 	}
@@ -689,7 +689,7 @@ void LoginHandler::handle_survey_result(const grunt::Packet& packet) {
 	);
 
 	metrics_.increment("surveys_received");
-	execute_async(std::move(action));
+	execute(std::move(action));
 }
 
 void LoginHandler::on_survey_write(const SaveSurveyAction& action) {
