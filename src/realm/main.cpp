@@ -65,17 +65,6 @@ int main(int argc, const char* argv[]) try {
 	return EXIT_FAILURE;
 }
 
-std::shared_ptr<commands::Command> init_registry(const opts::variables_map& args, log::Logger& logger) try {
-	const auto suggestions = args["console_log.suggestions"].as<bool>();
-	auto registry = commands::create("root");
-	utility::register_command_handlers(*registry, logger, suggestions);
-	utility::register_common_commands(*registry, logger);
-	return registry;
-} catch(const std::exception& e) {
-	SLOG_FATAL(logger, e.what());
-	return nullptr;
-}
-
 int run(const opts::variables_map& args, log::Logger& logger, commands::Command& registry) try {
 	boost::asio::io_context ioc;
 	boost::asio::signal_set signals(ioc, SIGINT, SIGTERM);
@@ -103,6 +92,17 @@ int run(const opts::variables_map& args, log::Logger& logger, commands::Command&
 } catch(const std::exception& e) {
 	SLOG_FATAL(logger, e.what());
 	return EXIT_FAILURE;
+}
+
+std::shared_ptr<commands::Command> init_registry(const opts::variables_map& args, log::Logger& logger) try {
+	auto registry = commands::create("root");
+	const auto suggestions = args["console_log.suggestions"].as<bool>();
+	utility::register_command_handlers(*registry, logger, suggestions);
+	utility::register_common_commands(*registry, logger);
+	return registry;
+} catch(const std::exception& e) {
+	SLOG_FATAL(logger, e.what());
+	return nullptr;
 }
 
 opts::variables_map parse_arguments(const int argc, const char* argv[]) {

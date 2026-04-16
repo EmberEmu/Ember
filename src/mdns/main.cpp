@@ -92,8 +92,8 @@ int run(const opts::variables_map& args, log::Logger& logger, commands::Command&
 }
 
 std::shared_ptr<commands::Command> init_registry(const opts::variables_map& args, log::Logger& logger) try {
-	const auto suggestions = args["console_log.suggestions"].as<bool>();
 	auto registry = commands::create("root");
+	const auto suggestions = args["console_log.suggestions"].as<bool>();
 	utility::register_command_handlers(*registry, logger, suggestions);
 	utility::register_common_commands(*registry, logger);
 	return registry;
