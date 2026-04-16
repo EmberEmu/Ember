@@ -23,12 +23,12 @@ class TransferData final : public Packet {
 	State state_ = State::initial;
 
 public:
-	static const std::uint16_t MAX_CHUNK_SIZE = 65535;
+	static const std::uint16_t max_chunk_size = 65535;
 
 	TransferData() : Packet(Opcode::cmd_xfer_data) {}
 
 	std::uint16_t size = 0;
-	std::array<std::byte, MAX_CHUNK_SIZE> chunk;
+	std::array<std::byte, max_chunk_size> chunk;
 
 	State read_from_stream(PacketStream& stream) override {
 		BOOST_ASSERT_MSG(state_ != State::done, "Packet already complete - check your logic!");

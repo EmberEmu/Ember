@@ -254,21 +254,23 @@ void LoginHandler::build_login_challenge_decoy(grunt::server::LoginChallenge& pa
 }
 
 grunt::Result LoginHandler::process_fetch_user_action(const FetchUserAction& action) try {
-	if((user_ = action.get_result())) {
-		if(user_->verified() || !opts_.verified_email) {
-			state_data_.emplace<LoginAuthenticator>(
-				user_->username(), user_->verifier(), user_->salt()
-			);
+	auto user = action.get_result();
 
-			return grunt::Result::success;
-		} else {
-			LOG_DEBUG(logger_, "Account not verified: {}", user_->username());
-		}
-	} else {
+	if(!user) {
 		LOG_DEBUG(logger_, "Account not found: {}", action.username());
+		return grunt::Result::fail_unknown_account;
+	} else if(!user->verified() && opts_.verified_email) {
+		LOG_DEBUG(logger_, "Account not verified: {}", user_->username());
+		return grunt::Result::fail_unknown_account;
 	}
 
-	return grunt::Result::fail_unknown_account;
+	user_ = std::move(user);
+
+	state_data_.emplace<LoginAuthenticator>(
+		user_->username(), user_->verifier(), user_->salt()
+	);
+
+	return grunt::Result::success;
 } catch(const dal::exception& e) {
 	metrics_.increment("login_internal_failure");
 	LOG_ERROR(logger_, "DAL failure for {}: {}", action.username(), e.what());
@@ -734,7 +736,7 @@ void LoginHandler::transfer_chunk() {
 	LOG_TRACE(logger_, log_func);
 
 	auto remaining = transfer_state_.size - transfer_state_.offset;
-	std::uint16_t read_size = grunt::server::TransferData::MAX_CHUNK_SIZE;
+	std::uint16_t read_size = grunt::server::TransferData::max_chunk_size;
 
 	if(read_size > remaining) {
 		read_size = gsl::narrow<std::uint16_t>(remaining);
