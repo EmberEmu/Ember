@@ -239,6 +239,9 @@ void Service::initialise(const opts::variables_map& args) try {
 	const auto max_socks = utility::max_sockets_desc();
 	SLOG_INFO(logger, "Max allowed sockets: {}", max_socks);
 
+	// Start session manager
+	ctx->sessions = std::make_unique<SessionManager>(service, logger);
+
 	ClientContextBuilder ctx_builder(
 		*ctx->config_store, *ctx->dispatcher, *ctx->queue, *ctx->rpc_account,
 		*ctx->rpc_character, *ctx->rpc_realm, logger
@@ -251,7 +254,7 @@ void Service::initialise(const opts::variables_map& args) try {
 	// Start network listener
 	SLOG_INFO(logger, "Starting network service on {}:{}...", interface, port);
 	ctx->server = std::make_unique<NetworkListener>(
-		interface, port, tcp_no_delay, *ctx->service_pool, builder, ctx->sessions, logger
+		interface, port, tcp_no_delay, *ctx->service_pool, builder, *ctx->sessions, logger
 	);
 	
 	// Start timer service

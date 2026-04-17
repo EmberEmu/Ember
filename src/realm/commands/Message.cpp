@@ -45,7 +45,7 @@ void system_message(const commands::Arguments& args,
 void add_message_commands(ServiceContext& context, commands::Command& registry, log::Logger& logger) {
 	auto impl = context.get();
 	auto& exec = *impl->cmd_exec;
-	auto& sessions = impl->sessions;
+	auto& sessions = *impl->sessions;
 	auto& dispatcher = *impl->dispatcher;
 
 	auto root = commands::create("message")

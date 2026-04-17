@@ -38,10 +38,8 @@ bool Client::handle_self_event(const Event& event) {
 		case packet_log_disable:
 			connection_.packet_log_stop();
 			return true;
-		case request_stop_connection:
-			[[fallthrough]];
-		case request_stop_handler:
-			handle_request_stop(event.type);
+		case request_stop:
+			handle_request_stop();
 			return true;
 		default:
 			return false;
@@ -49,31 +47,13 @@ bool Client::handle_self_event(const Event& event) {
 }
 
 void Client::handle_kick() {
-	assert(close_fn_);
 	LOG_DEBUG(logger_, "{}, kicking self", handler_.client_identify());
 	stop();
-	close_fn_();
 }
 
-void Client::handle_request_stop(EventType type) {
-	assert(close_fn_);
-	LOG_DEBUG(logger_, "{}, {} requested stop",
-		handler_.client_identify(), stop_component_name(type));
+void Client::handle_request_stop() {
+	LOG_DEBUG(logger_, "{}, requested stop", handler_.client_identify());
 	stop();
-	close_fn_();
-}
-
-std::string_view Client::stop_component_name(EventType type) const {
-	using enum EventType;
-
-	switch(type) {
-		case request_stop_connection:
-			return "connection";
-		case request_stop_handler:
-			return "handler";
-		default:
-			return "unknown";
-	}
 }
 
 void Client::packet_log_start() {
@@ -121,9 +101,8 @@ void Client::stop() {
 	running_ = false;
 }
 
-void Client::on_close(OnClose on_close) {
-	assert(on_close);
-	close_fn_ = on_close;
+bool Client::running() {
+	return running_.load(std::memory_order_relaxed);
 }
 
 const ClientConnection& Client::connection() const {

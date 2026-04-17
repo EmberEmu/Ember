@@ -227,7 +227,7 @@ void ClientConnection::stop() {
 }
 
 void ClientConnection::close_session() {
-	Event event { EventType::request_stop_connection };
+	Event event { EventType::request_stop };
 	dispatcher_.post(ident_, event);
 	stop();
 }
