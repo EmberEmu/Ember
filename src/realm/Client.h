@@ -15,11 +15,13 @@
 #include <logger/LoggerFwd.h>
 #include <shared/ClientIdent.h>
 #include <atomic>
-#include <string_view>
 
 namespace ember::realm {
 
 class Client {
+	inline static std::atomic_size_t curr_clients_;
+	inline static std::atomic_size_t peak_clients_;
+
 	ClientIdent ident_;
 	ClientHandler handler_;
 	ClientConnection connection_;
@@ -31,6 +33,7 @@ class Client {
 	void handle_kick();
 	void handle_request_stop();
 	void packet_log_start();
+	void update_peak();
 
 public:
 	/*
@@ -63,6 +66,9 @@ public:
 
 	const ClientConnection& connection() const;
 	const ClientHandler& handler() const;
+
+	static std::size_t curr_clients();
+	static std::size_t peak_clients();
 };
 
 } // realm, ember

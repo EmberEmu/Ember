@@ -21,10 +21,7 @@ NetworkListener::NetworkListener(std::string_view interface, std::uint16_t port,
                                  SessionManager& sessions, log::Logger& logger)
 	: sessions_(sessions)
 	, builder_(std::move(builder))
-	, acceptor_(
-		pool.get_next(),
-		asio::ip::tcp::endpoint(asio::ip::make_address(interface), port)
-	  )
+	, acceptor_(pool.get_next(), asio::ip::tcp::endpoint(asio::ip::make_address(interface), port))
 	, index_(0)
 	, socket_(pool.get(index_))
 	, pool_(pool)
@@ -72,9 +69,6 @@ void NetworkListener::dispatch_socket() {
 		 * This dispatch ensures that the client is created on the same thread that it will live on,
 		 * allowing the thread local allocators to operate in 'unsafe entrant' mode, meaning they
 		 * can forego ensuring that the calling thread has previously initialised the allocator.
-		 * 
-		 * It's fine to construct the client on another thread as long as safe entrant is specified,
-		 * but it'll come at the cost of an additional check per allocation.
 		 */
 		boost::asio::dispatch(executor, [&, socket = std::move(socket_), index = index_]() mutable {
 			auto client = builder_.create(std::move(socket), index);

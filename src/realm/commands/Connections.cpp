@@ -7,6 +7,7 @@
  */
 
 #include "Connections.h"
+#include "../Client.h"
 #include "../Events.h"
 #include "../ServiceContextImpl.h"
 #include <logger/Logger.h>
@@ -150,7 +151,7 @@ void connection_statistics(const commands::Arguments& args,
 			print_connection_stats(table, id, client);
 			print_connection_stats_footer(table);
 			LOG_CONSOLE(logger, "Displaying statistics for connection {}\n{}", id, stream.str());
-						});
+		});
 	} else {
 		std::stringstream stream;
 		bprinter::TablePrinter table(&stream);
@@ -189,7 +190,7 @@ void add_connections_commands(ServiceContext& context, commands::Command& regist
 		->description("Commands for connection & session management")
 		->handler(exec([&](auto&) {
 			LOG_CONSOLE(logger, "{} active connection(s), {} peak",
-				sessions.count(), sessions.peak_count());
+				Client::curr_clients(), Client::peak_clients());
 		}));
 
 	root->insert("list")

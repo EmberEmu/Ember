@@ -86,11 +86,12 @@ void Client::start() {
 		assert(running_);
 	}
 
+	update_peak();
+
 	// Referencing each other like this is fine because they won't start running until we return
 	// - that's assuming we're running on the same Asio worker, which we really should be
 	handler_.start(connection_);
 	connection_.start(handler_);
-	running_ = true;
 }
 
 void Client::stop() {
@@ -98,9 +99,25 @@ void Client::stop() {
 		return;
 	}
 
+	--curr_clients_;
 	dispatcher_.remove_client(this);
 	handler_.stop();
 	connection_.stop();
+}
+
+void Client::update_peak() {
+	// relaxed load is friendlier to cache than immediately trying to exchange
+	const auto current = ++curr_clients_;
+	auto peak = peak_clients_.load(std::memory_order_relaxed);
+	while(current > peak && !peak_clients_.compare_exchange_weak(peak, current, std::memory_order_relaxed));
+}
+
+std::size_t Client::curr_clients() {
+	return curr_clients_;
+}
+
+std::size_t Client::peak_clients() {
+	return peak_clients_;
 }
 
 bool Client::running() const {
