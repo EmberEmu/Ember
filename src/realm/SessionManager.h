@@ -48,7 +48,7 @@ public:
 
 	SessionManager(boost::asio::io_context& ioc, log::Logger& logger);
 
-	void start(unique_client_ptr client);
+	void insert(unique_client_ptr client);
 	void stop();
 
 	std::size_t count() const;

@@ -78,7 +78,8 @@ void NetworkListener::dispatch_socket() {
 		 */
 		boost::asio::dispatch(executor, [&, socket = std::move(socket_), index = index_]() mutable {
 			auto client = builder_.create(std::move(socket), index);
-			sessions_.start(std::move(client));
+			client->start();
+			sessions_.insert(std::move(client));
 		});
 	} else {
 		LOG_DEBUG(logger_, "Aborted connection, remote peer disconnected");

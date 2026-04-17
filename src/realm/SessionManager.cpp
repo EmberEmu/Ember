@@ -31,9 +31,7 @@ void SessionManager::initiate_collection() {
 	});
 }
 
-void SessionManager::start(unique_client_ptr client) {
-	client->start();
-
+void SessionManager::insert(unique_client_ptr client) {
 	std::lock_guard guard(sessions_lock_);
 	sessions_.emplace(generate_id(), std::move(client));
 	peak_count_ = std::max(sessions_.size(), peak_count_);
