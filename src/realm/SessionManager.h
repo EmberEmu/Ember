@@ -37,7 +37,7 @@ private:
 
 	mutable std::mutex sessions_lock_;
 
-;	void collect();
+	void collect();
 	void initiate_collection();
 
 	SessionID generate_id();
