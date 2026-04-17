@@ -217,7 +217,7 @@ void add_connections_commands(ServiceContext& context, commands::Command& regist
 	root->insert("log")
 		->description("Enable or disable connection packet logging")
 		->argument<SessionManager::SessionID>("id")
-		->argument<bool>("bool")
+		->argument<bool>("toggle")
 		->handler(exec([&](const commands::Arguments& args) {
 			toggle_logging(
 				args["id"].as<SessionManager::SessionID>(), 
