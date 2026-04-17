@@ -18,17 +18,17 @@
 
 namespace ember {
 
-constexpr std::size_t CHECKSUM_SALT_LEN = 16u; // todo, UZ when supported across the board
+constexpr std::size_t checksum_salt_len = 16u; // todo, UZ when supported across the board
 
 class ReconnectAuthenticator final {
 	utf8_string username_;
-	std::array<std::uint8_t, CHECKSUM_SALT_LEN> salt_;
+	std::array<std::uint8_t, checksum_salt_len> salt_;
 	srp6::SessionKey sess_key_;
 
 public:
 	ReconnectAuthenticator(utf8_string username,
 	                       const Botan::BigInt& session_key,
-	                       std::span<const std::uint8_t, CHECKSUM_SALT_LEN> salt);
+	                       std::span<const std::uint8_t, checksum_salt_len> salt);
 
 	bool proof_check(std::span<const std::uint8_t> salt,
 	                 std::span<const std::uint8_t> proof) const;
