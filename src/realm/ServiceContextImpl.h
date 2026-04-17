@@ -37,8 +37,8 @@ namespace ember::realm {
 struct ServiceContext::Impl {
 	std::chrono::steady_clock::time_point start_time;
 	Realm realm;
-	SessionManager sessions;
 	thread::ServicePool* service_pool = nullptr;
+	std::unique_ptr<SessionManager> sessions;
 	std::unique_ptr<utility::CommandExecutor> cmd_exec;
 	std::unique_ptr<ConfigStore> config_store;
 	std::unique_ptr<ports::Forward> port_daemon;

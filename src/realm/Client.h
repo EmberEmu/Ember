@@ -14,29 +14,23 @@
 #include "SocketType.h"
 #include <logger/LoggerFwd.h>
 #include <shared/ClientIdent.h>
-#include <functional>
+#include <atomic>
 #include <string_view>
 
 namespace ember::realm {
 
 class Client {
-public:
-	using OnClose = std::function<void()>;
-
-private:
 	ClientIdent ident_;
 	ClientHandler handler_;
 	ClientConnection connection_;
 	EventDispatcher& dispatcher_;
-	OnClose close_fn_;
 	log::Logger& logger_;
-	bool running_;
+	std::atomic_bool running_;
 
 	bool handle_self_event(const Event& event);
 	void handle_kick();
-	void handle_request_stop(EventType type);
+	void handle_request_stop();
 	void packet_log_start();
-	std::string_view stop_component_name(EventType type) const;
 
 public:
 	/*
@@ -59,7 +53,7 @@ public:
 
 	void start();
 	void stop();
-	void on_close(OnClose on_close);
+	bool running() const;
 
 	void handle_event(const Event& event);
 

@@ -10,10 +10,11 @@
 
 #include "unique_client_ptr.h"
 #include "SessionIterator.h"
+#include <logger/LoggerFwd.h>
+#include <boost/asio/io_context.hpp>
+#include <boost/asio/steady_timer.hpp>
 #include <boost/unordered/unordered_flat_map.hpp>
-#include <memory>
 #include <mutex>
-#include <optional>
 #include <cstddef>
 #include <cstdint>
 
@@ -31,22 +32,24 @@ private:
 	SessionsMap sessions_;
 	SessionID next_id_ = 0;
 	std::size_t peak_count_ = 0;
+	boost::asio::steady_timer timer_;
+	log::Logger& logger_;
 
 	mutable std::mutex sessions_lock_;
 
-	SessionID generate_id();
+;	void collect();
+	void initiate_collection();
 
-	bool stop(SessionID id);
-	void stop_all();
+	SessionID generate_id();
 
 public:
 	using locked_iterator = SessionIterator<SessionsMap::iterator>;
 	using locked_const_iterator = SessionIterator<SessionsMap::const_iterator>;
 
-	SessionManager() = default;
-	~SessionManager();
+	SessionManager(boost::asio::io_context& ioc, log::Logger& logger);
 
 	void start(unique_client_ptr client);
+	void stop();
 
 	std::size_t count() const;
 	std::size_t peak_count() const;

@@ -7,43 +7,41 @@
  */
 
 #include "SessionManager.h"
-#include <algorithm>
+#include "ConfigConsts.h"
+#include <logger/Logger.h>
 #include <utility>
 
 namespace ember::realm {
 
-void SessionManager::start(unique_client_ptr client) {
-	auto ptr = client.get();
-	SessionID assigned_id = 0;
+SessionManager::SessionManager(boost::asio::io_context& ioc, log::Logger& logger)
+	: timer_(ioc)
+	, logger_(logger) {
+	initiate_collection();
+}
 
-	{
-		std::lock_guard guard(sessions_lock_);
-		auto id = generate_id();
-		sessions_.emplace(id, std::move(client));
-		assigned_id = id;
-		peak_count_ = std::max(sessions_.size(), peak_count_);
-	}
+void SessionManager::initiate_collection() {
+	timer_.expires_after(config::session_collect_frequency);
+	timer_.async_wait([&](auto ec) {
+		if(ec) {
+			return;
+		}
 
-	ptr->on_close([&, assigned_id]() {
-		stop(assigned_id);
+		collect();
+		initiate_collection();
 	});
-
-	ptr->start();
 }
 
-bool SessionManager::stop(const SessionID session_id) {
+void SessionManager::start(unique_client_ptr client) {
+	client->start();
+
 	std::lock_guard guard(sessions_lock_);
-
-	if(auto it = sessions_.find(session_id); it != sessions_.end()) {
-		sessions_.erase(it);
-		return true;
-	}
-
-	return false;
+	sessions_.emplace(generate_id(), std::move(client));
+	peak_count_ = std::max(sessions_.size(), peak_count_);
 }
 
-void SessionManager::stop_all() {
+void SessionManager::stop() {
 	std::lock_guard guard(sessions_lock_);
+	timer_.cancel();
 	sessions_.clear();
 }
 
@@ -107,8 +105,21 @@ Client* SessionManager::client(const SessionID id) const {
 	return nullptr;
 }
 
-SessionManager::~SessionManager() {
-	stop_all();
+void SessionManager::collect() {
+	std::lock_guard guard(sessions_lock_);
+	std::size_t collected = 0;
+
+	if(auto it = sessions_.begin(); it != sessions_.end()) {
+		if(!it->second->running()) {
+			it = sessions_.erase(it);
+			++collected;
+		}
+	}
+
+	if(collected) {
+		LOG_TRACE(logger_, "Collected {} sessions", collected);
+	}
 }
+
 
 } // realm, ember

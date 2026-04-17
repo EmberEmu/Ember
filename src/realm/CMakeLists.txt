@@ -71,13 +71,14 @@ set(LIBRARY_HDR
     ClientSink.h
     unique_client_ptr.h
     ClientAllocator.h
-	commands/Commands.h
+    commands/Commands.h
     commands/Connections.h
     commands/Message.h
     commands/Set.h
     commands/Ungrouped.h
     ClientContextBuilder.h
     ClientContext.h
+    ConfigConsts.h
 )
 
 set(LIBRARY_SRC
@@ -108,7 +109,7 @@ set(LIBRARY_SRC
     Digest.cpp
     ServiceContext.cpp
     ClientSink.cpp
-	commands/Commands.cpp
+    commands/Commands.cpp
     commands/Connections.cpp
     commands/Message.cpp
     commands/Set.cpp

@@ -8,18 +8,13 @@
 
 #pragma once
 
+#include "ConfigConsts.h"
 #include <shared/game/GameVersion.h>
 #include <shared/Realm.h>
 #include <chrono>
 #include <vector>
 
 namespace ember::realm {
-
-namespace config {
-
-constexpr static inline std::chrono::seconds broadcast_timer_frequency { 30 };
-
-} // config
 
 struct Config {
 	Realm realm;
