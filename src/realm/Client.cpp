@@ -8,6 +8,7 @@
 
 #include "Client.h"
 #include "EventDispatcher.h"
+#include "packet_log/Helper.h"
 #include <logger/Logger.h>
 #include <cassert>
 

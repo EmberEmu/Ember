@@ -12,7 +12,6 @@
 #include "ClientHandlerBuilder.h"
 #include "Forwards.h"
 #include "SocketType.h"
-#include "packet_log/Helper.h"
 #include <logger/LoggerFwd.h>
 #include <shared/ClientIdent.h>
 #include <functional>
