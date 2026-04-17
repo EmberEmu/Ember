@@ -20,13 +20,11 @@ void set_offline(const commands::Arguments& args, RealmService& service,
 	service.set_offline();
 	LOG_CONSOLE(logger, "Set realm status to offline");
 
-	if(!args.contains("disconnect")) {
+	if(!args.contains("kick")) {
 		return;
 	}
 
-	const bool disconnect = args["disconnect"].as<bool>();
-
-	if(disconnect) {
+	if(args["kick"].as<bool>()) {
 		const Event event{
 			.type = EventType::kick_self
 		};
@@ -51,8 +49,8 @@ void add_set_commands(ServiceContext& context, commands::Command& registry, log:
 		->description("Commands for realm state configuration");
 
 	root->insert("offline")
-		->description("Sets the realm list listing to offline, optionally disconnecting players")
-		->argument<bool>("disconnect", commands::optional)
+		->description("Sets the realm list listing to offline, optionally kicking players")
+		->argument<bool>("kick", commands::optional)
 		->handler(exec([&](const commands::Arguments& args) {
 			set_offline(args, *impl->rpc_realm, *impl->dispatcher, logger);
 		}));
