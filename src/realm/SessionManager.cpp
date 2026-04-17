@@ -7,7 +7,7 @@
  */
 
 #include "SessionManager.h"
-#include "Config.h"
+#include "ConfigConsts.h"
 #include <logger/Logger.h>
 #include <algorithm>
 #include <utility>
