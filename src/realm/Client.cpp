@@ -101,7 +101,7 @@ void Client::stop() {
 	running_ = false;
 }
 
-bool Client::running() {
+bool Client::running() const {
 	return running_.load(std::memory_order_relaxed);
 }
 

@@ -53,7 +53,7 @@ public:
 
 	void start();
 	void stop();
-	bool running();
+	bool running() const;
 
 	void handle_event(const Event& event);
 
