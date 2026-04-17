@@ -10,9 +10,11 @@
 
 #include <chrono>
 
+using namespace std::chrono_literals;
+
 namespace ember::realm::config {
 
-constexpr static inline std::chrono::seconds broadcast_timer_frequency { 30 };
-constexpr static inline std::chrono::seconds session_collect_frequency { 15 };
+constexpr static inline auto broadcast_timer_frequency = 30s;
+constexpr static inline auto session_collect_frequency = 15s;
 
 } // config, realm, ember
