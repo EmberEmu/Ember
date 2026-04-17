@@ -43,9 +43,9 @@ void SessionManager::start(unique_client_ptr client) {
 		sessions_.emplace(id, std::move(client));
 		assigned_id = id;
 		peak_count_ = std::max(sessions_.size(), peak_count_);
+		ptr->start();
 	}
 
-	ptr->start();
 }
 
 void SessionManager::stop() {
