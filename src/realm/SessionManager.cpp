@@ -9,7 +9,6 @@
 #include "SessionManager.h"
 #include "ConfigConsts.h"
 #include <logger/Logger.h>
-#include <algorithm>
 #include <utility>
 
 namespace ember::realm {
@@ -31,7 +30,6 @@ void SessionManager::initiate_collection() {
 		initiate_collection();
 	});
 }
-
 
 void SessionManager::start(unique_client_ptr client) {
 	client->start();

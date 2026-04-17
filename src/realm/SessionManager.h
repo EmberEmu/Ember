@@ -14,9 +14,7 @@
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/steady_timer.hpp>
 #include <boost/unordered/unordered_flat_map.hpp>
-#include <memory>
 #include <mutex>
-#include <optional>
 #include <cstddef>
 #include <cstdint>
 
