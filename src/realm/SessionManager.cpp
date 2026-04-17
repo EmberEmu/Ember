@@ -34,18 +34,11 @@ void SessionManager::initiate_collection() {
 
 
 void SessionManager::start(unique_client_ptr client) {
-	auto ptr = client.get();
-	SessionID assigned_id = 0;
+	client->start();
 
-	{
-		std::lock_guard guard(sessions_lock_);
-		auto id = generate_id();
-		sessions_.emplace(id, std::move(client));
-		assigned_id = id;
-		peak_count_ = std::max(sessions_.size(), peak_count_);
-		ptr->start();
-	}
-
+	std::lock_guard guard(sessions_lock_);
+	sessions_.emplace(generate_id(), std::move(client));
+	peak_count_ = std::max(sessions_.size(), peak_count_);
 }
 
 void SessionManager::stop() {
