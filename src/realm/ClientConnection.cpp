@@ -206,12 +206,11 @@ void ClientConnection::set_key(std::span<const std::uint8_t, key_size> key) {
 }
 
 void ClientConnection::start(ClientHandler& handler) {
-	set_handler(handler);
-
 	if(stopped_) {
 		return;
 	}
 
+	set_handler(handler);
 	read();
 }
 
