@@ -29,22 +29,19 @@ namespace ember::dbc {
 
 //todo - move
 struct NameTester {
-	NameTester() : regex_("^[A-Za-z_][A-Za-z_0-9]*$") { }
-
 	void operator()(const std::string_view name) const {
+		static const std::regex regex("^[A-Za-z_][A-Za-z_0-9]*$");
+
 		if(cpp_keywords.contains(name)) {
 			throw exception(
 				std::format("{} is a reserved word and cannot be used as an identifier", name)
 			);
 		}
 
-		if(!std::regex_match(std::string(name), regex_)) {
+		if(!std::regex_match(std::string(name), regex)) {
 			throw exception(std::format("{} is not a valid C++ identifier", name));
 		}
 	}
-
-private:
-	const std::regex regex_;
 };
 
 using TypeStore = std::vector<std::string>;
