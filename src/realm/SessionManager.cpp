@@ -109,10 +109,12 @@ void SessionManager::collect() {
 	std::lock_guard guard(sessions_lock_);
 	std::size_t collected = 0;
 
-	if(auto it = sessions_.begin(); it != sessions_.end()) {
+	for(auto it = sessions_.begin(); it != sessions_.end();) {
 		if(!it->second->running()) {
 			it = sessions_.erase(it);
 			++collected;
+		} else {
+			++it;
 		}
 	}
 
