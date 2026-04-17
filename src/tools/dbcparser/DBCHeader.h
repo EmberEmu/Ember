@@ -16,12 +16,12 @@
 #include <cstdint>
 #include <cstddef>
 
-constexpr std::uint32_t DBC_MAGIC = ember::utility::make_mcc("WDBC");
-constexpr auto DBC_HEADER_SIZE = 20u;
-
 namespace be = boost::endian;
 
 namespace ember::dbc {
+
+constexpr auto dbc_magic = utility::make_mcc("WDBC");
+constexpr auto dbc_header_size = 20u;
 
 struct Header {
 	be::big_uint32_t magic;
@@ -33,10 +33,10 @@ struct Header {
 
 inline void validate_dbc(const std::string_view name, const Header& header, const std::size_t expect_size,
                          const std::size_t expect_fields, const std::size_t dbc_size) {
-	if(header.magic != DBC_MAGIC) {
+	if(header.magic != dbc_magic) {
 		auto msg = std::format(
 			"{}: Invalid header magic - found 0x{:X}, expected 0x{:X}",
-			name, header.magic.value(), DBC_MAGIC
+			name, header.magic.value(), dbc_magic
 		);
 
 		throw std::runtime_error(std::move(msg));

@@ -70,7 +70,7 @@ private:
 	StateContainer state_data_;
 	std::optional<User> user_;
 	Botan::BigInt server_proof_;
-	std::array<std::uint8_t, CHECKSUM_SALT_LEN> checksum_salt_;
+	std::array<std::uint8_t, checksum_salt_len> checksum_salt_;
 	PINAuthenticator::SaltBytes pin_salt_;
 	std::uint32_t pin_grid_seed_;
 	grunt::client::LoginChallenge challenge_;

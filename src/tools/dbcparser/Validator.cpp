@@ -13,7 +13,6 @@
 #include <format>
 #include <iostream>
 #include <limits>
-#include <string_view>
 #include <typeinfo>
 #include <unordered_map>
 #include <cstdint>
@@ -192,7 +191,7 @@ void Validator::add_user_type(TreeNode<std::string>* node, const std::string_vie
 void Validator::map_struct_types(TreeNode<std::string>* parent, const types::Struct* def) {
 	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
 
-	name_check_(def->name);
+	reserved_keyword_test(def->name);
 	add_user_type(parent, def->name);
 
 	for(auto& child : def->children) {
@@ -312,10 +311,10 @@ void Validator::validate_struct(const types::Struct* def, const TreeNode<std::st
 	auto node = locate_type_node(def->name, types);
 
 	check_multiple_definitions(def);
-	name_check_(def->name);
+	reserved_keyword_test(def->name);
 	
 	if(!def->alias.empty()) {
-		name_check_(def->alias);
+		reserved_keyword_test(def->alias);
 	}
 
 	check_dup_key_types(def);
@@ -326,7 +325,7 @@ void Validator::validate_struct(const types::Struct* def, const TreeNode<std::st
 			throw exception("Only DBC nodes may contain keys");
 		}
 
-		name_check_(field.name);
+		reserved_keyword_test(field.name);
 		check_key_types(field);
 
 		if(!(options_ & Options::val_skip_foreign_keys)) {
@@ -357,7 +356,22 @@ void Validator::range_check(long long value) {
 			"Enum option value is out of bounds: {} is not within the range of {}",
 		    value, typeid(T).name()
 		);
+
 		throw exception(str);
+	}
+}
+
+void Validator::reserved_keyword_test(const std::string_view name) {
+	static const std::regex regex("^[A-Za-z_][A-Za-z_0-9]*$");
+
+	if(cpp_keywords.contains(name)) {
+		throw exception(
+			std::format("{} is a reserved word and cannot be used as an identifier", name)
+		);
+	}
+
+	if(!std::regex_match(std::string(name), regex)) {
+		throw exception(std::format("{} is not a valid C++ identifier", name));
 	}
 }
 
@@ -396,7 +410,7 @@ void Validator::validate_enum_options(const types::Enum* def) {
 	std::unordered_map<std::string_view, std::string_view> options;
 	
 	for(auto& option : def->options) {
-		name_check_(def->name);
+		reserved_keyword_test(def->name);
 		validate_enum_option_value(def->underlying_type, option.second);
 
 		if(options.contains(option.first)) {

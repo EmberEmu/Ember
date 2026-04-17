@@ -12,37 +12,17 @@
 #include "Types.h"
 #include "TypeUtils.h"
 #include "TreeNode.h"
-#include <functional>
-#include <format>
+#include <algorithm>
 #include <optional>
 #include <string>
 #include <string_view>
 #include <vector>
-#include <map>
 #include <memory>
 #include <regex>
 #include <utility>
 #include <cstddef>
-#include <algorithm>
 
 namespace ember::dbc {
-
-//todo - move
-struct NameTester {
-	void operator()(const std::string_view name) const {
-		static const std::regex regex("^[A-Za-z_][A-Za-z_0-9]*$");
-
-		if(cpp_keywords.contains(name)) {
-			throw exception(
-				std::format("{} is a reserved word and cannot be used as an identifier", name)
-			);
-		}
-
-		if(!std::regex_match(std::string(name), regex)) {
-			throw exception(std::format("{} is not a valid C++ identifier", name));
-		}
-	}
-};
 
 using TypeStore = std::vector<std::string>;
 
@@ -54,7 +34,6 @@ public:
 	};
 
 private:
-	NameTester name_check_;
 	TreeNode<std::string> root_;
 	const types::Definitions* definitions_;
 	std::vector<std::string> names_;
@@ -79,9 +58,12 @@ private:
 	bool recursive_ascent_field_type_check(const std::string& type, const TreeNode<std::string>* node,
 	                                       const TreeNode<std::string>* prev_node = nullptr);
 	const TreeNode<std::string>* locate_type_node(const std::string_view name, const TreeNode<std::string>* node);
-	template<typename T> void range_check(long long value);
 
-	void print_type_tree(const TreeNode<std::string>* types, std::size_t depth = 0);
+	template<typename T>
+	static void range_check(long long value);
+
+	static void reserved_keyword_test(const std::string_view name);
+	static void print_type_tree(const TreeNode<std::string>* types, std::size_t depth = 0);
 
 public:
 	Validator()

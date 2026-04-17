@@ -216,7 +216,7 @@ void write_dbc_dml(const types::Struct& dbc, std::ofstream& out, std::vector<std
 	walk_dbc_fields(metrics, &dbc, dbc.parent);
 	validate_dbc(dbc.name, header, metrics.record_size, metrics.fields, data.size());
 
-	const std::size_t string_block_index = DBC_HEADER_SIZE + (header.record_size * header.records);
+	const std::size_t string_block_index = dbc_header_size + (header.record_size * header.records);
 	const auto MAX_RECORDS_PER_INSERT = 100u; // keep the server from rejecting large packets/hitting query timeouts
 	ComponentCache ccache;
 

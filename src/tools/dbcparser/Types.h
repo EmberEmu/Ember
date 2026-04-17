@@ -48,7 +48,10 @@ struct IVisitor {
 };
 
 struct Base : IVisitor {
-	explicit Base(Type type_) : type(type_), parent(nullptr) {}
+	explicit Base(Type type_)
+		: type(type_)
+		, parent(nullptr) {}
+
 	virtual ~Base() = default;
 
 	Type type;

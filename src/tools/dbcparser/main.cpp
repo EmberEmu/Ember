@@ -127,16 +127,16 @@ void configure_logger(log::Logger& logger, const opts::variables_map& args) {
 
 void handle_options(const opts::variables_map& args, const dbc::types::Definitions& defs) {
 	dbc::Validator validator;
-	dbc::Validator::Options val_opts { dbc::Validator::val_skip_foreign_keys };
+	auto opts = dbc::Validator::val_skip_foreign_keys;
 
 	// if we're doing code generation for a DBC that references other DBCs, we
 	// need to make sure that those references are also valid, otherwise we
 	// might generate code that doesn't compile
 	if(args["disk"].as<bool>()) {
-		val_opts = static_cast<dbc::Validator::Options>(val_opts & ~dbc::Validator::val_skip_foreign_keys);
+		opts = static_cast<dbc::Validator::Options>(opts & ~dbc::Validator::val_skip_foreign_keys);
 	}
 
-	validator.validate(defs, val_opts);
+	validator.validate(defs, opts);
 
 	if(args["print-dbcs"].as<bool>()) {
 		print_dbc_table(defs);

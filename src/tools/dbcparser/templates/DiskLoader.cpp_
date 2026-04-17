@@ -54,9 +54,9 @@ const MappedDBC<T> get_offsets(const void* start) {
 
 void validate_dbc(const char* name, const Header* header, std::size_t expect_size,
                   std::size_t expect_fields, std::size_t dbc_size) {
-	if(header->magic != DBC_MAGIC) {
+	if(header->magic != dbc_magic) {
 		const auto str = std::format(
-			"{}: Invalid header magic - found {:#x}, expected {:#x}", name, header->magic.value(), DBC_MAGIC
+			"{}: Invalid header magic - found {:#x}, expected {:#x}", name, header->magic.value(), dbc_magic
 		);
 		throw std::runtime_error(str);
 	}

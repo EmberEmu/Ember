@@ -18,7 +18,7 @@ namespace be = boost::endian;
 
 #pragma pack(push, 1)
 
-constexpr std::uint32_t DBC_MAGIC = utility::make_mcc("WDBC");
+constexpr std::uint32_t dbc_magic = utility::make_mcc("WDBC");
 
 struct Header {
 	be::big_uint32_t magic;
