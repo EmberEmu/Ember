@@ -49,7 +49,6 @@ public:
 	using locked_const_iterator = SessionIterator<SessionsMap::const_iterator>;
 
 	SessionManager(boost::asio::io_context& ioc, log::Logger& logger);
-	~SessionManager();
 
 	void start(unique_client_ptr client);
 	void stop();
