@@ -44,6 +44,8 @@ void set_online(RealmService& service, log::Logger& logger) {
 void add_set_commands(ServiceContext& context, commands::Command& registry, log::Logger& logger) {
 	auto impl = context.get();
 	auto& exec = *impl->cmd_exec;
+	auto& dispatcher = *impl->dispatcher;
+	auto& rpc_realm = *impl->rpc_realm;
 
 	auto root = commands::create("set")
 		->description("Commands for realm state configuration");
@@ -51,14 +53,14 @@ void add_set_commands(ServiceContext& context, commands::Command& registry, log:
 	root->insert("offline")
 		->description("Sets the realm list listing to offline, optionally kicking players")
 		->argument<bool>("kick", commands::optional)
-		->handler(exec([&](const commands::Arguments& args) {
-			set_offline(args, *impl->rpc_realm, *impl->dispatcher, logger);
+		->handler(exec([&](const auto& args) {
+			set_offline(args, rpc_realm, dispatcher, logger);
 		}));
 
 	root->insert("online")
 		->description("Sets the realm list listing to online")
-		->handler(exec([&](const commands::Arguments& args) {
-			set_online(*impl->rpc_realm, logger);
+		->handler(exec([&](const auto& args) {
+			set_online(rpc_realm, logger);
 		}));
 
 	auto scoped = registry.scoped_insert(root);
