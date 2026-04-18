@@ -13,6 +13,7 @@
 #include "Forwards.h"
 #include "unique_client_ptr.h"
 #include <logger/LoggerFwd.h>
+#include <thread/ServicePool.h>
 #include <memory>
 
 namespace ember::realm {
