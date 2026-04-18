@@ -10,6 +10,7 @@
 #include "Connections.h"
 #include "Message.h"
 #include "Set.h"
+#include "Shutdown.h"
 #include "Ungrouped.h"
 
 namespace ember::realm {
@@ -19,6 +20,7 @@ void install_commands(ServiceContext& context, commands::Command& registry, log:
 	add_set_commands(context, registry, logger);
 	add_connections_commands(context, registry, logger);
 	add_message_commands(context, registry, logger);
+	add_shutdown_commands(context, registry, logger);
 }
 
 } // realm, ember

@@ -10,6 +10,7 @@
 #include <commands/Commands.h>
 #include <logger/CommandSink.h>
 #include <logger/Logger.h>
+#include <shared/utility/DurationString.h>
 #include <boost/lexical_cast.hpp>
 #include <chrono>
 #include <ranges>
@@ -64,6 +65,7 @@ bool convert_bool(const std::string_view token) {
 	throw std::runtime_error("Unable to convert bool argument");
 }
 
+// ideally this should be replaced by free functions, but it'll do for now
 std::any convert_type(const std::type_info& info, std::string_view token) {
 	if(info == typeid(std::string)) {
 		return std::string(token);
@@ -93,6 +95,8 @@ std::any convert_type(const std::type_info& info, std::string_view token) {
 		return convert_bool(token);
 	} else if(info == typeid(std::chrono::seconds)) {
 		return std::chrono::seconds(boost::lexical_cast<int>(token));
+	} else if(info == typeid(utility::DurationString)) {
+		return DurationString(std::string(token));
 	} else {
 		throw std::runtime_error("Unhandled argument type");
 	}

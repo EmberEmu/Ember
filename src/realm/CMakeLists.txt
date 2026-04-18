@@ -76,9 +76,11 @@ set(LIBRARY_HDR
     commands/Message.h
     commands/Set.h
     commands/Ungrouped.h
+    commands/Shutdown.h
     ClientContextBuilder.h
     ClientContext.h
     ConfigConsts.h
+    ShutdownAnnouncer.h
 )
 
 set(LIBRARY_SRC
@@ -114,8 +116,10 @@ set(LIBRARY_SRC
     commands/Message.cpp
     commands/Set.cpp
     commands/Ungrouped.cpp
+    commands/Shutdown.cpp
     ClientContext.cpp
     Client.cpp
+    ShutdownAnnouncer.cpp
 )
 
 add_library(${LIBRARY_NAME} ${SERVICE_LIB_LINKAGE} 
