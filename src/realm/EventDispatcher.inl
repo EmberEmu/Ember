@@ -32,7 +32,11 @@ inline Client* EventDispatcher::locate_handler(const ClientIdent& client) const 
 	const auto slot = client.extract_slot();
 
 	if(slot != slot_npos) {
-		return cache_[slot] == client? client.extract_ptr<ClientType>() : nullptr;
+		if(cache_[slot] == client) {
+			return client.extract_ptr<ClientType>();
+		} else {
+			return nullptr;
+		}
 	}
 #endif
 
