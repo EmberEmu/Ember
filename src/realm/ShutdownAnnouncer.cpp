@@ -66,6 +66,7 @@ void ShutdownAnnouncer::run_timer(std::chrono::seconds expiry) {
 	const auto it = nearest_interval(expiry);
 
 	if(it == intervals.end()) {
+		active_ = false;
 		fn_();
 		return;
 	}
