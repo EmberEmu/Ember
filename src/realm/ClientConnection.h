@@ -88,6 +88,7 @@ public:
 	// session management
 	void start(ClientHandler& handler);
 	void stop();
+	bool stopped() const;
 
 	void send(const protocol::is_packet auto& packet);
 	void send(std::span<const std::uint8_t> packet);

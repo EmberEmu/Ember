@@ -273,6 +273,10 @@ void ClientHandler::set_connection(ClientConnection& connection) {
 	context_.connection(connection);
 }
 
+bool ClientHandler::stopped() const {
+	return state_ == ClientState::cs_session_closed;
+}
+
 ClientHandler::ClientHandler(const ClientIdent& ident, ClientContext context, log::Logger& logger)
 	: context_(std::move(context))
 	, state_(ClientState::cs_session_closed)

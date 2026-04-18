@@ -108,7 +108,7 @@ void SessionManager::collect() {
 	std::size_t collected = 0;
 
 	for(auto it = sessions_.begin(); it != sessions_.end();) {
-		if(!it->second->running()) {
+		if(it->second->stopped()) {
 			it = sessions_.erase(it);
 			++collected;
 		} else {

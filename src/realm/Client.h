@@ -56,7 +56,7 @@ public:
 
 	void start();
 	void stop();
-	bool running() const;
+	bool stopped() const;
 
 	void handle_event(const Event& event);
 

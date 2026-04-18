@@ -77,6 +77,7 @@ public:
 
 	void start(ClientConnection& connection);
 	void stop();
+	bool stopped() const;
 
 	const ClientIdent& uuid() const;
 	std::string_view client_identify() const;

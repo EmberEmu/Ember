@@ -282,6 +282,10 @@ void ClientConnection::set_handler(ClientHandler& handler) {
 	handler_ = &handler;
 }
 
+bool ClientConnection::stopped() const {
+	return stopped_;
+}
+
 ClientConnection::~ClientConnection() {
 	boost::system::error_code ec; // we don't care about any errors
 	socket_.cancel(ec);

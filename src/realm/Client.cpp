@@ -119,8 +119,8 @@ std::size_t Client::peak_clients() {
 	return peak_clients_;
 }
 
-bool Client::running() const {
-	return running_.load(std::memory_order_relaxed);
+bool Client::stopped() const {
+	return handler_.stopped() && connection_.stopped();
 }
 
 const ClientConnection& Client::connection() const {
