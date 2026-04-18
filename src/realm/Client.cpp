@@ -82,6 +82,7 @@ void Client::handle_event(const Event& event) {
 void Client::start() {
 	if(running_.exchange(true)) {
 		assert(running_);
+		return;
 	}
 
 	update_peak();
