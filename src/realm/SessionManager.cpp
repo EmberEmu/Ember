@@ -13,8 +13,9 @@
 
 namespace ember::realm {
 
-SessionManager::SessionManager(boost::asio::io_context& ioc, log::Logger& logger)
+SessionManager::SessionManager(boost::asio::io_context& ioc, thread::ServicePool& pool, log::Logger& logger)
 	: timer_(ioc)
+	, pool_(pool)
 	, logger_(logger) {
 	initiate_collection();
 }
@@ -109,7 +110,8 @@ void SessionManager::collect() {
 
 	for(auto it = sessions_.begin(); it != sessions_.end();) {
 		if(it->second->stopped()) {
-			it = sessions_.erase(it);
+			auto node = sessions_.pull(it++);
+			destroy(std::move(node.second));
 			++collected;
 		} else {
 			++it;
@@ -121,5 +123,15 @@ void SessionManager::collect() {
 	}
 }
 
+/*
+ * Since we're using thread-local allocators, we need to ensure that the
+ * client is destroyed on the same thread that it was created on.
+ */ 
+void SessionManager::destroy(unique_client_ptr client) const {
+	auto& ioc = pool_.get(client->uuid().service());
+	boost::asio::post(ioc, [client = std::move(client)] {
+		// nothing to do here, just let the client go out of scope
+	});
+}
 
 } // realm, ember

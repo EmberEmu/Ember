@@ -240,7 +240,7 @@ void Service::initialise(const opts::variables_map& args) try {
 	SLOG_INFO(logger, "Max allowed sockets: {}", max_socks);
 
 	// Start session manager
-	ctx->sessions = std::make_unique<SessionManager>(service, logger);
+	ctx->sessions = std::make_unique<SessionManager>(service, *ctx->service_pool, logger);
 
 	ClientContextBuilder ctx_builder(
 		*ctx->config_store, *ctx->dispatcher, *ctx->queue, *ctx->rpc_account,
