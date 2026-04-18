@@ -76,9 +76,7 @@ void Client::handle_event(const Event& event) {
 		return;
 	}
 
-	if(running_) {
-		handler_.handle_event(event);
-	}
+	handler_.handle_event(event);
 }
 
 void Client::start() {
