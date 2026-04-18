@@ -10,21 +10,28 @@
 
 #include "Client.h"
 #include "ClientAllocator.h"
+#include <thread/ServicePool.h>
+#include <boost/asio/post.hpp>
 
 namespace ember::realm {
 
 struct ClientDeleter final {
-	ClientAllocator* allocator;
+	ClientAllocator& allocator;
+	thread::ServicePool& pool;
 
-	explicit ClientDeleter(ClientAllocator* allocator) noexcept
-		: allocator(allocator) {}
+	explicit ClientDeleter(ClientAllocator& allocator, thread::ServicePool& pool) noexcept
+		: allocator(allocator)
+		, pool(pool) {}
 
 	void operator()(Client* ptr) const {
-		allocator->deallocate(ptr);
+		auto& ioc = pool.get(ptr->uuid().service());
+
+		boost::asio::post(ioc, [&, ptr] {
+			allocator.deallocate(ptr);
+		});
 	}
 };
 
 using unique_client_ptr = std::unique_ptr<Client, ClientDeleter>;
 
 } // realm, ember
-

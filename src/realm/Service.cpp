@@ -249,7 +249,7 @@ void Service::initialise(const opts::variables_map& args) try {
 
 	ClientConnectionBuilder cc_builder(*ctx->dispatcher, logger);
 	ClientHandlerBuilder ch_builder(ctx_builder, logger);
-	ClientBuilder builder(ch_builder, cc_builder, *ctx->dispatcher, logger);
+	ClientBuilder builder(ch_builder, cc_builder, *ctx->dispatcher, *ctx->service_pool, logger);
 
 	// Start network listener
 	SLOG_INFO(logger, "Starting network service on {}:{}...", interface, port);

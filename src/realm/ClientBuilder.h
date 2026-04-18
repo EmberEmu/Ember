@@ -24,21 +24,23 @@ class ClientBuilder {
 	ClientHandlerBuilder ch_builder_;
 	ClientConnectionBuilder cc_builder_;
 	EventDispatcher& dispatcher_;
+	thread::ServicePool& pool_;
 	log::Logger& logger_;
 
 	unique_client_ptr make_unique_client(tcp_socket socket, std::size_t index) const {
 		return unique_client_ptr(allocator_.allocate(
 			std::move(socket), index, dispatcher_, logger_, ch_builder_, cc_builder_
-		), ClientDeleter(&allocator_));
+		), ClientDeleter(allocator_, pool_));
 	}
 
 public:
 	ClientBuilder(ClientHandlerBuilder ch_builder, ClientConnectionBuilder cc_builder,
-	              EventDispatcher& dispatcher, log::Logger& logger)
+	              EventDispatcher& dispatcher, thread::ServicePool& pool, log::Logger& logger)
 		: allocator_(allocator_tag)
 		, ch_builder_(ch_builder)
 		, cc_builder_(cc_builder)
 		, dispatcher_(dispatcher)
+		, pool_(pool)
 		, logger_(logger) {}
 
 	unique_client_ptr create(tcp_socket socket, std::size_t index) const {

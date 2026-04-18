@@ -41,7 +41,6 @@ private:
 
 	void collect();
 	void initiate_collection();
-	void destroy(unique_client_ptr client) const;
 
 	SessionID generate_id();
 
