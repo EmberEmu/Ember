@@ -71,8 +71,8 @@ void ShutdownAnnouncer::run_timer(std::chrono::seconds expiry) {
 		return;
 	}
 
-	// calculate how long we need to wait for 
-	auto wait_for = expiry - *it;
+	// how long we need to wait for 
+	const auto wait_for = expiry - *it;
 
 	timer_.expires_after(wait_for);
 	timer_.async_wait([&, it](auto ec) {
