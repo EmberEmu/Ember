@@ -22,14 +22,10 @@
 #include <boost/asio/ip/tcp.hpp>
 #include <array>
 #include <atomic>
-#include <functional>
 #include <memory>
-#include <mutex>
 #include <optional>
 #include <span>
 #include <string>
-#include <type_traits>
-#include <utility>
 #include <cstdint>
 #include <cstddef>
 
@@ -40,8 +36,6 @@ class ClientHandler;
 class ClientConnection final {
 public:
 	static constexpr auto key_size = 40;
-
-	using OnDisconnect = std::function<void()>;
 
 private:
 	enum class ReadState {
