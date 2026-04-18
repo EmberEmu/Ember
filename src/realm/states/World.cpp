@@ -32,7 +32,7 @@ void handle_packet(ClientContext& ctx, protocol::ClientOpcode opcode) {
 		CLIENT_DEBUG(ctx, "Unroutable message, {} ({}) from {}",
 			protocol::to_string(opcode),
 			std::to_underlying(opcode), 
-			ctx.client_id->username
+			ctx.account->username
 		);
 	}
 }

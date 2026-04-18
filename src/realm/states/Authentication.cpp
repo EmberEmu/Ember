@@ -192,7 +192,7 @@ void prove_session(ClientContext& ctx, const Botan::BigInt& key) {
 
 	ctx.set_key(k_bytes);
 
-	ctx.client_id = ClientID { 
+	ctx.account = AccountInfo { 
 		.id = auth_ctx.account_id,
 		.username = auth_ctx.packet->username
 	};
@@ -269,7 +269,7 @@ void auth_success(ClientContext& ctx) {
 	auth_state(ctx, State::success);
 	ctx.state_update(ClientState::cs_character_list);
 
-	CLIENT_DEBUG(ctx, "Authenticated as {}", ctx.client_id->username);
+	CLIENT_DEBUG(ctx, "Authenticated as {}", ctx.account->username);
 }
 
 void send_auth_result(ClientContext& ctx, protocol::Result result) {

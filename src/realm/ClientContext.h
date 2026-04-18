@@ -41,7 +41,7 @@ using StateContext =
 		world_enter::Context
 	>;
 
-struct ClientID {
+struct AccountInfo {
 	std::uint32_t id;
 	utf8_string username;
 };
@@ -101,7 +101,7 @@ public:
 	}
 
 	StateContext state_ctx;
-	std::optional<ClientID> client_id;
+	std::optional<AccountInfo> account;
 	const ConfigStore& cfg_store;
 	EventDispatcher& dispatcher; // this won't be needed once RPCs use coroutines
 	RealmQueue& queue;

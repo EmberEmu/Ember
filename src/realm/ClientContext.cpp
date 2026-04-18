@@ -66,10 +66,10 @@ bool ClientContext::packet_logging() const {
  * has completed
  */
 std::string_view ClientContext::client_identify() const {
-	if(client_id) {
+	if(account) {
 		if(client_id_ext_.empty()) {
 			client_id_ext_ = std::format(
-				"{} ({}, {})", client_id_str_, client_id->username, client_id->id
+				"{} ({}, {})", client_id_str_, account->username, account->id
 			);
 		}
 
