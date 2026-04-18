@@ -17,15 +17,13 @@ namespace ember::realm {
 
 struct ClientDeleter final {
 	ClientAllocator& allocator;
-	thread::ServicePool& pool;
+	boost::asio::io_context& ioc;
 
-	explicit ClientDeleter(ClientAllocator& allocator, thread::ServicePool& pool) noexcept
+	explicit ClientDeleter(ClientAllocator& allocator, boost::asio::io_context& ioc) noexcept
 		: allocator(allocator)
-		, pool(pool) {}
+		, ioc(ioc) {}
 
 	void operator()(Client* ptr) const {
-		auto& ioc = pool.get(ptr->uuid().service());
-
 		boost::asio::post(ioc, [&, ptr] {
 			allocator.deallocate(ptr);
 		});

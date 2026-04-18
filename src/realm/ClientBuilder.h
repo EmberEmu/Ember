@@ -30,7 +30,7 @@ class ClientBuilder {
 	unique_client_ptr make_unique_client(tcp_socket socket, std::size_t index) const {
 		return unique_client_ptr(allocator_.allocate(
 			std::move(socket), index, dispatcher_, logger_, ch_builder_, cc_builder_
-		), ClientDeleter(allocator_, pool_));
+		), ClientDeleter(allocator_, pool_.get(index)));
 	}
 
 public:
