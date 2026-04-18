@@ -83,6 +83,7 @@ set(UTIL_SRC
     shared/utility/cstring_view.hpp
     shared/utility/TickCount.h
     shared/utility/TickCount.cpp
+    shared/utility/DurationString.h
 )
 
 set(METRICS_SRC

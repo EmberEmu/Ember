@@ -586,7 +586,7 @@ void system_msg(ClientContext& ctx, const SystemMessage& event) {
 		msg->message = event.message;
 	} else {
 		msg->type = protocol::server::SYSTEM;
-		msg->message = std::format("[System] {}", event.message);
+		msg->message = std::format("[SERVER] {}", event.message);
 	}
 
 	msg->player_guid = 0;

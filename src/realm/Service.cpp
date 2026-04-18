@@ -251,6 +251,11 @@ void Service::initialise(const opts::variables_map& args) try {
 	ClientHandlerBuilder ch_builder(ctx_builder, logger);
 	ClientBuilder builder(ch_builder, cc_builder, *ctx->dispatcher, *ctx->service_pool, logger);
 
+	// Start shutdown scheduling system
+	ctx->shutdown_pa = std::make_unique<ShutdownAnnouncer>(
+		service, [&] { stop(); }, *ctx->dispatcher, logger
+	);
+
 	// Start network listener
 	SLOG_INFO(logger, "Starting network service on {}:{}...", interface, port);
 	ctx->server = std::make_unique<NetworkListener>(
@@ -398,6 +403,7 @@ void Service::stop() {
 	// this all needs to be reworked, waiting to switch to coroutines
 	boost::asio::post(ctx->service_pool->get(0), [&] {
 		auto ctx = context.get();
+		ctx->sessions->stop();
 		ctx->cmd_exec->signal_stop();
 		ctx->timer->stop();
 		ctx->server->shutdown();

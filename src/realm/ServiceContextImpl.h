@@ -17,6 +17,7 @@
 #include "NetworkListener.h"
 #include "RealmService.h"
 #include "RealmQueue.h"
+#include "ShutdownAnnouncer.h"
 #include "ServiceContext.h"
 #include "SessionManager.h"
 #include "WorldRPCClient.h"
@@ -38,6 +39,7 @@ struct ServiceContext::Impl {
 	std::chrono::steady_clock::time_point start_time;
 	Realm realm;
 	thread::ServicePool* service_pool = nullptr;
+	std::unique_ptr<ShutdownAnnouncer> shutdown_pa;
 	std::unique_ptr<SessionManager> sessions;
 	std::unique_ptr<utility::CommandExecutor> cmd_exec;
 	std::unique_ptr<ConfigStore> config_store;
