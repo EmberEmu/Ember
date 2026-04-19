@@ -7,7 +7,6 @@
  */
 
 #include "Service.h"
-#include "commands/Shutdown.h"
 #include <banner/Banner.h>
 #include <commands/Commands.h>
 #include <logger/CommandSink.h>
@@ -16,6 +15,7 @@
 #include <shared/utility/CommandHelpers.h>
 #include <shared/utility/LogConfig.h>
 #include <shared/utility/Utility.h>
+#include <shared/utility/shutdown/Install.h>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/signal_set.hpp>
 #include <boost/asio/steady_timer.hpp>
@@ -34,7 +34,6 @@ namespace opts = boost::program_options;
 
 opts::variables_map parse_arguments(int argc, const char* argv[]);
 int run(const opts::variables_map& args, log::Logger& logger, commands::Command& registry);
-void register_shutdown(commands::Command& registry, boost::asio::io_context& ioc, log::Logger& logger);
 std::shared_ptr<commands::Command> init_commands(const opts::variables_map& args, log::Logger& logger);
 
 /*
@@ -85,7 +84,9 @@ int run(const opts::variables_map& args, log::Logger& logger, commands::Command&
 		ioc.run();
 	});
 
-	register_shutdown(registry, ioc, logger);
+	shutdown::install(registry, ioc, [&](const auto& message){
+		LOG_CONSOLE(logger, message);
+	});
 
 	const auto ret = service.run(args);
 	signals.cancel();
@@ -101,37 +102,6 @@ std::shared_ptr<commands::Command> init_commands(const opts::variables_map& args
 	utility::register_command_handlers(*registry, logger, suggestions);
 	utility::register_common_commands(*registry, logger);
 	return registry;
-}
-
-void register_shutdown(commands::Command& registry, boost::asio::io_context& ioc, log::Logger& logger) {
-	shutdown::Handlers handlers {
-		.on_initiate = [&](auto time) {
-			LOG_CONSOLE(logger, "Server will shut down in {}", utility::time_duration_format(time));
-		},
-			
-		.on_cancel = [&](auto state) {
-			if(state == shutdown::State::pending) {
-				LOG_CONSOLE(logger, "Server shutdown has been cancelled");
-			} else {
-				LOG_CONSOLE(logger, "No shutdown is pending");
-			}
-		},
-			
-		.on_expire = [&] {
-			LOG_CONSOLE(logger, "Server is shutting down now");
-			std::raise(SIGINT);
-		}, 
-			
-		.on_remaining = [&](auto state, auto time) {
-			if(state == shutdown::State::pending) {
-				LOG_CONSOLE(logger, "Server will shut down in {}", utility::time_duration_format(time));
-			} else {
-				LOG_CONSOLE(logger, "No shutdown is pending");
-			}
-		}
-	};
-
-	shutdown::register_command(registry, ioc, std::move(handlers));
 }
 
 opts::variables_map parse_arguments(const int argc, const char* argv[]) {

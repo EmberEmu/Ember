@@ -14,6 +14,7 @@
 #include <shared/utility/CommandHelpers.h>
 #include <shared/utility/LogConfig.h>
 #include <shared/utility/Utility.h>
+#include <shared/utility/shutdown/Install.h>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/signal_set.hpp>
 #include <boost/program_options.hpp>
@@ -79,11 +80,13 @@ int run(const opts::variables_map& args, log::Logger& logger, commands::Command&
 		ioc.run();
 	});
 
-	thread::set_name("Service runner");
-	const auto result = service.run(args);
+	shutdown::install(registry, ioc, [&](const auto& message){
+		LOG_CONSOLE(logger, message);
+	});
 
+	const auto ret = service.run(args);
 	signals.cancel();
-	return result;
+	return ret;
 }
 
 std::shared_ptr<commands::Command> init_commands(const opts::variables_map& args, log::Logger& logger) {
