@@ -613,7 +613,7 @@ void handle_event(ClientContext& ctx, const Event& event) {
 }
 
 void exit(ClientContext& ctx) {
-	ctx.queue.free_slot();
+	// nothing to do
 }
 
 } // world_enter, realm, ember

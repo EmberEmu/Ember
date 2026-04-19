@@ -9,6 +9,7 @@
 #include "RealmQueue.h"
 #include "Events.h"
 #include "EventDispatcher.h"
+#include <cassert>
 
 namespace ember::realm {
 
@@ -94,6 +95,7 @@ void RealmQueue::dequeue(const ClientIdent& client) {
 void RealmQueue::free_slot() {
 	std::lock_guard guard(lock_);
 
+	assert(active_ > active_ - 1 && "queue book-keeping is off");
 	--active_;
 
 	if(queue_.empty()) {

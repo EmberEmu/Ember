@@ -253,11 +253,6 @@ void handle_event(ClientContext& ctx, const Event& event) {
 
 void exit(ClientContext& ctx) {
 	ctx.cancel_timer();
-
-	if(ctx.handler().state() == ClientState::cs_session_closed) {
-		//--test;
-		ctx.queue.free_slot();
-	}
 }
 
 } // character_list, realm, ember
