@@ -10,7 +10,7 @@
 
 #include "Events.h"
 #include "FilterTypes.h"
-#include "ClientConnection.h"
+#include "Forwards.h"
 #include "ClientContext.h"
 #include "ClientSink.h"
 #include "ConnectionDefines.h"
@@ -27,9 +27,6 @@
 namespace ember::realm {
 
 using namespace std::chrono_literals;
-
-class ClientConnection;
-class ClientContextBuilder;
 
 class ClientHandler final {
 	// client sanity check rules

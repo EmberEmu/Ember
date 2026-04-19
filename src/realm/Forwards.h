@@ -19,5 +19,7 @@ class ConfigStore;
 class EventDispatcher;
 class RealmService;
 class RealmQueue;
+class ClientConnection;
+class ClientContextBuilder;
 
 } // realm, ember

@@ -7,6 +7,7 @@
  */
 
 #include "ClientHandler.h"
+#include "ClientConnection.h"
 #include "ClientContextBuilder.h"
 #include "ClientLogHelper.h"
 #include "ConfigConsts.h"
