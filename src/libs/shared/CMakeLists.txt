@@ -84,6 +84,9 @@ set(UTIL_SRC
     shared/utility/TickCount.h
     shared/utility/TickCount.cpp
     shared/utility/DurationString.h
+    shared/utility/shutdown/Shutdown.h
+    shared/utility/shutdown/Shutdown.cpp
+    shared/utility/shutdown/Install.h
 )
 
 set(METRICS_SRC

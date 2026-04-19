@@ -99,8 +99,6 @@ endif()
 
 set(EXECUTABLE_SOURCE
     main.cpp
-    commands/Shutdown.h
-    commands/Shutdown.cpp
     ${ICON_RESOURCE}
 )
 
