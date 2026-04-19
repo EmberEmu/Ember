@@ -12,6 +12,7 @@
 #include <shared/utility/shutdown/Shutdown.h>
 #include <shared/utility/Utility.h>
 #include <boost/asio/io_context.hpp>
+#include <format>
 #include <functional>
 #include <csignal>
 
