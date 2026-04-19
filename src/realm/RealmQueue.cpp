@@ -51,8 +51,15 @@ void RealmQueue::update_clients() {
 	dirty_ = false;
 }
 
-void RealmQueue::enqueue(ClientIdent client, int priority) {
+auto RealmQueue::enqueue(const ClientIdent& client, int priority) -> Result {
 	std::lock_guard guard(lock_);
+
+	const auto max_slots = cstore_.config().max_slots;
+
+	if(active_ < max_slots && queue_.empty()) {
+		++active_;
+		return Result::success;
+	}
 
 	if(queue_.empty()) {
 		set_timer();
@@ -64,6 +71,7 @@ void RealmQueue::enqueue(ClientIdent client, int priority) {
 	// but allows for multiple priority levels without multiple hard-coded queues
 	queue_.sort();
 	dirty_ = true;
+	return Result::queued;
 }
 
 /* 
@@ -75,9 +83,8 @@ void RealmQueue::dequeue(const ClientIdent& client) {
 
 	if(auto it = std::ranges::find(queue_, client, &QueueEntry::client); it != queue_.end()) {
 		queue_.erase(it);
+		dirty_ = true;
 	}
-
-	dirty_ = true;
 }
 
 /* 
@@ -86,6 +93,8 @@ void RealmQueue::dequeue(const ClientIdent& client) {
  */
 void RealmQueue::free_slot() {
 	std::lock_guard guard(lock_);
+
+	--active_;
 
 	if(queue_.empty()) {
 		return;
@@ -119,6 +128,7 @@ void RealmQueue::shutdown() {
 }
 
 std::size_t RealmQueue::size() const {
+	std::lock_guard guard(lock_);
 	return queue_.size();
 }
 

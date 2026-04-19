@@ -10,11 +10,16 @@
 #include "../ClientContext.h"
 #include "../ClientHandler.h"
 #include "../Events.h"
+#include "../RealmQueue.h"
 
 namespace ember::realm::session_close {
 
 void enter(ClientContext& ctx) {
 	ctx.handler().log_redirect_stop();
+
+	if(ctx.is_active()) {
+		ctx.queue.free_slot();
+	}
 }
 
 void handle_packet(ClientContext& ctx, protocol::ClientOpcode opcode) {

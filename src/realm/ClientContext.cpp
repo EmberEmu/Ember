@@ -23,7 +23,8 @@ ClientContext::ClientContext(executor& executor, const ConfigStore& cfg_store, E
 	, account_rpc(account_rpc)
 	, character_rpc(character_rpc)
 	, realm_rpc(realm_rpc)
-	, logger(logger) {}
+	, logger(logger)
+	, active(false) {}
 
 void ClientContext::start_timer(const std::chrono::milliseconds& time) {
 	timer_.expires_after(time);
@@ -58,6 +59,14 @@ void ClientContext::set_key(std::span<const std::uint8_t, ClientConnection::key_
 
 bool ClientContext::packet_logging() const {
 	return connection_->packet_logging();
+}
+
+void ClientContext::set_active() {
+	active = true;
+}
+
+bool ClientContext::is_active() const {
+	return active;
 }
 
 /*
