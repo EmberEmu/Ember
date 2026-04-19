@@ -81,6 +81,7 @@ set(LIBRARY_HDR
     ClientContext.h
     ConfigConsts.h
     ShutdownAnnouncer.h
+    BuildDefines.h
 )
 
 set(LIBRARY_SRC
@@ -139,11 +140,12 @@ if(BUILD_SHARED)
     target_compile_definitions(${LIBRARY_NAME} PUBLIC EXPORT_SERVICE)
 endif()
 
-if(ENABLE_FAST_CLIENT_DISPATCH_CACHE)
-    target_compile_definitions(${LIBRARY_NAME} PUBLIC EMBER_FAST_DISPATCH_CACHE)
+if(ENABLE_FAST_CLIENT_DISPATCH_TABLE)
+    target_compile_definitions(${LIBRARY_NAME} PUBLIC FAST_DISPATCH_TABLE)
 endif()
 
 target_compile_definitions(${LIBRARY_NAME} PRIVATE PREALLOCATED_CLIENTS_PER_THREAD=${PREALLOC_CLIENTS_THREAD})
+target_compile_definitions(${LIBRARY_NAME} PRIVATE PREALLOCATED_NODES_PER_THREAD=${PREALLOC_NODES_THREAD})
 target_compile_definitions(${LIBRARY_NAME} PUBLIC EXPORT_SERVICE)
 
 if(WIN32)

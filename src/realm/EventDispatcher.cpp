@@ -90,7 +90,7 @@ void EventDispatcher::broadcast(std::shared_ptr<const Event> event) const {
 	}
 }
 
-#ifdef EMBER_FAST_DISPATCH_CACHE
+#ifdef FAST_DISPATCH_TABLE
 #pragma warning(push)
 #pragma warning(disable : 28020) // ignore false positive
 bool EventDispatcher::try_insert(ClientType* handler, ClientIdent& ident) {
@@ -126,7 +126,7 @@ ClientIdent EventDispatcher::register_client(ClientType* client, std::size_t ser
 	assert(client);
 	ClientIdent ident(service_index);
 
-#ifdef EMBER_FAST_DISPATCH_CACHE
+#ifdef FAST_DISPATCH_TABLE
 	if(!try_insert(client, ident))
 #endif
 		handlers_.insert_or_assign(ident, client);
@@ -137,7 +137,7 @@ ClientIdent EventDispatcher::register_client(ClientType* client, std::size_t ser
 void EventDispatcher::remove_client(const ClientType* client) {
 	assert(client);
 
-#ifdef EMBER_FAST_DISPATCH_CACHE
+#ifdef FAST_DISPATCH_TABLE
 	if(auto slot = client->uuid().extract_slot(); slot != slot_npos) {
 		cache_[slot].set_zero();
 	}  else {

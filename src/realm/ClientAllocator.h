@@ -8,14 +8,11 @@
 
 #pragma once
 
+#include "BuildDefines.h"
 #include "Client.h"
 #include <spark/buffers/allocators/TLSBlockAllocator.h>
 
 namespace ember::realm {
-
-#ifndef PREALLOCATED_CLIENTS_PER_THREAD
-	#define PREALLOCATED_CLIENTS_PER_THREAD 4
-#endif
 
 #ifdef ENABLE_PAGE_LOCKING
 using PageLockPolicy = spark::io::PageLock;

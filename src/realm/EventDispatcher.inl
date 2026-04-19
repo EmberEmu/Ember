@@ -15,7 +15,7 @@
 namespace ember::realm {
 
 inline void EventDispatcher::deliver(const is_event auto& event) const {
-#ifdef EMBER_FAST_DISPATCH_CACHE
+#ifdef FAST_DISPATCH_TABLE
 	for(auto& entry : cache_) {
 		if(!entry.is_zero()) {
 			entry.extract_ptr<ClientType>()->handle_event(event);
@@ -28,7 +28,7 @@ inline void EventDispatcher::deliver(const is_event auto& event) const {
 }
 
 inline Client* EventDispatcher::locate_handler(const ClientIdent& client) const {
-#ifdef EMBER_FAST_DISPATCH_CACHE
+#ifdef FAST_DISPATCH_TABLE
 	const auto slot = client.extract_slot();
 
 	if(slot != slot_npos) {

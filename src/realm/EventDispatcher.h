@@ -32,7 +32,7 @@ class EventDispatcher final {
 		ClientIdent, Client*, boost::hash<ClientIdent>
 	>;
 
-#ifdef EMBER_FAST_DISPATCH_CACHE
+#ifdef FAST_DISPATCH_TABLE
 	constexpr static std::size_t cache_size = ClientIdent::max_slot_value;
 	constexpr static auto slot_npos = ClientIdent::max_slot_value;
 	static inline thread_local std::array<ClientIdent, cache_size> cache_{};
@@ -46,7 +46,7 @@ class EventDispatcher final {
 	inline Client* locate_handler(const ClientIdent& client) const;
 	inline void deliver(const is_event auto& event) const;
 
-#ifdef EMBER_FAST_DISPATCH_CACHE
+#ifdef FAST_DISPATCH_TABLE
 	bool try_insert(ClientType* handler, ClientIdent& ident);
 #endif
 

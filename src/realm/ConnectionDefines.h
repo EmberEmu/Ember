@@ -9,6 +9,7 @@
 #pragma once
 
 #include "SocketType.h"
+#include "BuildDefines.h"
 #include <protocol/MessageView.h>
 #include <spark/buffers/BinaryStream.h>
 #include <spark/buffers/DynamicTLSBuffer.h>
@@ -16,15 +17,10 @@
 
 namespace ember::realm {
 
-static constexpr auto inbound_size      { 8192  };
-static constexpr auto outbound_size     { 8192  };
-static constexpr auto max_outbound_size { 65536 };
-
-#if defined PREALLOCATED_CLIENTS_PER_THREAD
-static constexpr std::size_t prealloc_nodes { PREALLOCATED_CLIENTS_PER_THREAD };
-#else
-static constexpr std::size_t prealloc_nodes {  16 };
-#endif
+static constexpr auto inbound_size      { CLIENT_BUFFER_IN_SIZE         };
+static constexpr auto outbound_size     { CLIENT_BUFFER_OUT_SIZE        };
+static constexpr auto max_outbound_size { CLIENT_BUFFER_OUT_MAX_SIZE    };
+static constexpr auto prealloc_nodes    { PREALLOCATED_NODES_PER_THREAD };
 
 using StaticBuffer  = spark::io::StaticBuffer<std::uint8_t, inbound_size>;
 

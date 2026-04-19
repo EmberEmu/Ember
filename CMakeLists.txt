@@ -84,26 +84,27 @@ endif()
 set(BUILD_SHARED_MSG "Builds the services as shared libraries - generated code may be slower but Fusion service reloading is enabled")
 set(CMAKE_POSITION_INDEPENDENT_CODE ${BUILD_SHARED})
 set(PREALLOC_CLIENTS_THREAD 4) # Preallocate memory for the specified number of clients per thread
+set(PREALLOC_NODES_THREAD   4) # Preallocate memory for the specified number of buffer nodes per thread
 
 option(BUILD_SHARED ${BUILD_SHARED_MSG} OFF)
-option(ENABLE_FAST_CLIENT_DISPATCH_CACHE "Fast client event dispatch cache at the cost extra per-thread memory consumption" ON)
+option(ENABLE_FAST_CLIENT_DISPATCH_TABLE "Fast client event dispatch cache at the cost extra per-thread memory consumption" ON)
 option(ENABLE_HUGE_PAGES "When running on Linux, enable huge page support (disable if memory constrained)" ON)
 option(ENABLE_PAGE_LOCKING "Allow the allocator to lock pages (disable if memory constrained)" ON)
 
 
 if (ENABLE_HUGE_PAGES)
-	add_compile_definitions(ENABLE_HUGE_PAGES)
+    add_compile_definitions(ENABLE_HUGE_PAGES)
 endif()
 
 if (ENABLE_PAGE_LOCKING)
-	add_compile_definitions(ENABLE_PAGE_LOCKING)
+    add_compile_definitions(ENABLE_PAGE_LOCKING)
 endif()
 
 if (BUILD_SHARED)
-	add_compile_definitions(BUILD_SHARED_SERVICES)
-	set(SERVICE_LIB_LINKAGE "SHARED")
+    add_compile_definitions(BUILD_SHARED_SERVICES)
+    set(SERVICE_LIB_LINKAGE "SHARED")
 else()
-	set(SERVICE_LIB_LINKAGE "STATIC")
+    set(SERVICE_LIB_LINKAGE "STATIC")
 endif()
 
 find_package(Threads REQUIRED)
@@ -171,9 +172,9 @@ set(version_file "${CMAKE_CURRENT_BINARY_DIR}/Version.cpp")
 find_package(Botan 3.10 REQUIRED)
 
 if (BUILD_SHARED)
-	set(BOTAN_TARGET botan::botan)
+    set(BOTAN_TARGET botan::botan)
 else()
-	set(BOTAN_TARGET botan::botan-static)
+    set(BOTAN_TARGET botan::botan-static)
 endif()
 
 ##############################
@@ -202,7 +203,7 @@ find_package(PCRE 8.39 REQUIRED)
 include_directories(${PCRE_INCLUDE_DIR})
 
 if(NOT BUILD_SHARED)
-	add_compile_definitions(PCRE_STATIC)
+    add_compile_definitions(PCRE_STATIC)
 endif()
 
 ##############################
