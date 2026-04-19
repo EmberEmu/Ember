@@ -54,7 +54,7 @@ void RealmQueue::update_clients() {
 auto RealmQueue::enqueue(const ClientIdent& client, int priority) -> Result {
 	std::lock_guard guard(lock_);
 
-	const auto max_slots = cstore_.config_tls().max_slots;
+	const auto max_slots = cstore_.config().max_slots;
 
 	if(active_ < max_slots && queue_.empty()) {
 		++active_;
