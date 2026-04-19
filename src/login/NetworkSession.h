@@ -15,6 +15,7 @@
 #include <logger/Logger.h>
 #include <spark/buffers/BufferSequence.h>
 #include <shared/memory/AsioAllocator.h>
+#include <boost/asio/bind_allocator.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/steady_timer.hpp>
 #include <boost/asio/ip/tcp.hpp>
@@ -35,7 +36,7 @@ public:
 
 private:
 	const std::chrono::seconds socket_activity_timeout { 60 };
-	AsioAllocator<thread_safe> allocator_;
+	AsioPools pools_;
 
 	SessionManager& sessions_;
 	tcp_strand_socket socket_;
@@ -65,7 +66,7 @@ private:
 		set_is_active(true);
 
 		socket_.async_receive(tail->write_data(), 
-			create_alloc_handler(allocator_,
+			boost::asio::bind_allocator(AsioAllocator<int>(pools_),
 			[this, self](boost::system::error_code ec, std::size_t size) {
 				if(stopped_ || ec == boost::asio::error::operation_aborted) {
 					return;
@@ -92,7 +93,8 @@ private:
 
 		set_is_active(true);
 
-		socket_.async_send(sequence, create_alloc_handler(allocator_,
+		socket_.async_send(sequence,
+			boost::asio::bind_allocator(AsioAllocator<int>(pools_),
 			[this, self, cb = std::move(cb)](boost::system::error_code ec, std::size_t size) mutable {
 			outbound_front_->skip(size);
 
