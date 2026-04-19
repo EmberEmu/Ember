@@ -9,7 +9,6 @@
 #pragma once
 
 #include <boost/pool/pool.hpp>
-#include <boost/pool/pool_alloc.hpp>
 #include <array>
 #include <cstddef>
 
@@ -71,7 +70,7 @@ public:
 		for(auto& pool : pools) {
 			if(size <= pool.get_requested_size()) {
 				return &pool;
-;			}
+			}
 		}
 
 		return nullptr;
