@@ -81,7 +81,7 @@ void connection_list(const commands::Arguments& args,
 		const auto& [id, client] = session;
 		table << id;
 		table << client->connection().remote_address();
-		table << client->handler().client_identify();
+		table << client->handler().whoami();
 		table << ClientState_to_string(client->handler().state());
 		++connections;
 	}

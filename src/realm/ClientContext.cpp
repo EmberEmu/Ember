@@ -65,7 +65,7 @@ bool ClientContext::packet_logging() const {
  * and IP address in log outputs, based on whether authentication
  * has completed
  */
-std::string_view ClientContext::client_identify() const {
+std::string_view ClientContext::whoami() const {
 	if(account) {
 		if(client_id_ext_.empty()) {
 			client_id_ext_ = std::format(

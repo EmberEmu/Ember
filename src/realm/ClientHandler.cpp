@@ -264,8 +264,8 @@ const ClientIdent& ClientHandler::uuid() const {
 	return uuid_;
 }
 
-std::string_view ClientHandler::client_identify() const {	
-	return context_.client_identify();
+std::string_view ClientHandler::whoami() const {	
+	return context_.whoami();
 }
 
 void ClientHandler::set_connection(ClientConnection& connection) {

@@ -15,8 +15,6 @@
 #include <protocol/PacketHeaders.h>
 #include <spark/buffers/BinaryStream.h>
 #include <spark/buffers/BufferSequence.h>
-#include <boost/asio/dispatch.hpp>
-#include <boost/asio/post.hpp>
 #include <boost/asio/read.hpp>
 #include <algorithm>
 

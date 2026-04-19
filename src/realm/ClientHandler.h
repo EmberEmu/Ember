@@ -80,7 +80,7 @@ public:
 	bool stopped() const;
 
 	const ClientIdent& uuid() const;
-	std::string_view client_identify() const;
+	std::string_view whoami() const;
 
 	void handle_message(BinaryStream& stream);
 	void handle_event(const Event& event);

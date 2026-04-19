@@ -72,7 +72,7 @@ public:
 	              RealmQueue& queue, AccountClient& account_rpc, CharacterClient& character_rpc,
 	              const RealmService& realm_rpc, log::Logger& logger);
 
-	std::string_view client_identify() const;
+	std::string_view whoami() const;
 
 	inline BinaryStream& stream() const {
 		assert(stream_);

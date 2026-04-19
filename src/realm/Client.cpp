@@ -47,12 +47,12 @@ bool Client::handle_self_event(const Event& event) {
 }
 
 void Client::handle_kick() {
-	LOG_DEBUG(logger_, "{}, kicking self", handler_.client_identify());
+	LOG_DEBUG(logger_, "{}, kicking self", handler_.whoami());
 	stop();
 }
 
 void Client::handle_request_stop() {
-	LOG_DEBUG(logger_, "{}, requested stop", handler_.client_identify());
+	LOG_DEBUG(logger_, "{}, requested stop", handler_.whoami());
 	stop();
 }
 

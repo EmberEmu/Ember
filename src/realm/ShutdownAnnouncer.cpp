@@ -87,7 +87,7 @@ void ShutdownAnnouncer::run_timer(std::chrono::seconds expiry) {
 
 std::string ShutdownAnnouncer::time_remaining_fmt(std::chrono::seconds remaining) {
 	if(remaining >= 3600s) {
-		int hours = remaining / 3600s;
+		const auto hours = remaining / 3600s;
 		return hours == 1? "1 hour" : std::to_string(hours) + " hours";
 	}
 
