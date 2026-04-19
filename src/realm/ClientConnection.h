@@ -103,8 +103,6 @@ public:
 	void packet_log_start(std::unique_ptr<PacketLogger> logger);
 	void packet_log_stop();
 	bool packet_logging() const;
-
-	friend class ClientHandler;
 };
 
 } // realm, ember
