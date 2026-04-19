@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include "ConfigStore.h"
 #include <shared/ClientIdent.h>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/steady_timer.hpp>
@@ -45,8 +46,10 @@ class RealmQueue final {
 	boost::asio::steady_timer timer_;
 	std::list<QueueEntry> queue_;
 	EventDispatcher& dispatcher_;
-	std::mutex lock_;
+	mutable std::mutex lock_;
 	std::atomic_bool dirty_;
+	std::size_t active_;
+	const ConfigStore& cstore_;
 
 	bool empty();
 	void update_clients();
@@ -54,18 +57,26 @@ class RealmQueue final {
 
 public:
 	constexpr static std::size_t npos = 0;
+	
+	enum class Result {
+		success,
+		queued,
+	};
 
 	explicit RealmQueue(boost::asio::io_context& service,
 	                    EventDispatcher& dispatcher,
+	                    ConfigStore& config_store,
 	                    std::chrono::milliseconds frequency = default_frequency)
 		: frequency_(frequency)
 		, timer_(service)
 		, dispatcher_(dispatcher)
-		, dirty_(false) { }
+		, dirty_(false)
+		, active_(0)
+		, cstore_(config_store) { }
 
 	~RealmQueue();
 
-	void enqueue(ClientIdent client, int priority = 0);
+	Result enqueue(const ClientIdent& client, int priority = 0);
 	void dequeue(const ClientIdent& client);
 	std::size_t poll(const ClientIdent& client);
 	void free_slot();

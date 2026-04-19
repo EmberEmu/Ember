@@ -39,7 +39,6 @@ void send_auth_challenge(ClientContext& ctx);
 void send_auth_result(ClientContext& ctx, protocol::Result result);
 void handle_authentication(ClientContext& ctx);
 void handle_queue_update(ClientContext& ctx, const QueuePosition& event);
-void handle_queue_success(ClientContext& ctx);
 void auth_success(ClientContext& ctx);
 void auth_queue(ClientContext& ctx);
 void prove_session(ClientContext& ctx, const Botan::BigInt& key);
@@ -197,18 +196,13 @@ void prove_session(ClientContext& ctx, const Botan::BigInt& key) {
 		.username = auth_ctx.packet->username
 	};
 
-	 // todo, allowing for multiple realms to connect to a single world server
-	 // will require an external service to keep track of available slots
-	unsigned int active_players = 0;
-	const auto& config = ctx.cfg_store.config_tls();
-
-	if(active_players < config.max_slots) {
+	ctx.cancel_timer();
+	
+	if(ctx.queue.enqueue(ctx.handler().uuid(), 0) == RealmQueue::Result::success) {
 		auth_success(ctx);
 	} else {
-		auth_queue(ctx);
+		auth_state(ctx, State::in_queue);
 	}
-	
-	++active_players;
 }
 
 void send_auth_challenge(ClientContext& ctx) {
@@ -248,19 +242,6 @@ void send_addon_data(ClientContext& ctx) {
 	ctx.send(response);
 }
 
-void auth_queue(ClientContext& ctx) {
-	LOG_TRACE(ctx.logger, log_func);
-
-	const auto& uuid = ctx.handler().uuid();
-	auto& dispatcher = ctx.dispatcher;
-
-	ctx.queue.enqueue(uuid);
-	ctx.cancel_timer();
-	auth_state(ctx, State::in_queue);
-
-	CLIENT_DEBUG(ctx, "Added to queue, position {}", ctx.queue.poll(uuid));
-}
-
 void auth_success(ClientContext& ctx) {
 	LOG_TRACE(ctx.logger, log_func);
 
@@ -268,6 +249,7 @@ void auth_success(ClientContext& ctx) {
 	send_addon_data(ctx);
 	auth_state(ctx, State::success);
 	ctx.state_update(ClientState::cs_character_list);
+	ctx.set_active();
 
 	CLIENT_DEBUG(ctx, "Authenticated as {}", ctx.account->username);
 }
@@ -333,7 +315,7 @@ void handle_event(ClientContext& ctx, const Event& event) {
 			handle_queue_update(ctx, event.as<QueuePosition>());
 			break;
 		case queue_success:
-			handle_queue_success(ctx);
+			auth_success(ctx);
 			break;
 		default:
 			break;

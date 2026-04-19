@@ -25,12 +25,27 @@ auto uptime(utility::CommandExecutor& exec, std::chrono::steady_clock::time_poin
 	));
 }
 
+auto queue(utility::CommandExecutor& exec, const RealmQueue& realm_queue, log::Logger& logger) 
+-> std::shared_ptr<commands::Command> {
+	return commands::create("queue")
+		->description("Display authentication queue size")
+		->handler(exec([&](auto&) {
+			LOG_CONSOLE(logger, "Current realm queue size is {}", realm_queue.size());
+		}
+	));
+}
+
 } // unnamed
 
 void add_ungrouped_commands(ServiceContext& context, commands::Command& registry, log::Logger& logger) {
 	auto impl = context.get();
-	auto scoped = registry.scoped_insert(uptime(*impl->cmd_exec, impl->start_time, logger));
-	impl->commands.emplace_back(std::move(scoped));
+	auto& realm_queue = *impl->queue;
+
+	auto command = uptime(*impl->cmd_exec, impl->start_time, logger);
+	impl->commands.emplace_back(registry.scoped_insert(std::move(command)));
+
+	command = queue(*impl->cmd_exec, realm_queue, logger);
+	impl->commands.emplace_back(registry.scoped_insert(std::move(command)));
 }
 
 } // realm, ember

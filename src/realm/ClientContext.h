@@ -100,6 +100,10 @@ public:
 		connection_->send(packet);
 	}
 
+	// if the client is occupying a slot
+	void set_active();
+	bool is_active() const;
+
 	StateContext state_ctx;
 	std::optional<AccountInfo> account;
 	const ConfigStore& cfg_store;
@@ -109,6 +113,7 @@ public:
 	CharacterClient& character_rpc;
 	const RealmService& realm_rpc;
 	log::Logger& logger;
+	bool active;
 
 	friend class ClientHandler;
 };
