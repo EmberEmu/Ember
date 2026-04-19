@@ -44,6 +44,7 @@ set(POSTGRESQL_DAOS_SRC
 
 set(MEMORY_SRC
     shared/memory/AsioAllocator.h
+    shared/memory/AsioPools.h
 )
 
 set(UTIL_SRC

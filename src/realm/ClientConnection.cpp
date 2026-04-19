@@ -15,6 +15,7 @@
 #include <protocol/PacketHeaders.h>
 #include <spark/buffers/BinaryStream.h>
 #include <spark/buffers/BufferSequence.h>
+#include <boost/asio/bind_allocator.hpp>
 #include <boost/asio/read.hpp>
 #include <algorithm>
 
@@ -106,7 +107,7 @@ void ClientConnection::write() {
 
 	const spark::io::BufferSequence sequence(*outbound_front_);
 
-	socket_.async_send(sequence, create_alloc_handler(allocator_,
+	socket_.async_send(sequence, boost::asio::bind_allocator(AsioAllocator<int>(pools_),
 		[this](const boost::system::error_code& ec, const std::size_t size) {
 			if(!ec) {
 				stats_.bytes_out += size;
@@ -158,7 +159,7 @@ void ClientConnection::read() {
 	const auto at_least = boost::asio::transfer_at_least(required_space);
 
 	boost::asio::async_read(socket_, inbound_buffer_.write_span(), at_least,
-	                        create_alloc_handler(allocator_,
+							boost::asio::bind_allocator(AsioAllocator<int>(pools_),
 		[this](const boost::system::error_code& ec, const std::size_t size) {
 			if(!ec) {
 				stats_.bytes_in += size;

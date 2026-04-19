@@ -56,7 +56,7 @@ private:
 	ConnectionStats stats_;
 	std::optional<PacketCrypto<key_size>> crypt_;
 	protocol::SizeType msg_size_;
-	AsioAllocator<thread_safe> allocator_; // todo - should be shared & passed in
+	AsioPools pools_;
 	log::Logger& logger_;
 	bool write_in_progress_;
 	unsigned int compression_level_;
