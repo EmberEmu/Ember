@@ -35,7 +35,7 @@ void print_allocator_debug_table(log::Logger& logger) {
 	table.AddColumn("sys_deallocs", 14);
 	table.PrintHeader();
 
-	auto metrics = memory::report::metrics();
+	auto metrics = memory::tracking::metrics();
 
 	for(const auto& [k, v] : metrics) {
 		table << k.substr(0, 20);
@@ -60,7 +60,7 @@ void handle_allocator_debug(const commands::Arguments& args, log::Logger& logger
 	if(args.contains("file")) {
 		const auto file = args["file"].as<std::string>();
 		LOG_CONSOLE(logger, "Writing report to {}", file);
-		memory::report::generate_report(file);
+		memory::tracking::generate_report(file);
 	}
 
 	print_allocator_debug_table(logger);
