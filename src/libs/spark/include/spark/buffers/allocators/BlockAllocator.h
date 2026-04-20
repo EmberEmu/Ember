@@ -93,11 +93,11 @@ class BlockAllocator {
 	};
 
 	Block* head_ = nullptr;
-	[[no_unique_address]] tid_type thread_id_;
 	Block* storage_ = nullptr;
 	std::string_view tag_;
 	std::size_t elements_ = 0;
 	UseAllocator allocator_;
+	[[no_unique_address]] tid_type thread_id_;
 
 	void page_lock_conditional() {
 		if constexpr(std::is_same_v<PageLockPolicy, PageLock>) {
@@ -154,6 +154,12 @@ class BlockAllocator {
 	void deallocate_storage() {
 		allocator_.deallocate(storage_);
 	}
+	
+	void initialise(std::size_t elements) {
+		allocate_storage(elements);
+		page_lock_conditional();
+		initialise_free_list();
+	}
 
 public:
 	static constexpr std::size_t block_size { sizeof(Block) };
@@ -169,16 +175,12 @@ public:
 	BlockAllocator(std::size_t elements, std::string_view tag = {}) requires std::same_as<ValidatePolicy, ValidateDealloc>
 		: tag_(tag)
 		, thread_id_(std::this_thread::get_id()) {
-		allocate_storage(elements);
-		page_lock_conditional();
-		initialise_free_list();
+		initialise(elements);
 	}
 
 	BlockAllocator(std::size_t elements, std::string_view tag = {})
 		: tag_(tag) {
-		allocate_storage(elements);
-		page_lock_conditional();
-		initialise_free_list();
+		initialise(elements);
 	}
 
 	template<typename ...Args>
