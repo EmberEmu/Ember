@@ -37,11 +37,7 @@ class StaticAllocator final {
 
 	public:
 		void* allocate(std::size_t size) {
-			if(in_use) {
-				return std::malloc(size);
-			}
-
-			if(size <= storage.size()) {
+			if(size <= storage.size() && !in_use) {
 				in_use = true;
 				return storage.data();
 			} else {
