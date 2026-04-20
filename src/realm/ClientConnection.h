@@ -16,7 +16,6 @@
 #include "packet_log/PacketLogger.h"
 #include "SocketType.h"
 #include <logger/LoggerFwd.h>
-#include <memory/AsioAllocator.h>
 #include <protocol/Concepts.h>
 #include <shared/ClientIdent.h>
 #include <boost/asio/ip/tcp.hpp>
