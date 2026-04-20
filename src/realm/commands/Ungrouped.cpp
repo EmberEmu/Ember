@@ -8,6 +8,7 @@
 
 #include "Ungrouped.h"
 #include "../ServiceContextImpl.h"
+#include <logger/Logger.h>
 #include <shared/utility/Utility.h>
 
 namespace ember::realm {
