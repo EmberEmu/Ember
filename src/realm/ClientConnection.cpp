@@ -107,7 +107,7 @@ void ClientConnection::write() {
 
 	const spark::io::BufferSequence sequence(*outbound_front_);
 
-	socket_.async_send(sequence, boost::asio::bind_allocator(AsioAllocator<int>(pools_),
+	socket_.async_send(sequence, boost::asio::bind_allocator(AsioStaticAllocator<int>(allocator_),
 		[this](const boost::system::error_code& ec, const std::size_t size) {
 			if(!ec) {
 				stats_.bytes_out += size;
@@ -159,7 +159,7 @@ void ClientConnection::read() {
 	const auto at_least = boost::asio::transfer_at_least(required_space);
 
 	boost::asio::async_read(socket_, inbound_buffer_.write_span(), at_least,
-							boost::asio::bind_allocator(AsioAllocator<int>(pools_),
+							boost::asio::bind_allocator(AsioStaticAllocator<int>(allocator_),
 		[this](const boost::system::error_code& ec, const std::size_t size) {
 			if(!ec) {
 				stats_.bytes_in += size;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 - 2025 Ember
+ * Copyright (c) 2024 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -46,7 +46,7 @@ class TLSBlockAllocator final {
 
 	static inline thread_local std::unique_ptr<AllocatorType> allocator_;
 	static inline thread_local RefCount ref_count_{};
-	const char* tag_ = nullptr;
+	const std::string_view tag_;
 
 	[[no_unique_address]] TLSHandleCache cached_handle_{};
 
@@ -74,7 +74,7 @@ public:
 	std::size_t active_allocs = 0;
 #endif
 
-	TLSBlockAllocator(const char* tag = nullptr) : tag_(tag) {
+	TLSBlockAllocator(std::string_view tag = {}) : tag_(tag) {
 		thread_enter();
 	}
 

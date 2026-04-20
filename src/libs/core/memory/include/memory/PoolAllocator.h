@@ -14,7 +14,7 @@
 
 namespace ember {
 
-class AsioPools final {
+class PoolAllocator final {
 public:
 	struct Config {
 		std::size_t small_size;
@@ -60,12 +60,6 @@ private:
 		};
 	}
 
-public:
-	AsioPools() = default;
-
-	AsioPools(const Config& conf)
-		: pools(init_pools(conf)) {}
-
 	inline boost::pool<>* select(const std::size_t size) {
 		for(auto& pool : pools) {
 			if(size <= pool.get_requested_size()) {
@@ -74,6 +68,32 @@ public:
 		}
 
 		return nullptr;
+	}
+
+public:
+	PoolAllocator() = default;
+
+	PoolAllocator(const Config& conf)
+		: pools(init_pools(conf)) {}
+
+	void* allocate(std::size_t size) {
+		auto pool = select(size);
+
+		if(pool) {
+			return pool->malloc();
+		} else {
+			return std::malloc(size);
+		}
+	}
+
+	void deallocate(void* ptr, std::size_t size) {
+		auto pool = select(size);
+
+		if(pool) {
+			pool->free(ptr);
+		} else {
+			std::free(ptr);
+		}
 	}
 };
 

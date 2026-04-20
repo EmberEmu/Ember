@@ -10,6 +10,8 @@
 
 #include "SocketType.h"
 #include "BuildDefines.h"
+#include <memory/AsioAllocator.h>
+#include <memory/StaticAllocator.h>
 #include <protocol/MessageView.h>
 #include <spark/buffers/BinaryStream.h>
 #include <spark/buffers/DynamicTLSBuffer.h>
@@ -21,6 +23,8 @@ static constexpr auto inbound_size      { CLIENT_BUFFER_IN_SIZE         };
 static constexpr auto outbound_size     { CLIENT_BUFFER_OUT_SIZE        };
 static constexpr auto max_outbound_size { CLIENT_BUFFER_OUT_MAX_SIZE    };
 static constexpr auto prealloc_nodes    { PREALLOCATED_NODES_PER_THREAD };
+static constexpr auto asio_chunk_size   { PREALLOCATED_ASIO_CHUNK_SIZE  };
+static constexpr auto asio_chunks       { PREALLOCATED_ASIO_CHUNKS      };
 
 using StaticBuffer  = spark::io::StaticBuffer<std::uint8_t, inbound_size>;
 
@@ -33,6 +37,11 @@ using BinaryStream = spark::io::BinaryStream<
 using DynamicTLSBuffer = spark::io::DynamicTLSBuffer<
 	outbound_size, prealloc_nodes, spark::io::NoRefCounting, spark::io::UnsafeEntrant
 >;
+
+using StaticChunkAllocator = StaticAllocator<asio_chunk_size, asio_chunks>;
+
+template<typename T>
+using AsioStaticAllocator = AsioAllocator<T, StaticChunkAllocator>;
 
 template<typename _ty>
 using message_view = protocol::message_view<_ty, BinaryStream>;

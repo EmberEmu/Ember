@@ -129,7 +129,7 @@ add_library(${LIBRARY_NAME} ${SERVICE_LIB_LINKAGE}
 )
 
 add_dependencies(${LIBRARY_NAME} SPARK_RPC_GENERATE)
-target_link_libraries(${LIBRARY_NAME} PRIVATE protocol thread nsd conpool stun ports dbcreader spark ${ZLIB_LIBRARY} Threads::Threads PUBLIC service logger commands shared ${Boost_LIBRARIES})
+target_link_libraries(${LIBRARY_NAME} PRIVATE protocol thread nsd conpool stun ports dbcreader spark memory ${ZLIB_LIBRARY} Threads::Threads PUBLIC service logger commands shared ${Boost_LIBRARIES})
 
 add_dependencies(${LIBRARY_NAME}
     FB_SCHEMA_COMPILE

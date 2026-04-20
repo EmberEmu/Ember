@@ -42,11 +42,6 @@ set(POSTGRESQL_DAOS_SRC
     shared/database/daos/postgresql/PatchDAO.h
 )
 
-set(MEMORY_SRC
-    shared/memory/AsioAllocator.h
-    shared/memory/AsioPools.h
-)
-
 set(UTIL_SRC
     shared/utility/xoroshiro128plus.h
     shared/utility/xoroshiro128plus.cpp
@@ -111,7 +106,6 @@ set(LIBRARY_SRC
     ${SHARED_DAOS_SRC}
     ${MYSQL_DAOS_SRC}
     ${POSTGRESQL_DAOS_SRC}
-    ${MEMORY_SRC}
     ${UTIL_SRC}
     ${METRICS_SRC}
     shared/ClientIdent.h
@@ -126,7 +120,6 @@ source_group("Database Objects" FILES ${DB_OBJECTS})
 source_group("DAO base" FILES ${SHARED_DAOS_SRC})
 source_group("MySQL DAO" FILES ${MYSQL_DAOS_SRC})
 source_group("PostgreSQL DAO" FILES ${POSTGRESQL_DAOS_SRC})
-source_group("Memory" FILES ${MEMORY_SRC})
 source_group("Threading" FILES ${THREADING_SRC})
 source_group("Utilities" FILES ${UTIL_SRC})
 source_group("Metrics" FILES ${METRICS_SRC})
