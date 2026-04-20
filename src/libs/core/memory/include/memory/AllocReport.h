@@ -16,8 +16,6 @@
 #include <unordered_map>
 #include <cstddef>
 
-#define EMBER_DEBUG_ALLOCATOR_TRACKING
-
 #ifdef EMBER_DEBUG_ALLOCATOR_TRACKING
 #define ALLOC_TRACK(tag, type, ...) \
 ember::memory::report::record(tag, type __VA_OPT__(,) __VA_ARGS__);
