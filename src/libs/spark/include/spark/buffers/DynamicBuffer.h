@@ -15,6 +15,7 @@
 #include <concepts>
 #include <functional>
 #include <memory>
+#include <string_view>
 #include <utility>
 #ifdef EMBER_BUFFER_DEBUG
 #include <algorithm>
@@ -38,7 +39,7 @@ template<decltype(auto) block_sz,
 >
 requires int_gt_zero<block_sz>
 class DynamicBuffer final : public pmr::Buffer {
-	constexpr static auto allocator_tag = "dynamic_buffer";
+	constexpr static std::string_view allocator_tag { "dynamic_buffer" };
 
 public:
 	using storage_type = detail::IntrusiveStorage<block_sz, storage_value_type>;

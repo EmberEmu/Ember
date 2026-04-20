@@ -14,7 +14,7 @@
 #include "StreamTypes.h"
 #include <logger/Logger.h>
 #include <spark/buffers/BufferSequence.h>
-#include <shared/memory/AsioAllocator.h>
+#include <memory/AsioAllocator.h>
 #include <boost/asio/bind_allocator.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/steady_timer.hpp>
@@ -35,8 +35,11 @@ public:
 	using WriteCallback = std::function<void()>;
 
 private:
+	template<typename T>
+	using AsioPoolAllocator = AsioAllocator<T, PoolAllocator>;
+
 	const std::chrono::seconds socket_activity_timeout { 60 };
-	AsioPools pools_;
+	PoolAllocator allocator_;
 
 	SessionManager& sessions_;
 	tcp_strand_socket socket_;
@@ -65,8 +68,7 @@ private:
 
 		set_is_active(true);
 
-		socket_.async_receive(tail->write_data(), 
-			boost::asio::bind_allocator(AsioAllocator<int>(pools_),
+		socket_.async_receive(tail->write_data(), boost::asio::bind_allocator(AsioPoolAllocator<int>(allocator_),
 			[this, self](boost::system::error_code ec, std::size_t size) {
 				if(stopped_ || ec == boost::asio::error::operation_aborted) {
 					return;
@@ -93,8 +95,7 @@ private:
 
 		set_is_active(true);
 
-		socket_.async_send(sequence,
-			boost::asio::bind_allocator(AsioAllocator<int>(pools_),
+		socket_.async_send(sequence, boost::asio::bind_allocator(AsioPoolAllocator<int>(allocator_),
 			[this, self, cb = std::move(cb)](boost::system::error_code ec, std::size_t size) mutable {
 			outbound_front_->skip(size);
 

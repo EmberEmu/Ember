@@ -13,6 +13,7 @@
 #include <array>
 #include <memory>
 #include <new>
+#include <string_view>
 #include <thread>
 #include <type_traits>
 #include <utility>
@@ -36,6 +37,16 @@ struct PageLock final : NoPageLock {};
 struct NoValidateDealloc {};
 struct ValidateDealloc final : NoValidateDealloc {};
 
+struct DefaultBlockAllocator {
+	void* allocate(std::size_t size) {
+		return std::malloc(size);
+	}
+
+	void deallocate(void* ptr) {
+		std::free(ptr);
+	}
+};
+
 /*
  * Basic fixed-size block stack allocator that preallocates a slab of memory
  * capable of holding a compile-time determined number of elements.
@@ -57,7 +68,8 @@ struct ValidateDealloc final : NoValidateDealloc {};
  */
 template<typename _ty, 
 	std::derived_from<NoPageLock> PageLockPolicy = NoPageLock,
-	std::derived_from<NoValidateDealloc> ValidatePolicy = NoValidateDealloc
+	std::derived_from<NoValidateDealloc> ValidatePolicy = NoValidateDealloc,
+	typename UseAllocator = DefaultBlockAllocator
 >
 class BlockAllocator {
 	using tid_type = std::conditional_t<
@@ -83,8 +95,9 @@ class BlockAllocator {
 	Block* head_ = nullptr;
 	[[no_unique_address]] tid_type thread_id_;
 	Block* storage_ = nullptr;
-	const char* tag_ = nullptr;
+	std::string_view tag_;
 	std::size_t elements_ = 0;
+	UseAllocator allocator_;
 
 	void page_lock_conditional() {
 		if constexpr(std::is_same_v<PageLockPolicy, PageLock>) {
@@ -133,16 +146,18 @@ class BlockAllocator {
 		madvise(storage_, alloc_size, MADV_HUGEPAGE);
 		elements_ = alloc_size / block_size;
 #else
-		storage_ = static_cast<Block*>(std::malloc(storage_size));
+		storage_ = static_cast<Block*>(allocator_.allocate(storage_size));
 		elements_ = elements;
 #endif
 	}
 
 	void deallocate_storage() {
-		free(storage_);
+		allocator_.deallocate(storage_);
 	}
 
 public:
+	static constexpr std::size_t block_size { sizeof(Block) };
+
 #ifdef EMBER_DEBUG_ALLOCATORS
 	std::size_t storage_active_count = 0;
 	std::size_t new_active_count = 0;
@@ -151,7 +166,7 @@ public:
 	std::size_t total_deallocs = 0;
 #endif
 
-	BlockAllocator(std::size_t elements, const char* tag = nullptr) requires std::same_as<ValidatePolicy, ValidateDealloc>
+	BlockAllocator(std::size_t elements, std::string_view tag = {}) requires std::same_as<ValidatePolicy, ValidateDealloc>
 		: tag_(tag)
 		, thread_id_(std::this_thread::get_id()) {
 		allocate_storage(elements);
@@ -159,7 +174,7 @@ public:
 		initialise_free_list();
 	}
 
-	BlockAllocator(std::size_t elements, const char* tag = nullptr)
+	BlockAllocator(std::size_t elements, std::string_view tag = {})
 		: tag_(tag) {
 		allocate_storage(elements);
 		page_lock_conditional();
@@ -223,7 +238,7 @@ public:
 #endif
 	}
 
-	const char* tag() const {
+	std::string_view tag() const {
 		return tag_;
 	}
 

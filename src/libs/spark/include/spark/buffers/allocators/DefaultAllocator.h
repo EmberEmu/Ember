@@ -8,13 +8,14 @@
 
 #pragma once
 
+#include <string_view>
 #include <utility>
 
 namespace ember::spark::io {
 
 template<typename T>
 struct DefaultAllocator final {
-	const char* tag;
+	std::string_view tag;
 
 #ifdef EMBER_DEBUG_ALLOCATORS
 	std::size_t active_count = 0;
@@ -39,7 +40,7 @@ struct DefaultAllocator final {
 		delete t;
 	}
 
-	DefaultAllocator(const char* tag = nullptr)	: tag(tag) {}
+	DefaultAllocator(std::string_view tag = {}) : tag(tag) {}
 
 	~DefaultAllocator() {
 #ifdef EMBER_DEBUG_ALLOCATORS

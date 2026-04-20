@@ -15,7 +15,6 @@
 #include "SocketType.h"
 #include <logger/Logger.h>
 #include <shared/IPBanCache.h>
-#include <shared/memory/AsioAllocator.h>
 #include <shared/metrics/Metrics.h>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/strand.hpp>

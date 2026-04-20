@@ -32,3 +32,13 @@
 #ifndef CLIENT_BUFFER_OUT_MAX_SIZE
 #define CLIENT_BUFFER_OUT_MAX_SIZE 65536
 #endif
+
+// the maximum chunk size Asio can request without resorting to the system allocator
+#ifndef PREALLOCATED_ASIO_CHUNK_SIZE
+#define PREALLOCATED_ASIO_CHUNK_SIZE 512
+#endif
+
+// the number of preallocated chunks Asio can request without using the system allocator
+#ifndef PREALLOCATED_ASIO_CHUNKS 
+#define PREALLOCATED_ASIO_CHUNKS 8
+#endif

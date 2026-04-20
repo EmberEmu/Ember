@@ -16,9 +16,9 @@
 #include "packet_log/PacketLogger.h"
 #include "SocketType.h"
 #include <logger/LoggerFwd.h>
+#include <memory/AsioAllocator.h>
 #include <protocol/Concepts.h>
 #include <shared/ClientIdent.h>
-#include <shared/memory/AsioAllocator.h>
 #include <boost/asio/ip/tcp.hpp>
 #include <array>
 #include <atomic>
@@ -56,7 +56,7 @@ private:
 	ConnectionStats stats_;
 	std::optional<PacketCrypto<key_size>> crypt_;
 	protocol::SizeType msg_size_;
-	AsioPools pools_;
+	StaticChunkAllocator allocator_;
 	log::Logger& logger_;
 	bool write_in_progress_;
 	unsigned int compression_level_;
