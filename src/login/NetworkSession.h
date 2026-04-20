@@ -35,8 +35,8 @@ public:
 	using WriteCallback = std::function<void()>;
 
 private:
-	template<typename T>
-	using AsioPoolAllocator = AsioAllocator<T, PoolAllocator>;
+	template<typename _type>
+	using AsioPoolAllocator = AsioAllocator<_type, PoolAllocator>;
 
 	const std::chrono::seconds socket_activity_timeout { 60 };
 	PoolAllocator allocator_;
