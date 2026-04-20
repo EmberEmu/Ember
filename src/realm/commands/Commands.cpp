@@ -8,6 +8,7 @@
 
 #include "Commands.h"
 #include "Connections.h"
+#include "Debug.h"
 #include "Message.h"
 #include "Set.h"
 #include "Shutdown.h"
@@ -21,6 +22,7 @@ void install_commands(ServiceContext& context, commands::Command& registry, log:
 	add_connections_commands(context, registry, logger);
 	add_message_commands(context, registry, logger);
 	add_shutdown_commands(context, registry, logger);
+	add_debug_commands(context, registry, logger);
 }
 
 } // realm, ember

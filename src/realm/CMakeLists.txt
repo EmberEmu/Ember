@@ -77,6 +77,7 @@ set(LIBRARY_HDR
     commands/Set.h
     commands/Ungrouped.h
     commands/Shutdown.h
+    commands/Debug.h
     ClientContextBuilder.h
     ClientContext.h
     ConfigConsts.h
@@ -118,6 +119,7 @@ set(LIBRARY_SRC
     commands/Set.cpp
     commands/Ungrouped.cpp
     commands/Shutdown.cpp
+    commands/Debug.cpp
     ClientContext.cpp
     Client.cpp
     ShutdownAnnouncer.cpp

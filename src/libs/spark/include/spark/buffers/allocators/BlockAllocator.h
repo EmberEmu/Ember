@@ -42,7 +42,7 @@ struct DefaultBlockAllocator {
 		return std::malloc(size);
 	}
 
-	void deallocate(void* ptr) {
+	void deallocate(void* ptr, std::size_t) {
 		std::free(ptr);
 	}
 };
@@ -98,6 +98,7 @@ class BlockAllocator {
 	std::size_t elements_ = 0;
 	UseAllocator allocator_;
 	[[no_unique_address]] tid_type thread_id_;
+	std::size_t alloc_size_ = 0;
 
 	void page_lock_conditional() {
 		if constexpr(std::is_same_v<PageLockPolicy, PageLock>) {
@@ -145,14 +146,20 @@ class BlockAllocator {
 		storage_ = static_cast<Block*>(std::aligned_alloc(alloc_size, HUGE_PAGE_MINIMUM));
 		madvise(storage_, alloc_size, MADV_HUGEPAGE);
 		elements_ = alloc_size / block_size;
+		alloc_size_ = alloc_size;
 #else
 		storage_ = static_cast<Block*>(allocator_.allocate(storage_size));
 		elements_ = elements;
+		alloc_size_ = storage_size;
 #endif
 	}
 
 	void deallocate_storage() {
-		allocator_.deallocate(storage_);
+#if (defined __linux__ || defined __unix__) && defined ENABLE_HUGE_PAGES
+		std::free(storage_);
+#else
+		allocator_.deallocate(storage_, alloc_size_);
+#endif
 	}
 	
 	void initialise(std::size_t elements) {

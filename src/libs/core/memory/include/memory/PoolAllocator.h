@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <memory/AllocReport.h>
 #include <boost/pool/pool.hpp>
 #include <array>
 #include <cstddef>
@@ -71,27 +72,43 @@ private:
 	}
 
 public:
-	PoolAllocator() = default;
+	static constexpr std::string_view tag { "asio_pool_allocator" };
+
+	PoolAllocator() {
+		ALLOC_TRACK(tag, mem_rep_create);
+	}
 
 	PoolAllocator(const Config& conf)
-		: pools(init_pools(conf)) {}
+		: pools(init_pools(conf)) {
+		ALLOC_TRACK(tag, mem_rep_create);
+	}
+
+	~PoolAllocator() {
+		ALLOC_TRACK(tag, mem_rep_destroy);
+	}
 
 	void* allocate(std::size_t size) {
+		ALLOC_TRACK(tag, mem_rep_bytes_alloc, size);
 		auto pool = select(size);
 
 		if(pool) {
+			ALLOC_TRACK(tag, mem_rep_alloc);
 			return pool->malloc();
 		} else {
+			ALLOC_TRACK(tag, mem_rep_system_alloc);
 			return std::malloc(size);
 		}
 	}
 
 	void deallocate(void* ptr, std::size_t size) {
+		ALLOC_TRACK(tag, mem_rep_bytes_dealloc, size);
 		auto pool = select(size);
 
 		if(pool) {
+			ALLOC_TRACK(tag, mem_rep_dealloc);
 			pool->free(ptr);
 		} else {
+			ALLOC_TRACK(tag, mem_rep_system_dealloc);
 			std::free(ptr);
 		}
 	}
