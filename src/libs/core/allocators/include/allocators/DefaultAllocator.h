@@ -8,10 +8,11 @@
 
 #pragma once
 
+#include <allocators/AllocTrack.h>
 #include <string_view>
 #include <utility>
 
-namespace ember::spark::io {
+namespace ember::allocators {
 
 template<typename T>
 struct DefaultAllocator final {
@@ -49,4 +50,4 @@ struct DefaultAllocator final {
 	}
 };
 
-} // io, spark, ember
+} // allocators, ember

@@ -10,11 +10,11 @@
 
 #include "PoolAllocator.h"
 #include "StaticAllocator.h"
-#include <memory/AllocReport.h>
+#include <allocators/AllocTrack.h>
 #include <string_view>
 #include <cstdlib>
 
-namespace ember {
+namespace ember::allocators {
 
 template<typename T, typename Allocator>
 class AsioAllocator {
@@ -62,4 +62,4 @@ public:
 	}
 };
 
-} // ember
+} // allocators, ember

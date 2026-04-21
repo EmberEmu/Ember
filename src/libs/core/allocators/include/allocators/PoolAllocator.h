@@ -8,12 +8,12 @@
 
 #pragma once
 
-#include <memory/AllocReport.h>
+#include <allocators/AllocTrack.h>
 #include <boost/pool/pool.hpp>
 #include <array>
 #include <cstddef>
 
-namespace ember {
+namespace ember::allocators {
 
 class PoolAllocator final {
 public:
@@ -31,6 +31,9 @@ public:
 	};
 
 private:
+	static constexpr std::string_view default_tag { "asio_pool_allocator" };
+	std::string_view tag;
+
 	constexpr static auto small_chunks  = 8;
 	constexpr static auto medium_chunks = 8;
 	constexpr static auto large_chunks  = 8;
@@ -72,14 +75,14 @@ private:
 	}
 
 public:
-	static constexpr std::string_view tag { "asio_pool_allocator" };
-
-	PoolAllocator() {
+	PoolAllocator(std::string_view tag = default_tag)
+		: tag(tag) {
 		ALLOC_TRACK(tag, mem_rep_create);
 	}
 
-	PoolAllocator(const Config& conf)
-		: pools(init_pools(conf)) {
+	PoolAllocator(const Config& conf, std::string_view tag = default_tag)
+		: tag(tag)
+		, pools(init_pools(conf)) {
 		ALLOC_TRACK(tag, mem_rep_create);
 	}
 
@@ -114,4 +117,4 @@ public:
 	}
 };
 
-} // ember
+} // allocators, ember

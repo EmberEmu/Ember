@@ -19,7 +19,7 @@
 namespace ember::realm {
 
 class ClientBuilder {
-	constexpr static std::string_view allocator_tag { "client_allocator" };
+	constexpr static std::string_view allocator_tag { "realm_client_create" };
 
 	mutable ClientAllocator allocator_;
 	ClientHandlerBuilder ch_builder_;

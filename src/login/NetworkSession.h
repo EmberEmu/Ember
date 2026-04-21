@@ -14,7 +14,7 @@
 #include "StreamTypes.h"
 #include <logger/Logger.h>
 #include <spark/buffers/BufferSequence.h>
-#include <memory/AsioAllocator.h>
+#include <allocators/AsioAllocator.h>
 #include <boost/asio/bind_allocator.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/steady_timer.hpp>
@@ -35,11 +35,13 @@ public:
 	using WriteCallback = std::function<void()>;
 
 private:
+	static constexpr std::string_view allocator_tag { "login_network" };
+
 	template<typename _type>
-	using AsioPoolAllocator = AsioAllocator<_type, PoolAllocator>;
+	using AsioPoolAllocator = allocators::AsioAllocator<_type, allocators::PoolAllocator>;
 
 	const std::chrono::seconds socket_activity_timeout { 60 };
-	PoolAllocator allocator_;
+	allocators::PoolAllocator allocator_;
 
 	SessionManager& sessions_;
 	tcp_strand_socket socket_;
@@ -175,7 +177,8 @@ private:
 
 public:
 	NetworkSession(SessionManager& sessions, tcp_strand_socket socket, log::Logger& logger)
-		: sessions_(sessions)
+		: allocator_(allocator_tag)
+		, sessions_(sessions)
 		, socket_(std::move(socket))
 		, timer_(socket_.get_executor())
 		, outbound_front_(&outbound_buffers_.front())

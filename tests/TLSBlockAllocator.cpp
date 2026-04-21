@@ -15,12 +15,12 @@
 
 #define EMBER_DEBUG_ALLOCATORS
 #undef ENABLE_HUGE_PAGES // required for the over allocation test
-#include <spark/buffers/allocators/TLSBlockAllocator.h>
+#include <allocators/TLSBlockAllocator.h>
 
 using namespace ember;
 
 TEST(TLSBlockAllocator, SingleAlloc) {
-	spark::io::TLSBlockAllocator<std::uint64_t, 1> tlsalloc;
+	allocators::TLSBlockAllocator<std::uint64_t, 1> tlsalloc;
 	auto mem = tlsalloc.allocate();
 	ASSERT_EQ(tlsalloc.allocator()->storage_active_count, 1);
 	ASSERT_EQ(tlsalloc.allocator()->new_active_count, 0);
@@ -35,7 +35,7 @@ TEST(TLSBlockAllocator, SingleAlloc) {
 
 TEST(TLSBlockAllocator, RandomAllocs) {
 	const auto MAX_ALLOCS = 100u;
-	spark::io::TLSBlockAllocator<std::uint64_t, MAX_ALLOCS> tlsalloc;
+	allocators::TLSBlockAllocator<std::uint64_t, MAX_ALLOCS> tlsalloc;
 	std::array<std::uint64_t*, MAX_ALLOCS> chunks{};
 	const auto time = std::chrono::system_clock::now().time_since_epoch();
 	const unsigned int seed = gsl::narrow_cast<unsigned int>(time.count());
@@ -67,7 +67,7 @@ TEST(TLSBlockAllocator, RandomAllocs) {
 }
 
 TEST(TLSBlockAllocator, OverCapacity) {
-	spark::io::TLSBlockAllocator<std::uint64_t, 1> tlsalloc;
+	allocators::TLSBlockAllocator<std::uint64_t, 1> tlsalloc;
 	std::array<std::uint64_t*, 2> mem{};
 	mem[0] = tlsalloc.allocate();
 	mem[1] = tlsalloc.allocate();
@@ -88,7 +88,7 @@ TEST(TLSBlockAllocator, OverCapacity) {
 }
 
 TEST(TLSBlockAllocator, NoSharing) {
-	spark::io::TLSBlockAllocator<std::uint64_t, 2> tlsalloc;
+	allocators::TLSBlockAllocator<std::uint64_t, 2> tlsalloc;
 	const auto tls_total_alloc = tlsalloc.allocator()->total_allocs;
 	const auto tls_total_dealloc = tlsalloc.allocator()->total_deallocs;
 	auto chunk = tlsalloc.allocate();
@@ -96,7 +96,7 @@ TEST(TLSBlockAllocator, NoSharing) {
 	ASSERT_EQ(tlsalloc.allocator()->total_allocs, tls_total_alloc + 1);
 
 	std::thread thread([&] {
-		spark::io::TLSBlockAllocator<std::uint64_t, 2> _tlsalloc;
+		allocators::TLSBlockAllocator<std::uint64_t, 2> _tlsalloc;
 		ASSERT_EQ(_tlsalloc.allocator()->total_allocs, 0);
 		ASSERT_EQ(_tlsalloc.allocator()->storage_active_count, 0);
 		auto _chunk = _tlsalloc.allocate();
@@ -114,7 +114,7 @@ TEST(TLSBlockAllocator, NoSharing) {
 }
 
 TEST(TLSBlockAllocator, ThreadMismatch) {
-	spark::io::TLSBlockAllocator<std::uint64_t, 1> tlsalloc;
+	allocators::TLSBlockAllocator<std::uint64_t, 1> tlsalloc;
 	auto chunk = tlsalloc.allocate();
 
 	std::jthread thread([&] {

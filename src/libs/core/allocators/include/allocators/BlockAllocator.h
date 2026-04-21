@@ -8,7 +8,8 @@
 
 #pragma once
 
-#include <spark/buffers/allocators/HugePages.h>
+#include <allocators/AllocTrack.h>
+#include <allocators/HugePages.h>
 #include <shared/utility/Utility.h>
 #include <array>
 #include <memory>
@@ -29,7 +30,7 @@
 #define EMBER_DEBUG_ALLOCATORS
 #endif
 
-namespace ember::spark::io {
+namespace ember::allocators {
 
 struct NoPageLock {};
 struct PageLock final : NoPageLock {};
@@ -163,6 +164,7 @@ class BlockAllocator {
 	}
 	
 	void initialise(std::size_t elements) {
+		ALLOC_TRACK(tag_, mem_rep_create);
 		allocate_storage(elements);
 		page_lock_conditional();
 		initialise_free_list();
@@ -199,12 +201,14 @@ public:
 			++storage_active_count;
 #endif
 			block->meta.using_new = false;
+			ALLOC_TRACK(tag_, mem_rep_alloc);
 		} else {
 #ifdef EMBER_DEBUG_ALLOCATORS
 			++new_active_count;
 #endif
 			block = new Block;
 			block->meta.using_new = true;
+			ALLOC_TRACK(tag_, mem_rep_system_alloc);
 		}
 
 		if constexpr(std::is_same_v<ValidatePolicy, ValidateDealloc>) {
@@ -215,6 +219,7 @@ public:
 		++total_allocs;
 		++active_count;
 #endif
+		ALLOC_TRACK(tag_, mem_rep_bytes_alloc, sizeof(Block));
 		return new (&block->obj) _ty(std::forward<Args>(args)...);
 	}
 
@@ -233,18 +238,21 @@ public:
 #endif
 			t->~_ty();
 			operator delete(block);
+			ALLOC_TRACK(tag_, mem_rep_system_dealloc);
 		} else {
 #ifdef EMBER_DEBUG_ALLOCATORS
 			--storage_active_count;
 #endif
 			t->~_ty();
 			push(block);
+			ALLOC_TRACK(tag_, mem_rep_dealloc);
 		}
 
 #ifdef EMBER_DEBUG_ALLOCATORS
 		++total_deallocs;
 		--active_count;
 #endif
+		ALLOC_TRACK(tag_, mem_rep_bytes_dealloc, sizeof(Block));
 	}
 
 	std::string_view tag() const {
@@ -258,7 +266,8 @@ public:
 #ifdef EMBER_DEBUG_ALLOCATORS
 		assert(active_count == 0);
 #endif
+		ALLOC_TRACK(tag_, mem_rep_destroy);
 	}
 };
 
-} // io, spark, ember
+} // allocators, ember
