@@ -90,7 +90,7 @@ option(BUILD_SHARED ${BUILD_SHARED_MSG} OFF)
 option(ENABLE_FAST_CLIENT_DISPATCH_TABLE "Fast client event dispatch cache at the cost extra per-thread memory consumption" ON)
 option(ENABLE_HUGE_PAGES "When running on Linux, enable huge page support (disable if memory constrained)" ON)
 option(ENABLE_PAGE_LOCKING "Allow the allocator to lock pages (disable if memory constrained)" ON)
-option(ALLOCATOR_TRACKING "Enable viewing custom memory allocator statistics - slow, debugging only!" ON)
+option(ALLOCATOR_TRACKING "Enable viewing custom memory allocator statistics - slow, debugging only!" OFF)
 
 if (ALLOCATOR_TRACKING)
     add_compile_definitions(EMBER_DEBUG_ALLOCATOR_TRACKING)
