@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2025 Ember
+ * Copyright (c) 2015 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -10,8 +10,8 @@
 
 #include <spark/buffers/pmr/Buffer.h>
 #include <spark/buffers/Shared.h>
-#include <spark/buffers/allocators/DefaultAllocator.h>
 #include <spark/buffers/detail/IntrusiveStorage.h>
+#include <allocators/DefaultAllocator.h>
 #include <concepts>
 #include <functional>
 #include <memory>
@@ -35,7 +35,7 @@ concept int_gt_zero = std::integral<decltype(block_sz)> && block_sz > 0;
 
 template<decltype(auto) block_sz,
 	byte_type storage_value_type = std::byte,
-	typename allocator = DefaultAllocator<detail::IntrusiveStorage<block_sz, storage_value_type>>
+	typename allocator = allocators::DefaultAllocator<detail::IntrusiveStorage<block_sz, storage_value_type>>
 >
 requires int_gt_zero<block_sz>
 class DynamicBuffer final : public pmr::Buffer {

@@ -61,15 +61,9 @@ set(IO_PMR_SRC
     include/spark/buffers/pmr/BufferWriteAdaptor.h
 )
 
-set(IO_ALLOC_SRC
-    include/spark/buffers/allocators/DefaultAllocator.h
-    include/spark/buffers/allocators/TLSBlockAllocator.h
-    include/spark/buffers/allocators/BlockAllocator.h
-)
-
 add_library(
     ${LIBRARY_NAME}
-	STATIC
+    STATIC
     ${CORE}
     ${IO_SRC}
     ${IO_PMR_SRC}
@@ -79,9 +73,8 @@ add_library(
 source_group("Core" FILES ${CORE})
 source_group("IO" FILES ${IO_SRC})
 source_group("IO\\Polymorphic" FILES ${IO_PMR_SRC})
-source_group("IO\\Allocators" FILES ${IO_ALLOC_SRC})
 
 add_dependencies(${LIBRARY_NAME} FB_SCHEMA_COMPILE)
 target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_link_libraries(${LIBRARY_NAME} PUBLIC shared ${Boost_LIBRARIES})
+target_link_libraries(${LIBRARY_NAME} PUBLIC allocators shared ${Boost_LIBRARIES})
 set_target_properties(${LIBRARY_NAME} PROPERTIES FOLDER "Common Libraries")

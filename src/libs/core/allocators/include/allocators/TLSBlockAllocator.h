@@ -8,7 +8,8 @@
 
 #pragma once
 
-#include <spark/buffers/allocators/BlockAllocator.h>
+#include <allocators/AllocTrack.h>
+#include <allocators/BlockAllocator.h>
 #include <type_traits>
 #include <utility>
 #include <cassert>
@@ -19,7 +20,7 @@
 #define EMBER_DEBUG_ALLOCATORS
 #endif
 
-namespace ember::spark::io {
+namespace ember::allocators {
 
 struct SafeEntrant {};
 struct NoRefCounting {};
@@ -151,4 +152,4 @@ public:
 	}
 };
 
-} // io, spark, ember
+} // allocators, ember

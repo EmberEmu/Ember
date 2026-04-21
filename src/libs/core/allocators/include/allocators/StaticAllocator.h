@@ -8,30 +8,30 @@
 
 #pragma once
 
-#include <spark/buffers/allocators/BlockAllocator.h>
-#include <memory/AllocReport.h>
+#include <allocators/AllocTrack.h>
+#include <allocators/BlockAllocator.h>
 #include <array>
 #include <string_view>
 #include <cstddef>
 #include <cstdlib>
 
-namespace ember {
+namespace ember::allocators {
 
 template<std::size_t _size, std::size_t _elements>
 class StaticAllocator final {
-	static constexpr std::string_view tag { "asio_static_allocator" };
+	static constexpr std::string_view tag { "asio_static" };
 
 	struct alignas(std::max_align_t) AlignedStorage {
 		std::byte storage[_size];
 	};
 
-	template<typename _alloc = spark::io::DefaultBlockAllocator>
-	using BlockAllocator = spark::io::BlockAllocator<
-		AlignedStorage, spark::io::NoPageLock, spark::io::NoValidateDealloc, _alloc
+	template<typename _alloc = DefaultBlockAllocator>
+	using BlockAllocator = BlockAllocator<
+		AlignedStorage, NoPageLock, NoValidateDealloc, _alloc
 	>;
 
 	class SlabAllocator {
-		static constexpr std::string_view tag { "asio_static_slab_allocator" };
+		static constexpr std::string_view tag { "asio_static_slab" };
 		static constexpr std::size_t slab_size = BlockAllocator<>::block_size * _elements;
 
 		std::array<std::byte, slab_size> storage;
@@ -75,7 +75,13 @@ class StaticAllocator final {
 	BlockAllocator<SlabAllocator> allocator;
 
 public:
-	StaticAllocator() : allocator(_elements, tag) {
+	StaticAllocator()
+		: allocator(_elements, tag) {
+		ALLOC_TRACK(tag, mem_rep_create);
+	}
+
+	StaticAllocator(std::string_view tag)
+		: allocator(_elements, tag) {
 		ALLOC_TRACK(tag, mem_rep_create);
 	}
 
@@ -108,4 +114,4 @@ public:
 	}
 };
 
-} // ember
+} // allocators, ember

@@ -10,8 +10,8 @@
 
 #include "Debug.h"
 #include "../ServiceContextImpl.h"
+#include <allocators/Tracking.h>
 #include <logger/Logger.h>
-#include <memory/AllocReport.h>
 #include <shared/utility/Utility.h>
 #include <bprinter/table_printer.h>
 #include <string>
@@ -24,21 +24,21 @@ namespace {
 void print_allocator_debug_table(log::Logger& logger) {
 	std::stringstream stream;
 	bprinter::TablePrinter table(&stream);
-	table.AddColumn("tag", 20);
-	table.AddColumn("create", 8);
+	table.AddColumn("tag", 27);
+	table.AddColumn("create", 7);
 	table.AddColumn("destroy", 8);
 	table.AddColumn("bytes_alloc", 12);
 	table.AddColumn("bytes_dealloc", 14);
-	table.AddColumn("allocs", 8);
-	table.AddColumn("deallocs", 10);
-	table.AddColumn("sys_allocs", 14);
-	table.AddColumn("sys_deallocs", 14);
+	table.AddColumn("allocs", 7);
+	table.AddColumn("deallocs", 9);
+	table.AddColumn("sys_allocs", 11);
+	table.AddColumn("sys_deallocs", 13);
 	table.PrintHeader();
 
-	auto metrics = memory::tracking::metrics();
+	auto metrics = allocators::tracking::metrics();
 
 	for(const auto& [k, v] : metrics) {
-		table << k.substr(0, 20);
+		table << k.substr(0, 27);
 		table << v[mem_rep_create];
 		table << v[mem_rep_destroy];
 		table << v[mem_rep_bytes_alloc];
@@ -60,7 +60,7 @@ void handle_allocator_debug(const commands::Arguments& args, log::Logger& logger
 	if(args.contains("file")) {
 		const auto file = args["file"].as<std::string>();
 		LOG_CONSOLE(logger, "Writing report to {}", file);
-		memory::tracking::generate_report(file);
+		allocators::tracking::generate_report(file);
 	}
 
 	print_allocator_debug_table(logger);

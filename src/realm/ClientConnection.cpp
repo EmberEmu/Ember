@@ -35,6 +35,7 @@ ClientConnection::ClientConnection(tcp_socket socket, const ClientIdent& ident,
 	, compression_level_(0)
 	, outbound_front_(&outbound_buffers_.front())
 	, outbound_back_(&outbound_buffers_.back())
+	, allocator_(allocator_tag)
 	, dispatcher_(dispatcher)
 	, ident_(ident) {}
 

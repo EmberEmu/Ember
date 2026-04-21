@@ -37,6 +37,8 @@ public:
 	static constexpr auto key_size = 40;
 
 private:
+	static constexpr std::string_view allocator_tag { "realm_client_connection "};
+
 	enum class ReadState {
 		header,
 		body,
@@ -50,12 +52,12 @@ private:
 	std::array<DynamicTLSBuffer, 2> outbound_buffers_;
 	DynamicTLSBuffer* outbound_front_;
 	DynamicTLSBuffer* outbound_back_;
+	StaticChunkAllocator allocator_;
 
 	ClientHandler* handler_;
 	ConnectionStats stats_;
 	std::optional<PacketCrypto<key_size>> crypt_;
 	protocol::SizeType msg_size_;
-	StaticChunkAllocator allocator_;
 	log::Logger& logger_;
 	bool write_in_progress_;
 	unsigned int compression_level_;

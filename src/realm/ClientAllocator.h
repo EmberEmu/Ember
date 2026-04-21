@@ -10,21 +10,21 @@
 
 #include "BuildDefines.h"
 #include "Client.h"
-#include <spark/buffers/allocators/TLSBlockAllocator.h>
+#include <allocators/TLSBlockAllocator.h>
 
 namespace ember::realm {
 
 #ifdef ENABLE_PAGE_LOCKING
-using PageLockPolicy = spark::io::PageLock;
+using PageLockPolicy = allocators::PageLock;
 #else
-using PageLockPolicy = spark::io::NoPageLock;
+using PageLockPolicy = allocators::NoPageLock;
 #endif
 
-using ClientAllocator = spark::io::TLSBlockAllocator<
+using ClientAllocator = allocators::TLSBlockAllocator<
 	Client,
 	PREALLOCATED_CLIENTS_PER_THREAD,
-	spark::io::NoRefCounting,
-	spark::io::UnsafeEntrant,
+	allocators::NoRefCounting,
+	allocators::UnsafeEntrant,
 	PageLockPolicy
 >;
 

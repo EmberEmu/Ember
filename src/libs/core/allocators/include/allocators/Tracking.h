@@ -16,13 +16,6 @@
 #include <unordered_map>
 #include <cstddef>
 
-#ifdef EMBER_DEBUG_ALLOCATOR_TRACKING
-#define ALLOC_TRACK(tag, type, ...) \
-ember::memory::tracking::record(tag, type __VA_OPT__(,) __VA_ARGS__);
-#else
-#define ALLOC_TRACK(tag, type, ...)
-#endif
-
 enum Metric {
 	mem_rep_create,
 	mem_rep_destroy,
@@ -36,7 +29,7 @@ enum Metric {
 	_metric_max
 };
 
-namespace ember::memory::tracking {
+namespace ember::allocators::tracking {
 
 class Tracking {
 public:
@@ -109,4 +102,4 @@ inline Tracking::MetricsMap metrics() {
 	return Tracking::get_instance().get_metrics();
 }
 
-}; // memory, tracking, ember
+}; // allocators, tracking, ember

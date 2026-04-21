@@ -9,7 +9,7 @@
 #pragma once
 
 #include <spark/buffers/DynamicBuffer.h>
-#include <spark/buffers/allocators/TLSBlockAllocator.h>
+#include <allocators/TLSBlockAllocator.h>
 #include <cstddef>
 
 namespace ember::spark::io {
@@ -29,23 +29,22 @@ namespace ember::spark::io {
 // 
 // TL;DR Do not use unless you know what you're doing.
 #ifdef ENABLE_PAGE_LOCKING
-using PageLockPolicy = spark::io::PageLock;
+using page_lock_policy = allocators::PageLock;
 #else
-using PageLockPolicy = spark::io::NoPageLock;
+using page_lock_policy = allocators::NoPageLock;
 #endif
 
 template<decltype(auto) block_size,
 	std::size_t count,
-	typename ref_count_policy = NoRefCounting,
-	typename entrant_policy = SafeEntrant,
+	typename ref_count_policy = allocators::NoRefCounting,
+	typename entrant_policy = allocators::SafeEntrant,
 	typename storage_type = std::byte>
 using DynamicTLSBuffer = DynamicBuffer<block_size, storage_type,
-	TLSBlockAllocator<typename DynamicBuffer<
-		block_size>::storage_type,
+	allocators::TLSBlockAllocator<typename DynamicBuffer<block_size>::storage_type,
 		count,
-		NoRefCounting,
+		ref_count_policy,
 		entrant_policy,
-		PageLockPolicy
+		page_lock_policy
 	>
 >;
 

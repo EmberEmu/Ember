@@ -51,7 +51,7 @@ add_executable(${EXECUTABLE_NAME}
 )
 
 target_include_directories(${EXECUTABLE_NAME} PUBLIC ../src)
-target_link_libraries(${EXECUTABLE_NAME} PRIVATE gtest gtest_main liblogin libmdns ports shared spark srp6 libmdns stun mpq ${BOTAN_TARGET} ${Boost_LIBRARIES})
+target_link_libraries(${EXECUTABLE_NAME} PRIVATE gtest gtest_main liblogin libmdns ports shared allocators spark srp6 libmdns stun mpq ${BOTAN_TARGET} ${Boost_LIBRARIES})
 gtest_discover_tests(${EXECUTABLE_NAME})
 
 add_custom_command(TARGET ${EXECUTABLE_NAME} PRE_BUILD
