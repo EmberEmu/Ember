@@ -73,6 +73,8 @@ template<typename _ty,
 	typename UseAllocator = DefaultBlockAllocator
 >
 class BlockAllocator {
+	static constexpr std::string_view default_tag { "block_allocator" };
+
 	using tid_type = std::conditional_t<
 		std::is_same_v<ValidatePolicy, ValidateDealloc>, std::thread::id, std::monostate
 	>;
@@ -181,13 +183,13 @@ public:
 	std::size_t total_deallocs = 0;
 #endif
 
-	BlockAllocator(std::size_t elements, std::string_view tag = {}) requires std::same_as<ValidatePolicy, ValidateDealloc>
+	BlockAllocator(std::size_t elements, std::string_view tag = default_tag) requires std::same_as<ValidatePolicy, ValidateDealloc>
 		: tag_(tag)
 		, thread_id_(std::this_thread::get_id()) {
 		initialise(elements);
 	}
 
-	BlockAllocator(std::size_t elements, std::string_view tag = {})
+	BlockAllocator(std::size_t elements, std::string_view tag = default_tag)
 		: tag_(tag) {
 		initialise(elements);
 	}
@@ -219,7 +221,7 @@ public:
 		++total_allocs;
 		++active_count;
 #endif
-		ALLOC_TRACK(tag_, mem_rep_bytes_alloc, sizeof(Block));
+		ALLOC_TRACK(tag_, mem_rep_bytes_alloc, sizeof(_ty));
 		return new (&block->obj) _ty(std::forward<Args>(args)...);
 	}
 
@@ -252,7 +254,7 @@ public:
 		++total_deallocs;
 		--active_count;
 #endif
-		ALLOC_TRACK(tag_, mem_rep_bytes_dealloc, sizeof(Block));
+		ALLOC_TRACK(tag_, mem_rep_bytes_dealloc, sizeof(_ty));
 	}
 
 	std::string_view tag() const {

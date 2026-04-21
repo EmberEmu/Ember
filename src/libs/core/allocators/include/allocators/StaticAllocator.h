@@ -19,7 +19,8 @@ namespace ember::allocators {
 
 template<std::size_t _size, std::size_t _elements>
 class StaticAllocator final {
-	static constexpr std::string_view tag { "asio_static" };
+	static constexpr std::string_view default_tag { "static_allocator" };
+	static constexpr std::string_view block_tag   { "static_allocator_block" };
 
 	struct alignas(std::max_align_t) AlignedStorage {
 		std::byte storage[_size];
@@ -31,7 +32,7 @@ class StaticAllocator final {
 	>;
 
 	class SlabAllocator {
-		static constexpr std::string_view tag { "asio_static_slab" };
+		static constexpr std::string_view tag { "static_slab_allocator" };
 		static constexpr std::size_t slab_size = BlockAllocator<>::block_size * _elements;
 
 		alignas(std::max_align_t) std::array<std::byte, slab_size> storage;
@@ -73,21 +74,21 @@ class StaticAllocator final {
 	};
 
 	BlockAllocator<SlabAllocator> allocator;
+	std::string_view tag;
 
 public:
-	StaticAllocator()
-		: allocator(_elements, tag) {
-		ALLOC_TRACK(tag, mem_rep_create);
-	}
-
-	StaticAllocator(std::string_view tag)
-		: allocator(_elements, tag) {
+	StaticAllocator(std::string_view tag = default_tag)
+		: allocator(_elements, block_tag)
+		, tag(tag) {
 		ALLOC_TRACK(tag, mem_rep_create);
 	}
 
 	~StaticAllocator() {
 		ALLOC_TRACK(tag, mem_rep_destroy);
 	}
+
+	StaticAllocator(const StaticAllocator&) = delete;
+	StaticAllocator& operator=(const StaticAllocator&) = delete;
 
 	void* allocate(std::size_t size) {
 		ALLOC_TRACK(tag, mem_rep_bytes_alloc, size);

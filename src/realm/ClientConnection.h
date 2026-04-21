@@ -33,12 +33,12 @@ namespace ember::realm {
 class ClientHandler;
 
 class ClientConnection final {
+	static constexpr std::string_view allocator_tag { "realm_client_connection" };
+
 public:
 	static constexpr auto key_size = 40;
 
 private:
-	static constexpr std::string_view allocator_tag { "realm_client_connection "};
-
 	enum class ReadState {
 		header,
 		body,
@@ -52,7 +52,7 @@ private:
 	std::array<DynamicTLSBuffer, 2> outbound_buffers_;
 	DynamicTLSBuffer* outbound_front_;
 	DynamicTLSBuffer* outbound_back_;
-	StaticChunkAllocator allocator_;
+	StaticAllocator allocator_;
 
 	ClientHandler* handler_;
 	ConnectionStats stats_;

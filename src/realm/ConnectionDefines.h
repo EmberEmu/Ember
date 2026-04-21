@@ -38,10 +38,10 @@ using DynamicTLSBuffer = spark::io::DynamicTLSBuffer<
 	outbound_size, prealloc_nodes, allocators::NoRefCounting, allocators::UnsafeEntrant
 >;
 
-using StaticChunkAllocator = allocators::StaticAllocator<asio_chunk_size, asio_chunks>;
+using StaticAllocator = allocators::StaticAllocator<asio_chunk_size, asio_chunks>;
 
 template<typename T>
-using AsioStaticAllocator = allocators::AsioAllocator<T, StaticChunkAllocator>;
+using AsioStaticAllocator = allocators::AsioAllocator<T, StaticAllocator>;
 
 template<typename _ty>
 using message_view = protocol::message_view<_ty, BinaryStream>;

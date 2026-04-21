@@ -99,7 +99,7 @@ void print_connection_stats_header(bprinter::TablePrinter& table) {
 	table.AddColumn("Bytes In", 8);
 	table.AddColumn("Bytes Out", 9);
 	table.AddColumn("Ops In", 6);
-	table.AddColumn("Opts Out", 8);
+	table.AddColumn("Ops Out", 8);
 	table.PrintHeader();
 }
 
