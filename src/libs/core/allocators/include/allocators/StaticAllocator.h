@@ -34,7 +34,7 @@ class StaticAllocator final {
 		static constexpr std::string_view tag { "asio_static_slab" };
 		static constexpr std::size_t slab_size = BlockAllocator<>::block_size * _elements;
 
-		std::array<std::byte, slab_size> storage;
+		alignas(std::max_align_t) std::array<std::byte, slab_size> storage;
 		bool in_use = false;
 
 	public:
