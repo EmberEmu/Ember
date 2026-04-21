@@ -13,7 +13,6 @@
 #include <spark/buffers/detail/IntrusiveStorage.h>
 #include <allocators/DefaultAllocator.h>
 #include <concepts>
-#include <functional>
 #include <memory>
 #include <string_view>
 #include <utility>
@@ -51,7 +50,18 @@ public:
 
 	static constexpr auto npos { static_cast<size_type>(-1) };
 
-	using unique_storage = std::unique_ptr<storage_type, std::function<void(storage_type*)>>;
+	class Deleter {
+		DynamicBuffer& buffer_;
+
+	public:
+		explicit Deleter(DynamicBuffer& buffer) : buffer_(buffer) {}
+
+		void operator()(storage_type* ptr) const {
+			buffer_.deallocate(ptr);
+		}
+	};
+
+	using unique_storage = std::unique_ptr<storage_type, Deleter>;
 
 private:
 	node_type root_;
@@ -378,9 +388,7 @@ public:
 		auto buffer = buffer_from_node(root_.next);
 		size_ -= buffer->size();
 		unlink_node(root_.next);
-		return unique_storage(buffer, [&](auto ptr) {
-			deallocate(ptr);
-		});
+		return unique_storage(buffer, Deleter(*this));
 	}
 
 	void push_back(storage_type* buffer) {
