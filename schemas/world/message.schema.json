@@ -4,28 +4,27 @@
 	"title": "World Message",
 	"description": "A schema that validates world message JSON inputs",
 	"required": [
+		"name",
 		"opcode",
-		"type",
+		"direction",
 		"fields"
 	],
 	"type": "object",
 	"properties": {
+		"name": {
+			"type": "string",
+			"pattern": "^[A-Z][A-Za-z0-9]*$",
+			"description": "PascalCase class name for the generated packet struct (e.g. LoginVerifyWorld)"
+		},
 		"opcode": {
 			"type": "string",
-			"enum": [
-				"cmsg",
-				"smsg"
-			],
-			"description": "The opcode field"
+			"pattern": "^(cmsg|smsg|msg)_[a-z0-9_]+$",
+			"description": "Wire opcode identifier in snake_case (e.g. smsg_login_verify_world)"
 		},
-		"type": {
+		"direction": {
 			"type": "string",
-			"enum": [
-				"msg",
-				"cmsg",
-				"smsg"
-			],
-			"description": "The packet type"
+			"enum": ["client", "server"],
+			"description": "Packet direction — 'client' = sent from client to server, 'server' = sent from server to client"
 		},
 		"fields": {
 			"$ref": "#/$defs/fields"
@@ -35,28 +34,37 @@
 	"$defs": {
 		"field_type": {
 			"type": "string",
-			"enum": [
-				"uint8",
-				"uint16",
-				"uint32",
-				"uint64",
-				"int8",
-				"int16",
-				"int32",
-				"int64",
-				"float",
-				"double"
-			],
-			"description": "The field type within the packet"
+			"description": "A built-in primitive or the name of a custom type declared in types.json",
+			"anyOf": [
+				{
+					"enum": [
+						"uint8",
+						"uint16",
+						"uint32",
+						"uint64",
+						"int8",
+						"int16",
+						"int32",
+						"int64",
+						"float",
+						"double"
+					]
+				},
+				{
+					"pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+				}
+			]
 		},
 		"fields": {
 			"type": "array",
 			"items": {
-				"type": "object",
-				"$ref": "#/$defs/field"
+				"oneOf": [
+					{ "$ref": "#/$defs/field" },
+					{ "$ref": "#/$defs/group" }
+				]
 			},
-			"minItems" : 1,
-			"uniqueItems" : true
+			"minItems": 1,
+			"uniqueItems": true
 		},
 		"field": {
 			"type": "object",
@@ -66,8 +74,73 @@
 				},
 				"type": {
 					"$ref": "#/$defs/field_type"
+				},
+				"when": {
+					"$ref": "#/$defs/condition"
+				},
+				"array": {
+					"$ref": "#/$defs/array"
 				}
-			}
+			},
+			"required": ["name", "type"],
+			"additionalProperties": false
+		},
+		"array": {
+			"type": "object",
+			"description": "Marks the field as either a fixed-size array (size) or a dynamic vector sized by a prior field (count_field)",
+			"properties": {
+				"size":        { "type": "integer", "minimum": 1 },
+				"count_field": { "type": "string" }
+			},
+			"additionalProperties": false,
+			"oneOf": [
+				{ "required": ["size"],        "not": { "required": ["count_field"] } },
+				{ "required": ["count_field"], "not": { "required": ["size"] } }
+			]
+		},
+		"group": {
+			"type": "object",
+			"description": "A block of fields that are serialised together when `when` evaluates true",
+			"properties": {
+				"type": {
+					"const": "group"
+				},
+				"when": {
+					"$ref": "#/$defs/condition"
+				},
+				"fields": {
+					"$ref": "#/$defs/fields"
+				}
+			},
+			"required": ["type", "fields"],
+			"additionalProperties": false
+		},
+		"condition": {
+			"type": "object",
+			"description": "A predicate evaluated against a previously-read field to gate serialisation",
+			"properties": {
+				"op": {
+					"type": "string",
+					"enum": ["eq", "in", "has_flag"]
+				},
+				"field": {
+					"type": "string",
+					"description": "Name of a prior field in the same message whose value is tested"
+				},
+				"value": {}
+			},
+			"required": ["op", "field", "value"],
+			"additionalProperties": false,
+			"allOf": [
+				{
+					"if": { "properties": { "op": { "const": "in" } } },
+					"then": { "properties": { "value": { "type": "array", "minItems": 1 } } }
+				},
+				{
+					"if": { "properties": { "op": { "const": "has_flag" } } },
+					"then": { "properties": { "value": { "type": ["integer", "string"] } } }
+				}
+			]
 		}
 	}
 }

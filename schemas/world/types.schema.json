@@ -1,0 +1,185 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "ember/schemas/types",
+	"title": "Ember Custom Types",
+	"description": "Registry of named custom types (enums, flag sets, structs, string variants) referenced by message definitions",
+	"type": "object",
+	"required": ["types"],
+	"additionalProperties": false,
+	"properties": {
+		"types": {
+			"type": "object",
+			"patternProperties": {
+				"^[A-Za-z_][A-Za-z0-9_]*$": {
+					"oneOf": [
+						{ "$ref": "#/$defs/enum_type" },
+						{ "$ref": "#/$defs/flags_type" },
+						{ "$ref": "#/$defs/struct_type" },
+						{ "$ref": "#/$defs/string_type" }
+					]
+				}
+			},
+			"additionalProperties": false
+		}
+	},
+	"$defs": {
+		"primitive": {
+			"type": "string",
+			"enum": [
+				"uint8", "uint16", "uint32", "uint64",
+				"int8",  "int16",  "int32",  "int64"
+			]
+		},
+		"field_type": {
+			"type": "string",
+			"anyOf": [
+				{
+					"enum": [
+						"uint8", "uint16", "uint32", "uint64",
+						"int8",  "int16",  "int32",  "int64",
+						"float", "double"
+					]
+				},
+				{
+					"pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+				}
+			]
+		},
+		"values": {
+			"type": "object",
+			"patternProperties": {
+				"^[A-Za-z_][A-Za-z0-9_]*$": { "type": "integer" }
+			},
+			"additionalProperties": false,
+			"minProperties": 1
+		},
+		"include": {
+			"type": "string",
+			"description": "Header path used when emitting #include <...> in generated C++ files"
+		},
+		"cpp_namespace": {
+			"type": "string",
+			"pattern": "^[A-Za-z_][A-Za-z0-9_:]*$",
+			"description": "Fully-qualified C++ namespace (defaults to ember::protocol)"
+		},
+		"enum_type": {
+			"type": "object",
+			"required": ["kind", "underlying", "values"],
+			"additionalProperties": false,
+			"properties": {
+				"kind":          { "const": "enum" },
+				"underlying":    { "$ref": "#/$defs/primitive" },
+				"values":        { "$ref": "#/$defs/values" },
+				"include":       { "$ref": "#/$defs/include" },
+				"cpp_namespace": { "$ref": "#/$defs/cpp_namespace" }
+			}
+		},
+		"flags_type": {
+			"type": "object",
+			"required": ["kind", "underlying", "values"],
+			"additionalProperties": false,
+			"properties": {
+				"kind":          { "const": "flags" },
+				"underlying":    { "$ref": "#/$defs/primitive" },
+				"values":        { "$ref": "#/$defs/values" },
+				"include":       { "$ref": "#/$defs/include" },
+				"cpp_namespace": { "$ref": "#/$defs/cpp_namespace" }
+			}
+		},
+		"struct_type": {
+			"type": "object",
+			"required": ["kind", "fields"],
+			"additionalProperties": false,
+			"properties": {
+				"kind":          { "const": "struct" },
+				"fields":        { "$ref": "#/$defs/fields" },
+				"include":       { "$ref": "#/$defs/include" },
+				"cpp_namespace": { "$ref": "#/$defs/cpp_namespace" }
+			}
+		},
+		"string_type": {
+			"type": "object",
+			"required": ["kind", "encoding"],
+			"additionalProperties": false,
+			"properties": {
+				"kind":        { "const": "string" },
+				"encoding":    { "enum": ["null_terminated", "prefixed", "prefixed_null_terminated"] },
+				"length_type": { "$ref": "#/$defs/primitive" }
+			},
+			"allOf": [
+				{
+					"if":   { "properties": { "encoding": { "enum": ["prefixed", "prefixed_null_terminated"] } } },
+					"then": { "required": ["length_type"] }
+				},
+				{
+					"if":   { "properties": { "encoding": { "const": "null_terminated" } } },
+					"then": { "not": { "required": ["length_type"] } }
+				}
+			]
+		},
+		"fields": {
+			"type": "array",
+			"items": {
+				"oneOf": [
+					{ "$ref": "#/$defs/field" },
+					{ "$ref": "#/$defs/group" }
+				]
+			},
+			"minItems": 1,
+			"uniqueItems": true
+		},
+		"field": {
+			"type": "object",
+			"properties": {
+				"name":  { "type": "string" },
+				"type":  { "$ref": "#/$defs/field_type" },
+				"when":  { "$ref": "#/$defs/condition" },
+				"array": { "$ref": "#/$defs/array" }
+			},
+			"required": ["name", "type"],
+			"additionalProperties": false
+		},
+		"array": {
+			"type": "object",
+			"properties": {
+				"size":        { "type": "integer", "minimum": 1 },
+				"count_field": { "type": "string" }
+			},
+			"additionalProperties": false,
+			"oneOf": [
+				{ "required": ["size"],        "not": { "required": ["count_field"] } },
+				{ "required": ["count_field"], "not": { "required": ["size"] } }
+			]
+		},
+		"group": {
+			"type": "object",
+			"properties": {
+				"type":   { "const": "group" },
+				"when":   { "$ref": "#/$defs/condition" },
+				"fields": { "$ref": "#/$defs/fields" }
+			},
+			"required": ["type", "fields"],
+			"additionalProperties": false
+		},
+		"condition": {
+			"type": "object",
+			"properties": {
+				"op":    { "type": "string", "enum": ["eq", "in", "has_flag"] },
+				"field": { "type": "string" },
+				"value": {}
+			},
+			"required": ["op", "field", "value"],
+			"additionalProperties": false,
+			"allOf": [
+				{
+					"if":   { "properties": { "op": { "const": "in" } } },
+					"then": { "properties": { "value": { "type": "array", "minItems": 1 } } }
+				},
+				{
+					"if":   { "properties": { "op": { "const": "has_flag" } } },
+					"then": { "properties": { "value": { "type": ["integer", "string"] } } }
+				}
+			]
+		}
+	}
+}

@@ -1,1 +1,32 @@
-{} 
+{
+	"name": "MessageChat",
+	"opcode": "smsg_messagechat",
+	"direction": "server",
+	"fields": [
+		{ "name": "type",     "type": "ChatType" },
+		{ "name": "language", "type": "uint32"   },
+		{
+			"type": "group",
+			"when": {
+				"op":    "in",
+				"field": "type",
+				"value": ["SAY", "YELL", "PARTY"]
+			},
+			"fields": [
+				{ "name": "speech_bubble_attr", "type": "uint64" },
+				{ "name": "chat_name_attr",     "type": "uint64" }
+			]
+		},
+		{
+			"type": "group",
+			"when": { "op": "eq", "field": "type", "value": "CHANNEL" },
+			"fields": [
+				{ "name": "channel_name", "type": "PrefixedString32" },
+				{ "name": "player_rank",  "type": "uint32"           },
+				{ "name": "player_guid",  "type": "uint64"           }
+			]
+		},
+		{ "name": "message",    "type": "PrefixedString32" },
+		{ "name": "player_tag", "type": "PlayerChatTag"    }
+	]
+}

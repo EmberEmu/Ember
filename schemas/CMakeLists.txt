@@ -25,3 +25,12 @@ build_flatbuffers("${FB_SCHEMAS}" ${CMAKE_CURRENT_SOURCE_DIR} ${FB_SCHEMA_TARGET
 
 set(TEMPLATE_DIR ${CMAKE_SOURCE_DIR}/src/tools/rpcgen/templates/)
 build_spark_services("${SERVICE_SCHEMAS}" ${TEMPLATE_DIR} ${CMAKE_BINARY_DIR} ${CMAKE_BINARY_DIR})
+
+include(${CMAKE_SOURCE_DIR}/cmake/BuildMessages.cmake)
+
+build_messages(
+    ${CMAKE_CURRENT_SOURCE_DIR}/world/packets
+    ${CMAKE_CURRENT_SOURCE_DIR}/world/types.json
+    ${CMAKE_CURRENT_SOURCE_DIR}/world/types.schema.json
+    ${CMAKE_CURRENT_SOURCE_DIR}/world/message.schema.json
+)

@@ -1,0 +1,39 @@
+/*
+ * Copyright (c) 2026 Ember
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
+
+#pragma once
+
+## for header in includes
+#include <{{ header }}>
+## endfor
+
+namespace ember::protocol::{{ direction }} {
+
+struct {{ name }} final {
+{{ members }}
+
+	StreamResult read_from_stream(le_stream auto& stream) {
+{{ read_body }}
+
+		return stream? StreamResult::success : StreamResult::failed;
+	}
+
+	StreamResult write_to_stream(le_stream auto& stream) const {
+{{ write_body }}
+
+		return stream? StreamResult::success : StreamResult::failed;
+	}
+};
+
+} // {{ direction }}, protocol, ember
+
+namespace ember::protocol {
+
+using {{ opcode }} = {{ packet_template }}<{{ opcode_enum }}::{{ opcode }}, {{ direction }}::{{ name }}>;
+
+} // protocol, ember

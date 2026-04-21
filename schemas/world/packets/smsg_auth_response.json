@@ -1,1 +1,24 @@
-{} 
+{
+	"name": "AuthResponse",
+	"opcode": "smsg_auth_response",
+	"direction": "server",
+	"fields": [
+		{ "name": "result", "type": "Result" },
+		{
+			"type": "group",
+			"when": { "op": "eq", "field": "result", "value": "auth_wait_queue" },
+			"fields": [
+				{ "name": "queue_position", "type": "uint32" }
+			]
+		},
+		{
+			"type": "group",
+			"when": { "op": "eq", "field": "result", "value": "auth_ok" },
+			"fields": [
+				{ "name": "billing_time",   "type": "uint32" },
+				{ "name": "billing_flags",  "type": "uint8"  },
+				{ "name": "billing_rested", "type": "uint32" }
+			]
+		}
+	]
+}

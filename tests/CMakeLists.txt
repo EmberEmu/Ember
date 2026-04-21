@@ -38,6 +38,7 @@ set(EXECUTABLE_SRC
     Commands.cpp
     ClientIdent.cpp
     PacketCrypto.cpp
+	Protogen.cpp
 )
 
 if(WIN32)
@@ -50,13 +51,18 @@ add_executable(${EXECUTABLE_NAME}
     $<TARGET_OBJECTS:libmdns>
 )
 
-target_include_directories(${EXECUTABLE_NAME} PUBLIC ../src)
-target_link_libraries(${EXECUTABLE_NAME} PRIVATE gtest gtest_main liblogin libmdns ports shared allocators spark srp6 libmdns stun mpq ${BOTAN_TARGET} ${Boost_LIBRARIES})
+target_include_directories(${EXECUTABLE_NAME} PUBLIC ../src ../src/tools)
+target_link_libraries(${EXECUTABLE_NAME} PRIVATE gtest gtest_main libprotogen liblogin libmdns ports shared allocators spark srp6 libmdns stun mpq ${BOTAN_TARGET} ${Boost_LIBRARIES})
 gtest_discover_tests(${EXECUTABLE_NAME})
 
 add_custom_command(TARGET ${EXECUTABLE_NAME} PRE_BUILD
                    COMMAND ${CMAKE_COMMAND} -E copy_directory
                    ${CMAKE_SOURCE_DIR}/tests/test_data ${CMAKE_CURRENT_BINARY_DIR}/test_data)
+
+# copy the protogen templates - not sure what the better way is, only that it surely exists
+add_custom_command(TARGET ${EXECUTABLE_NAME} PRE_BUILD
+                   COMMAND ${CMAKE_COMMAND} -E copy_directory
+                   ${CMAKE_SOURCE_DIR}/src/tools/protogen/templates ${CMAKE_CURRENT_BINARY_DIR}/test_data/templates)
 
 install(TARGETS ${EXECUTABLE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})
 install(DIRECTORY test_data/ DESTINATION ${CMAKE_INSTALL_PREFIX}/test_data)

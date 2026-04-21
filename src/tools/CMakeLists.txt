@@ -7,7 +7,7 @@
 add_subdirectory(dbcparser)
 add_subdirectory(dbutils)
 add_subdirectory(rpcgen)
-add_subdirectory(messagegen)
+add_subdirectory(protogen)
 
 if(BUILD_OPT_TOOLS)
     add_subdirectory(packetconvert)
