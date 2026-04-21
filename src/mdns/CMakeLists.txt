@@ -50,7 +50,7 @@ if(BUILD_SHARED)
 	target_compile_definitions(${LIBRARY_NAME} PUBLIC EXPORT_SERVICE)
 endif()
 
-add_dependencies(${LIBRARY_NAME} SPARK_RPC_GENERATE)
+add_dependencies(${LIBRARY_OBJECTS} SPARK_RPC_GENERATE)
 target_include_directories(${LIBRARY_OBJECTS} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(${LIBRARY_OBJECTS} PUBLIC service shared spark commands)
 target_link_libraries(${LIBRARY_NAME} PRIVATE ${LIBRARY_OBJECTS} spark INTERFACE commands logger ${Boost_LIBRARIES} PUBLIC shared Threads::Threads)

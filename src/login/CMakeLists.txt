@@ -117,9 +117,7 @@ add_library(${LIBRARY_NAME} ${SERVICE_LIB_LINKAGE}
     $<TARGET_OBJECTS:${LIBRARY_OBJECTS}>
 )
 
-add_dependencies(${LIBRARY_NAME}
-    SPARK_RPC_GENERATE
-)
+add_dependencies(${LIBRARY_OBJECTS} SPARK_RPC_GENERATE)
 
 if(BUILD_SHARED)
     target_compile_definitions(${LIBRARY_NAME} PUBLIC EXPORT_SERVICE)
