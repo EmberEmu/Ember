@@ -24,6 +24,7 @@
 #include <shared/utility/HashDefines.h>
 #include <shared/utility/Utility.h>
 #include <boost/container/small_vector.hpp>
+#include <botan/exceptn.h>
 #include <gsl/narrow>
 #include <ranges>
 #include <stdexcept>
