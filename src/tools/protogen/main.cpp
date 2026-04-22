@@ -25,7 +25,7 @@
 using namespace ember;
 namespace opts = boost::program_options;
 
-void launch(const opts::variables_map& args, log::Logger& logger);
+int launch(const opts::variables_map& args, log::Logger& logger);
 opts::variables_map parse_arguments(const int argc, const char* argv[]);
 std::vector<std::filesystem::path> collect_message_files(const std::filesystem::path& path);
 void write_file(const std::filesystem::path& path, const std::string& content);
@@ -39,8 +39,7 @@ int main(int argc, const char* argv[]) try {
 	log::Logger logger;
 	configure_logger(logger, args);
 
-	launch(args, logger);
-	return EXIT_SUCCESS;
+	return launch(args, logger);
 } catch(const std::exception& e) {
 	std::println(stderr, "Fatal error: {}", e.what());
 	return EXIT_FAILURE;
@@ -61,7 +60,7 @@ void configure_logger(log::Logger& logger, const opts::variables_map& args) {
 	log::global_logger(logger);
 }
 
-void launch(const opts::variables_map& args, log::Logger& logger) {
+int launch(const opts::variables_map& args, log::Logger& logger) try {
 	const auto generate = args.count("output") > 0;
 	const auto templates_dir = generate? args["templates"].as<std::filesystem::path>() : std::filesystem::path();
 	const auto output_dir = generate? args["output"].as<std::filesystem::path>() : std::filesystem::path();
@@ -123,6 +122,10 @@ void launch(const opts::variables_map& args, log::Logger& logger) {
 	}
 
 	LOG_INFO(logger, "Zug zug, work complete!");
+	return EXIT_SUCCESS;
+} catch(const std::runtime_error& e) {
+	LOG_FATAL(logger, e.what());
+	return EXIT_FAILURE;
 }
 
 jsoncons::jsonschema::json_schema<jsoncons::json> load_schema(const std::filesystem::path& path) {
