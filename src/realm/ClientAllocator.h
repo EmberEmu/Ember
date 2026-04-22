@@ -25,7 +25,8 @@ using ClientAllocator = allocators::TLSBlockAllocator<
 	PREALLOCATED_CLIENTS_PER_THREAD,
 	allocators::NoRefCounting,
 	allocators::UnsafeEntrant,
-	PageLockPolicy
+	PageLockPolicy,
+	allocators::ExplicitInit
 >;
 
 } // realm, ember

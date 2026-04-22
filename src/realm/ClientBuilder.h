@@ -20,8 +20,8 @@ namespace ember::realm {
 
 class ClientBuilder {
 	constexpr static std::string_view allocator_tag { "realm_client_create" };
+	static inline thread_local ClientAllocator allocator_ { allocator_tag };
 
-	mutable ClientAllocator allocator_;
 	ClientHandlerBuilder ch_builder_;
 	ClientConnectionBuilder cc_builder_;
 	EventDispatcher& dispatcher_;
@@ -29,6 +29,8 @@ class ClientBuilder {
 	log::Logger& logger_;
 
 	unique_client_ptr make_unique_client(tcp_socket socket, std::size_t index) const {
+		allocator_.thread_enter();
+
 		return unique_client_ptr(allocator_.allocate(
 			std::move(socket), index, dispatcher_, logger_, ch_builder_, cc_builder_
 		), ClientDeleter(allocator_, pool_.get(index)));
@@ -37,8 +39,7 @@ class ClientBuilder {
 public:
 	ClientBuilder(ClientHandlerBuilder ch_builder, ClientConnectionBuilder cc_builder,
 	              EventDispatcher& dispatcher, thread::ServicePool& pool, log::Logger& logger)
-		: allocator_(allocator_tag)
-		, ch_builder_(ch_builder)
+		: ch_builder_(ch_builder)
 		, cc_builder_(cc_builder)
 		, dispatcher_(dispatcher)
 		, pool_(pool)

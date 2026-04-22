@@ -23,15 +23,18 @@ namespace ember::allocators {
 
 struct SafeEntrant {};
 struct NoRefCounting {};
+struct ImplicitInit {};
 
 struct UnsafeEntrant : SafeEntrant {};
-struct RefCounting : NoRefCounting {};
+struct RefCounting   : NoRefCounting {};
+struct ExplicitInit  : ImplicitInit {};
 
 template<typename _ty,
 	std::size_t _elements,
 	std::derived_from<NoRefCounting> RefCountPolicy = NoRefCounting,
 	std::derived_from<SafeEntrant> EntrantPolicy = SafeEntrant,
-	std::derived_from<NoPageLock> PageLockPolicy = NoPageLock
+	std::derived_from<NoPageLock> PageLockPolicy = NoPageLock,
+	std::derived_from<ImplicitInit> InitPolicy = ImplicitInit
 >
 class TLSBlockAllocator final {
 	using AllocatorType = BlockAllocator<_ty, PageLockPolicy>;
@@ -75,7 +78,9 @@ public:
 #endif
 
 	TLSBlockAllocator(std::string_view tag = {}) : tag_(tag) {
-		thread_enter();
+		if constexpr(std::is_same_v<InitPolicy, ImplicitInit>) {
+			thread_enter();
+		}
 	}
 
 	/*
