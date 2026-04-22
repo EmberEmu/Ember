@@ -6,8 +6,7 @@
 	"required": [
 		"name",
 		"opcode",
-		"direction",
-		"fields"
+		"direction"
 	],
 	"type": "object",
 	"properties": {

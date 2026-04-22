@@ -224,7 +224,9 @@ void validate_registry_internals(const TypeRegistry& reg) {
 		}
 
 		Scope scope;
+
 		validate_fields(def["fields"], reg, scope, std::format("type '{}'", name));
+		
 	}
 }
 

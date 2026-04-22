@@ -418,7 +418,10 @@ GeneratedFile generate_message(const jsoncons::json& message,
 
 	WalkState state;
 	std::vector<ScopeEntry> scope;
-	walk(message["fields"], registry, state, scope, {});
+
+	if(message.contains("fields")) {
+		walk(message["fields"], registry, state, scope, {});
+	}
 
 	nlohmann::json data;
 	data["year"] = current_year();

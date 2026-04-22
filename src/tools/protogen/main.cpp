@@ -87,10 +87,12 @@ int launch(const opts::variables_map& args, log::Logger& logger) try {
 
 		message_schema.validate(json);
 
-		validate_message_fields(
-			json["fields"], registry,
-			std::format("message '{}'", file.string())
-		);
+		if(json.contains("fields")) {
+			validate_message_fields(
+				json["fields"], registry,
+				std::format("message '{}'", file.string())
+			);
+		}
 
 		if(!generate) {
 			LOG_INFO(logger, "Successfully validated {}", file.string());
