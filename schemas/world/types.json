@@ -177,7 +177,7 @@
 		"CinematicSequence": {
 			"kind": "enum",
 			"underlying": "uint32",
-			"cpp_namespace": "ember::protocol::server",
+			"cpp_namespace": "ember::protocol",
 			"values": {
 				"palantir_of_azora": 1,
 				"undead":            2,

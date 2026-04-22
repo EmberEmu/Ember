@@ -52,7 +52,7 @@ void initiate_player_login(ClientContext& ctx, const PlayerLogin& event) {
     state_ctx.character_id = event.character_id_;
 
 	protocol::smsg_trigger_cinematic cinematic;
-	cinematic->id = 81;
+	cinematic->sequence_id = protocol::CinematicSequence::human;
 	ctx.send(cinematic);
 
 	protocol::smsg_login_verify_world verify_world;
