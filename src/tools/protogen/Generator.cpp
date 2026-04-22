@@ -555,6 +555,12 @@ std::vector<GeneratedFile> generate_type_headers(const TypeRegistry& reg, const 
 				std::sort(values.begin(), values.end(), [](auto& lhs, auto& rhs) {
 					return rhs["value"] > lhs["value"];
 				});
+
+				// convert to hex, should probably add an option to the enum defs
+				// to be allow for this to be opt-in
+				for(auto& v : values) {
+					v["value"] = std::format("{:#04x}", v["value"].get<std::int64_t>());
+				}
 			}
 
 			data["values"] = std::move(values);
