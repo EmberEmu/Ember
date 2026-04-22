@@ -219,6 +219,11 @@ if(WITH_JEMALLOC)
 endif()
 
 ##############################
+#          JSONCONS          #
+##############################
+find_package(jsoncons REQUIRED)
+
+##############################
 #         Google Test        #
 ##############################
 include(FetchContent)

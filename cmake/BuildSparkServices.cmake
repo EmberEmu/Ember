@@ -35,11 +35,14 @@ function(build_spark_services
         list(APPEND output_files ${client_h} ${service_h})
     endforeach()
 
+	set(target_name SPARK_RPC_GENERATE)
+
     add_custom_target(
-        SPARK_RPC_GENERATE
+        ${target_name}
         DEPENDS ${output_files}
     )
 
     set_source_files_properties(${output_files} PROPERTIES GENERATED TRUE)
     set(${output_files} ${output_files} PARENT_SCOPE)
+	set_target_properties(${target_name} PROPERTIES FOLDER "Code Generation")
 endfunction()

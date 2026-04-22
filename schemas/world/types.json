@@ -1,0 +1,231 @@
+{
+	"types": {
+		"Result": {
+			"kind": "enum",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"response_success":                       0,
+				"response_failure":                       1,
+				"response_cancelled":                     2,
+				"response_disconnected":                  3,
+				"response_failed_to_connect":             4,
+				"response_connected":                     5,
+				"response_version_mismatch":              6,
+				"cstatus_connecting":                     7,
+				"cstatus_negotiating_security":           8,
+				"cstatus_negotiation_complete":           9,
+				"cstatus_negotiation_failed":            10,
+				"cstatus_authenticating":                11,
+				"auth_ok":                               12,
+				"auth_failed":                           13,
+				"auth_reject":                           14,
+				"auth_bad_server_proof":                 15,
+				"auth_unavailable":                      16,
+				"auth_system_error":                     17,
+				"auth_billing_error":                    18,
+				"auth_billing_expired":                  19,
+				"auth_version_mismatch":                 20,
+				"auth_unknown_account":                  21,
+				"auth_incorrect_password":               22,
+				"auth_session_expired":                  23,
+				"auth_server_shutting_down":             24,
+				"auth_already_logging_in":               25,
+				"auth_login_server_not_found":           26,
+				"auth_wait_queue":                       27,
+				"auth_banned":                           28,
+				"auth_already_online":                   29,
+				"auth_no_time":                          30,
+				"auth_db_busy":                          31,
+				"auth_suspended":                        32,
+				"auth_parental_control":                 33,
+				"realm_list_in_progress":                34,
+				"realm_list_success":                    35,
+				"realm_list_failed":                     36,
+				"realm_list_invalid":                    37,
+				"realm_list_realm_not_found":            38,
+				"account_create_in_progress":            39,
+				"account_create_success":                40,
+				"account_create_failed":                 41,
+				"char_list_retrieving":                  42,
+				"char_list_retrieved":                   43,
+				"char_list_failed":                      44,
+				"char_create_in_progress":               45,
+				"char_create_success":                   46,
+				"char_create_error":                     47,
+				"char_create_failed":                    48,
+				"char_create_name_in_use":               49,
+				"char_create_disabled":                  50,
+				"char_create_pvp_teams_violation":       51,
+				"char_create_server_limit":              52,
+				"char_create_account_limit":             53,
+				"char_create_server_queue":              54,
+				"char_create_only_existing":             55,
+				"char_delete_in_progress":               56,
+				"char_delete_success":                   57,
+				"char_delete_failed":                    58,
+				"char_delete_failed_locked_for_transfer":59,
+				"char_login_in_progress":                60,
+				"char_login_success":                    61,
+				"char_login_no_world":                   62,
+				"char_login_duplicate_character":        63,
+				"char_login_no_instances":               64,
+				"char_login_failed":                     65,
+				"char_login_disabled":                   66,
+				"char_login_no_character":               67,
+				"char_login_locked_for_transfer":        68,
+				"char_name_no_name":                     69,
+				"char_name_too_short":                   70,
+				"char_name_too_long":                    71,
+				"char_name_only_letters":                72,
+				"char_name_mixed_languages":             73,
+				"char_name_profane":                     74,
+				"char_name_reserved":                    75,
+				"char_name_invalid_apostrophe":          76,
+				"char_name_multiple_apostrophes":        77,
+				"char_name_three_consecutive":           78,
+				"char_name_invalid_space":               79,
+				"char_name_success":                     80,
+				"char_name_failure":                     81
+			}
+		},
+		"MovementFlags": {
+			"kind": "flags",
+			"underlying": "uint32",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"none":             0,
+				"forward":          1,
+				"backward":         2,
+				"strafe_left":      4,
+				"strafe_right":     8,
+				"turn_left":        16,
+				"turn_right":       32,
+				"pitch_up":         64,
+				"pitch_down":       128,
+				"walk_mode":        256,
+				"on_transport":     512,
+				"levitating":       1024,
+				"fixed_z":          2048,
+				"root":             4096,
+				"jumping":          8192,
+				"fallingfar":       16384,
+				"swimming":         2097152,
+				"spline_enabled":   4194304,
+				"can_fly":          8388608,
+				"flying":           16777216,
+				"ontransport":      33554432,
+				"spline_elevation": 67108864,
+				"waterwalking":     268435456,
+				"safe_fall":        536870912,
+				"hover":            1073741824
+			}
+		},
+		"ChatType": {
+			"kind": "enum",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol::server",
+			"values": {
+				"SAY":                   0,
+				"PARTY":                 1,
+				"RAID":                  2,
+				"GUILD":                 3,
+				"OFFICER":               4,
+				"YELL":                  5,
+				"WHISPER":               6,
+				"WHISPER_INFORM":        7,
+				"EMOTE":                 8,
+				"TEXT_EMOTE":            9,
+				"SYSTEM":                10,
+				"MONSTER_SAY":           11,
+				"MONSTER_YELL":          12,
+				"MONSTER_EMOTE":         13,
+				"CHANNEL":               14,
+				"CHANNEL_JOIN":          15,
+				"CHANNEL_LEAVE":         16,
+				"CHANNEL_LIST":          17,
+				"CHANNEL_NOTICE":        18,
+				"CHANNEL_NOTICE_USER":   19,
+				"AFK":                   20,
+				"DND":                   21,
+				"IGNORED":               22,
+				"SKILL":                 23,
+				"LOOT":                  24,
+				"MONSTER_WHISPER":       26,
+				"BG_SYSTEM_NEUTRAL":     82,
+				"BG_SYSTEM_ALLIANCE":    83,
+				"BG_SYSTEM_HORDE":       84,
+				"RAID_LEADER":           87,
+				"RAID_WARNING":          88,
+				"RAID_BOSS_WHISPER":     89,
+				"RAID_BOSS_EMOTE":       90,
+				"BATTLEGROUND":          92,
+				"BATTLEGROUND_LEADER":   93
+			}
+		},
+		"PlayerChatTag": {
+			"kind": "enum",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol::server",
+			"values": {
+				"TAG_NONE": 0,
+				"TAG_AFK":  1,
+				"TAG_DND":  2,
+				"TAG_GM":   3
+			}
+		},
+		"Vector3": {
+			"kind": "struct",
+			"cpp_namespace": "ember::protocol",
+			"fields": [
+				{ "name": "x", "type": "float" },
+				{ "name": "y", "type": "float" },
+				{ "name": "z", "type": "float" }
+			]
+		},
+		"MovementInfo": {
+			"kind": "struct",
+			"cpp_namespace": "ember::protocol",
+			"fields": [
+				{ "name": "flags",       "type": "MovementFlags" },
+				{ "name": "timestamp",   "type": "uint32"        },
+				{ "name": "position",    "type": "Vector3"       },
+				{ "name": "orientation", "type": "float"         },
+				{
+					"type": "group",
+					"when": { "op": "has_flag", "field": "flags", "value": "swimming" },
+					"fields": [
+						{ "name": "pitch", "type": "float" }
+					]
+				},
+				{ "name": "fall_time", "type": "float" },
+				{
+					"type": "group",
+					"when": { "op": "has_flag", "field": "flags", "value": "jumping" },
+					"fields": [
+						{ "name": "z_speed",   "type": "float" },
+						{ "name": "cos_angle", "type": "float" },
+						{ "name": "sin_angle", "type": "float" },
+						{ "name": "xy_speed",  "type": "float" }
+					]
+				},
+				{
+					"type": "group",
+					"when": { "op": "has_flag", "field": "flags", "value": "spline_elevation" },
+					"fields": [
+						{ "name": "spline_elevation", "type": "float" }
+					]
+				}
+			]
+		},
+		"CString": {
+			"kind": "string",
+			"encoding": "null_terminated"
+		},
+		"PrefixedString32": {
+			"kind": "string",
+			"encoding": "prefixed_null_terminated",
+			"length_type": "uint32"
+		}
+	}
+}

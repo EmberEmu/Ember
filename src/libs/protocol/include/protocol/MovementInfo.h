@@ -8,58 +8,13 @@
 
 #pragma once
 
-#include <shared/smartenum.hpp>
+#include <generated/types/MovementFlags.h>
+#include <generated/types/MovementInfo.h>
 #include <shared/utility/polyfill/inplace_vector>
 #include <array>
 #include <string_view>
-#include <cstdint>
 
 namespace ember::protocol {
-
-smart_enum(MovementFlags, std::uint32_t,
-	none               = 0x00000000,
-	forward            = 0x00000001,
-	backward           = 0x00000002,
-	strafe_left        = 0x00000004,
-	strafe_right       = 0x00000008,
-	turn_left          = 0x00000010,
-	turn_right         = 0x00000020,
-	pitch_up           = 0x00000040,
-	pitch_down         = 0x00000080,
-	walk_mode          = 0x00000100,
-	on_transport       = 0x00000200,
-	levitating         = 0x00000400,
-	fixed_z            = 0x00000800,
-	root               = 0x00001000,
-	jumping            = 0x00002000,
-	fallingfar         = 0x00004000,
-	swimming           = 0x00200000,
-	spline_enabled     = 0x00400000,
-	can_fly            = 0x00800000,
-	flying             = 0x01000000,
-	ontransport        = 0x02000000,
-	spline_elevation   = 0x04000000,
-	waterwalking       = 0x10000000,
-	safe_fall          = 0x20000000,
-	hover              = 0x40000000
-);
-
-struct MovementInfo {
-	MovementFlags flags;
-	std::uint32_t timestamp;
-	struct {
-		float x, y, z;
-	} position;
-	float orientation;
-	char transport; // dummy
-	float pitch;
-	float fall_time;
-	float z_speed;
-	float cos_angle;
-	float sin_angle;
-	float xy_speed;
-	float spline_elevation;
-};
 
 inline auto movement_flags_debug(const MovementFlags& flags) {
 	constexpr std::array table {
