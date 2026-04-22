@@ -78,7 +78,6 @@ namespace ember::protocol {
 
 using smsg_addon_info                 = ServerPacket<ServerOpcode::smsg_addon_info,                 server::AddonInfo>;
 using smsg_auth_challenge             = ServerPacket<ServerOpcode::smsg_auth_challenge,             server::AuthChallenge>;
-using smsg_auth_response              = ServerPacket<ServerOpcode::smsg_auth_response,              server::AuthResponse>;
 using smsg_pong                       = ServerPacket<ServerOpcode::smsg_pong,                       server::Pong>;
 using smsg_char_enum                  = ServerPacket<ServerOpcode::smsg_char_enum,                  server::CharacterEnum>;
 using smsg_char_create                = ServerPacket<ServerOpcode::smsg_char_create,                server::CharacterCreate>;
