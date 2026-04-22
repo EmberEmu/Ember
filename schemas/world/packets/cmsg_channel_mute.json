@@ -1,0 +1,9 @@
+{
+	"name": "ChannelMute",
+	"opcode": "cmsg_channel_mute",
+	"direction": "client",
+	"fields": [
+		{ "name": "channel_name", "type": "CString" },
+		{ "name": "player_name",  "type": "CString" }
+	]
+}

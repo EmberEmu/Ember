@@ -1,0 +1,5 @@
+{
+	"name": "NextCinematicCamera",
+	"opcode": "cmsg_next_cinematic_camera",
+	"direction": "client"
+}

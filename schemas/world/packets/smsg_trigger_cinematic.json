@@ -1,0 +1,8 @@
+{
+	"name": "TriggerCinematic",
+	"opcode": "smsg_trigger_cinematic",
+	"direction": "server",
+	"fields": [
+		{ "name": "sequence_id", "type": "CinematicSequence" }
+	]
+}

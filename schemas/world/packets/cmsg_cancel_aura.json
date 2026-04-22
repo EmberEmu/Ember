@@ -1,0 +1,8 @@
+{
+	"name": "CancelAura",
+	"opcode": "cmsg_cancel_aura",
+	"direction": "client",
+	"fields": [
+		{ "name": "spell_id", "type": "uint32" }
+	]
+}

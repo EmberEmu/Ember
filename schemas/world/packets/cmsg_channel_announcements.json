@@ -1,0 +1,8 @@
+{
+	"name": "ChannelAnnouncements",
+	"opcode": "cmsg_channel_announcements",
+	"direction": "client",
+	"fields": [
+		{ "name": "channel_name", "type": "CString" }
+	]
+}

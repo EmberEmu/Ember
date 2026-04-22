@@ -1,0 +1,5 @@
+{
+	"name": "CancelTrade",
+	"opcode": "cmsg_cancel_trade",
+	"direction": "client"
+}

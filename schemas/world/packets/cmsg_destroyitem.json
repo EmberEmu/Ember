@@ -1,0 +1,13 @@
+{
+	"name": "DestroyItem",
+	"opcode": "cmsg_destroyitem",
+	"direction": "client",
+	"fields": [
+		{ "name": "bag",      "type": "uint8" },
+		{ "name": "slot",     "type": "uint8" },
+		{ "name": "amount",   "type": "uint8" },
+		{ "name": "unknown1", "type": "uint8" },
+		{ "name": "unknown2", "type": "uint8" },
+		{ "name": "unknown3", "type": "uint8" }
+	]
+}

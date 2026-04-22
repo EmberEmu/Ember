@@ -1,0 +1,5 @@
+{
+	"name": "CancelAutoRepeatSpell",
+	"opcode": "cmsg_cancel_auto_repeat_spell",
+	"direction": "client"
+}

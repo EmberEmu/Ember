@@ -1,0 +1,5 @@
+{
+	"name": "CancelGrowthAura",
+	"opcode": "cmsg_cancel_growthaura",
+	"direction": "client"
+}

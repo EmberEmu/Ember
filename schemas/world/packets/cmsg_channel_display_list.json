@@ -1,0 +1,8 @@
+{
+	"name": "ChannelDisplayList",
+	"opcode": "cmsg_channel_display_list",
+	"direction": "client",
+	"fields": [
+		{ "name": "channel_name", "type": "CString" }
+	]
+}

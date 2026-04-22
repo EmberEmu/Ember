@@ -1,0 +1,8 @@
+{
+	"name": "ChannelOwner",
+	"opcode": "cmsg_channel_owner",
+	"direction": "client",
+	"fields": [
+		{ "name": "channel_name", "type": "CString" }
+	]
+}

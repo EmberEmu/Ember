@@ -1,0 +1,9 @@
+{
+	"name": "ChannelInvite",
+	"opcode": "cmsg_channel_invite",
+	"direction": "client",
+	"fields": [
+		{ "name": "channel_name", "type": "CString" },
+		{ "name": "player_name",  "type": "CString" }
+	]
+}

@@ -1,0 +1,9 @@
+{
+	"name": "ChannelKick",
+	"opcode": "cmsg_channel_kick",
+	"direction": "client",
+	"fields": [
+		{ "name": "channel_name", "type": "CString" },
+		{ "name": "player_name",  "type": "CString" }
+	]
+}

@@ -1,0 +1,9 @@
+{
+	"name": "AuctionRemoveItem",
+	"opcode": "cmsg_auction_remove_item",
+	"direction": "client",
+	"fields": [
+		{ "name": "auctioneer", "type": "uint64" }, // todo, guid
+		{ "name": "guid",       "type": "uint32" }
+	]
+}

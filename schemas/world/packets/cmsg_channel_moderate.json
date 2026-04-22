@@ -1,0 +1,8 @@
+{
+	"name": "ChannelModerate",
+	"opcode": "cmsg_channel_moderate",
+	"direction": "client",
+	"fields": [
+		{ "name": "channel_name", "type": "CString" }
+	]
+}

@@ -1,0 +1,10 @@
+{
+	"name": "Bug",
+	"opcode": "cmsg_bug",
+	"direction": "client",
+	"fields": [
+		{ "name": "suggestion", "type": "uint32" },
+		{ "name": "content",    "type": "PrefixedString32" },
+		{ "name": "bug_type",   "type": "PrefixedString32" }
+	]
+}

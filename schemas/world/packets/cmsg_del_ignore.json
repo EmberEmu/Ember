@@ -1,0 +1,8 @@
+{
+	"name": "DelIgnore",
+	"opcode": "cmsg_del_ignore",
+	"direction": "client",
+	"fields": [
+		{ "name": "guid", "type": "uint64" }
+	]
+}

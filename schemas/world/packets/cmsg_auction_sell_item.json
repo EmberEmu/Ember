@@ -1,0 +1,27 @@
+{
+	"name": "AuctionSellItem",
+	"opcode": "cmsg_auction_sell_item",
+	"direction": "client",
+	"fields": [
+		{
+			"name": "auctioneer",
+			"type": "uint64" // guid, todo
+		},
+		{ 
+			"name": "item",
+			"type": "uint64" // guid, todo
+		},
+		{ 
+			"name": "starting_bid",
+			"type": "uint32"
+		},
+		{
+			"name": "buyout",
+			"type": "uint32" 
+		},
+		{
+			"name": "auction_duration_mins",
+			"type": "uint32"
+		}
+	]
+}

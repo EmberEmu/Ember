@@ -1,0 +1,9 @@
+{
+	"name": "ChannelBan",
+	"opcode": "cmsg_channel_ban",
+	"direction": "client",
+	"fields": [
+		{ "name": "channel_name", "type": "CString" },
+		{ "name": "player_name",  "type": "CString" }
+	]
+}

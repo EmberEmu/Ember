@@ -1,0 +1,9 @@
+{
+	"name": "AutoBankItem",
+	"opcode": "cmsg_autobank_item",
+	"direction": "client",
+	"fields": [
+		{ "name": "bag_index",  "type": "uint8" },
+		{ "name": "slot_index", "type": "uint8" }
+	]
+}
