@@ -75,7 +75,11 @@ foreach(src IN LISTS PROTOGEN_TEMPLATE_SRCS)
     list(APPEND PROTOGEN_TEMPLATE_COPIES ${dst})
 endforeach()
 
+set(target_name copy_protogen_test_templates)
 add_custom_target(copy_protogen_test_templates DEPENDS ${PROTOGEN_TEMPLATE_COPIES})
+
+# not really a code gen target but since it's related, it'll do
+set_target_properties(${target_name} PROPERTIES FOLDER "Code Generation")
 add_dependencies(${EXECUTABLE_NAME} copy_protogen_test_templates)
 
 install(TARGETS ${EXECUTABLE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})

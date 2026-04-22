@@ -43,7 +43,9 @@ function(build_messages
         VERBATIM
     )
 
-    add_custom_target(PROTOGEN_GENERATE DEPENDS ${aggregator})
+	set(target_name PROTOGEN_GENERATE)
+    add_custom_target(${target_name} DEPENDS ${aggregator})
+	set_target_properties(${target_name} PROPERTIES FOLDER "Code Generation")
 
     set(PROTOGEN_GENERATED_DIR "${CMAKE_BINARY_DIR}" CACHE PATH
         "Include root for generated message headers (use #include <generated/...>)")

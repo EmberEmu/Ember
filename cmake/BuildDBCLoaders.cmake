@@ -52,4 +52,5 @@
 
     set(${dbc_hdr} ${${dbc_hdr}} PARENT_SCOPE)
     set(${dbc_src} ${${dbc_src}} PARENT_SCOPE)
+	set_target_properties(${target_name} PROPERTIES FOLDER "Code Generation")
 endfunction()
