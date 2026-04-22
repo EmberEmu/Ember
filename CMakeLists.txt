@@ -181,22 +181,6 @@ else()
     set(BOTAN_TARGET botan::botan-static)
 endif()
 
-# vcpkg ships botan's cmake config with only IMPORTED_LOCATION (release) set.
-# For multi-config generators (MSVC) this means Debug builds link the release
-# lib, causing _ITERATOR_DEBUG_LEVEL and RuntimeLibrary mismatches. Point the
-# target at the debug lib when available so each config picks the right one.
-if(VCPKG_INSTALLED_DIR AND TARGET ${BOTAN_TARGET})
-    set(_botan_debug_lib "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/debug/lib/botan-3.lib")
-    set(_botan_release_lib "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/lib/botan-3.lib")
-    if(EXISTS "${_botan_debug_lib}" AND EXISTS "${_botan_release_lib}")
-        set_target_properties(${BOTAN_TARGET} PROPERTIES
-            IMPORTED_CONFIGURATIONS "RELEASE;DEBUG"
-            IMPORTED_LOCATION_RELEASE "${_botan_release_lib}"
-            IMPORTED_LOCATION_DEBUG "${_botan_debug_lib}"
-        )
-    endif()
-endif()
-
 ##############################
 #     MySQL Connector C++    #
 ##############################
