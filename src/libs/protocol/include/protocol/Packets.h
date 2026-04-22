@@ -11,8 +11,6 @@
 #include "Packet.h"
 #include "Opcodes.h"
 #include <protocol/server/AuthChallenge.h>
-#include <protocol/server/AuthResponse.h>
-#include <protocol/server/Pong.h>
 #include <protocol/server/CharacterEnum.h>
 #include <protocol/server/CharacterCreate.h>
 #include <protocol/server/CharacterDelete.h>
@@ -78,7 +76,6 @@ namespace ember::protocol {
 
 using smsg_addon_info                 = ServerPacket<ServerOpcode::smsg_addon_info,                 server::AddonInfo>;
 using smsg_auth_challenge             = ServerPacket<ServerOpcode::smsg_auth_challenge,             server::AuthChallenge>;
-using smsg_pong                       = ServerPacket<ServerOpcode::smsg_pong,                       server::Pong>;
 using smsg_char_enum                  = ServerPacket<ServerOpcode::smsg_char_enum,                  server::CharacterEnum>;
 using smsg_char_create                = ServerPacket<ServerOpcode::smsg_char_create,                server::CharacterCreate>;
 using smsg_char_delete                = ServerPacket<ServerOpcode::smsg_char_delete,                server::CharacterDelete>;
@@ -113,7 +110,6 @@ using msg_move_set_raw_position_ack   = ServerPacket<ServerOpcode::msg_move_set_
 using smsg_new_world                  = ServerPacket<ServerOpcode::smsg_new_world,                  server::NewWorld>;
 
 using cmsg_auth_session           = ClientPacket<ClientOpcode::cmsg_auth_session,          client::AuthSession>;
-using cmsg_ping                   = ClientPacket<ClientOpcode::cmsg_ping,                  client::Ping>;
 using cmsg_char_create            = ClientPacket<ClientOpcode::cmsg_char_create,           client::CharacterCreate>;
 using cmsg_char_delete            = ClientPacket<ClientOpcode::cmsg_char_delete,           client::CharacterDelete>;
 using cmsg_char_enum              = ClientPacket<ClientOpcode::cmsg_char_enum,             client::CharacterEnum>;

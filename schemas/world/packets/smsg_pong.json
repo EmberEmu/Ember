@@ -1,0 +1,8 @@
+{
+	"name": "Pong",
+	"opcode": "smsg_pong",
+	"direction": "server",
+	"fields": [
+		{ "name": "sequence_id", "type": "uint32" }
+	]
+}

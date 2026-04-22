@@ -54,7 +54,7 @@ class ClientHandler final {
 	std::chrono::milliseconds last_tick_;
 	unsigned int timer_events_;
 
-	bool validate_ping(const protocol::client::Ping& ping);
+	bool validate_ping(const protocol::cmsg_ping& ping);
 	void handle_ping(BinaryStream& stream);
 	void handle_timer();
 	void state_update(ClientState new_state);

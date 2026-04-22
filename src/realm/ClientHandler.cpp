@@ -16,6 +16,7 @@
 #include <logger/Logger.h>
 #include <protocol/Deserialise.h>
 #include <protocol/Packets.h>
+#include <protocol/server/Pong.h>
 #include <shared/Realm.h>
 #include <shared/utility/TickCount.h>
 #include <utility>
@@ -110,7 +111,7 @@ void ClientHandler::handle_ping(BinaryStream& stream) {
 
 	// todo - only passing the payload to avoid including all packet defs
 	// this can be changed once packet code generation is finished
-	if(!validate_ping(packet.payload)) {
+	if(!validate_ping(packet)) {
 		close_session();
 		return;
 	}
@@ -190,19 +191,19 @@ bool ClientHandler::ping_sent_check() {
 	return true;
 }
 
-bool ClientHandler::validate_ping(const protocol::client::Ping& ping) {
+bool ClientHandler::validate_ping(const protocol::cmsg_ping& ping) {
 	if(!ping_sequence_) {
-		ping_sequence_ = ping.sequence_id;
+		ping_sequence_ = ping->sequence_id;
 		last_tick_ = utility::get_tick_count(utility::as_chrono);
 		return true;
 	}
 
-	if(!ping.sequence_id) {
+	if(!ping->sequence_id) {
 		CLIENT_DEBUG(context_, "Zero cmsg_ping sequence");
 		return false;
 	}
 
-	if(++ping_sequence_ != ping.sequence_id) {
+	if(++ping_sequence_ != ping->sequence_id) {
 		CLIENT_DEBUG(context_, "Non-sequential cmsg_ping sequence");
 		return false;
 	}

@@ -22,6 +22,7 @@
 #include <logger/Logger.h>
 #include <protocol/Deserialise.h>
 #include <protocol/Packets.h>
+#include <protocol/server/AuthResponse.h>
 #include <shared/utility/UTF8String.h>
 #include <memory>
 #include <vector>

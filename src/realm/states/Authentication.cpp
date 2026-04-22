@@ -18,6 +18,7 @@
 #include "../Events.h"
 #include "../RealmQueue.h"
 #include <logger/Logger.h>
+#include <protocol/server/AuthResponse.h>
 #include <protocol/Deserialise.h>
 #include <protocol/Packets.h>
 #include <spark/buffers/pmr/Buffer.h>
