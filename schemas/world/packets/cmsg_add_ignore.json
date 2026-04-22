@@ -1,1 +1,8 @@
-{} 
+{
+	"name": "AddIgnore",
+	"opcode": "cmsg_add_ignore",
+	"direction": "client",
+	"fields": [
+		{ "name": "name", "type": "CString" }
+	]
+}

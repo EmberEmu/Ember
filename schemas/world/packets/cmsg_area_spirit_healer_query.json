@@ -1,1 +1,8 @@
-{} 
+{
+	"name": "AreaSpiritHealerQuery",
+	"opcode": "cmsg_area_spirit_healer_query",
+	"direction": "client",
+	"fields": [
+		{ "name": "guid", "type": "uint64" }
+	]
+}

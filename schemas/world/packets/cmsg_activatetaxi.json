@@ -1,1 +1,10 @@
-{} 
+{
+	"name": "ActivateTaxi",
+	"opcode": "cmsg_activatetaxi",
+	"direction": "client",
+	"fields": [
+		{ "name": "guid", "type": "uint64" },
+		{ "name": "source_node", "type": "uint32" },
+		{ "name": "destination_node", "type": "uint32" }
+	]
+}

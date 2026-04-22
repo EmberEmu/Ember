@@ -1,1 +1,8 @@
-{} 
+{
+	"name": "AddFriend",
+	"opcode": "cmsg_add_friend",
+	"direction": "client",
+	"fields": [
+		{ "name": "name", "type": "CString" }
+	]
+}

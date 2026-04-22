@@ -1,1 +1,8 @@
-{} 
+{
+	"name": "AreaTrigger",
+	"opcode": "cmsg_areatrigger",
+	"direction": "client",
+	"fields": [
+		{ "name": "trigger_id", "type": "uint32" }
+	]
+}

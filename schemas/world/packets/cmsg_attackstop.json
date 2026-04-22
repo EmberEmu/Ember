@@ -1,1 +1,5 @@
-{} 
+{
+	"name": "AttackStop",
+	"opcode": "cmsg_attackstop",
+	"direction": "client"
+}

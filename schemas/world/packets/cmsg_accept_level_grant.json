@@ -1,1 +1,8 @@
-{} 
+{
+	"name": "AcceptLevelGrant",
+	"opcode": "cmsg_accept_level_grants",
+	"direction": "client",
+	"fields": [
+		{ "name": "guid", "type": "uint64" }
+	]
+}
