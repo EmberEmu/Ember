@@ -7,10 +7,12 @@
  */
 
 #include "Generator.h"
+#include "Scope.h"
 #include "TypeUtils.h"
 #include <nlohmann/json.hpp>
 #include <inja/inja.hpp>
 #include <algorithm>
+#include <chrono>
 #include <format>
 #include <set>
 #include <sstream>
@@ -21,18 +23,20 @@
 
 namespace ember::protogen {
 
-struct ScopeEntry {
-	std::string name;
-	std::string type;
-};
-
 struct WalkState {
 	std::vector<std::string> members;
 	std::set<std::string> includes;
 	std::vector<std::string> read_ops;
 	std::vector<std::string> write_ops;
-	int tab_depth = 2;
+	int read_tab = 2;
+	int write_tab = 2;
 };
+
+int current_year() {
+	const auto time = std::chrono::system_clock::now();
+	const std::chrono::year_month_day date = std::chrono::floor<std::chrono::days>(time);
+	return static_cast<int>(date.year());
+}
 
 std::string indent(int tab_depth) {
 	return std::string(tab_depth, '\t');
@@ -48,22 +52,8 @@ std::string cpp_type_for_primitive(std::string_view type) {
 	);
 }
 
-const jsoncons::json* find_type(const TypeRegistry& reg, const std::string& name) {
-	return reg.find(name);
-}
-
 std::string kind_of(const jsoncons::json& def) {
 	return def["kind"].as<std::string>();
-}
-
-const ScopeEntry* lookup(std::span<const ScopeEntry> scope, std::string_view name) {
-	for(auto it = scope.rbegin(); it != scope.rend(); ++it) {
-		if(it->name == name) {
-			return &*it;
-		}
-	}
-
-	return nullptr;
 }
 
 void add_type_include(const std::string& type, const TypeRegistry& reg, std::set<std::string>& out) {
@@ -74,12 +64,49 @@ void add_type_include(const std::string& type, const TypeRegistry& reg, std::set
 	const auto* def = reg.find(type);
 
 	if(!def) {
-		return;
+		throw std::runtime_error(std::format(
+			"unknown type '{}' reached code generation — should have been rejected by validation", type
+		));
 	}
 
-	if(def->contains("include")) {
+	const auto kind = kind_of(*def);
+
+	if(kind == "enum" || kind == "flags" || kind == "struct") {
+		out.emplace(std::format("generated/types/{}.h", type));
+	} else if(kind == "external") {
 		out.emplace((*def)["include"].as<std::string>());
 	}
+}
+
+std::string header_namespace(const jsoncons::json& def) {
+	if(def.contains("cpp_namespace")) {
+		return def["cpp_namespace"].as<std::string>();
+	}
+	return "ember::protocol";
+}
+
+std::string cpp_type_name(const std::string& type, const TypeRegistry& reg) {
+	if(is_primitive(type)) {
+		return cpp_type_for_primitive(type);
+	}
+
+	const auto* def = reg.find(type);
+
+	if(!def) {
+		throw std::runtime_error(std::format(
+			"unknown type '{}' reached code generation — should have been rejected by validation", type
+		));
+	}
+
+	if(kind_of(*def) == "string") {
+		return "std::string";
+	}
+
+	if(def->contains("cpp_namespace")) {
+		return std::format("{}::{}", (*def)["cpp_namespace"].as<std::string>(), type);
+	}
+
+	return type;
 }
 
 std::string string_adaptor_expr(const jsoncons::json& type_def, std::string_view expr) {
@@ -110,6 +137,11 @@ std::string render_condition(const jsoncons::json& cond,
                              std::string_view prefix,
                              std::span<const ScopeEntry> scope) {
 	const auto op = cond["op"].as<std::string>();
+
+	if(op == "stream_not_empty") {
+		return "!stream.empty()";
+	}
+
 	const auto field_name = cond["field"].as<std::string>();
 	const auto qualified = std::format("{}{}", prefix, field_name);
 	const auto* entry = lookup(scope, field_name);
@@ -120,9 +152,10 @@ std::string render_condition(const jsoncons::json& cond,
 
 	const auto& type = entry->type;
 	const auto& value = cond["value"];
+	const auto enum_qualified = cpp_type_name(type, reg);
 
 	auto render_named = [&](const std::string& enumerator) {
-		return std::format("{}::{}", type, enumerator);
+		return std::format("{}::{}", enum_qualified, enumerator);
 	};
 
 	if(op == "eq") {
@@ -162,36 +195,24 @@ std::string render_condition(const jsoncons::json& cond,
 }
 
 std::string cpp_element_type(const std::string& type, const TypeRegistry& reg) {
-	if(is_primitive(type)) {
-		return cpp_type_for_primitive(type);
-	}
-
-	const auto* def = reg.find(type);
-
-	if(def && kind_of(*def) == "string") {
-		return "std::string";
-	}
-
-	return type;
+	return cpp_type_name(type, reg);
 }
 
-// Forward decl — walk calls itself and emit_stream_op.
 void walk(const jsoncons::json& fields, const TypeRegistry& reg, WalkState& state,
           std::vector<ScopeEntry>& scope, const std::string& prefix);
 
-// emits stream ops for a single scalar value (or struct with inline expansion)
-// writes to both read_ops and write_ops
+// emits stream ops for a single scalar value - writes to both read_ops and write_ops
 void emit_scalar_stream_op(const std::string& name, const std::string& type,
                            const TypeRegistry& reg, WalkState& state, const std::string& prefix) {
 	const auto qualified = prefix + name;
 
 	if(is_primitive(type)) {
-		state.read_ops.emplace_back(std::format("{}stream >> {};", indent(state.tab_depth), qualified));
-		state.write_ops.emplace_back(std::format("{}stream << {};", indent(state.tab_depth), qualified));
+		state.read_ops.emplace_back(std::format("{}stream >> {};", indent(state.read_tab), qualified));
+		state.write_ops.emplace_back(std::format("{}stream << {};", indent(state.write_tab), qualified));
 		return;
 	}
 
-	const auto* def = find_type(reg, type);
+	const auto* def = reg.find(type);
 
 	if(!def) {
 		throw std::runtime_error(
@@ -201,16 +222,16 @@ void emit_scalar_stream_op(const std::string& name, const std::string& type,
 
 	const auto kind = kind_of(*def);
 
-	if(kind == "enum" || kind == "flags") {
-		state.read_ops.emplace_back(std::format("{}stream >> {};", indent(state.tab_depth), qualified));
-		state.write_ops.emplace_back(std::format("{}stream << {};", indent(state.tab_depth), qualified));
+	if(kind == "enum" || kind == "flags" || kind == "external") {
+		state.read_ops.emplace_back(std::format("{}stream >> {};", indent(state.read_tab), qualified));
+		state.write_ops.emplace_back(std::format("{}stream << {};", indent(state.write_tab), qualified));
 		return;
 	}
 
 	if(kind == "string") {
 		const auto adaptor = string_adaptor_expr(*def, qualified);
-		state.read_ops.emplace_back(std::format("{}stream >> {};", indent(state.tab_depth), adaptor));
-		state.write_ops.emplace_back(std::format("{}stream << {};", indent(state.tab_depth), adaptor));
+		state.read_ops.emplace_back(std::format("{}stream >> {};", indent(state.read_tab), adaptor));
+		state.write_ops.emplace_back(std::format("{}stream << {};", indent(state.write_tab), adaptor));
 		state.includes.insert("spark/buffers/StringAdaptors.h");
 		return;
 	}
@@ -237,12 +258,11 @@ void emit_stream_op(const jsoncons::json& field, const std::string& type,
 
 	const auto& arr = field["array"];
 	const auto qualified = prefix + name;
-	const auto prev_tab_depth = state.tab_depth;
 
-	// fixed-size array - rely on the POD stream overload for std::array
+	// fixed-size arrays - rely on the stream overloads for std::array
 	if(arr.contains("size")) {
-		state.read_ops.emplace_back(std::format("{}stream >> {};", indent(state.tab_depth), qualified));
-		state.write_ops.emplace_back(std::format("{}stream << {};", indent(state.tab_depth), qualified));
+		state.read_ops.emplace_back(std::format("{}stream >> {};", indent(state.read_tab), qualified));
+		state.write_ops.emplace_back(std::format("{}stream << {};", indent(state.write_tab), qualified));
 		state.includes.insert("array");
 		return;
 	}
@@ -253,23 +273,25 @@ void emit_stream_op(const jsoncons::json& field, const std::string& type,
 	state.includes.emplace("vector");
 
 	state.read_ops.emplace_back(
-		std::format("{}{}.resize({});", indent(state.tab_depth), qualified, qualified_count)
+		std::format("{}{}.resize({});", indent(state.read_tab), qualified, qualified_count)
 	);
 
 	state.read_ops.emplace_back(
-		std::format("{}for(auto& e : {}) {{", indent(state.tab_depth), qualified)
+		std::format("{}for(auto& e : {}) {{", indent(state.read_tab), qualified)
 	);
 
 	state.write_ops.emplace_back(
-		std::format("{}for(const auto& e : {}) {{", indent(state.tab_depth), qualified)
+		std::format("{}for(const auto& e : {}) {{", indent(state.write_tab), qualified)
 	);
 
-	state.tab_depth++;
+	++state.read_tab;
+	++state.write_tab;
 	emit_scalar_stream_op("e", type, reg, state, std::string());
-	state.tab_depth = prev_tab_depth;
+	--state.read_tab;
+	--state.write_tab;
 
-	state.read_ops.emplace_back(std::format("{}}}", indent(state.tab_depth)));
-	state.write_ops.emplace_back(std::format("{}}}", indent(state.tab_depth)));
+	state.read_ops.emplace_back(std::format("{}}}", indent(state.read_tab)));
+	state.write_ops.emplace_back(std::format("{}}}", indent(state.write_tab)));
 }
 
 std::string member_decl(const jsoncons::json& field, const TypeRegistry& reg) {
@@ -307,28 +329,51 @@ void walk(const jsoncons::json& fields, const TypeRegistry& reg, WalkState& stat
 		}
 
 		if(current_is_group) {
-			const auto cond = render_condition(field["when"], reg, prefix, scope);
+			const auto& when = field["when"];
+			const auto op = when["op"].as<std::string>();
+
+			// stream_not_empty only applies to reading the packet
+			const bool read_only = (op == "stream_not_empty");
+			const auto cond = render_condition(when, reg, prefix, scope);
+
 			state.read_ops .emplace_back(
-				std::format("{}if({}) {{", indent(state.tab_depth), cond)
+				std::format("{}if({}) {{", indent(state.read_tab), cond)
 			);
 
-			state.write_ops.emplace_back(
-				std::format("{}if({}) {{", indent(state.tab_depth), cond)
-			);
+			if(!read_only) {
+				state.write_ops.emplace_back(
+					std::format("{}if({}) {{", indent(state.write_tab), cond)
+				);
+			}
 
-			++state.tab_depth;
+			++state.read_tab;
 
+			if(!read_only) {
+				++state.write_tab;
+			}
+
+			// group-local field names must not leak past the closing brace,
+			// so they can't be referenced by later scope lookups
+			// (e.g. in a sibling group's `when` expression)
+			const auto outer_size = scope.size();
 			walk(field["fields"], reg, state, scope, prefix);
+			scope.resize(outer_size);
 
-			--state.tab_depth;
+			--state.read_tab;
+
+			if(!read_only) {
+				--state.write_tab;
+			}
 
 			state.read_ops .emplace_back(
-				std::format("{}}}", indent(state.tab_depth))
+				std::format("{}}}", indent(state.read_tab))
 			);
 
-			state.write_ops.emplace_back(
-				std::format("{}}}", indent(state.tab_depth))
-			);
+			if(!read_only) {
+				state.write_ops.emplace_back(
+					std::format("{}}}", indent(state.write_tab))
+				);
+			}
 		} else {
 			scope.emplace_back(field["name"].as<std::string>(), type);
 			add_type_include(type, reg, state.includes);
@@ -375,13 +420,8 @@ GeneratedFile generate_message(const jsoncons::json& message,
 	std::vector<ScopeEntry> scope;
 	walk(message["fields"], registry, state, scope, {});
 
-	state.includes.insert("protocol/Packet.h");
-	state.includes.insert("protocol/Opcodes.h");
-	state.includes.insert("protocol/StreamResult.h");
-	state.includes.insert("protocol/Concepts.h");
-	state.includes.insert("cstdint");
-
 	nlohmann::json data;
+	data["year"] = current_year();
 	data["name"] = name;
 	data["opcode"] = opcode;
 	data["direction"] = direction;
@@ -416,10 +456,144 @@ std::string generate_aggregator(std::span<const std::string> relative_paths,
 
 	nlohmann::json data;
 	data["headers"] = std::move(headers);
+	data["year"] = current_year();
 
 	inja::Environment env;
 	const auto tpl = env.parse_template((templates_dir / "Packets.h_"));
 	return env.render(tpl, data);
+}
+
+void collect_struct_members(const jsoncons::json& fields, const TypeRegistry& reg,
+                            nlohmann::json& out, std::set<std::string>& includes) {
+	for(const auto& field : fields.array_range()) {
+		const auto type = field["type"].as<std::string>();
+
+		if(type == "group") {
+			collect_struct_members(field["fields"], reg, out, includes);
+			continue;
+		}
+
+		const auto elem = cpp_element_type(type, reg);
+
+		std::string decl_type;
+		std::string suffix;
+
+		if(field.contains("array")) {
+			const auto& arr = field["array"];
+
+			if(arr.contains("size")) {
+				decl_type = std::format("std::array<{}, {}>", elem, arr["size"].as<std::int64_t>());
+				suffix = "{}";
+				includes.emplace("array");
+			} else {
+				decl_type = std::format("std::vector<{}>", elem);
+				includes.emplace("vector");
+			}
+		} else {
+			decl_type = elem;
+		}
+
+		nlohmann::json entry;
+		entry["type"] = decl_type;
+		entry["name"] = field["name"].as<std::string>();
+		entry["suffix"] = suffix;
+		out.push_back(std::move(entry));
+
+		if(is_primitive(type)) {
+			includes.emplace("cstdint");
+			continue;
+		}
+
+		const auto* def = reg.find(type);
+		const auto kind = kind_of(*def);
+
+		if(kind == "string") {
+			includes.emplace("string");
+		} else if(kind == "external") {
+			includes.emplace((*def)["include"].as<std::string>());
+		} else {
+			includes.emplace(std::format("generated/types/{}.h", type));
+		}
+	}
+}
+
+std::vector<GeneratedFile> generate_type_headers(const TypeRegistry& reg, const std::filesystem::path& templates_dir) {
+	inja::Environment env;
+	const auto enum_tpl = env.parse_template((templates_dir / "Enum.h_"));
+	const auto struct_tpl = env.parse_template((templates_dir / "Struct.h_"));
+	const auto year = current_year();
+
+	std::vector<GeneratedFile> out;
+
+	for(const auto& [name, def] : reg.defs) {
+		const auto kind = kind_of(def);
+
+		// string types are stream adaptors and external types are defined elsewhere,
+		// so there's nothing to be done for either of them
+		if(kind == "string" || kind == "external") {
+			continue;
+		}
+
+		nlohmann::json data;
+		data["name"] = name;
+		data["namespace"] = header_namespace(def);
+		data["year"] = 	year;
+
+		if(kind == "enum" || kind == "flags") {
+			data["underlying"] = cpp_type_for_primitive(def["underlying"].as<std::string>());
+
+			auto values = nlohmann::json::array();
+
+			for(const auto& pair : def["values"].object_range()) {
+				nlohmann::json v;
+				v["name"] = pair.key();
+				v["value"] = pair.value().as<std::int64_t>();
+				values.emplace_back(std::move(v));
+			}
+		
+			if(kind == "enum") { // ensure enumerators are sorted numerically (0 ... n)
+				std::sort(values.begin(), values.end(), [](auto& lhs, auto& rhs) {
+					return rhs["value"] > lhs["value"];
+				});
+			}
+
+			data["values"] = std::move(values);
+
+			out.emplace_back(
+				std::format("types/{}.h", name),
+				env.render(enum_tpl, data)
+			);
+
+			continue;
+		}
+
+		if(kind == "struct") {
+			std::set<std::string> includes;
+			auto fields = nlohmann::json::array();
+
+			collect_struct_members(def["fields"], reg, fields, includes);
+
+			auto includes_arr = nlohmann::json::array();
+
+			for(const auto& h : includes) {
+				includes_arr.push_back(h);
+			}
+
+			data["includes"] = std::move(includes_arr);
+			data["fields"] = std::move(fields);
+			out.emplace_back(
+				std::format("types/{}.h", name),
+				env.render(struct_tpl, data)
+			);
+			continue;
+		}
+
+		throw std::runtime_error(
+			std::format("type '{}' has unsupported kind '{}' for header generation", name, kind)
+		);
+	}
+
+	return out;
 }
 
 } // protogen, ember

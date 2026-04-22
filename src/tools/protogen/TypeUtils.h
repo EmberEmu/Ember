@@ -15,7 +15,6 @@ namespace ember::protogen {
 
 enum class TypeInfo {
 	integral,
-	enumerator,
 	floating_point,
 	boolean
 };

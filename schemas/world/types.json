@@ -3,7 +3,6 @@
 		"Result": {
 			"kind": "enum",
 			"underlying": "uint8",
-			"include": "protocol/ResultCodes.h",
 			"cpp_namespace": "ember::protocol",
 			"values": {
 				"response_success":                       0,
@@ -93,7 +92,6 @@
 		"MovementFlags": {
 			"kind": "flags",
 			"underlying": "uint32",
-			"include": "protocol/MovementInfo.h",
 			"cpp_namespace": "ember::protocol",
 			"values": {
 				"none":             0,
@@ -126,7 +124,6 @@
 		"ChatType": {
 			"kind": "enum",
 			"underlying": "uint8",
-			"include": "protocol/server/ChatTypes.h",
 			"cpp_namespace": "ember::protocol::server",
 			"values": {
 				"SAY":                   0,
@@ -169,7 +166,6 @@
 		"PlayerChatTag": {
 			"kind": "enum",
 			"underlying": "uint8",
-			"include": "protocol/server/ChatTypes.h",
 			"cpp_namespace": "ember::protocol::server",
 			"values": {
 				"TAG_NONE": 0,
@@ -180,6 +176,7 @@
 		},
 		"Vector3": {
 			"kind": "struct",
+			"cpp_namespace": "ember::protocol",
 			"fields": [
 				{ "name": "x", "type": "float" },
 				{ "name": "y", "type": "float" },
@@ -188,7 +185,6 @@
 		},
 		"MovementInfo": {
 			"kind": "struct",
-			"include": "protocol/MovementInfo.h",
 			"cpp_namespace": "ember::protocol",
 			"fields": [
 				{ "name": "flags",       "type": "MovementFlags" },

@@ -59,10 +59,24 @@ add_custom_command(TARGET ${EXECUTABLE_NAME} PRE_BUILD
                    COMMAND ${CMAKE_COMMAND} -E copy_directory
                    ${CMAKE_SOURCE_DIR}/tests/test_data ${CMAKE_CURRENT_BINARY_DIR}/test_data)
 
-# copy the protogen templates - not sure what the better way is, only that it surely exists
-add_custom_command(TARGET ${EXECUTABLE_NAME} PRE_BUILD
-                   COMMAND ${CMAKE_COMMAND} -E copy_directory
-                   ${CMAKE_SOURCE_DIR}/src/tools/protogen/templates ${CMAKE_CURRENT_BINARY_DIR}/test_data/templates)
+file(GLOB PROTOGEN_TEMPLATE_SRCS CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/src/tools/protogen/templates/*.h_)
+
+set(PROTOGEN_TEMPLATE_COPIES)
+
+foreach(src IN LISTS PROTOGEN_TEMPLATE_SRCS)
+    get_filename_component(name ${src} NAME)
+    set(dst ${CMAKE_CURRENT_BINARY_DIR}/test_data/templates/${name})
+    add_custom_command(
+        OUTPUT ${dst}
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${src} ${dst}
+        DEPENDS ${src}
+        COMMENT "Copying protogen template ${name}"
+    )
+    list(APPEND PROTOGEN_TEMPLATE_COPIES ${dst})
+endforeach()
+
+add_custom_target(copy_protogen_test_templates DEPENDS ${PROTOGEN_TEMPLATE_COPIES})
+add_dependencies(${EXECUTABLE_NAME} copy_protogen_test_templates)
 
 install(TARGETS ${EXECUTABLE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})
 install(DIRECTORY test_data/ DESTINATION ${CMAKE_INSTALL_PREFIX}/test_data)

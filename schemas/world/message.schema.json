@@ -117,11 +117,11 @@
 		},
 		"condition": {
 			"type": "object",
-			"description": "A predicate evaluated against a previously-read field to gate serialisation",
+			"description": "A predicate that gates serialisation. Most ops test a prior field's value; `stream_not_empty` tests the runtime stream state (read-only — the write path emits the fields unconditionally).",
 			"properties": {
 				"op": {
 					"type": "string",
-					"enum": ["eq", "in", "has_flag"]
+					"enum": ["eq", "in", "has_flag", "stream_not_empty"]
 				},
 				"field": {
 					"type": "string",
@@ -129,15 +129,30 @@
 				},
 				"value": {}
 			},
-			"required": ["op", "field", "value"],
+			"required": ["op"],
 			"additionalProperties": false,
 			"allOf": [
 				{
-					"if": { "properties": { "op": { "const": "in" } } },
+					"if":   { "properties": { "op": { "enum": ["eq", "in", "has_flag"] } } },
+					"then": { "required": ["field", "value"] }
+				},
+				{
+					"if":   { "properties": { "op": { "const": "stream_not_empty" } } },
+					"then": {
+						"not": {
+							"anyOf": [
+								{ "required": ["field"] },
+								{ "required": ["value"] }
+							]
+						}
+					}
+				},
+				{
+					"if":   { "properties": { "op": { "const": "in" } } },
 					"then": { "properties": { "value": { "type": "array", "minItems": 1 } } }
 				},
 				{
-					"if": { "properties": { "op": { "const": "has_flag" } } },
+					"if":   { "properties": { "op": { "const": "has_flag" } } },
 					"then": { "properties": { "value": { "type": ["integer", "string"] } } }
 				}
 			]

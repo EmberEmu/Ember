@@ -61,7 +61,7 @@ void configure_logger(log::Logger& logger, const opts::variables_map& args) {
 	log::global_logger(logger);
 }
 
-void launch(const opts::variables_map& args, log::Logger& logger) try {
+void launch(const opts::variables_map& args, log::Logger& logger) {
 	const auto generate = args.count("output") > 0;
 	const auto templates_dir = generate? args["templates"].as<std::filesystem::path>() : std::filesystem::path();
 	const auto output_dir = generate? args["output"].as<std::filesystem::path>() : std::filesystem::path();
@@ -95,7 +95,7 @@ void launch(const opts::variables_map& args, log::Logger& logger) try {
 
 		if(!generate) {
 			LOG_INFO(logger, "Successfully validated {}", file.string());
-			return;
+			continue;
 		}
 
 		auto out = generate_message(json, registry, templates_dir);
@@ -104,7 +104,17 @@ void launch(const opts::variables_map& args, log::Logger& logger) try {
 		LOG_INFO(logger, "Generated {}", (output_dir / out.relative_path).filename().string());
 	}
 
-	if(generate) { 	// generate a include that contains all packet includes
+	if(generate) {
+		// types.json is the source of truth for protocol types
+		// emit one header per type alongside the packet headers
+		const auto type_files = protogen::generate_type_headers(registry, templates_dir);
+
+		for(const auto& file : type_files) {
+			write_file(output_dir / file.relative_path, file.content);
+			LOG_INFO(logger, "Generated {}", file.relative_path);
+		}
+
+		// generate single header include (mostly for convenience)
 		std::ranges::sort(generated_paths);
 		const auto aggregator = protogen::generate_aggregator(generated_paths, templates_dir);
 		const auto path = output_dir / "Packets.h";
@@ -113,8 +123,6 @@ void launch(const opts::variables_map& args, log::Logger& logger) try {
 	}
 
 	LOG_INFO(logger, "Zug zug, work complete!");
-} catch(const std::exception& e) {
-	LOG_FATAL(logger, e.what());
 }
 
 jsoncons::jsonschema::json_schema<jsoncons::json> load_schema(const std::filesystem::path& path) {
@@ -142,7 +150,7 @@ std::vector<std::filesystem::path> collect_message_files(const std::filesystem::
 
 	std::vector<std::filesystem::path> paths;
 
-	for(const auto& entry : std::filesystem::directory_iterator(path)) {
+	for(const auto& entry : std::filesystem::recursive_directory_iterator(path)) {
 		if(entry.is_regular_file() && entry.path().extension() == ".json") {
 			paths.emplace_back(entry.path());
 		}
@@ -163,6 +171,12 @@ void write_file(const std::filesystem::path& path, const std::string& content) {
 	}
 
 	out.write(content.data(), static_cast<std::streamsize>(content.size()));
+
+	if(!out) {
+		throw std::runtime_error(
+			std::format("Failed to write {} (disk full?)", path.string())
+		);
+	}
 }
 
 opts::variables_map parse_arguments(const int argc, const char* argv[]) {

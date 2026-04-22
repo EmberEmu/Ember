@@ -15,7 +15,8 @@
 						{ "$ref": "#/$defs/enum_type" },
 						{ "$ref": "#/$defs/flags_type" },
 						{ "$ref": "#/$defs/struct_type" },
-						{ "$ref": "#/$defs/string_type" }
+						{ "$ref": "#/$defs/string_type" },
+						{ "$ref": "#/$defs/external_type" }
 					]
 				}
 			},
@@ -53,10 +54,6 @@
 			"additionalProperties": false,
 			"minProperties": 1
 		},
-		"include": {
-			"type": "string",
-			"description": "Header path used when emitting #include <...> in generated C++ files"
-		},
 		"cpp_namespace": {
 			"type": "string",
 			"pattern": "^[A-Za-z_][A-Za-z0-9_:]*$",
@@ -70,7 +67,6 @@
 				"kind":          { "const": "enum" },
 				"underlying":    { "$ref": "#/$defs/primitive" },
 				"values":        { "$ref": "#/$defs/values" },
-				"include":       { "$ref": "#/$defs/include" },
 				"cpp_namespace": { "$ref": "#/$defs/cpp_namespace" }
 			}
 		},
@@ -82,7 +78,6 @@
 				"kind":          { "const": "flags" },
 				"underlying":    { "$ref": "#/$defs/primitive" },
 				"values":        { "$ref": "#/$defs/values" },
-				"include":       { "$ref": "#/$defs/include" },
 				"cpp_namespace": { "$ref": "#/$defs/cpp_namespace" }
 			}
 		},
@@ -93,7 +88,17 @@
 			"properties": {
 				"kind":          { "const": "struct" },
 				"fields":        { "$ref": "#/$defs/fields" },
-				"include":       { "$ref": "#/$defs/include" },
+				"cpp_namespace": { "$ref": "#/$defs/cpp_namespace" }
+			}
+		},
+		"external_type": {
+			"type": "object",
+			"description": "Escape hatch: the type is defined in hand-written C++. protogen won't generate a header for it, but packet code can reference it — the generator emits the given include path and qualifies the name with cpp_namespace (if set). The user is responsible for overloading stream operators.",
+			"required": ["kind", "include"],
+			"additionalProperties": false,
+			"properties": {
+				"kind":          { "const": "external" },
+				"include":       { "type": "string", "description": "Header path used when emitting #include <...>" },
 				"cpp_namespace": { "$ref": "#/$defs/cpp_namespace" }
 			}
 		},
@@ -164,13 +169,28 @@
 		"condition": {
 			"type": "object",
 			"properties": {
-				"op":    { "type": "string", "enum": ["eq", "in", "has_flag"] },
+				"op":    { "type": "string", "enum": ["eq", "in", "has_flag", "stream_not_empty"] },
 				"field": { "type": "string" },
 				"value": {}
 			},
-			"required": ["op", "field", "value"],
+			"required": ["op"],
 			"additionalProperties": false,
 			"allOf": [
+				{
+					"if":   { "properties": { "op": { "enum": ["eq", "in", "has_flag"] } } },
+					"then": { "required": ["field", "value"] }
+				},
+				{
+					"if":   { "properties": { "op": { "const": "stream_not_empty" } } },
+					"then": {
+						"not": {
+							"anyOf": [
+								{ "required": ["field"] },
+								{ "required": ["value"] }
+							]
+						}
+					}
+				},
 				{
 					"if":   { "properties": { "op": { "const": "in" } } },
 					"then": { "properties": { "value": { "type": "array", "minItems": 1 } } }

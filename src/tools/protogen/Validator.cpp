@@ -7,6 +7,7 @@
  */
 
 #include "Validator.h"
+#include "Scope.h"
 #include "TypeUtils.h"
 #include <format>
 #include <stdexcept>
@@ -14,32 +15,38 @@
 
 namespace ember::protogen {
 
-struct ScopeEntry {
-	std::string name;
-	std::string type;
-};
-
 using Scope = std::vector<ScopeEntry>;
 
 void validate_condition(const jsoncons::json& cond, const Scope& scope,
                         const TypeRegistry& types, std::string_view context);
 
-
-const ScopeEntry* lookup(const Scope& scope, std::string_view name) {
-	for(const auto& e : scope) {
-		if(e.name == name) {
-			return &e;
+void validate_array(const jsoncons::json& array, const std::string& field_type,
+                    const std::string& field_name, const Scope& scope,
+                    const TypeRegistry& types, std::string_view context) {
+	if(array.contains("size")) {
+		if(is_primitive(field_type)) {
+			return;
 		}
-	}
 
-	return nullptr;
-}
+		const auto* def = types.find(field_type);
 
-void validate_array(const jsoncons::json& array, const std::string& field_name,
-                    const Scope& scope, std::string_view context) {
-	if(!array.contains("count_field")) {
+		if(!def) {
+			return; // unknown-type error already emitted by the field type check
+		}
+
+		const auto kind = (*def)["kind"].as<std::string>();
+
+		if(kind != "enum" && kind != "flags") {
+			throw std::runtime_error(std::format(
+				"{}: fixed-size array '{}' of type '{}' (kind '{}') is not supported; "
+				"only primitive, enum, or flags element types are permitted",
+				context, field_name, field_type, kind
+			));
+		}
+
 		return;
 	}
+
 	const auto count_field = array["count_field"].as<std::string>();
 	const auto* entry = lookup(scope, count_field);
 
@@ -68,7 +75,12 @@ void validate_fields(const jsoncons::json& fields, const TypeRegistry& types,
 				validate_condition(field["when"], scope, types, context);
 			}
 
+			// Group-local fields must not leak into the outer scope: they're
+			// only on the wire when the group's 'when' evaluates true, so any
+			// reference to them from a sibling/following field would be unsafe
+			const auto outer_size = scope.size();
 			validate_fields(field["fields"], types, scope, context);
+			scope.resize(outer_size);
 			continue;
 		}
 
@@ -84,7 +96,10 @@ void validate_fields(const jsoncons::json& fields, const TypeRegistry& types,
 		}
 
 		if(field.contains("array")) {
-			validate_array(field["array"], field["name"].as<std::string>(), scope, context);
+			validate_array(
+				field["array"], type, field["name"].as<std::string>(),
+				scope, types, context
+			);
 		}
 
 		scope.push_back({field["name"].as<std::string>(), type});
@@ -101,8 +116,15 @@ void check_named_value(const jsoncons::json& value, const ScopeEntry& entry,
 	const auto* def = types.find(entry.type);
 
 	if(!def) {
+		if(is_primitive(entry.type)) {
+			throw std::runtime_error(std::format(
+				"{}: named value '{}' requires field '{}' to be an enum or flags type, but '{}' is primitive",
+				context, name, entry.name, entry.type
+			));
+		}
+
 		throw std::runtime_error(std::format(
-			"{}: named value '{}' requires field '{}' to be an enum or flags type, but '{}' is primitive",
+			"{}: named value '{}' refers to field '{}' of unknown type '{}'",
 			context, name, entry.name, entry.type
 		));
 	}
@@ -127,6 +149,13 @@ void check_named_value(const jsoncons::json& value, const ScopeEntry& entry,
 void validate_condition(const jsoncons::json& cond, const Scope& scope,
                         const TypeRegistry& types, std::string_view context) {
 	const auto op = cond["op"].as<std::string>();
+
+	// stream state condition: this check has to be performed at runtime
+	// (i.e. '!stream.empty()')
+	if(op == "stream_not_empty") {
+		return;
+	}
+
 	const auto field_name = cond["field"].as<std::string>();
 	const auto* entry = lookup(scope, field_name);
 

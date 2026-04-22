@@ -14,6 +14,16 @@
 
 #pragma once
 
-## for header in headers
-#include <generated/{{ header }}>
+## for header in includes
+#include <{{ header }}>
 ## endfor
+
+namespace {{ namespace }} {
+
+struct {{ name }} {
+## for f in fields
+	{{ f.type }} {{ f.name }}{{ f.suffix }};
+## endfor
+};
+
+} // {{ namespace }}

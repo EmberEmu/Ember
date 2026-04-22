@@ -13,6 +13,7 @@
 #include <filesystem>
 #include <string>
 #include <span>
+#include <vector>
 
 namespace ember::protogen {
 
@@ -27,5 +28,8 @@ GeneratedFile generate_message(const jsoncons::json& message,
 
 std::string generate_aggregator(std::span<const std::string> relative_paths,
                                 const std::filesystem::path& templates_dir);
+
+std::vector<GeneratedFile> generate_type_headers(const TypeRegistry& registry,
+                                                 const std::filesystem::path& templates_dir);
 
 } // protogen, ember

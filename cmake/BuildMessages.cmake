@@ -4,10 +4,12 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-# Runs protogen over every message JSON in `messages_dir` to produce C++
-# headers under `${CMAKE_BINARY_DIR}/generated/`, plus a `Packets.h` aggregator.
-# Adds a `PROTOGEN_GENERATE` target that other targets can depend on, and
-# exposes the output root via the `PROTOGEN_GENERATED_DIR` cache variable so
+# Runs protogen over every message JSON in 'messages_dir' to produce C++
+# headers under '${CMAKE_BINARY_DIR}/generated/', plus a 'Packets.h' which
+# includes all other packet headers for convenience
+#
+# Adds a 'PROTOGEN_GENERATE' target that other targets can depend on, exposing
+# the output root via the 'PROTOGEN_GENERATED_DIR' cache variable so
 # consumers can add it to their include path
 
 function(build_messages
@@ -21,13 +23,9 @@ function(build_messages
     set(templates_dir "$<TARGET_PROPERTY:${protogen},PROTOGEN_TEMPLATES_DIR>")
 
     file(GLOB message_jsons CONFIGURE_DEPENDS "${messages_dir}/*.json")
+    file(GLOB templates CONFIGURE_DEPENDS
+         "${CMAKE_SOURCE_DIR}/src/tools/protogen/templates/*.h_")
 
-    # Derive the generated header set from each message's filename. The stem
-    # before the opcode prefix (smsg_/cmsg_/msg_) maps to <Direction>/<Name>.h
-    # but since the JSON carries both opcode and name explicitly, we simply
-    # expect one output per non-empty input JSON. Empty stub files produce no
-    # output, so we only track generated artifacts after the fact via the
-    # aggregator
     set(aggregator "${output_root}/Packets.h")
 
     add_custom_command(
@@ -40,7 +38,7 @@ function(build_messages
                 --messages ${messages_dir}
                 --output ${output_root}
                 --templates ${templates_dir}
-        DEPENDS ${protogen} ${types_path} ${message_jsons}
+        DEPENDS ${protogen} ${types_path} ${message_jsons} ${templates}
         COMMENT "Generating message headers under ${output_root}"
         VERBATIM
     )

@@ -101,6 +101,7 @@ TEST_F(Protogen, GroupWithEqCondition) {
 			"fields": [ { "name": "payload", "type": "uint32" } ]
 		}
 	])");
+
 	ASSERT_NO_THROW(validate_message_fields(msg["fields"], reg, "test"));
 }
 
@@ -113,6 +114,7 @@ TEST_F(Protogen, GroupWithInCondition) {
 			"fields": [ { "name": "payload", "type": "uint32" } ]
 		}
 	])");
+
 	ASSERT_NO_THROW(validate_message_fields(msg["fields"], reg, "test"));
 }
 
@@ -125,6 +127,7 @@ TEST_F(Protogen, GroupWithHasFlagCondition) {
 			"fields": [ { "name": "z_speed", "type": "float" } ]
 		}
 	])");
+
 	ASSERT_NO_THROW(validate_message_fields(msg["fields"], reg, "test"));
 }
 
@@ -185,7 +188,7 @@ TEST_F(Protogen, RejectsConditionOnUnknownField) {
 		}
 	])");
 
-	ASSERT_ANY_THROW(validate_message_fields(msg["fields"], reg, "test"););
+	ASSERT_ANY_THROW(validate_message_fields(msg["fields"], reg, "test"));
 }
 
 TEST_F(Protogen, RejectsHasFlagOnEnum) {
@@ -246,6 +249,27 @@ TEST_F(Protogen, RejectsConditionOnStructField) {
 		{
 			"type": "group",
 			"when": { "op": "eq", "field": "pos", "value": 0 },
+			"fields": [ { "name": "x", "type": "uint8" } ]
+		}
+	])");
+
+	ASSERT_ANY_THROW(validate_message_fields(msg["fields"], reg, "test"));
+}
+
+TEST_F(Protogen, RejectsPostGroupReferenceToGroupLocalField) {
+	// `pitch_flags` is declared inside a conditional group, so it's only on the
+	// wire when `flags` has `swimming`. A later group's `when` mustn't be able
+	// to reference it — validation should reject the whole message.
+	auto msg = parse_fields(R"([
+		{ "name": "flags", "type": "MovementFlags" },
+		{
+			"type": "group",
+			"when": { "op": "has_flag", "field": "flags", "value": "swimming" },
+			"fields": [ { "name": "pitch_flags", "type": "MovementFlags" } ]
+		},
+		{
+			"type": "group",
+			"when": { "op": "has_flag", "field": "pitch_flags", "value": "jumping" },
 			"fields": [ { "name": "x", "type": "uint8" } ]
 		}
 	])");
@@ -347,14 +371,13 @@ TEST_F(Protogen, GeneratesInPredicateAsOrChain) {
 	})");
 
 	const auto out = generate_message(msg, reg, templates_dir);
-	EXPECT_NE(out.content.find("result == Result::ok || result == Result::queued"),
-	          std::string::npos) << out.content;
+	EXPECT_NE(out.content.find("result == Result::ok || result == Result::queued"), std::string::npos) << out.content;
 }
 
 TEST_F(Protogen, InlinesStructExpansionAtStreamSite) {
 	// registry fixture's 'Movement' struct contains flags + pos + conditional pitch
-	// A field of type Movement should inline-expand into `info.flags`, `info.pos.x`,
-	// `info.pos.y`, `info.pos.z` and the swimming conditional block
+	// A field of type 'Movement' should inline-expand into 'info.flags', 'info.pos.x',
+	// 'info.pos.y', 'info.pos.z' and the swimming conditional block
 	auto msg = jsoncons::json::parse(R"({
 		"name": "MovementPacket",
 		"opcode": "smsg_movement_packet",
@@ -368,9 +391,343 @@ TEST_F(Protogen, InlinesStructExpansionAtStreamSite) {
 	EXPECT_NE(out.content.find("Movement info;"), std::string::npos) << out.content;
 	EXPECT_NE(out.content.find("stream >> info.flags;"), std::string::npos) << out.content;
 	EXPECT_NE(out.content.find("stream >> info.pos.x;"), std::string::npos) << out.content;
-	EXPECT_NE(out.content.find("if(info.flags & MovementFlags::swimming) {"),
-	          std::string::npos) << out.content;
+	EXPECT_NE(out.content.find("if(info.flags & MovementFlags::swimming) {"), std::string::npos) << out.content;
 	EXPECT_NE(out.content.find("stream >> info.pitch;"), std::string::npos) << out.content;
+}
+
+TEST_F(Protogen, GeneratesOneHeaderPerEnumFlagsAndStruct) {
+	auto types_doc = jsoncons::json::parse(R"({
+		"types": {
+			"Colour": {
+				"kind": "enum",
+				"underlying": "uint8",
+				"cpp_namespace": "graphics",
+				"values": { "red": 0, "green": 1 }
+			},
+			"Perms": {
+				"kind": "flags",
+				"underlying": "uint32",
+				"cpp_namespace": "sys",
+				"values": { "read": 1, "write": 2 }
+			},
+			"Point": {
+				"kind": "struct",
+				"cpp_namespace": "geom",
+				"fields": [
+					{ "name": "x", "type": "int32" },
+					{ "name": "y", "type": "int32" }
+				]
+			},
+			"CString": {
+				"kind": "string",
+				"encoding": "null_terminated"
+			}
+		}
+	})");
+
+	auto reg = protogen::build_registry(types_doc);
+	const auto headers = protogen::generate_type_headers(reg, templates_dir);
+
+	// one header for each type - string types produce none
+	ASSERT_EQ(headers.size(), 3u);
+
+	auto find_header = [&](std::string_view suffix) -> const protogen::GeneratedFile* {
+		for(const auto& h : headers) {
+			if(h.relative_path == suffix) {
+				return &h; 
+			}
+		}
+
+		return nullptr;
+	};
+
+	const auto* colour = find_header("types/Colour.h");
+	ASSERT_NE(colour, nullptr);
+	EXPECT_NE(colour->content.find("namespace graphics"), std::string::npos) << colour->content;
+	EXPECT_NE(colour->content.find("enum Colour : std::uint8_t"), std::string::npos) << colour->content;
+	EXPECT_NE(colour->content.find("red = 0"), std::string::npos) << colour->content;
+	EXPECT_NE(colour->content.find("to_string(Colour value)"), std::string::npos) << colour->content;
+	EXPECT_NE(colour->content.find("Colour_to_string(Colour value)"), std::string::npos) << colour->content;
+
+	const auto* perms = find_header("types/Perms.h");
+	ASSERT_NE(perms, nullptr);
+	EXPECT_NE(perms->content.find("enum Perms : std::uint32_t"), std::string::npos) << perms->content;
+
+	const auto* point = find_header("types/Point.h");
+	ASSERT_NE(point, nullptr);
+	EXPECT_NE(point->content.find("namespace geom"), std::string::npos) << point->content;
+	EXPECT_NE(point->content.find("struct Point"), std::string::npos) << point->content;
+	EXPECT_NE(point->content.find("std::int32_t x"), std::string::npos) << point->content;
+}
+
+TEST_F(Protogen, ValidatesStreamNotEmptyGroup) {
+	auto msg = parse_fields(R"([
+		{ "name": "a", "type": "uint32" },
+		{
+			"type": "group",
+			"when": { "op": "stream_not_empty" },
+			"fields": [ { "name": "trailing", "type": "uint32" } ]
+		}
+	])");
+
+	ASSERT_NO_THROW(validate_message_fields(msg["fields"], reg, "test"));
+}
+
+TEST_F(Protogen, GeneratesStreamNotEmptyAsymmetrically) {
+	auto msg = jsoncons::json::parse(R"({
+		"name": "TrailingPacket",
+		"opcode": "smsg_trailing",
+		"direction": "server",
+		"fields": [
+			{ "name": "a", "type": "uint32" },
+			{
+				"type": "group",
+				"when": { "op": "stream_not_empty" },
+				"fields": [ { "name": "trailing", "type": "uint32" } ]
+			}
+		]
+	})");
+
+	const auto out = generate_message(msg, reg, templates_dir);
+	
+	// read test
+	EXPECT_NE(out.content.find("if(!stream.empty()) {"), std::string::npos) << out.content;
+	EXPECT_NE(out.content.find("stream >> trailing;"), std::string::npos) << out.content;
+
+	// write test, should be no stream.empty() condition
+	const auto write_start = out.content.find("write_to_stream");
+	ASSERT_NE(write_start, std::string::npos) << out.content;
+	const auto write_body = out.content.substr(write_start);
+	EXPECT_EQ(write_body.find("if(!stream.empty())"), std::string::npos) << write_body;
+	EXPECT_NE(write_body.find("stream << trailing;"), std::string::npos) << write_body;
+
+	// indentiation test, since it's asymmetrical
+	EXPECT_NE(write_body.find("\t\tstream << trailing;"), std::string::npos) << write_body;
+}
+
+TEST_F(Protogen, StreamNotEmptyGroupStillPopsScope) {
+	// trailing group's fields must not leak into outer scope
+	// (same rule as the other group ops)
+	auto msg = parse_fields(R"([
+		{ "name": "a", "type": "uint32" },
+		{
+			"type": "group",
+			"when": { "op": "stream_not_empty" },
+			"fields": [ { "name": "trailing_flags", "type": "MovementFlags" } ]
+		},
+		{
+			"type": "group",
+			"when": { "op": "has_flag", "field": "trailing_flags", "value": "jumping" },
+			"fields": [ { "name": "x", "type": "uint8" } ]
+		}
+	])");
+
+	ASSERT_ANY_THROW(validate_message_fields(msg["fields"], reg, "test"));
+}
+
+TEST_F(Protogen, ReferencesExternalType) {
+	// stand-in for the actual character struct
+	auto types_doc = jsoncons::json::parse(R"({
+		"types": {
+			"Guid": {
+				"kind": "external",
+				"include": "shared/Guid.h",
+				"cpp_namespace": "ember"
+			}
+		}
+	})");
+
+	auto reg = protogen::build_registry(types_doc);
+
+	auto msg = jsoncons::json::parse(R"({
+		"name": "CharacterEnumTest",
+		"opcode": "smsg_character_enum_test",
+		"direction": "server",
+		"fields": [
+			{ "name": "id", "type": "Guid" }
+		]
+	})");
+
+	const auto out = protogen::generate_message(msg, reg, templates_dir);
+
+	EXPECT_NE(out.content.find("#include <shared/Guid.h>"), std::string::npos) << out.content;
+	EXPECT_NE(out.content.find("ember::Guid id;"), std::string::npos) << out.content;
+	EXPECT_NE(out.content.find("stream >> id;"), std::string::npos) << out.content;
+	EXPECT_NE(out.content.find("stream << id;"), std::string::npos) << out.content;
+}
+
+TEST_F(Protogen, NoHeaderGeneratedForExternalType) {
+	auto types_doc = jsoncons::json::parse(R"({
+		"types": {
+			"Guid": {
+				"kind": "external",
+				"include": "shared/Guid.h",
+				"cpp_namespace": "ember"
+			},
+			"Colour": {
+				"kind": "enum",
+				"underlying": "uint8",
+				"cpp_namespace": "graphics",
+				"values": { "red": 0 }
+			}
+		}
+	})");
+
+	auto reg = protogen::build_registry(types_doc);
+	const auto headers = protogen::generate_type_headers(reg, templates_dir);
+
+	// pnly the Colour enum should get a generated header since Guid is external
+	ASSERT_EQ(headers.size(), 1u);
+	EXPECT_EQ(headers.front().relative_path, "types/Colour.h");
+}
+
+TEST_F(Protogen, RejectsExternalInCondition) {
+	auto types_doc = jsoncons::json::parse(R"({
+		"types": {
+			"Guid": {
+				"kind": "external",
+				"include": "shared/Guid.h",
+				"cpp_namespace": "ember"
+			}
+		}
+	})");
+
+	auto reg = protogen::build_registry(types_doc);
+	auto fields = jsoncons::json::parse(R"([
+		{ "name": "id", "type": "Guid" },
+		{
+			"type": "group",
+			"when": { "op": "eq", "field": "id", "value": 0 },
+			"fields": [ { "name": "x", "type": "uint8" } ]
+		}
+	])");
+
+	ASSERT_ANY_THROW(validate_message_fields(fields, reg, "test"));
+}
+
+TEST_F(Protogen, RejectsFixedSizeArrayOfExternal) {
+	auto types_doc = jsoncons::json::parse(R"({
+		"types": {
+			"Guid": {
+				"kind": "external",
+				"include": "shared/Guid.h",
+				"cpp_namespace": "ember"
+			}
+		}
+	})");
+
+	auto reg = protogen::build_registry(types_doc);
+	auto fields = jsoncons::json::parse(R"([
+		{ "name": "ids", "type": "Guid", "array": { "size": 4 } }
+	])");
+
+	ASSERT_ANY_THROW(validate_message_fields(fields, reg, "test"));
+}
+
+TEST_F(Protogen, StructMemberOfExternalPullsItsInclude) {
+	auto types_doc = jsoncons::json::parse(R"({
+		"types": {
+			"Guid": {
+				"kind": "external",
+				"include": "shared/Guid.h",
+				"cpp_namespace": "ember"
+			},
+			"Pair": {
+				"kind": "struct",
+				"cpp_namespace": "ns",
+				"fields": [
+					{ "name": "left",  "type": "Guid" },
+					{ "name": "right", "type": "Guid" }
+				]
+			}
+		}
+	})");
+
+	auto reg = protogen::build_registry(types_doc);
+	const auto headers = protogen::generate_type_headers(reg, templates_dir);
+
+	const protogen::GeneratedFile* pair = nullptr;
+
+	for(const auto& h : headers) {
+		if(h.relative_path == "types/Pair.h") { pair = &h; }
+	}
+
+	ASSERT_NE(pair, nullptr);
+	EXPECT_NE(pair->content.find("#include <shared/Guid.h>"), std::string::npos) << pair->content;
+	EXPECT_NE(pair->content.find("ember::Guid left"), std::string::npos) << pair->content;
+}
+
+TEST_F(Protogen, StructPullsInGeneratedHeadersForCustomMembers) {
+	auto types_doc = jsoncons::json::parse(R"({
+		"types": {
+			"Mode": {
+				"kind": "flags",
+				"underlying": "uint8",
+				"cpp_namespace": "ns",
+				"values": { "on": 1 }
+			},
+			"Inner": {
+				"kind": "struct",
+				"cpp_namespace": "ns",
+				"fields": [ { "name": "value", "type": "uint32" } ]
+			},
+			"Outer": {
+				"kind": "struct",
+				"cpp_namespace": "ns",
+				"fields": [
+					{ "name": "m", "type": "Mode" },
+					{ "name": "i", "type": "Inner" }
+				]
+			}
+		}
+	})");
+
+	auto reg = protogen::build_registry(types_doc);
+	const auto headers = protogen::generate_type_headers(reg, templates_dir);
+
+	const protogen::GeneratedFile* outer = nullptr;
+
+	for(const auto& h : headers) {
+		if(h.relative_path == "types/Outer.h") { outer = &h; }
+	}
+
+	ASSERT_NE(outer, nullptr);
+	EXPECT_NE(outer->content.find("#include <generated/types/Mode.h>"), std::string::npos) << outer->content;
+	EXPECT_NE(outer->content.find("#include <generated/types/Inner.h>"), std::string::npos) << outer->content;
+}
+
+TEST_F(Protogen, QualifiesEnumAndMemberWithCppNamespace) {
+	auto types_doc = jsoncons::json::parse(R"({
+		"types": {
+			"Colour": {
+				"kind": "enum",
+				"underlying": "uint8",
+				"cpp_namespace": "graphics",
+				"values": { "red": 0, "green": 1 }
+			}
+		}
+	})");
+
+	auto reg = protogen::build_registry(types_doc);
+
+	auto msg = jsoncons::json::parse(R"({
+		"name": "ColourPacket",
+		"opcode": "smsg_colour",
+		"direction": "server",
+		"fields": [
+			{ "name": "c", "type": "Colour" },
+			{
+				"type": "group",
+				"when": { "op": "eq", "field": "c", "value": "red" },
+				"fields": [ { "name": "extra", "type": "uint32" } ]
+			}
+		]
+	})");
+
+	const auto out = protogen::generate_message(msg, reg, templates_dir);
+
+	EXPECT_NE(out.content.find("graphics::Colour c;"), std::string::npos) << out.content;
+	EXPECT_NE(out.content.find("c == graphics::Colour::red"), std::string::npos) << out.content;
 }
 
 TEST_F(Protogen, AggregatorIncludesEachHeader) {
@@ -410,6 +767,22 @@ TEST_F(Protogen, RejectsArrayWithUnknownCountField) {
 	])");
 
 	ASSERT_ANY_THROW(validate_message_fields(msg["fields"], reg, "test"));
+}
+
+TEST_F(Protogen, RejectsFixedSizeArrayOfStruct) {
+	auto msg = parse_fields(R"([
+		{ "name": "positions", "type": "Vector3", "array": { "size": 4 } }
+	])");
+
+	ASSERT_ANY_THROW(validate_message_fields(msg["fields"], reg, "test"));
+}
+
+TEST_F(Protogen, AcceptsFixedSizeArrayOfFlags) {
+	auto msg = parse_fields(R"([
+		{ "name": "masks", "type": "MovementFlags", "array": { "size": 2 } }
+	])");
+
+	ASSERT_NO_THROW(validate_message_fields(msg["fields"], reg, "test"));
 }
 
 TEST_F(Protogen, RejectsArrayWithNonIntegerCountField) {
@@ -454,12 +827,12 @@ TEST_F(Protogen, GeneratesDynamicVectorWithCountLoop) {
 
 	EXPECT_NE(out.content.find("std::vector<std::uint32_t> items;"), std::string::npos) << out.content;
 
-	// Read: resize + loop
+	// read: resize & iterate
 	EXPECT_NE(out.content.find("items.resize(count);"), std::string::npos) << out.content;
 	EXPECT_NE(out.content.find("for(auto& e : items) {"), std::string::npos) << out.content;
 	EXPECT_NE(out.content.find("stream >> e;"), std::string::npos) << out.content;
 
-	// Write: no resize
+	// write: no resize, iterate
 	EXPECT_NE(out.content.find("for(const auto& e : items) {"), std::string::npos) << out.content;
 	EXPECT_NE(out.content.find("stream << e;"), std::string::npos) << out.content;
 	EXPECT_NE(out.content.find("#include <vector>"), std::string::npos) << out.content;
