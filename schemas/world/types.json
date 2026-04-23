@@ -211,6 +211,30 @@
 				{ "name": "z", "type": "float" }
 			]
 		},
+		"Vector4": {
+			"kind": "struct",
+			"cpp_namespace": "ember::protocol",
+			"fields": [
+				{ "name": "x", "type": "float" },
+				{ "name": "y", "type": "float" },
+				{ "name": "z", "type": "float" },
+				{ "name": "o", "type": "float" }
+			]
+		},
+		"TransportInfo": {
+			"kind": "struct",
+			"cpp_namespace": "ember::protocol",
+			"fields": [
+				{ "name": "guid",      "type": "PackedGuid" },
+				{ "name": "position",  "type": "Vector4" },
+				{ "name": "timestamp", "type": "uint32" }
+			]
+		},
+		"PackedGuid": {
+			"kind": "external",
+			"cpp_namespace": "ember::protocol",
+			"include": "protocol/types/PackedGuid.h"
+		},
 		"MovementInfo": {
 			"kind": "struct",
 			"cpp_namespace": "ember::protocol",
@@ -219,6 +243,13 @@
 				{ "name": "timestamp",   "type": "uint32"        },
 				{ "name": "position",    "type": "Vector3"       },
 				{ "name": "orientation", "type": "float"         },
+				{
+					"type": "group",
+					"when": { "op": "has_flag", "field": "flags", "value": "on_transport" },
+					"fields": [
+						{ "name": "transport", "type": "TransportInfo" }
+					]
+				},
 				{
 					"type": "group",
 					"when": { "op": "has_flag", "field": "flags", "value": "swimming" },
