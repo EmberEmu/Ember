@@ -12,13 +12,14 @@
 #include <protocol/StreamResult.h>
 #include <protocol/ResultCodes.h>
 #include <protocol/MovementInfo.h>
+#include <protocol/types/PackedGuid.h>
 #include <stdexcept>
 #include <cstdint>
 
 namespace ember::protocol::server {
 
 struct MoveFallLand final {
-	std::uint64_t guid;
+	PackedGuid guid;
 	MovementInfo info;
 
 	StreamResult read_from_stream(le_stream auto& stream) {

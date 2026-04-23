@@ -11,13 +11,14 @@
 #include <protocol/Concepts.h>
 #include <protocol/StreamResult.h>
 #include <protocol/ResultCodes.h>
+#include <protocol/types/PackedGuid.h>
 #include <stdexcept>
 #include <cstdint>
 
 namespace ember::protocol::server {
 
 struct MoveTimeSkipped final {
-	std::uint64_t guid;
+	PackedGuid guid;
 	std::uint32_t lag;
 
 	StreamResult read_from_stream(le_stream auto& stream) {

@@ -227,11 +227,6 @@ void handle_move_fall_land(ClientContext& ctx) {
 	if(auto result = protocol::deserialise(packet, ctx.stream()); !result) {
 		return ctx.stream_err(result);
 	}
-
-	protocol::move_fall_land_s response;
-	response->guid = packed_guid;
-	response->info = packet->info;
-	ctx.send(response);
 }
 
 void handle_move_set_facing(ClientContext& ctx) {
@@ -240,11 +235,6 @@ void handle_move_set_facing(ClientContext& ctx) {
 	if(auto result = protocol::deserialise(packet, ctx.stream()); !result) {
 		return ctx.stream_err(result);
 	}
-
-	protocol::msg_move_set_facing_s response;
-	response->guid = packed_guid;
-	response->info = packet->info;
-	ctx.send(response);
 }
 
 void handle_zone_update(ClientContext& ctx) {

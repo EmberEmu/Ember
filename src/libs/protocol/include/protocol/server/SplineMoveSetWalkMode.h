@@ -11,6 +11,7 @@
 #include <protocol/Concepts.h>
 #include <protocol/StreamResult.h>
 #include <protocol/ResultCodes.h>
+#include <protocol/types/PackedGuid.h>
 #include <array>
 #include <stdexcept>
 #include <cstdint>
@@ -18,7 +19,7 @@
 namespace ember::protocol::server {
 
 struct SplineMoveSetWalkMode final {
-	std::uint64_t guid;
+	PackedGuid guid;
 
 	StreamResult read_from_stream(le_stream auto& stream) {
 		stream >> guid;

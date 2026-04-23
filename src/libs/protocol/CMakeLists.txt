@@ -75,6 +75,10 @@ set(SERVER_MESSAGES
     include/protocol/server/NewWorld.h
 )
 
+set(TYPE_HEADERS
+    include/protocol/types/PackedGuid.h
+)
+
 set(CORE_HEADERS
     include/protocol/Deserialise.h
     include/protocol/Opcodes.h
@@ -92,6 +96,7 @@ set(CORE_HEADERS
 set(HEADERS
     ${CLIENT_MESSAGES}
     ${SERVER_MESSAGES}
+	${TYPE_HEADERS}
     ${CORE_HEADERS}
 )
 
