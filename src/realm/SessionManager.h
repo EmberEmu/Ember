@@ -45,7 +45,7 @@ private:
 
 	void process_queue();
 	void collect();
-	void initiate_collection();
+	void start_timer();
 	std::size_t bulk_insert(std::span<unique_client_ptr> clients);
 	SessionID generate_id();
 

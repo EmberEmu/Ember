@@ -18,10 +18,10 @@ SessionManager::SessionManager(boost::asio::io_context& ioc, thread::ServicePool
 	: timer_(ioc)
 	, pool_(pool)
 	, logger_(logger) {
-	initiate_collection();
+	start_timer();
 }
 
-void SessionManager::initiate_collection() {
+void SessionManager::start_timer() {
 	timer_.expires_after(config::session_collect_frequency);
 	timer_.async_wait([&](auto ec) {
 		if(ec) {
@@ -30,7 +30,7 @@ void SessionManager::initiate_collection() {
 
 		process_queue();
 		collect();
-		initiate_collection();
+		start_timer();
 	});
 }
 
