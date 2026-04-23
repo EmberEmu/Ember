@@ -175,10 +175,28 @@ set(version_file "${CMAKE_CURRENT_BINARY_DIR}/Version.cpp")
 ##############################
 find_package(Botan 3.10 REQUIRED)
 
-if (BUILD_SHARED)
+if(BUILD_SHARED)
     set(BOTAN_TARGET botan::botan)
 else()
     set(BOTAN_TARGET botan::botan-static)
+endif()
+
+# temporary Botan workarounds
+if(TARGET ${BOTAN_TARGET})
+    get_target_property(_botan_release_lib ${BOTAN_TARGET} IMPORTED_LOCATION)
+    if(_botan_release_lib)
+        get_filename_component(_botan_lib_dir "${_botan_release_lib}" DIRECTORY)
+        get_filename_component(_botan_lib_name "${_botan_release_lib}" NAME)
+        set(_botan_debug_lib "${_botan_lib_dir}/../debug/lib/${_botan_lib_name}")
+        if(EXISTS "${_botan_debug_lib}")
+            get_filename_component(_botan_debug_lib "${_botan_debug_lib}" ABSOLUTE)
+            set_property(TARGET ${BOTAN_TARGET} APPEND PROPERTY
+                IMPORTED_CONFIGURATIONS DEBUG RELEASE)
+            set_target_properties(${BOTAN_TARGET} PROPERTIES
+                IMPORTED_LOCATION_DEBUG   "${_botan_debug_lib}"
+                IMPORTED_LOCATION_RELEASE "${_botan_release_lib}")
+        endif()
+    endif()
 endif()
 
 ##############################

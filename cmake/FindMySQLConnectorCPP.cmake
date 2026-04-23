@@ -67,8 +67,12 @@ FIND_PACKAGE_HANDLE_STANDARD_ARGS(MySQLConnectorCPP REQUIRED_VARS MYSQLCCPP_ROOT
 # When using vcpkg, pull in the connector-jdbc imported target so its
 # transitive deps (libmysql, openssl, zlib, lz4, zstd, protobuf, dnsapi)
 # get linked alongside mysqlcppconn-static.lib.
+unset(UNOFFICIAL_MYSQL_CONNECTOR_CPP_INITIALIZED CACHE)
 find_package(unofficial-mysql-connector-cpp CONFIG QUIET)
 if(TARGET unofficial::mysql-connector-cpp::connector-jdbc)
     list(APPEND MYSQLCCPP_LIBRARY unofficial::mysql-connector-cpp::connector-jdbc)
     list(APPEND MYSQLCCPP_LIBRARIES unofficial::mysql-connector-cpp::connector-jdbc)
+    list(REMOVE_DUPLICATES MYSQLCCPP_LIBRARY)
+    list(REMOVE_DUPLICATES MYSQLCCPP_LIBRARIES)
+    set(MYSQLCCPP_LIBRARY "${MYSQLCCPP_LIBRARY}" CACHE STRING "MySQL Connector/C++ library" FORCE)
 endif()
