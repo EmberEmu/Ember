@@ -45,6 +45,11 @@ struct PackedGuid {
 
 		stream << mask;
 
+		if(set == CHAR_BIT) [[unlikely]] {
+			stream << guid;
+			return stream;
+		}
+
 		// send the set bytes
 		std::uint8_t sent = 0;
 
@@ -71,7 +76,7 @@ struct PackedGuid {
 
 		const auto count = std::popcount(mask);
 
-		if(count == CHAR_BIT) {
+		if(count == CHAR_BIT) [[unlikely]] {
 			stream >> guid;
 			return stream;
 		}
