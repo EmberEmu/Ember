@@ -16,18 +16,13 @@ namespace ember::protocol {
 
 using Guid = std::uint64_t; // temp
 
-struct PackedGuid {
+struct PackedGuid final {
 	Guid guid = 0;
 
 	PackedGuid() = default;
 
-	explicit PackedGuid(Guid value)
+	PackedGuid(Guid value)
 		: guid(value) {}
-
-	PackedGuid& operator=(Guid value) {
-		guid = value;
-		return *this;
-	}
 
 	auto& operator<<(auto& stream) const {
 		// produce the mask
