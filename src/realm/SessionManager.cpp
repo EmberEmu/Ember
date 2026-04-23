@@ -9,6 +9,8 @@
 #include "SessionManager.h"
 #include "ConfigConsts.h"
 #include <logger/Logger.h>
+#include <shared/utility/polyfill/inplace_vector>
+#include <array>
 #include <utility>
 
 namespace ember::realm {
@@ -27,9 +29,36 @@ void SessionManager::initiate_collection() {
 			return;
 		}
 
+		process_queue();
 		collect();
 		initiate_collection();
 	});
+}
+
+void SessionManager::process_queue() {
+	std::inplace_vector<unique_client_ptr, max_bulk_dequeue> dequeued;
+	auto count = queue_.try_dequeue_bulk(std::back_inserter(dequeued), max_bulk_dequeue);
+
+	{ std::lock_guard guard(sessions_lock_);
+
+		for(auto& client : dequeued) {
+			if(!client->stopped()) { // let stopped clients destruct
+				sessions_.emplace(generate_id(), std::move(client));
+			} else {
+				--count;
+			}
+		}
+
+		peak_count_ = std::max(sessions_.size(), peak_count_);
+	}
+
+	if(count) {
+		LOG_TRACE(logger_, "Inserted {} queued sessions", count);
+	}
+}
+
+void SessionManager::enqueue(unique_client_ptr client) {
+	queue_.enqueue(std::move(client));
 }
 
 void SessionManager::insert(unique_client_ptr client) {
@@ -105,15 +134,17 @@ Client* SessionManager::client(const SessionID id) const {
 }
 
 void SessionManager::collect() {
-	std::lock_guard guard(sessions_lock_);
 	std::size_t collected = 0;
+	
+	{ std::lock_guard guard(sessions_lock_);
 
-	for(auto it = sessions_.begin(); it != sessions_.end();) {
-		if(it->second->stopped()) {
-			it = sessions_.erase(it);
-			++collected;
-		} else {
-			++it;
+		for(auto it = sessions_.begin(); it != sessions_.end();) {
+			if(it->second->stopped()) {
+				it = sessions_.erase(it);
+				++collected;
+			} else {
+				++it;
+			}
 		}
 	}
 

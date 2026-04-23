@@ -15,6 +15,6 @@ using namespace std::chrono_literals;
 namespace ember::realm::config {
 
 constexpr static inline auto broadcast_timer_frequency = 30s;
-constexpr static inline auto session_collect_frequency = 15s;
+constexpr static inline auto session_collect_frequency = 10s;
 
 } // config, realm, ember
