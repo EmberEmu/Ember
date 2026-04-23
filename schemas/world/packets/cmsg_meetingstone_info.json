@@ -1,0 +1,5 @@
+{
+	"name": "MeetingStoneInfo",
+	"opcode": "cmsg_meetingstone_info",
+	"direction": "client"
+}

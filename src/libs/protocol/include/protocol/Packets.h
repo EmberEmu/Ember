@@ -45,18 +45,13 @@
 #include <protocol/client/CharacterCreate.h>
 #include <protocol/client/CharacterDelete.h>
 #include <protocol/client/CharacterEnum.h>
-#include <protocol/client/PlayerLogin.h>
-#include <protocol/client/NameQuery.h>
 #include <protocol/client/SetActiveMover.h>
 #include <protocol/client/QueryTime.h>
 #include <protocol/client/RequestRaidInfo.h>
-#include <protocol/client/ItemQuerySingle.h>
 #include <protocol/client/QueryNextMailTime.h>
-#include <protocol/client/GMTicketGetTicket.h>
 #include <protocol/client/MeetingStoneInfo.h>
 #include <protocol/client/MoveTimeSkipped.h>
 #include <protocol/client/MoveFallLand.h>
-#include <protocol/client/UpdateAccountData.h>
 #include <protocol/client/GenericMove.h>
 #include <protocol/client/TutorialFlag.h>
 #include <protocol/client/MessageChat.h>
@@ -102,18 +97,13 @@ using cmsg_auth_session           = ClientPacket<ClientOpcode::cmsg_auth_session
 using cmsg_char_create            = ClientPacket<ClientOpcode::cmsg_char_create,           client::CharacterCreate>;
 using cmsg_char_delete            = ClientPacket<ClientOpcode::cmsg_char_delete,           client::CharacterDelete>;
 using cmsg_char_enum              = ClientPacket<ClientOpcode::cmsg_char_enum,             client::CharacterEnum>;
-using cmsg_player_login           = ClientPacket<ClientOpcode::cmsg_player_login,          client::PlayerLogin>;
-using cmsg_name_query             = ClientPacket<ClientOpcode::cmsg_name_query,            client::NameQuery>;
 using cmsg_set_active_mover       = ClientPacket<ClientOpcode::cmsg_set_active_mover,      client::SetActiveMover>;
 using cmsg_query_time             = ClientPacket<ClientOpcode::cmsg_query_time,            client::QueryTime>;
 using cmsg_request_raid_info      = ClientPacket<ClientOpcode::cmsg_request_raid_info,     client::RequestRaidInfo>;
-using cmsg_item_query_single      = ClientPacket<ClientOpcode::cmsg_item_query_single,     client::ItemQuerySingle>;
 using msg_query_next_mail_time_c  = ClientPacket<ClientOpcode::msg_query_next_mail_time,   client::QueryNextMailTime>;
-using cmsg_gmticket_getticket     = ClientPacket<ClientOpcode::cmsg_gmticket_getticket,    client::GMTicketGetTicket>;
 using cmsg_meetingstone_info      = ClientPacket<ClientOpcode::cmsg_meetingstone_info,     client::MeetingStoneInfo>;
 using cmsg_move_time_skipped      = ClientPacket<ClientOpcode::cmsg_move_time_skipped,     client::MoveTimeSkipped>;
 using move_fall_land_c            = ClientPacket<ClientOpcode::msg_move_fall_land,         client::MoveFallLand>;
-using cmsg_update_account_data    = ClientPacket<ClientOpcode::cmsg_update_account_data,   client::UpdateAccountData>;
 using move_set_facing_c           = ClientPacket<ClientOpcode::msg_move_set_facing,        client::GenericMove>;
 using cmsg_tutorial_flag          = ClientPacket<ClientOpcode::cmsg_tutorial_flag,         client::TutorialFlag>;
 using cmsg_messagechat            = ClientPacket<ClientOpcode::cmsg_messagechat,           client::MessageChat>;

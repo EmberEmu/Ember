@@ -1,0 +1,8 @@
+{
+	"name": "PlayerLogin",
+	"opcode": "cmsg_player_login",
+	"direction": "client",
+	"fields": [
+		{ "name": "character_id", "type": "uint64" }
+	]
+}

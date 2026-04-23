@@ -1,0 +1,5 @@
+{
+	"name": "GMTicketGetTicket",
+	"opcode": "cmsg_gmticket_getticket",
+	"direction": "client"
+}

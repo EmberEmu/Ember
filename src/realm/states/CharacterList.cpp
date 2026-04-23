@@ -23,6 +23,7 @@
 #include <protocol/Deserialise.h>
 #include <protocol/Packets.h>
 #include <protocol/client/CharacterRename.h>
+#include <protocol/client/PlayerLogin.h>
 #include <protocol/server/CharacterRename.h>
 #include <protocol/server/AuthResponse.h>
 #include <shared/utility/UTF8String.h>

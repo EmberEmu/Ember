@@ -17,7 +17,10 @@
 #include <protocol/Packets.h>
 #include <protocol/client/BattlefieldStatus.h>
 #include <protocol/client/JoinChannel.h>
+#include <protocol/client/NameQuery.h>
+#include <protocol/client/UpdateAccountData.h>
 #include <protocol/client/ZoneUpdate.h>
+#include <protocol/client/ItemQuerySingle.h>
 #include <protocol/server/BattlefieldStatus.h>
 #include <chrono>
 #include <format>

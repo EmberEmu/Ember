@@ -1,0 +1,8 @@
+{
+	"name": "NameQuery",
+	"opcode": "cmsg_name_query",
+	"direction": "client",
+	"fields": [
+		{ "name": "guid", "type": "uint64" }
+	]
+}
