@@ -10,7 +10,6 @@
 
 #include "Packet.h"
 #include "Opcodes.h"
-#include <protocol/server/AuthChallenge.h>
 #include <protocol/server/CharacterEnum.h>
 #include <protocol/server/CharacterCreate.h>
 #include <protocol/server/CharacterDelete.h>
@@ -75,7 +74,6 @@
 namespace ember::protocol {
 
 using smsg_addon_info                 = ServerPacket<ServerOpcode::smsg_addon_info,                 server::AddonInfo>;
-using smsg_auth_challenge             = ServerPacket<ServerOpcode::smsg_auth_challenge,             server::AuthChallenge>;
 using smsg_char_enum                  = ServerPacket<ServerOpcode::smsg_char_enum,                  server::CharacterEnum>;
 using smsg_char_create                = ServerPacket<ServerOpcode::smsg_char_create,                server::CharacterCreate>;
 using smsg_char_delete                = ServerPacket<ServerOpcode::smsg_char_delete,                server::CharacterDelete>;
