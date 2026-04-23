@@ -174,6 +174,18 @@
 				"TAG_GM":   3
 			}
 		},
+		"StatusID": {
+			"kind": "enum",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol::server",
+			"values": {
+				"none":        0,
+				"wait_queue":  1,
+				"wait_join":   2,
+				"in_progress": 3,
+				"wait_leave":  4
+			}
+		},
 		"CinematicSequence": {
 			"kind": "enum",
 			"underlying": "uint32",

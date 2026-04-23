@@ -1,0 +1,5 @@
+{
+	"name": "BattlefieldStatus",
+	"opcode": "cmsg_battlefield_status",
+	"direction": "client"
+}

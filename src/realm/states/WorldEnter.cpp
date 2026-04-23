@@ -15,6 +15,8 @@
 #include <logger/CommandSink.h>
 #include <protocol/Deserialise.h>
 #include <protocol/Packets.h>
+#include <protocol/client/BattlefieldStatus.h>
+#include <protocol/server/BattlefieldStatus.h>
 #include <chrono>
 #include <format>
 #include <span>

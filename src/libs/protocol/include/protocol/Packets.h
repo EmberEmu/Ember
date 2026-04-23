@@ -28,7 +28,6 @@
 #include <protocol/server/ItemQuerySingleResponse.h>
 #include <protocol/server/QueryNextMailTime.h>
 #include <protocol/server/GMTicketGetTicket.h>
-#include <protocol/server/BattlefieldStatus.h>
 #include <protocol/server/MeetingStoneSetQueue.h>
 #include <protocol/server/Motd.h>
 #include <protocol/server/MoveTimeSkipped.h>
@@ -57,7 +56,6 @@
 #include <protocol/client/ItemQuerySingle.h>
 #include <protocol/client/QueryNextMailTime.h>
 #include <protocol/client/GMTicketGetTicket.h>
-#include <protocol/client/BattlefieldStatus.h>
 #include <protocol/client/MeetingStoneInfo.h>
 #include <protocol/client/MoveTimeSkipped.h>
 #include <protocol/client/MoveFallLand.h>
@@ -91,7 +89,6 @@ using smsg_raid_instance_info         = ServerPacket<ServerOpcode::smsg_raid_ins
 using smsg_item_query_single_response = ServerPacket<ServerOpcode::smsg_item_query_single_response, server::ItemQuerySingleResponse>;
 using msg_query_next_mail_time_s      = ServerPacket<ServerOpcode::msg_query_next_mail_time,        server::QueryNextMailTime>;
 using smsg_gmticket_getticket         = ServerPacket<ServerOpcode::smsg_gmticket_getticket,         server::GMTicketGetTicket>;
-using smsg_battlefield_status         = ServerPacket<ServerOpcode::smsg_battlefield_status,         server::BattlefieldStatus>;
 using smsg_meetingstone_setqueue      = ServerPacket<ServerOpcode::smsg_meetingstone_setqueue,      server::MeetingStoneSetQueue>;
 using smsg_motd                       = ServerPacket<ServerOpcode::smsg_motd,                       server::Motd>;
 using move_time_skipped_s             = ServerPacket<ServerOpcode::msg_move_time_skipped,           server::MoveTimeSkipped>;
@@ -120,7 +117,6 @@ using cmsg_request_raid_info      = ClientPacket<ClientOpcode::cmsg_request_raid
 using cmsg_item_query_single      = ClientPacket<ClientOpcode::cmsg_item_query_single,     client::ItemQuerySingle>;
 using msg_query_next_mail_time_c  = ClientPacket<ClientOpcode::msg_query_next_mail_time,   client::QueryNextMailTime>;
 using cmsg_gmticket_getticket     = ClientPacket<ClientOpcode::cmsg_gmticket_getticket,    client::GMTicketGetTicket>;
-using cmsg_battlefield_status     = ClientPacket<ClientOpcode::cmsg_battlefield_status,    client::BattlefieldStatus>;
 using cmsg_meetingstone_info      = ClientPacket<ClientOpcode::cmsg_meetingstone_info,     client::MeetingStoneInfo>;
 using cmsg_move_time_skipped      = ClientPacket<ClientOpcode::cmsg_move_time_skipped,     client::MoveTimeSkipped>;
 using move_fall_land_c            = ClientPacket<ClientOpcode::msg_move_fall_land,         client::MoveFallLand>;
