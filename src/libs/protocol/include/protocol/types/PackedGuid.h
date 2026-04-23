@@ -66,6 +66,7 @@ struct PackedGuid final {
 	}
 
 	auto& operator>>(auto& stream) {
+		guid = 0; // clear current value
 		std::uint8_t mask;
 		stream >> mask;
 
@@ -91,6 +92,10 @@ struct PackedGuid final {
 		}
 
 		return stream;
+	}
+
+	bool operator==(const PackedGuid& other) const {
+		return guid == other.guid;
 	}
 };
 
