@@ -49,6 +49,10 @@ constexpr auto types_json = R"({
 					"fields": [ { "name": "pitch", "type": "float" } ]
 				}
 			]
+		},
+		"CString": {
+			"kind": "string",
+			"encoding": "null_terminated"
 		}
 	}
 })";
@@ -575,8 +579,6 @@ TEST_F(Protogen, NoHeaderGeneratedForExternalType) {
 
 	auto reg = protogen::build_registry(types_doc);
 	const auto headers = protogen::generate_type_headers(reg, templates_dir);
-
-	// pnly the Colour enum should get a generated header since Guid is external
 	ASSERT_EQ(headers.size(), 1u);
 	EXPECT_EQ(headers.front().relative_path, "types/Colour.h");
 }
@@ -836,4 +838,331 @@ TEST_F(Protogen, GeneratesDynamicVectorWithCountLoop) {
 	EXPECT_NE(out.content.find("for(const auto& e : items) {"), std::string::npos) << out.content;
 	EXPECT_NE(out.content.find("stream << e;"), std::string::npos) << out.content;
 	EXPECT_NE(out.content.find("#include <vector>"), std::string::npos) << out.content;
+}
+
+TEST_F(Protogen, ValidatesNeqCondition) {
+	const auto msg = parse_fields(R"([
+		{ "name": "result", "type": "Result" },
+		{
+			"type": "group",
+			"when": { "op": "neq", "field": "result", "value": "ok" },
+			"fields": [ { "name": "err", "type": "uint32" } ]
+		}
+	])");
+
+	ASSERT_NO_THROW(validate_message_fields(msg["fields"], reg, "test"));
+}
+
+TEST_F(Protogen, GeneratesNeqPredicate) {
+	auto msg = jsoncons::json::parse(R"({
+		"name": "NeqGated",
+		"opcode": "smsg_neq_gated",
+		"direction": "server",
+		"fields": [
+			{ "name": "result", "type": "Result" },
+			{
+				"type": "group",
+				"when": { "op": "neq", "field": "result", "value": "ok" },
+				"fields": [ { "name": "err", "type": "uint32" } ]
+			}
+		]
+	})");
+
+	const auto out = generate_message(msg, reg, templates_dir);
+	EXPECT_NE(out.content.find("if(result != Result::ok) {"), std::string::npos) << out.content;
+}
+
+TEST_F(Protogen, GeneratesAndCompoundCondition) {
+	auto msg = jsoncons::json::parse(R"({
+		"name": "AndGated",
+		"opcode": "smsg_and_gated",
+		"direction": "server",
+		"fields": [
+			{ "name": "result", "type": "Result" },
+			{ "name": "flags",  "type": "MovementFlags" },
+			{
+				"type": "group",
+				"when": {
+					"op": "and",
+					"conditions": [
+						{ "op": "eq", "field": "result", "value": "ok" },
+						{ "op": "has_flag", "field": "flags", "value": "jumping" }
+					]
+				},
+				"fields": [ { "name": "extra", "type": "uint32" } ]
+			}
+		]
+	})");
+
+	const auto out = generate_message(msg, reg, templates_dir);
+	EXPECT_NE(out.content.find("(result == Result::ok) && (flags & MovementFlags::jumping)"),
+	          std::string::npos) << out.content;
+}
+
+TEST_F(Protogen, GeneratesOrCompoundCondition) {
+	auto msg = jsoncons::json::parse(R"({
+		"name": "OrGated",
+		"opcode": "smsg_or_gated",
+		"direction": "server",
+		"fields": [
+			{ "name": "a", "type": "uint8" },
+			{ "name": "b", "type": "uint8" },
+			{
+				"type": "group",
+				"when": {
+					"op": "or",
+					"conditions": [
+						{ "op": "eq", "field": "a", "value": 1 },
+						{ "op": "eq", "field": "b", "value": 2 }
+					]
+				},
+				"fields": [ { "name": "payload", "type": "uint32" } ]
+			}
+		]
+	})");
+
+	const auto out = generate_message(msg, reg, templates_dir);
+	EXPECT_NE(out.content.find("(a == 1) || (b == 2)"), std::string::npos) << out.content;
+}
+
+TEST_F(Protogen, GeneratesNotCondition) {
+	auto msg = jsoncons::json::parse(R"({
+		"name": "NotGated",
+		"opcode": "smsg_not_gated",
+		"direction": "server",
+		"fields": [
+			{ "name": "flags", "type": "MovementFlags" },
+			{
+				"type": "group",
+				"when": {
+					"op": "not",
+					"condition": { "op": "has_flag", "field": "flags", "value": "jumping" }
+				},
+				"fields": [ { "name": "grounded", "type": "uint8" } ]
+			}
+		]
+	})");
+
+	const auto out = generate_message(msg, reg, templates_dir);
+	EXPECT_NE(out.content.find("if(!(flags & MovementFlags::jumping)) {"),
+	          std::string::npos) << out.content;
+}
+
+TEST_F(Protogen, GeneratesFieldToFieldEq) {
+	auto msg = jsoncons::json::parse(R"({
+		"name": "FieldEq",
+		"opcode": "smsg_field_eq",
+		"direction": "server",
+		"fields": [
+			{ "name": "foo", "type": "uint32" },
+			{ "name": "bar", "type": "uint32" },
+			{
+				"type": "group",
+				"when": { "op": "eq", "field": "foo", "value": { "field": "bar" } },
+				"fields": [ { "name": "payload", "type": "uint32" } ]
+			}
+		]
+	})");
+
+	const auto out = generate_message(msg, reg, templates_dir);
+	EXPECT_NE(out.content.find("if(foo == bar) {"), std::string::npos) << out.content;
+}
+
+TEST_F(Protogen, GeneratesFieldToFieldNeq) {
+	auto msg = jsoncons::json::parse(R"({
+		"name": "FieldNeq",
+		"opcode": "smsg_field_neq",
+		"direction": "server",
+		"fields": [
+			{ "name": "foo", "type": "uint32" },
+			{ "name": "bar", "type": "uint32" },
+			{
+				"type": "group",
+				"when": { "op": "neq", "field": "foo", "value": { "field": "bar" } },
+				"fields": [ { "name": "payload", "type": "uint32" } ]
+			}
+		]
+	})");
+
+	const auto out = generate_message(msg, reg, templates_dir);
+	EXPECT_NE(out.content.find("if(foo != bar) {"), std::string::npos) << out.content;
+}
+
+TEST_F(Protogen, GeneratesNegatedFieldReference) {
+	auto msg = jsoncons::json::parse(R"({
+		"name": "FieldNegate",
+		"opcode": "smsg_field_negate",
+		"direction": "server",
+		"fields": [
+			{ "name": "foo", "type": "uint32" },
+			{ "name": "bar", "type": "uint32" },
+			{
+				"type": "group",
+				"when": { "op": "eq", "field": "foo", "value": { "field": "bar", "negate": true } },
+				"fields": [ { "name": "payload", "type": "uint32" } ]
+			}
+		]
+	})");
+
+	const auto out = generate_message(msg, reg, templates_dir);
+	EXPECT_NE(out.content.find("if(foo == !bar) {"), std::string::npos) << out.content;
+}
+
+TEST_F(Protogen, GeneratesZeroTestViaConstant) {
+	auto msg = jsoncons::json::parse(R"({
+		"name": "ZeroTest",
+		"opcode": "smsg_zero_test",
+		"direction": "server",
+		"fields": [
+			{ "name": "count", "type": "uint32" },
+			{
+				"type": "group",
+				"when": { "op": "neq", "field": "count", "value": 0 },
+				"fields": [ { "name": "payload", "type": "uint32" } ]
+			}
+		]
+	})");
+
+	const auto out = generate_message(msg, reg, templates_dir);
+	EXPECT_NE(out.content.find("if(count != 0) {"), std::string::npos) << out.content;
+}
+
+TEST_F(Protogen, ValidatesEmptyOnStringField) {
+	const auto msg = parse_fields(R"([
+		{ "name": "name", "type": "CString" },
+		{
+			"type": "group",
+			"when": { "op": "not", "condition": { "op": "empty", "field": "name" } },
+			"fields": [ { "name": "flag", "type": "uint8" } ]
+		}
+	])");
+
+	ASSERT_NO_THROW(validate_message_fields(msg["fields"], reg, "test"));
+}
+
+TEST_F(Protogen, GeneratesEmptyStringTest) {
+	auto msg = jsoncons::json::parse(R"({
+		"name": "EmptyTest",
+		"opcode": "smsg_empty_test",
+		"direction": "server",
+		"fields": [
+			{ "name": "name", "type": "CString" },
+			{
+				"type": "group",
+				"when": { "op": "not", "condition": { "op": "empty", "field": "name" } },
+				"fields": [ { "name": "flag", "type": "uint8" } ]
+			}
+		]
+	})");
+
+	const auto out = generate_message(msg, reg, templates_dir);
+	EXPECT_NE(out.content.find("if(!(name.empty())) {"), std::string::npos) << out.content;
+}
+
+TEST_F(Protogen, GeneratesSiblingConditionalGroups) {
+	auto msg = jsoncons::json::parse(R"({
+		"name": "Sibling",
+		"opcode": "smsg_sibling",
+		"direction": "server",
+		"fields": [
+			{ "name": "foo", "type": "uint32" },
+			{ "name": "bar", "type": "uint32" },
+			{
+				"type": "group",
+				"when": { "op": "neq", "field": "foo", "value": 0 },
+				"fields": [ { "name": "foo_extra", "type": "uint32" } ]
+			},
+			{
+				"type": "group",
+				"when": { "op": "neq", "field": "bar", "value": 0 },
+				"fields": [ { "name": "bar_extra", "type": "uint32" } ]
+			}
+		]
+	})");
+
+	const auto out = generate_message(msg, reg, templates_dir);
+	EXPECT_NE(out.content.find("if(foo != 0) {"), std::string::npos) << out.content;
+	EXPECT_NE(out.content.find("if(bar != 0) {"), std::string::npos) << out.content;
+	EXPECT_NE(out.content.find("stream >> foo_extra;"), std::string::npos) << out.content;
+	EXPECT_NE(out.content.find("stream >> bar_extra;"), std::string::npos) << out.content;
+}
+
+TEST_F(Protogen, RejectsEmptyOnNonStringField) {
+	auto msg = parse_fields(R"([
+		{ "name": "count", "type": "uint32" },
+		{
+			"type": "group",
+			"when": { "op": "empty", "field": "count" },
+			"fields": [ { "name": "x", "type": "uint8" } ]
+		}
+	])");
+
+	ASSERT_ANY_THROW(validate_message_fields(msg["fields"], reg, "test"));
+}
+
+TEST_F(Protogen, RejectsFieldRefValueToUnknownField) {
+	auto msg = parse_fields(R"([
+		{ "name": "foo", "type": "uint32" },
+		{
+			"type": "group",
+			"when": { "op": "eq", "field": "foo", "value": { "field": "missing" } },
+			"fields": [ { "name": "x", "type": "uint8" } ]
+		}
+	])");
+
+	ASSERT_ANY_THROW(validate_message_fields(msg["fields"], reg, "test"));
+}
+
+TEST_F(Protogen, RejectsFieldRefValueToStructField) {
+	auto msg = parse_fields(R"([
+		{ "name": "pos", "type": "Vector3" },
+		{ "name": "foo", "type": "uint32" },
+		{
+			"type": "group",
+			"when": { "op": "eq", "field": "foo", "value": { "field": "pos" } },
+			"fields": [ { "name": "x", "type": "uint8" } ]
+		}
+	])");
+
+	ASSERT_ANY_THROW(validate_message_fields(msg["fields"], reg, "test"));
+}
+
+TEST_F(Protogen, RejectsNestedStreamNotEmptyInCompound) {
+	auto msg = parse_fields(R"([
+		{ "name": "foo", "type": "uint32" },
+		{
+			"type": "group",
+			"when": {
+				"op": "and",
+				"conditions": [
+					{ "op": "eq", "field": "foo", "value": 1 },
+					{ "op": "stream_not_empty" }
+				]
+			},
+			"fields": [ { "name": "x", "type": "uint8" } ]
+		}
+	])");
+
+	ASSERT_ANY_THROW(validate_message_fields(msg["fields"], reg, "test"));
+}
+
+TEST_F(Protogen, RecursesValidationIntoCompoundConditions) {
+	// An unknown enum value buried inside an AND should still be caught.
+	auto msg = parse_fields(R"([
+		{ "name": "result", "type": "Result" },
+		{ "name": "flags",  "type": "MovementFlags" },
+		{
+			"type": "group",
+			"when": {
+				"op": "and",
+				"conditions": [
+					{ "op": "has_flag", "field": "flags", "value": "jumping" },
+					{ "op": "eq", "field": "result", "value": "bogus_name" }
+				]
+			},
+			"fields": [ { "name": "x", "type": "uint8" } ]
+		}
+	])");
+
+	ASSERT_ANY_THROW(validate_message_fields(msg["fields"], reg, "test"));
 }

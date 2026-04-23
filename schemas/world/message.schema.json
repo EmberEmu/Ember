@@ -114,45 +114,128 @@
 			"required": ["type", "fields"],
 			"additionalProperties": false
 		},
+		"value_ref": {
+			"type": "object",
+			"description": "Right-hand side of a comparison referring to another prior field (optionally negated with `!`)",
+			"properties": {
+				"field":  { "type": "string" },
+				"negate": { "type": "boolean" }
+			},
+			"required": ["field"],
+			"additionalProperties": false
+		},
 		"condition": {
 			"type": "object",
-			"description": "A predicate that gates serialisation. Most ops test a prior field's value; `stream_not_empty` tests the runtime stream state (read-only — the write path emits the fields unconditionally).",
+			"description": "A predicate that gates serialisation. Leaf ops (`eq`, `neq`, `in`, `has_flag`, `empty`) test a prior field; `stream_not_empty` tests runtime stream state (read-only — the write path emits the fields unconditionally); `and`/`or`/`not` compose other conditions.",
 			"properties": {
 				"op": {
 					"type": "string",
-					"enum": ["eq", "in", "has_flag", "stream_not_empty"]
+					"enum": ["eq", "neq", "in", "has_flag", "empty", "stream_not_empty", "and", "or", "not"]
 				},
 				"field": {
 					"type": "string",
 					"description": "Name of a prior field in the same message whose value is tested"
 				},
-				"value": {}
+				"value": {},
+				"conditions": {
+					"type": "array",
+					"description": "Subconditions combined by `and`/`or`",
+					"items": { "$ref": "#/$defs/condition" },
+					"minItems": 1
+				},
+				"condition": {
+					"description": "Single inner condition for `not`",
+					"$ref": "#/$defs/condition"
+				}
 			},
 			"required": ["op"],
 			"additionalProperties": false,
 			"allOf": [
 				{
-					"if":   { "properties": { "op": { "enum": ["eq", "in", "has_flag"] } } },
+					"if":   { "properties": { "op": { "enum": ["eq", "neq", "in", "has_flag"] } }, "required": ["op"] },
 					"then": { "required": ["field", "value"] }
 				},
 				{
-					"if":   { "properties": { "op": { "const": "stream_not_empty" } } },
+					"if":   { "properties": { "op": { "const": "empty" } }, "required": ["op"] },
 					"then": {
+						"required": ["field"],
 						"not": {
 							"anyOf": [
-								{ "required": ["field"] },
-								{ "required": ["value"] }
+								{ "required": ["value"] },
+								{ "required": ["conditions"] },
+								{ "required": ["condition"] }
 							]
 						}
 					}
 				},
 				{
-					"if":   { "properties": { "op": { "const": "in" } } },
-					"then": { "properties": { "value": { "type": "array", "minItems": 1 } } }
+					"if":   { "properties": { "op": { "const": "stream_not_empty" } }, "required": ["op"] },
+					"then": {
+						"not": {
+							"anyOf": [
+								{ "required": ["field"] },
+								{ "required": ["value"] },
+								{ "required": ["conditions"] },
+								{ "required": ["condition"] }
+							]
+						}
+					}
 				},
 				{
-					"if":   { "properties": { "op": { "const": "has_flag" } } },
+					"if":   { "properties": { "op": { "const": "in" } }, "required": ["op"] },
+					"then": {
+						"properties": {
+							"value": {
+								"type": "array",
+								"minItems": 1,
+								"items": { "type": ["integer", "string"] }
+							}
+						}
+					}
+				},
+				{
+					"if":   { "properties": { "op": { "const": "has_flag" } }, "required": ["op"] },
 					"then": { "properties": { "value": { "type": ["integer", "string"] } } }
+				},
+				{
+					"if":   { "properties": { "op": { "enum": ["eq", "neq"] } }, "required": ["op"] },
+					"then": {
+						"properties": {
+							"value": {
+								"oneOf": [
+									{ "type": "integer" },
+									{ "type": "string" },
+									{ "$ref": "#/$defs/value_ref" }
+								]
+							}
+						}
+					}
+				},
+				{
+					"if":   { "properties": { "op": { "enum": ["and", "or"] } }, "required": ["op"] },
+					"then": {
+						"required": ["conditions"],
+						"not": {
+							"anyOf": [
+								{ "required": ["field"] },
+								{ "required": ["value"] },
+								{ "required": ["condition"] }
+							]
+						}
+					}
+				},
+				{
+					"if":   { "properties": { "op": { "const": "not" } }, "required": ["op"] },
+					"then": {
+						"required": ["condition"],
+						"not": {
+							"anyOf": [
+								{ "required": ["field"] },
+								{ "required": ["value"] },
+								{ "required": ["conditions"] }
+							]
+						}
+					}
 				}
 			]
 		}

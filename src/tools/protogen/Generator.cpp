@@ -32,6 +32,9 @@ struct WalkState {
 	int write_tab = 2;
 };
 
+void walk(const jsoncons::json& fields, const TypeRegistry& reg, WalkState& state,
+		  std::vector<ScopeEntry>& scope, const std::string& prefix);
+
 int current_year() {
 	const auto time = std::chrono::system_clock::now();
 	const std::chrono::year_month_day date = std::chrono::floor<std::chrono::days>(time);
@@ -121,8 +124,8 @@ std::string string_adaptor_expr(const jsoncons::json& type_def, std::string_view
 
 	if(encoding == "prefixed") {
 		return std::format("spark::io::prefixed<std::string, {}>({})", length_cpp, expr);
-	} 
-	
+	}
+
 	if(encoding == "prefixed_null_terminated") {
 		return std::format("spark::io::prefixed_null_terminated<std::string, {}>({})", length_cpp, expr);
 	}
@@ -130,6 +133,26 @@ std::string string_adaptor_expr(const jsoncons::json& type_def, std::string_view
 	throw std::runtime_error(
 		std::format("unknown string encoding '{}'", encoding)
 	);
+}
+
+std::string render_cond_rhs(const jsoncons::json& v, std::string_view prefix, std::string_view type) {
+	if(v.is_string()) {
+		return std::format("{}::{}", type, v.as<std::string>());
+	}
+
+	if(v.is_object()) {
+		const auto ref_name = v["field"].as<std::string>();
+		const auto ref_qualified = std::format("{}{}", prefix, ref_name);
+		bool negate = false;
+
+		if(v.contains("negate") && v["negate"].as<bool>()) {
+			negate = true;
+		}
+
+		return negate? std::format("!{}", ref_qualified) : ref_qualified;
+	}
+
+	return std::format("{}", v.as<std::int64_t>());
 }
 
 std::string render_condition(const jsoncons::json& cond,
@@ -142,6 +165,25 @@ std::string render_condition(const jsoncons::json& cond,
 		return "!stream.empty()";
 	}
 
+	if(op == "and" || op == "or") {
+		const std::string_view sep = (op == "and")? " && " : " || ";
+		std::string joined;
+
+		for(const auto& sub : cond["conditions"].array_range()) {
+			if(!joined.empty()) {
+				joined += sep;
+			}
+
+			joined += std::format("({})", render_condition(sub, reg, prefix, scope));
+		}
+
+		return joined;
+	}
+
+	if(op == "not") {
+		return std::format("!({})", render_condition(cond["condition"], reg, prefix, scope));
+	}
+
 	const auto field_name = cond["field"].as<std::string>();
 	const auto qualified = std::format("{}{}", prefix, field_name);
 	const auto* entry = lookup(scope, field_name);
@@ -150,45 +192,38 @@ std::string render_condition(const jsoncons::json& cond,
 		throw std::runtime_error(std::format("condition references unknown field '{}'", field_name));
 	}
 
+	if(op == "empty") {
+		return std::format("{}.empty()", qualified);
+	}
+
 	const auto& type = entry->type;
 	const auto& value = cond["value"];
 	const auto enum_qualified = cpp_type_name(type, reg);
 
-	auto render_named = [&](const std::string& enumerator) {
-		return std::format("{}::{}", enum_qualified, enumerator);
-	};
-
 	if(op == "eq") {
-		if(value.is_string()) {
-			return std::format("{} == {}", qualified, render_named(value.as<std::string>()));
-		}
+		return std::format("{} == {}", qualified, render_cond_rhs(value, prefix, enum_qualified));
+	}
 
-		return std::format("{} == {}", qualified, value.as<std::int64_t>());
+	if(op == "neq") {
+		return std::format("{} != {}", qualified, render_cond_rhs(value, prefix, enum_qualified));
 	}
 
 	if(op == "in") {
 		std::string joined;
+
 		for(const auto& v : value.array_range()) {
 			if(!joined.empty()) {
 				joined += " || ";
 			}
 
-			if(v.is_string()) {
-				joined += std::format("{} == {}", qualified, render_named(v.as<std::string>()));
-			} else {
-				joined += std::format("{} == {}", qualified, v.as<std::int64_t>());
-			}
+			joined += std::format("{} == {}", qualified, render_cond_rhs(v, prefix, enum_qualified));
 		}
 
 		return joined;
 	}
 
 	if(op == "has_flag") {
-		if(value.is_string()) {
-			return std::format("{} & {}", qualified, render_named(value.as<std::string>()));
-		}
-
-		return std::format("{} & {}", qualified, value.as<std::int64_t>());
+		return std::format("{} & {}", qualified, render_cond_rhs(value, prefix, enum_qualified));
 	}
 
 	throw std::runtime_error(std::format("unknown condition op '{}'", op));
@@ -198,17 +233,21 @@ std::string cpp_element_type(const std::string& type, const TypeRegistry& reg) {
 	return cpp_type_name(type, reg);
 }
 
-void walk(const jsoncons::json& fields, const TypeRegistry& reg, WalkState& state,
-          std::vector<ScopeEntry>& scope, const std::string& prefix);
-
 // emits stream ops for a single scalar value - writes to both read_ops and write_ops
 void emit_scalar_stream_op(const std::string& name, const std::string& type,
-                           const TypeRegistry& reg, WalkState& state, const std::string& prefix) {
-	const auto qualified = prefix + name;
+                           const TypeRegistry& reg, WalkState& state,
+                           std::string_view prefix) {
+	const auto qualified = std::format("{}{}", prefix, name);
 
 	if(is_primitive(type)) {
-		state.read_ops.emplace_back(std::format("{}stream >> {};", indent(state.read_tab), qualified));
-		state.write_ops.emplace_back(std::format("{}stream << {};", indent(state.write_tab), qualified));
+		state.read_ops.emplace_back(
+			std::format("{}stream >> {};", indent(state.read_tab), qualified)
+		);
+
+		state.write_ops.emplace_back(
+			std::format("{}stream << {};", indent(state.write_tab), qualified)
+		);
+
 		return;
 	}
 
@@ -223,8 +262,14 @@ void emit_scalar_stream_op(const std::string& name, const std::string& type,
 	const auto kind = kind_of(*def);
 
 	if(kind == "enum" || kind == "flags" || kind == "external") {
-		state.read_ops.emplace_back(std::format("{}stream >> {};", indent(state.read_tab), qualified));
-		state.write_ops.emplace_back(std::format("{}stream << {};", indent(state.write_tab), qualified));
+		state.read_ops.emplace_back(
+			std::format("{}stream >> {};", indent(state.read_tab), qualified)
+		);
+
+		state.write_ops.emplace_back(
+			std::format("{}stream << {};", indent(state.write_tab), qualified)
+		);
+
 		return;
 	}
 
@@ -428,8 +473,8 @@ GeneratedFile generate_message(const jsoncons::json& message,
 	data["name"] = name;
 	data["opcode"] = opcode;
 	data["direction"] = direction;
-	data["packet_template"] = (direction == "server") ? "ServerPacket" : "ClientPacket";
-	data["opcode_enum"] = (direction == "server") ? "ServerOpcode" : "ClientOpcode";
+	data["packet_template"] = (direction == "server")? "ServerPacket" : "ClientPacket";
+	data["opcode_enum"] = (direction == "server")? "ServerOpcode" : "ClientOpcode";
 	data["members"] = join_lines(state.members);
 	data["read_body"] = join_lines(state.read_ops);
 	data["write_body"] = join_lines(state.write_ops);
@@ -554,7 +599,7 @@ std::vector<GeneratedFile> generate_type_headers(const TypeRegistry& reg, const 
 				values.emplace_back(std::move(v));
 			}
 		
-			if(kind == "enum") { // ensure enumerators are sorted numerically (0 ... n)
+			if(kind == "enum") { // ensure enumerators are sorted numerically (0 .. n)
 				std::sort(values.begin(), values.end(), [](auto& lhs, auto& rhs) {
 					return rhs["value"] > lhs["value"];
 				});
@@ -590,10 +635,11 @@ std::vector<GeneratedFile> generate_type_headers(const TypeRegistry& reg, const 
 
 			data["includes"] = std::move(includes_arr);
 			data["fields"] = std::move(fields);
+
 			out.emplace_back(
-				std::format("types/{}.h", name),
-				env.render(struct_tpl, data)
+				std::format("types/{}.h", name), env.render(struct_tpl, data)
 			);
+
 			continue;
 		}
 
