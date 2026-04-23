@@ -10,7 +10,6 @@
 #include "ConfigConsts.h"
 #include <logger/Logger.h>
 #include <shared/utility/polyfill/inplace_vector>
-#include <array>
 #include <utility>
 
 namespace ember::realm {
