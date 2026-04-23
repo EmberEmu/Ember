@@ -155,3 +155,35 @@ TEST(PackedGuid, RoundTripRandomGuid) {
 	ASSERT_TRUE(stream.empty());
 	ASSERT_EQ(input, output);
 }
+
+// ensure detection of potentially malicious PackedGuids
+// where the mask indicates more bytes are set than are
+// actually sent in the message
+TEST(PackedGuid, TruncatedPackedGuidNoThrow) {
+	std::uint8_t mask = 0x7f;
+	std::vector<std::uint8_t> buffer;
+	spark::io::BufferAdaptor adaptor(buffer);
+	spark::io::BinaryStream stream(adaptor, spark::io::no_throw);
+	stream << mask;
+	stream << std::uint8_t(1);
+
+	protocol::PackedGuid output;
+	stream >> output;
+
+	// ensure stream has detected a bad state
+	ASSERT_TRUE(stream.empty());
+	ASSERT_FALSE(stream);
+}
+
+// same as above but with exceptions enabled
+TEST(PackedGuid, TruncatedPackedGuidThrow) {
+	std::uint8_t mask = 0x7f;
+	std::vector<std::uint8_t> buffer;
+	spark::io::BufferAdaptor adaptor(buffer);
+	spark::io::BinaryStream stream(adaptor);
+	stream << mask;
+	stream << std::uint8_t(1);
+
+	protocol::PackedGuid output;
+	ASSERT_ANY_THROW(stream >> output);
+}
