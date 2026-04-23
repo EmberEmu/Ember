@@ -34,24 +34,31 @@ void SessionManager::initiate_collection() {
 	});
 }
 
-void SessionManager::process_queue() {
-	std::inplace_vector<unique_client_ptr, max_bulk_dequeue> dequeued;
-	auto count = queue_.try_dequeue_bulk(std::back_inserter(dequeued), max_bulk_dequeue);
+std::size_t SessionManager::bulk_insert(std::span<unique_client_ptr> clients) {
+	auto count = clients.size();
+	std::lock_guard guard(sessions_lock_);
 
-	{ std::lock_guard guard(sessions_lock_);
-
-		for(auto& client : dequeued) {
-			if(!client->stopped()) { // let stopped clients destruct
-				sessions_.emplace(generate_id(), std::move(client));
-			} else {
-				--count;
-			}
+	for(auto& client : clients) {
+		if(!client->stopped()) { // let stopped clients destruct
+			sessions_.emplace(generate_id(), std::move(client));
+		} else {
+			--count;
 		}
-
-		peak_count_ = std::max(sessions_.size(), peak_count_);
 	}
 
-	if(count) {
+	peak_count_ = std::max(sessions_.size(), peak_count_);
+	return count;
+}
+
+void SessionManager::process_queue() {
+	std::inplace_vector<unique_client_ptr, max_bulk_dequeue> dequeued;
+	queue_.try_dequeue_bulk(std::back_inserter(dequeued), max_bulk_dequeue);
+
+	if(dequeued.empty()) {
+		return;
+	}
+
+	if(auto count = bulk_insert(dequeued); count) {
 		LOG_TRACE(logger_, "Inserted {} queued sessions", count);
 	}
 }

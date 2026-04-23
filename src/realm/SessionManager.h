@@ -17,6 +17,7 @@
 #include <boost/unordered/unordered_flat_map.hpp>
 #include <moodycamel/concurrentqueue.h>
 #include <mutex>
+#include <span>
 #include <cstddef>
 #include <cstdint>
 
@@ -45,7 +46,7 @@ private:
 	void process_queue();
 	void collect();
 	void initiate_collection();
-
+	std::size_t bulk_insert(std::span<unique_client_ptr> clients);
 	SessionID generate_id();
 
 public:
