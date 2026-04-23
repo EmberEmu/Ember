@@ -164,7 +164,7 @@ void MemoryArchive::extract_compressed(BlockTableEntry& entry,
 		++ignore_count;
 	}
 
-	sectors = std::span(sectors.begin(), sectors.end() - ignore_count);
+	const auto sectors_end = sectors.end() - ignore_count;
 	auto remaining = entry.uncompressed_size;
 
 	boost::container::small_vector<std::byte, sector_size_hint> buffer(
@@ -173,7 +173,7 @@ void MemoryArchive::extract_compressed(BlockTableEntry& entry,
 
 	const int def_comp = default_compression(sectors, file_offset, entry.uncompressed_size);
 
-	for(auto sector = sectors.begin(); sector != sectors.end(); ++sector) {
+	for(auto sector = sectors.begin(); sector != sectors_end; ++sector) {
 		std::uint32_t sector_size_actual = max_sector_size;
 		std::uint32_t sector_size = max_sector_size;
 
