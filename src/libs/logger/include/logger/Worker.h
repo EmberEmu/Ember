@@ -9,7 +9,7 @@
 #pragma once
 
 #include <logger/Sink.h>
-#include <logger/concurrentqueue.h>
+#include <moodycamel/concurrentqueue.h>
 #include <logger/Logger.h>
 #include <atomic>
 #include <memory>

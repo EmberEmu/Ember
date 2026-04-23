@@ -13,7 +13,7 @@
 #include <logger/Sink.h>
 #include <logger/Severity.h>
 #include <logger/Logger.h>
-#include <logger/concurrentqueue.h>
+#include <moodycamel/concurrentqueue.h>
 #include <algorithm>
 #include <iterator>
 #include <memory>

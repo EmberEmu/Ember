@@ -15,7 +15,6 @@ add_library(${LIBRARY_NAME} STATIC
     src/ConsoleSink.cpp
     src/GlobalLogger.cpp
     src/ConsoleColour.cpp
-    include/logger/concurrentqueue.h
     include/logger/LoggerImpl.h
     include/logger/FileSink.h
     include/logger/HelperMacros.h
