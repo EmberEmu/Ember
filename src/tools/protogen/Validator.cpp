@@ -75,7 +75,7 @@ void validate_fields(const jsoncons::json& fields, const TypeRegistry& types,
 				validate_condition(field["when"], scope, types, context);
 			}
 
-			// Group-local fields must not leak into the outer scope: they're
+			// group-local fields must not leak into the outer scope: they're
 			// only on the wire when the group's 'when' evaluates true, so any
 			// reference to them from a sibling/following field would be unsafe
 			const auto outer_size = scope.size();
@@ -146,6 +146,45 @@ void check_named_value(const jsoncons::json& value, const ScopeEntry& entry,
 	}
 }
 
+void check_value(const jsoncons::json& value, const ScopeEntry& entry, const Scope& scope,
+                 const TypeRegistry& types, std::string_view context) {
+	if(!value.is_object()) {
+		check_named_value(value, entry, types, context);
+		return;
+	}
+
+	const auto ref_name = value["field"].as<std::string>();
+	const auto* ref = lookup(scope, ref_name);
+
+	if(!ref) {
+		throw std::runtime_error(std::format(
+			"{}: condition value references unknown field '{}'", context, ref_name
+		));
+	}
+
+	if(!is_primitive(ref->type)) {
+		const auto* def = types.find(ref->type);
+		const auto kind = def? (*def)["kind"].as<std::string>() : std::string();
+
+		if(kind != "enum" && kind != "flags") {
+			throw std::runtime_error(std::format(
+				"{}: value references field '{}' of type '{}' which can't be used in a condition",
+				context, ref_name, ref->type
+			));
+		}
+	}
+}
+
+void reject_nested_stream_check(const jsoncons::json& cond, std::string_view outer_op,
+                                std::string_view context) {
+	if(cond["op"].as<std::string>() == "stream_not_empty") {
+		throw std::runtime_error(std::format(
+			"{}: 'stream_not_empty' cannot be nested inside '{}' — it must be the top-level condition",
+			context, outer_op
+		));
+	}
+}
+
 void validate_condition(const jsoncons::json& cond, const Scope& scope,
                         const TypeRegistry& types, std::string_view context) {
 	const auto op = cond["op"].as<std::string>();
@@ -153,6 +192,22 @@ void validate_condition(const jsoncons::json& cond, const Scope& scope,
 	// stream state condition: this check has to be performed at runtime
 	// (i.e. '!stream.empty()')
 	if(op == "stream_not_empty") {
+		return;
+	}
+
+	if(op == "and" || op == "or") {
+		for(const auto& sub : cond["conditions"].array_range()) {
+			reject_nested_stream_check(sub, op, context);
+			validate_condition(sub, scope, types, context);
+		}
+
+		return;
+	}
+
+	if(op == "not") {
+		const auto& inner = cond["condition"];
+		reject_nested_stream_check(inner, op, context);
+		validate_condition(inner, scope, types, context);
 		return;
 	}
 
@@ -165,9 +220,23 @@ void validate_condition(const jsoncons::json& cond, const Scope& scope,
 		));
 	}
 
+	if(op == "empty") {
+		const auto* def = types.find(entry->type);
+		const auto kind = def? (*def)["kind"].as<std::string>() : std::string();
+
+		if(kind != "string") {
+			throw std::runtime_error(std::format(
+				"{}: 'empty' requires field '{}' to be a string type, got '{}'",
+				context, field_name, entry->type
+			));
+		}
+
+		return;
+	}
+
 	if(!is_primitive(entry->type)) {
 		const auto* def = types.find(entry->type);
-		const auto kind = def ? (*def)["kind"].as<std::string>() : std::string();
+		const auto kind = def? (*def)["kind"].as<std::string>() : std::string();
 
 		if(kind != "enum" && kind != "flags") {
 			throw std::runtime_error(std::format(
@@ -188,12 +257,14 @@ void validate_condition(const jsoncons::json& cond, const Scope& scope,
 			));
 		}
 		check_named_value(value, *entry, types, context);
-	} else if(op == "eq") {
-		check_named_value(value, *entry, types, context);
+	} else if(op == "eq" || op == "neq") {
+		check_value(value, *entry, scope, types, context);
 	} else if(op == "in") {
 		for(const auto& v : value.array_range()) {
 			check_named_value(v, *entry, types, context);
 		}
+	} else {
+		throw std::runtime_error(std::format("{}: unknown condition op '{}'", context, op));
 	}
 }
 
@@ -224,9 +295,7 @@ void validate_registry_internals(const TypeRegistry& reg) {
 		}
 
 		Scope scope;
-
 		validate_fields(def["fields"], reg, scope, std::format("type '{}'", name));
-		
 	}
 }
 
