@@ -1,0 +1,8 @@
+{
+	"name": "ZoneUpdate",
+	"opcode": "cmsg_zoneupdate",
+	"direction": "client",
+	"fields": [
+		{ "name": "area", "type": "uint32" }
+	]
+}

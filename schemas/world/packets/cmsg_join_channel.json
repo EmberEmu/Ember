@@ -1,0 +1,9 @@
+{
+	"name": "JoinChannel",
+	"opcode": "cmsg_join_channel",
+	"direction": "client",
+	"fields": [
+		{ "name": "name",     "type": "CString" },
+		{ "name": "password", "type": "CString" }
+	]
+}

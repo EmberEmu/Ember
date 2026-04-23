@@ -13,7 +13,6 @@
 #include <protocol/server/CharacterEnum.h>
 #include <protocol/server/CharacterCreate.h>
 #include <protocol/server/CharacterDelete.h>
-#include <protocol/server/CharacterRename.h>
 #include <protocol/server/CharacterLoginFailed.h>
 #include <protocol/server/LogoutComplete.h>
 #include <protocol/server/AddonInfo.h>
@@ -43,11 +42,9 @@
 #include <protocol/server/MoveSetRawPositionAck.h>
 #include <protocol/server/NewWorld.h>
 #include <protocol/client/AuthSession.h>
-#include <protocol/client/Ping.h>
 #include <protocol/client/CharacterCreate.h>
 #include <protocol/client/CharacterDelete.h>
 #include <protocol/client/CharacterEnum.h>
-#include <protocol/client/CharacterRename.h>
 #include <protocol/client/PlayerLogin.h>
 #include <protocol/client/NameQuery.h>
 #include <protocol/client/SetActiveMover.h>
@@ -59,9 +56,7 @@
 #include <protocol/client/MeetingStoneInfo.h>
 #include <protocol/client/MoveTimeSkipped.h>
 #include <protocol/client/MoveFallLand.h>
-#include <protocol/client/ZoneUpdate.h>
 #include <protocol/client/UpdateAccountData.h>
-#include <protocol/client/JoinChannel.h>
 #include <protocol/client/GenericMove.h>
 #include <protocol/client/TutorialFlag.h>
 #include <protocol/client/MessageChat.h>
@@ -75,7 +70,6 @@ using smsg_addon_info                 = ServerPacket<ServerOpcode::smsg_addon_in
 using smsg_char_enum                  = ServerPacket<ServerOpcode::smsg_char_enum,                  server::CharacterEnum>;
 using smsg_char_create                = ServerPacket<ServerOpcode::smsg_char_create,                server::CharacterCreate>;
 using smsg_char_delete                = ServerPacket<ServerOpcode::smsg_char_delete,                server::CharacterDelete>;
-using smsg_char_rename                = ServerPacket<ServerOpcode::smsg_char_rename,                server::CharacterRename>;
 using smsg_character_login_failed     = ServerPacket<ServerOpcode::smsg_character_login_failed,     server::CharacterLoginFailed>;
 using smsg_logout_complete            = ServerPacket<ServerOpcode::smsg_logout_complete,            server::LogoutComplete>;
 using smsg_login_verify_world         = ServerPacket<ServerOpcode::smsg_login_verify_world,         server::LoginVerifyWorld>;
@@ -108,7 +102,6 @@ using cmsg_auth_session           = ClientPacket<ClientOpcode::cmsg_auth_session
 using cmsg_char_create            = ClientPacket<ClientOpcode::cmsg_char_create,           client::CharacterCreate>;
 using cmsg_char_delete            = ClientPacket<ClientOpcode::cmsg_char_delete,           client::CharacterDelete>;
 using cmsg_char_enum              = ClientPacket<ClientOpcode::cmsg_char_enum,             client::CharacterEnum>;
-using cmsg_char_rename            = ClientPacket<ClientOpcode::cmsg_char_rename,           client::CharacterRename>;
 using cmsg_player_login           = ClientPacket<ClientOpcode::cmsg_player_login,          client::PlayerLogin>;
 using cmsg_name_query             = ClientPacket<ClientOpcode::cmsg_name_query,            client::NameQuery>;
 using cmsg_set_active_mover       = ClientPacket<ClientOpcode::cmsg_set_active_mover,      client::SetActiveMover>;
@@ -120,9 +113,7 @@ using cmsg_gmticket_getticket     = ClientPacket<ClientOpcode::cmsg_gmticket_get
 using cmsg_meetingstone_info      = ClientPacket<ClientOpcode::cmsg_meetingstone_info,     client::MeetingStoneInfo>;
 using cmsg_move_time_skipped      = ClientPacket<ClientOpcode::cmsg_move_time_skipped,     client::MoveTimeSkipped>;
 using move_fall_land_c            = ClientPacket<ClientOpcode::msg_move_fall_land,         client::MoveFallLand>;
-using cmsg_zone_update            = ClientPacket<ClientOpcode::cmsg_zoneupdate,            client::ZoneUpdate>;
 using cmsg_update_account_data    = ClientPacket<ClientOpcode::cmsg_update_account_data,   client::UpdateAccountData>;
-using cmsg_join_channel           = ClientPacket<ClientOpcode::cmsg_join_channel,          client::JoinChannel>;
 using move_set_facing_c           = ClientPacket<ClientOpcode::msg_move_set_facing,        client::GenericMove>;
 using cmsg_tutorial_flag          = ClientPacket<ClientOpcode::cmsg_tutorial_flag,         client::TutorialFlag>;
 using cmsg_messagechat            = ClientPacket<ClientOpcode::cmsg_messagechat,           client::MessageChat>;

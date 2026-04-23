@@ -16,6 +16,8 @@
 #include <protocol/Deserialise.h>
 #include <protocol/Packets.h>
 #include <protocol/client/BattlefieldStatus.h>
+#include <protocol/client/JoinChannel.h>
+#include <protocol/client/ZoneUpdate.h>
 #include <protocol/server/BattlefieldStatus.h>
 #include <chrono>
 #include <format>
@@ -240,7 +242,7 @@ void handle_move_set_facing(ClientContext& ctx) {
 }
 
 void handle_zone_update(ClientContext& ctx) {
-	message_view<protocol::cmsg_zone_update> packet;
+	message_view<protocol::cmsg_zoneupdate> packet;
 
 	if(auto result = protocol::deserialise(packet, ctx.stream()); !result) {
 		return ctx.stream_err(result);
