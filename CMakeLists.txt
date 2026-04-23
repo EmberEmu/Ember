@@ -55,7 +55,7 @@ if(MSVC)
 
         # Disable buffer security checks
         "$<$<CONFIG:Release>:/GS->"
-        "$<$<CONFIG:ReleaseWithDebInfo>:/GS->"
+        "$<$<CONFIG:RelWithDebInfo>:/GS->"
         "$<$<CONFIG:ReleaseUnoptimised>:/GS->"
     )
 
