@@ -38,7 +38,8 @@ set(EXECUTABLE_SRC
     Commands.cpp
     ClientIdent.cpp
     PacketCrypto.cpp
-	Protogen.cpp
+    Protogen.cpp
+    PackedGuid.cpp
 )
 
 if(WIN32)
@@ -52,7 +53,7 @@ add_executable(${EXECUTABLE_NAME}
 )
 
 target_include_directories(${EXECUTABLE_NAME} PUBLIC ../src ../src/tools)
-target_link_libraries(${EXECUTABLE_NAME} PRIVATE gtest gtest_main libprotogen liblogin libmdns ports shared allocators spark srp6 libmdns stun mpq ${BOTAN_TARGET} ${Boost_LIBRARIES})
+target_link_libraries(${EXECUTABLE_NAME} PRIVATE gtest gtest_main libprotogen liblogin libmdns protocol ports shared allocators spark srp6 libmdns stun mpq ${BOTAN_TARGET} ${Boost_LIBRARIES})
 gtest_discover_tests(${EXECUTABLE_NAME})
 
 add_custom_command(TARGET ${EXECUTABLE_NAME} PRE_BUILD
