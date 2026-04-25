@@ -109,8 +109,6 @@ void ClientHandler::handle_ping(BinaryStream& stream) {
 		return stream_err(result);
 	}
 
-	// todo - only passing the payload to avoid including all packet defs
-	// this can be changed once packet code generation is finished
 	if(!validate_ping(packet)) {
 		close_session();
 		return;
