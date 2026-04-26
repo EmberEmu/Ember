@@ -51,14 +51,20 @@ std::size_t SessionManager::bulk_insert(std::span<unique_client_ptr> clients) {
 }
 
 void SessionManager::process_queue() {
-	std::inplace_vector<unique_client_ptr, max_bulk_dequeue> dequeued;
-	queue_.try_dequeue_bulk(std::back_inserter(dequeued), max_bulk_dequeue);
+	std:size_t count = 0;
 
-	if(dequeued.empty()) {
-		return;
+	while(true) {
+		std::inplace_vector<unique_client_ptr, max_bulk_dequeue> dequeued;
+		queue_.try_dequeue_bulk(std::back_inserter(dequeued), max_bulk_dequeue);
+
+		if(dequeued.empty()) {
+			return;
+		}
+
+		count += bulk_insert(dequeued);;
 	}
 
-	if(auto count = bulk_insert(dequeued); count) {
+	if(count) {
 		LOG_TRACE(logger_, "Inserted {} queued sessions", count);
 	}
 }
