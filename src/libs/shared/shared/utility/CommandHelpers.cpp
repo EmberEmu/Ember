@@ -7,6 +7,7 @@
  */
 
 #include "CommandHelpers.h"
+#include <banner/Version.h>
 #include <commands/Commands.h>
 #include <logger/CommandSink.h>
 #include <logger/Logger.h>
@@ -210,6 +211,14 @@ void register_common_commands(commands::Command& root, log::Logger& logger) {
 		->argument<std::string>("command", commands::optional)
 		->handler([&](const auto& arguments) {
 			handle_help_command(arguments, root, logger);
+		});
+
+	root.insert("version")
+		->description("Display version and build information")
+		->handler([&](const auto&) {
+			LOG_CONSOLE(
+				logger, "{}, {} ({}, {})", build::version, build::git_hash, build::date, build::time
+			);
 		});
 
 #ifdef _WIN32
