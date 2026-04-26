@@ -434,10 +434,6 @@ void handle_standstate_change(ClientContext& ctx) {
 	if(auto result = protocol::deserialise(packet, ctx.stream()); !result) {
 		return ctx.stream_err(result);
 	}
-
-	protocol::smsg_standstate_update response;
-	response->state = packet->state;
-	ctx.send(response);
 }
 
 void handle_world_teleport(ClientContext& ctx) {
