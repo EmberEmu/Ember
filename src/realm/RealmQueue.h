@@ -82,6 +82,7 @@ public:
 	void free_slot();
 	void shutdown();
 	std::size_t size() const;
+	std::size_t occupied() const;
 };
 
 } // realm, ember

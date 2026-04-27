@@ -107,6 +107,7 @@ void RealmQueue::free_slot() {
 	dispatcher_.post(entry.client, event);
 	queue_.pop_front();
 	dirty_ = true;
+	++active_;
 }
 
 std::size_t RealmQueue::poll(const ClientIdent& client) {
@@ -124,6 +125,7 @@ std::size_t RealmQueue::poll(const ClientIdent& client) {
 
 	return npos;
 }
+
 void RealmQueue::shutdown() {
 	std::lock_guard guard(lock_);
 	timer_.cancel();
@@ -132,6 +134,11 @@ void RealmQueue::shutdown() {
 std::size_t RealmQueue::size() const {
 	std::lock_guard guard(lock_);
 	return queue_.size();
+}
+
+std::size_t RealmQueue::occupied() const {
+	std::lock_guard guard(lock_);
+	return active_;
 }
 
 RealmQueue::~RealmQueue() {

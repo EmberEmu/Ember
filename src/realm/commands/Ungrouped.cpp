@@ -31,7 +31,9 @@ auto queue(utility::CommandExecutor& exec, const RealmQueue& realm_queue, log::L
 	return commands::create("queue")
 		->description("Display authentication queue size")
 		->handler(exec([&](auto&) {
-			LOG_CONSOLE(logger, "Current realm queue size is {}", realm_queue.size());
+			LOG_CONSOLE(
+				logger, "Current realm queue size is {}, {} occupied", realm_queue.size(), realm_queue.occupied()
+			);
 		}
 	));
 }
