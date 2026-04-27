@@ -43,7 +43,6 @@ port = 3479
 protocol = udp
 
 # Auto port forwarding configuration
-# This is only functional if STUN is also enabled and detects a NAT gateway
 [forward]
 enabled = true
 method = upnp       # auto, upnp, or natpmp
