@@ -69,6 +69,8 @@ public:
 
 	static std::size_t curr_clients();
 	static std::size_t peak_clients();
+	static bool reserve_client_slot(std::size_t limit);
+	static void free_client_slot();
 };
 
 } // realm, ember

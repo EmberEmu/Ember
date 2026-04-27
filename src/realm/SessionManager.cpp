@@ -61,7 +61,7 @@ void SessionManager::process_queue() {
 			return;
 		}
 
-		count += bulk_insert(dequeued);;
+		count += bulk_insert(dequeued);
 	}
 
 	if(count) {

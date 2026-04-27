@@ -22,6 +22,7 @@ struct Config {
 	std::chrono::seconds auth_timeout;
 	std::chrono::seconds char_list_timeout;
 	std::vector<GameVersion> allowed_builds;
+	unsigned int max_sockets;
 };
 
 } // realm, ember

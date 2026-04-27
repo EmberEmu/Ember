@@ -259,7 +259,7 @@ void Service::initialise(const opts::variables_map& args) try {
 	// Start network listener
 	SLOG_INFO(logger, "Starting network service on {}:{}...", interface, port);
 	ctx->server = std::make_unique<NetworkListener>(
-		interface, port, tcp_no_delay, *ctx->service_pool, builder, *ctx->sessions, logger
+		interface, port, tcp_no_delay, *ctx->service_pool, builder, *ctx->sessions, *ctx->config_store, logger
 	);
 	
 	// Start timer service
@@ -353,7 +353,8 @@ Config Service::generate_config(const opts::variables_map& args) {
 		.max_slots = args["realm.max_slots"].as<unsigned int>(),
 		.auth_timeout = std::chrono::seconds(args["realm.auth_timeout"].as<unsigned int>()),
 		.char_list_timeout = std::chrono::seconds(args["realm.char_list_timeout"].as<unsigned int>()),
-		.allowed_builds = args["realm.builds"].as<std::vector<GameVersion>>()
+		.allowed_builds = args["realm.builds"].as<std::vector<GameVersion>>(),
+		.max_sockets = args["realm.max_sockets"].as<unsigned int>()
 	};
 }
 
@@ -459,6 +460,7 @@ opts::options_description Service::options() {
 		("realm.builds", opts::value<std::vector<GameVersion>>()->composing()->required())
 		("realm.id", opts::value<unsigned int>()->required())
 		("realm.max_slots", opts::value<unsigned int>()->required())
+		("realm.max_sockets", opts::value<unsigned int>()->required())
 		("realm.reserved_slots", opts::value<unsigned int>()->required())
 		("realm.auth_timeout", opts::value<unsigned int>()->required())
 		("realm.char_list_timeout", opts::value<unsigned int>()->required())

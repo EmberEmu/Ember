@@ -10,6 +10,7 @@
 
 #include "SessionManager.h"
 #include "ClientBuilder.h"
+#include "ConfigStore.h"
 #include "SocketType.h"
 #include <logger/LoggerFwd.h>
 #include <shared/ClientIdent.h>
@@ -35,6 +36,7 @@ class NetworkListener final {
 	thread::ServicePool& pool_;
 	log::Logger& logger_;
 	std::atomic_bool stopped_;
+	const ConfigStore& cfg_store_;
 
 	void accept_connection();
 	void dispatch_socket();
@@ -42,7 +44,7 @@ class NetworkListener final {
 public:
 	NetworkListener(std::string_view interface, std::uint16_t port, bool tcp_no_delay,
 	                thread::ServicePool& pool, ClientBuilder builder, SessionManager& sessions,
-	                log::Logger& logger);
+	                const ConfigStore& cfg_store, log::Logger& logger);
 
 	~NetworkListener();
 

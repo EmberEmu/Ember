@@ -24,6 +24,8 @@ struct ClientDeleter final {
 		, ioc(ioc) {}
 
 	void operator()(Client* ptr) const {
+		Client::free_client_slot();
+
 		boost::asio::post(ioc, [alloc = allocator, ptr]() mutable {
 			alloc.deallocate(ptr);
 		});

@@ -98,7 +98,6 @@ void Client::stop() {
 		return;
 	}
 
-	--curr_clients_;
 	dispatcher_.remove_client(this);
 	handler_.stop();
 	connection_.stop();
@@ -106,9 +105,14 @@ void Client::stop() {
 
 void Client::update_peak() {
 	// relaxed load is friendlier to cache than immediately trying to exchange
-	const auto current = ++curr_clients_;
+	auto current = curr_clients_.load(std::memory_order_relaxed);
 	auto peak = peak_clients_.load(std::memory_order_relaxed);
-	while(current > peak && !peak_clients_.compare_exchange_weak(peak, current, std::memory_order_relaxed));
+
+	while(current > peak) {
+		if(peak_clients_.compare_exchange_weak(peak, current, std::memory_order_relaxed)) {
+			return;
+		}
+	}
 }
 
 std::size_t Client::curr_clients() {
@@ -117,6 +121,22 @@ std::size_t Client::curr_clients() {
 
 std::size_t Client::peak_clients() {
 	return peak_clients_;
+}
+
+void Client::free_client_slot() {
+	--curr_clients_;
+}
+
+bool Client::reserve_client_slot(const std::size_t limit) {
+	const auto old_count = curr_clients_.fetch_add(1, std::memory_order_acquire);
+
+	// roll the counter back
+	if(old_count >= limit) {
+		curr_clients_.fetch_sub(1, std::memory_order_release);
+		return false;
+	}
+
+	return true;
 }
 
 bool Client::stopped() const {

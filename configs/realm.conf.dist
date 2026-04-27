@@ -2,7 +2,8 @@
 
 [realm]
 id = 1                   # ID of this realm in the database
-max_slots = 5000         # Max number of clients to allow before queueing
+max_slots = 10000        # Max number of game clients to allow before placing them in the queue
+max_sockets = -1         # Max number of sockets to allow (exceeding this limit will reject new connections)
 reserved_slots = 5       # Slots reserved for admins
 auth_timeout = 30        # How long authentication can take before client kick - queue exempt (secs)
 char_list_timeout = 900  # How long the client can idle on the character list before kick (secs) - 0 = infinite
