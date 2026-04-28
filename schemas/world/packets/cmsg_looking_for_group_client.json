@@ -1,0 +1,5 @@
+{
+	"name": "LookingForGroupClient",
+	"opcode": "cmsg_looking_for_group_client",
+	"direction": "client"
+}

@@ -1,0 +1,8 @@
+{
+	"name": "StopMirrorTimer",
+	"opcode": "smsg_stop_mirror_timer",
+	"direction": "server",
+	"fields": [
+		{ "name": "timer", "type": "TimerType" }
+	]
+}

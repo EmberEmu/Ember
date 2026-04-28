@@ -1,0 +1,8 @@
+{
+	"name": "AutostoreLootItem",
+	"opcode": "cmsg_autostore_loot_item",
+	"direction": "client",
+	"fields": [
+		{ "name": "item_slot", "type": "uint8" }
+	]
+}

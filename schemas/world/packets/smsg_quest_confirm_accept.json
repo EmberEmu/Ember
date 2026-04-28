@@ -1,0 +1,10 @@
+{
+	"name": "QuestConfirmAccept",
+	"opcode": "smsg_quest_confirm_accept",
+	"direction": "server",
+	"fields": [
+		{ "name": "quest_id",    "type": "uint32" },
+		{ "name": "quest_title", "type": "CString" },
+		{ "name": "guid",        "type": "uint64" }
+	]
+}

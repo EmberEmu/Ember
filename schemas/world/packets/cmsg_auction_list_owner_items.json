@@ -1,0 +1,9 @@
+{
+	"name": "AuctionListOwnerItems",
+	"opcode": "cmsg_auction_list_owner_items",
+	"direction": "client",
+	"fields": [
+		{ "name": "auctioneer", "type": "uint64" },
+		{ "name": "list_from",  "type": "uint32" }
+	]
+}

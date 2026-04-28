@@ -1,0 +1,22 @@
+{
+	"name": "GameobjectQueryResponse",
+	"opcode": "smsg_gameobject_query_response",
+	"direction": "server",
+	"fields": [
+		{ "name": "entry_id", "type": "uint32" },
+		{
+			"type": "group",
+			"when": { "op": "stream_not_empty" },
+			"fields": [
+				{ "name": "info_type",  "type": "uint32" },
+				{ "name": "display_id", "type": "uint32" },
+				{ "name": "name1",      "type": "CString" },
+				{ "name": "name2",      "type": "CString" },
+				{ "name": "name3",      "type": "CString" },
+				{ "name": "name4",      "type": "CString" },
+				{ "name": "name5",      "type": "CString" },
+				{ "name": "raw_data",   "type": "uint32", "array": {"size": 6} }
+			]
+		}
+	]
+}

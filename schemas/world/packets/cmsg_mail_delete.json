@@ -1,0 +1,9 @@
+{
+	"name": "MailDelete",
+	"opcode": "cmsg_mail_delete",
+	"direction": "client",
+	"fields": [
+		{ "name": "mailbox_id", "type": "uint64" },
+		{ "name": "mail_id",    "type": "uint32" }
+	]
+}

@@ -1,0 +1,8 @@
+{
+	"name": "DuelCountdown",
+	"opcode": "smsg_duel_countdown",
+	"direction": "server",
+	"fields": [
+		{ "name": "time", "type": "uint32" }
+	]
+}

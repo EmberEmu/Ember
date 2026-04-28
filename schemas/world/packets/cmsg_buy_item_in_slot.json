@@ -1,0 +1,12 @@
+{
+	"name": "BuyItemInSlot",
+	"opcode": "cmsg_buy_item_in_slot",
+	"direction": "client",
+	"fields": [
+		{ "name": "vendor",   "type": "uint64" },
+		{ "name": "item",     "type": "uint32" },
+		{ "name": "bag",      "type": "uint64" },
+		{ "name": "bag_slot", "type": "uint8" },
+		{ "name": "amount",   "type": "uint8" }
+	]
+}

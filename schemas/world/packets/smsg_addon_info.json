@@ -1,0 +1,8 @@
+{
+	"name": "AddonInfo",
+	"opcode": "smsg_addon_info",
+	"direction": "server",
+	"fields": [
+		{ "name": "addons", "type": "Addon", "array": {"until_end": true} }
+	]
+}

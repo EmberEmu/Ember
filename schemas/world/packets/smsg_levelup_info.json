@@ -1,0 +1,19 @@
+{
+	"name": "LevelupInfo",
+	"opcode": "smsg_levelup_info",
+	"direction": "server",
+	"fields": [
+		{ "name": "new_level", "type": "uint32" },
+		{ "name": "health",    "type": "uint32" },
+		{ "name": "mana",      "type": "uint32" },
+		{ "name": "rage",      "type": "uint32" },
+		{ "name": "focus",     "type": "uint32" },
+		{ "name": "energy",    "type": "uint32" },
+		{ "name": "happiness", "type": "uint32" },
+		{ "name": "strength",  "type": "uint32" },
+		{ "name": "agility",   "type": "uint32" },
+		{ "name": "stamina",   "type": "uint32" },
+		{ "name": "intellect", "type": "uint32" },
+		{ "name": "spirit",    "type": "uint32" }
+	]
+}

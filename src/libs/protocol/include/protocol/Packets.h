@@ -35,7 +35,6 @@
 #include <protocol/server/Weather.h>
 #include <protocol/server/AccountDataTimes.h>
 #include <protocol/server/GenericMove.h>
-#include <protocol/server/MessageChat.h>
 #include <protocol/server/TriggerCinematic.h>
 #include <protocol/server/StandStateUpdate.h>
 #include <protocol/server/Notification.h>
@@ -86,7 +85,6 @@ using smsg_weather                    = ServerPacket<ServerOpcode::smsg_weather,
 using smsg_account_data_times         = ServerPacket<ServerOpcode::smsg_account_data_times,         server::AccountDataTimes>;
 using smsg_channel_notify             = ServerPacket<ServerOpcode::smsg_channel_notify,             server::ChannelNotify>;
 using msg_move_set_facing_s           = ServerPacket<ServerOpcode::msg_move_set_facing,             server::GenericMove>;
-using smsg_messagechat                = ServerPacket<ServerOpcode::smsg_messagechat,                server::MessageChat>;
 using smsg_trigger_cinematic          = ServerPacket<ServerOpcode::smsg_trigger_cinematic,          server::TriggerCinematic>;
 using smsg_standstate_update          = ServerPacket<ServerOpcode::smsg_standstate_update,          server::StandStateUpdate>;
 using smsg_notification               = ServerPacket<ServerOpcode::smsg_notification,               server::Notification>;

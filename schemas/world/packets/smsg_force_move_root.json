@@ -1,0 +1,9 @@
+{
+	"name": "ForceMoveRoot",
+	"opcode": "smsg_force_move_root",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid",    "type": "uint64" },
+		{ "name": "counter", "type": "uint32" }
+	]
+}

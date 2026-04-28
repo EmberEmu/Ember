@@ -1,0 +1,27 @@
+{
+	"name": "Messagechat",
+	"opcode": "cmsg_messagechat",
+	"direction": "client",
+	"fields": [
+		{ "name": "chat_type", "type": "uint32" },
+		{ "name": "language",  "type": "Language" },
+		{
+			"type": "if_chain",
+			"branches": [
+				{
+					"when": { "op": "eq", "field": "chat_type", "value": 6 },
+					"fields": [
+						{ "name": "target_player", "type": "CString" }
+					]
+				},
+				{
+					"when": { "op": "eq", "field": "chat_type", "value": 14 },
+					"fields": [
+						{ "name": "channel", "type": "CString" }
+					]
+				}
+			]
+		},
+		{ "name": "message", "type": "CString" }
+	]
+}

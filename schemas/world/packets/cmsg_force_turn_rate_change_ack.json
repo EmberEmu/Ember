@@ -1,0 +1,11 @@
+{
+	"name": "ForceTurnRateChangeAck",
+	"opcode": "cmsg_force_turn_rate_change_ack",
+	"direction": "client",
+	"fields": [
+		{ "name": "guid",      "type": "uint64" },
+		{ "name": "counter",   "type": "uint32" },
+		{ "name": "info",      "type": "MovementInfo" },
+		{ "name": "new_speed", "type": "float" }
+	]
+}

@@ -1,0 +1,8 @@
+{
+	"name": "SplineMoveFeatherFall",
+	"opcode": "smsg_spline_move_feather_fall",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid", "type": "PackedGuid" }
+	]
+}

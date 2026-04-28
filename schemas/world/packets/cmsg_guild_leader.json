@@ -1,0 +1,8 @@
+{
+	"name": "GuildLeader",
+	"opcode": "cmsg_guild_leader",
+	"direction": "client",
+	"fields": [
+		{ "name": "new_guild_leader_name", "type": "CString" }
+	]
+}

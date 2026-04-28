@@ -1,0 +1,8 @@
+{
+	"name": "BuyStableSlot",
+	"opcode": "cmsg_buy_stable_slot",
+	"direction": "client",
+	"fields": [
+		{ "name": "npc", "type": "uint64" }
+	]
+}

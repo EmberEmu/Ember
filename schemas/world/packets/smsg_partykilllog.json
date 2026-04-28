@@ -1,0 +1,9 @@
+{
+	"name": "Partykilllog",
+	"opcode": "smsg_partykilllog",
+	"direction": "server",
+	"fields": [
+		{ "name": "player_with_killing_blow", "type": "uint64" },
+		{ "name": "victim",                   "type": "uint64" }
+	]
+}

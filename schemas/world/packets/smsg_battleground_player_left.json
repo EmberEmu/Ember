@@ -1,0 +1,8 @@
+{
+	"name": "BattlegroundPlayerLeft",
+	"opcode": "smsg_battleground_player_left",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid", "type": "uint64" }
+	]
+}

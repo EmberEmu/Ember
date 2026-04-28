@@ -1,0 +1,5 @@
+{
+	"name": "ChatWrongFaction",
+	"opcode": "smsg_chat_wrong_faction",
+	"direction": "server"
+}

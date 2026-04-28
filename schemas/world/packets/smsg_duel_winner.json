@@ -1,0 +1,10 @@
+{
+	"name": "DuelWinner",
+	"opcode": "smsg_duel_winner",
+	"direction": "server",
+	"fields": [
+		{ "name": "reason",         "type": "DuelWinnerReason" },
+		{ "name": "opponent_name",  "type": "CString" },
+		{ "name": "initiator_name", "type": "CString" }
+	]
+}

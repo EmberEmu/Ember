@@ -1,0 +1,8 @@
+{
+	"name": "BankerActivate",
+	"opcode": "cmsg_banker_activate",
+	"direction": "client",
+	"fields": [
+		{ "name": "guid", "type": "uint64" }
+	]
+}

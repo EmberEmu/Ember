@@ -1,0 +1,8 @@
+{
+	"name": "StandstateUpdate",
+	"opcode": "smsg_standstate_update",
+	"direction": "server",
+	"fields": [
+		{ "name": "state", "type": "UnitStandState" }
+	]
+}

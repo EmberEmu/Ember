@@ -1,0 +1,8 @@
+{
+	"name": "TutorialFlag",
+	"opcode": "cmsg_tutorial_flag",
+	"direction": "client",
+	"fields": [
+		{ "name": "tutorial_flag", "type": "uint32" }
+	]
+}

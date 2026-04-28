@@ -1,0 +1,13 @@
+{
+	"name": "QuestgiverQuestList",
+	"opcode": "smsg_questgiver_quest_list",
+	"direction": "server",
+	"fields": [
+		{ "name": "npc",               "type": "uint64" },
+		{ "name": "title",             "type": "CString" },
+		{ "name": "emote_delay",       "type": "uint32" },
+		{ "name": "emote",             "type": "uint32" },
+		{ "name": "amount_of_entries", "type": "uint8" },
+		{ "name": "quest_items",       "type": "QuestItem", "array": {"count_field": "amount_of_entries"} }
+	]
+}

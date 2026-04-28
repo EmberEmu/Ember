@@ -1,0 +1,9 @@
+{
+	"name": "RaidInstanceInfo",
+	"opcode": "smsg_raid_instance_info",
+	"direction": "server",
+	"fields": [
+		{ "name": "amount_of_raid_infos", "type": "uint32" },
+		{ "name": "raid_infos",           "type": "RaidInfo", "array": {"count_field": "amount_of_raid_infos"} }
+	]
+}

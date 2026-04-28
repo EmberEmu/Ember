@@ -1,0 +1,9 @@
+{
+	"name": "CreatureQuery",
+	"opcode": "cmsg_creature_query",
+	"direction": "client",
+	"fields": [
+		{ "name": "creature", "type": "uint32" },
+		{ "name": "guid",     "type": "uint64" }
+	]
+}

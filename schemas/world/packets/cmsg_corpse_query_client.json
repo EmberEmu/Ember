@@ -1,0 +1,5 @@
+{
+	"name": "CorpseQueryClient",
+	"opcode": "cmsg_corpse_query_client",
+	"direction": "client"
+}

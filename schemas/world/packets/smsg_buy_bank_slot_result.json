@@ -1,0 +1,8 @@
+{
+	"name": "BuyBankSlotResult",
+	"opcode": "smsg_buy_bank_slot_result",
+	"direction": "server",
+	"fields": [
+		{ "name": "result", "type": "BuyBankSlotResult" }
+	]
+}

@@ -24,4 +24,11 @@ extern const std::unordered_map<std::string_view, std::pair<std::string_view, Ty
 bool is_primitive(std::string_view type);
 bool is_integral(std::string_view type);
 
+// `enum` and `enum_class` behave identically in the type system — both are
+// named integers with a known member set. They only differ in the keyword
+// the generator emits (`enum` vs `enum class`).
+inline bool is_enum_kind(std::string_view kind) {
+	return kind == "enum" || kind == "enum_class";
+}
+
 } // protogen, ember

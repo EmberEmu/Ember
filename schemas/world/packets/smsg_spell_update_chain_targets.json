@@ -1,0 +1,11 @@
+{
+	"name": "SpellUpdateChainTargets",
+	"opcode": "smsg_spell_update_chain_targets",
+	"direction": "server",
+	"fields": [
+		{ "name": "caster",            "type": "uint64" },
+		{ "name": "spell",             "type": "uint32" },
+		{ "name": "amount_of_targets", "type": "uint32" },
+		{ "name": "targets",           "type": "uint64", "array": {"count_field": "amount_of_targets"} }
+	]
+}

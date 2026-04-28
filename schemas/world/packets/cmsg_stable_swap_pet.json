@@ -1,0 +1,9 @@
+{
+	"name": "StableSwapPet",
+	"opcode": "cmsg_stable_swap_pet",
+	"direction": "client",
+	"fields": [
+		{ "name": "npc",      "type": "uint64" },
+		{ "name": "pet_slot", "type": "uint32" }
+	]
+}

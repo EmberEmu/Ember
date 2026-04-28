@@ -1,0 +1,8 @@
+{
+	"name": "PageTextQuery",
+	"opcode": "cmsg_page_text_query",
+	"direction": "client",
+	"fields": [
+		{ "name": "page_id", "type": "uint32" }
+	]
+}

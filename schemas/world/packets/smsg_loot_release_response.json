@@ -1,0 +1,9 @@
+{
+	"name": "LootReleaseResponse",
+	"opcode": "smsg_loot_release_response",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid",     "type": "uint64" },
+		{ "name": "unknown1", "type": "uint8" }
+	]
+}

@@ -1,0 +1,9 @@
+{
+	"name": "SwapInvItem",
+	"opcode": "cmsg_swap_inv_item",
+	"direction": "client",
+	"fields": [
+		{ "name": "source_slot",      "type": "ItemSlot" },
+		{ "name": "destination_slot", "type": "ItemSlot" }
+	]
+}

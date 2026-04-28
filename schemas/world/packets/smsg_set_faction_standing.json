@@ -1,0 +1,9 @@
+{
+	"name": "SetFactionStanding",
+	"opcode": "smsg_set_faction_standing",
+	"direction": "server",
+	"fields": [
+		{ "name": "amount_of_faction_standings", "type": "uint32" },
+		{ "name": "faction_standings",           "type": "FactionStanding", "array": {"count_field": "amount_of_faction_standings"} }
+	]
+}

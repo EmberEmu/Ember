@@ -1,0 +1,9 @@
+{
+	"name": "AutoequipItemSlot",
+	"opcode": "cmsg_autoequip_item_slot",
+	"direction": "client",
+	"fields": [
+		{ "name": "guid",             "type": "uint64" },
+		{ "name": "destination_slot", "type": "uint8" }
+	]
+}

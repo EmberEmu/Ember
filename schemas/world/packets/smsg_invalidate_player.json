@@ -1,0 +1,8 @@
+{
+	"name": "InvalidatePlayer",
+	"opcode": "smsg_invalidate_player",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid", "type": "uint64" }
+	]
+}

@@ -1,0 +1,13 @@
+{
+	"name": "StartMirrorTimer",
+	"opcode": "smsg_start_mirror_timer",
+	"direction": "server",
+	"fields": [
+		{ "name": "timer",          "type": "TimerType" },
+		{ "name": "time_remaining", "type": "uint32" },
+		{ "name": "duration",       "type": "uint32" },
+		{ "name": "scale",          "type": "uint32" },
+		{ "name": "is_frozen",      "type": "uint8" },
+		{ "name": "id",             "type": "uint32" }
+	]
+}

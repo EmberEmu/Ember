@@ -1,0 +1,8 @@
+{
+	"name": "SummonResponse",
+	"opcode": "cmsg_summon_response",
+	"direction": "client",
+	"fields": [
+		{ "name": "summoner", "type": "uint64" }
+	]
+}

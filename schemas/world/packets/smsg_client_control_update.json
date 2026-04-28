@@ -1,0 +1,9 @@
+{
+	"name": "ClientControlUpdate",
+	"opcode": "smsg_client_control_update",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid",           "type": "PackedGuid" },
+		{ "name": "allow_movement", "type": "uint8" }
+	]
+}

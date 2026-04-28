@@ -1,0 +1,8 @@
+{
+	"name": "Pushquesttoparty",
+	"opcode": "cmsg_pushquesttoparty",
+	"direction": "client",
+	"fields": [
+		{ "name": "quest_id", "type": "uint32" }
+	]
+}

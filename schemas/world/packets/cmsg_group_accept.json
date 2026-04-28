@@ -1,0 +1,5 @@
+{
+	"name": "GroupAccept",
+	"opcode": "cmsg_group_accept",
+	"direction": "client"
+}

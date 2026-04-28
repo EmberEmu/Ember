@@ -1,0 +1,12 @@
+{
+	"name": "TrainerList",
+	"opcode": "smsg_trainer_list",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid",             "type": "uint64" },
+		{ "name": "trainer_type",     "type": "uint32" },
+		{ "name": "amount_of_spells", "type": "uint32" },
+		{ "name": "spells",           "type": "TrainerSpell", "array": {"count_field": "amount_of_spells"} },
+		{ "name": "greeting",         "type": "CString" }
+	]
+}

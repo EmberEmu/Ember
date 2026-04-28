@@ -1,0 +1,9 @@
+{
+	"name": "SupercededSpell",
+	"opcode": "smsg_superceded_spell",
+	"direction": "server",
+	"fields": [
+		{ "name": "new_spell_id", "type": "uint16" },
+		{ "name": "old_spell_id", "type": "uint16" }
+	]
+}

@@ -1,0 +1,9 @@
+{
+	"name": "UpdateAuraDuration",
+	"opcode": "smsg_update_aura_duration",
+	"direction": "server",
+	"fields": [
+		{ "name": "aura_slot",     "type": "uint8" },
+		{ "name": "aura_duration", "type": "uint32" }
+	]
+}

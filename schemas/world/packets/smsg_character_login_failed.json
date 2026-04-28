@@ -1,0 +1,8 @@
+{
+	"name": "CharacterLoginFailed",
+	"opcode": "smsg_character_login_failed",
+	"direction": "server",
+	"fields": [
+		{ "name": "result", "type": "Result" }
+	]
+}

@@ -1,0 +1,16 @@
+{
+	"name": "TransferPending",
+	"opcode": "smsg_transfer_pending",
+	"direction": "server",
+	"fields": [
+		{ "name": "map", "type": "Map" },
+		{
+			"type": "group",
+			"when": { "op": "stream_not_empty" },
+			"fields": [
+				{ "name": "transport",     "type": "uint32" },
+				{ "name": "transport_map", "type": "Map" }
+			]
+		}
+	]
+}

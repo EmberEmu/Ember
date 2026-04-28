@@ -1,0 +1,9 @@
+{
+	"name": "GuildSetOfficerNote",
+	"opcode": "cmsg_guild_set_officer_note",
+	"direction": "client",
+	"fields": [
+		{ "name": "player_name", "type": "CString" },
+		{ "name": "note",        "type": "CString" }
+	]
+}

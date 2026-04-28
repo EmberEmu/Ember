@@ -1,0 +1,25 @@
+{
+	"name": "PetitionBuy",
+	"opcode": "cmsg_petition_buy",
+	"direction": "client",
+	"fields": [
+		{ "name": "npc",       "type": "uint64" },
+		{ "name": "unknown1",  "type": "uint32" },
+		{ "name": "unknown2",  "type": "uint64" },
+		{ "name": "name",      "type": "CString" },
+		{ "name": "unknown3",  "type": "uint32" },
+		{ "name": "unknown4",  "type": "uint32" },
+		{ "name": "unknown5",  "type": "uint32" },
+		{ "name": "unknown6",  "type": "uint32" },
+		{ "name": "unknown7",  "type": "uint32" },
+		{ "name": "unknown8",  "type": "uint32" },
+		{ "name": "unknown9",  "type": "uint32" },
+		{ "name": "unknown10", "type": "uint32" },
+		{ "name": "unknown11", "type": "uint32" },
+		{ "name": "unknown12", "type": "uint32" },
+		{ "name": "unknown13", "type": "uint16" },
+		{ "name": "unknown14", "type": "uint8" },
+		{ "name": "index",     "type": "uint32" },
+		{ "name": "unknown15", "type": "uint32" }
+	]
+}

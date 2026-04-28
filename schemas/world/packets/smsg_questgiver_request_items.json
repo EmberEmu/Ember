@@ -1,0 +1,21 @@
+{
+	"name": "QuestgiverRequestItems",
+	"opcode": "smsg_questgiver_request_items",
+	"direction": "server",
+	"fields": [
+		{ "name": "npc",                      "type": "uint64" },
+		{ "name": "quest_id",                 "type": "uint32" },
+		{ "name": "title",                    "type": "CString" },
+		{ "name": "request_items_text",       "type": "CString" },
+		{ "name": "emote_delay",              "type": "uint32" },
+		{ "name": "emote",                    "type": "uint32" },
+		{ "name": "auto_finish",              "type": "uint32" },
+		{ "name": "required_money",           "type": "uint32" },
+		{ "name": "amount_of_required_items", "type": "uint32" },
+		{ "name": "required_items",           "type": "QuestItemRequirement", "array": {"count_field": "amount_of_required_items"} },
+		{ "name": "unknown1",                 "type": "uint32" },
+		{ "name": "completable",              "type": "QuestCompletable" },
+		{ "name": "flags2",                   "type": "uint32" },
+		{ "name": "flags3",                   "type": "uint32" }
+	]
+}

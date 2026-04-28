@@ -1,0 +1,10 @@
+{
+	"name": "GuildEvent",
+	"opcode": "smsg_guild_event",
+	"direction": "server",
+	"fields": [
+		{ "name": "event",              "type": "GuildEvent" },
+		{ "name": "amount_of_events",   "type": "uint8" },
+		{ "name": "event_descriptions", "type": "CString", "array": {"count_field": "amount_of_events"} }
+	]
+}

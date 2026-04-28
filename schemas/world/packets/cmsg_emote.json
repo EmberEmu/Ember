@@ -1,0 +1,8 @@
+{
+	"name": "Emote",
+	"opcode": "cmsg_emote",
+	"direction": "client",
+	"fields": [
+		{ "name": "emote", "type": "Emote" }
+	]
+}

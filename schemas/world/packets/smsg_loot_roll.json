@@ -1,0 +1,15 @@
+{
+	"name": "LootRoll",
+	"opcode": "smsg_loot_roll",
+	"direction": "server",
+	"fields": [
+		{ "name": "creature",                "type": "uint64" },
+		{ "name": "loot_slot",               "type": "uint32" },
+		{ "name": "player",                  "type": "uint64" },
+		{ "name": "item",                    "type": "uint32" },
+		{ "name": "item_random_suffix",      "type": "uint32" },
+		{ "name": "item_random_property_id", "type": "uint32" },
+		{ "name": "roll_number",             "type": "uint8" },
+		{ "name": "vote",                    "type": "RollVote" }
+	]
+}

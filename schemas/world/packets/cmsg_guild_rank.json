@@ -1,0 +1,10 @@
+{
+	"name": "GuildRank",
+	"opcode": "cmsg_guild_rank",
+	"direction": "client",
+	"fields": [
+		{ "name": "rank_id",   "type": "uint32" },
+		{ "name": "rights",    "type": "uint32" },
+		{ "name": "rank_name", "type": "CString" }
+	]
+}

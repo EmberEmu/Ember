@@ -1,0 +1,8 @@
+{
+	"name": "MoveFallReset",
+	"opcode": "cmsg_move_fall_reset",
+	"direction": "client",
+	"fields": [
+		{ "name": "info", "type": "MovementInfo" }
+	]
+}

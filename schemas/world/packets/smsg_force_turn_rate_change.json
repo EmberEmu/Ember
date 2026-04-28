@@ -1,0 +1,10 @@
+{
+	"name": "ForceTurnRateChange",
+	"opcode": "smsg_force_turn_rate_change",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid",       "type": "PackedGuid" },
+		{ "name": "move_event", "type": "uint32" },
+		{ "name": "speed",      "type": "float" }
+	]
+}

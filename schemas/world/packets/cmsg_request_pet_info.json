@@ -1,0 +1,5 @@
+{
+	"name": "RequestPetInfo",
+	"opcode": "cmsg_request_pet_info",
+	"direction": "client"
+}

@@ -1,0 +1,8 @@
+{
+	"name": "SplineMoveLandWalk",
+	"opcode": "smsg_spline_move_land_walk",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid", "type": "PackedGuid" }
+	]
+}

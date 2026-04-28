@@ -1,0 +1,5 @@
+{
+	"name": "PvpLogDataClient",
+	"opcode": "cmsg_pvp_log_data_client",
+	"direction": "client"
+}

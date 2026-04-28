@@ -1,0 +1,9 @@
+{
+	"name": "MoveFeatherFall",
+	"opcode": "smsg_move_feather_fall",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid",    "type": "PackedGuid" },
+		{ "name": "counter", "type": "uint32" }
+	]
+}

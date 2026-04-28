@@ -1,0 +1,11 @@
+{
+	"name": "Procresist",
+	"opcode": "smsg_procresist",
+	"direction": "server",
+	"fields": [
+		{ "name": "caster",     "type": "uint64" },
+		{ "name": "target",     "type": "uint64" },
+		{ "name": "id",         "type": "uint32" },
+		{ "name": "log_format", "type": "LogFormat" }
+	]
+}

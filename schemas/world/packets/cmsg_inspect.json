@@ -1,0 +1,8 @@
+{
+	"name": "Inspect",
+	"opcode": "cmsg_inspect",
+	"direction": "client",
+	"fields": [
+		{ "name": "guid", "type": "uint64" }
+	]
+}

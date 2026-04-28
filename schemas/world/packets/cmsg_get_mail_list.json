@@ -1,0 +1,8 @@
+{
+	"name": "GetMailList",
+	"opcode": "cmsg_get_mail_list",
+	"direction": "client",
+	"fields": [
+		{ "name": "mailbox", "type": "uint64" }
+	]
+}

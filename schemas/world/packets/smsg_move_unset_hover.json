@@ -1,0 +1,9 @@
+{
+	"name": "MoveUnsetHover",
+	"opcode": "smsg_move_unset_hover",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid",    "type": "PackedGuid" },
+		{ "name": "counter", "type": "uint32" }
+	]
+}

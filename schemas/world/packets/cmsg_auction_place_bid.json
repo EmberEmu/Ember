@@ -1,0 +1,10 @@
+{
+	"name": "AuctionPlaceBid",
+	"opcode": "cmsg_auction_place_bid",
+	"direction": "client",
+	"fields": [
+		{ "name": "auctioneer", "type": "uint64" },
+		{ "name": "auction_id", "type": "uint32" },
+		{ "name": "price",      "type": "uint32" }
+	]
+}

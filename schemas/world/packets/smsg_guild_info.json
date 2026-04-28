@@ -1,0 +1,13 @@
+{
+	"name": "GuildInfo",
+	"opcode": "smsg_guild_info",
+	"direction": "server",
+	"fields": [
+		{ "name": "guild_name",                    "type": "CString" },
+		{ "name": "created_day",                   "type": "uint32" },
+		{ "name": "created_month",                 "type": "uint32" },
+		{ "name": "created_year",                  "type": "uint32" },
+		{ "name": "amount_of_characters_in_guild", "type": "uint32" },
+		{ "name": "amount_of_accounts_in_guild",   "type": "uint32" }
+	]
+}

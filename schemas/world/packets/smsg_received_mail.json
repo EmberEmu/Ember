@@ -1,0 +1,8 @@
+{
+	"name": "ReceivedMail",
+	"opcode": "smsg_received_mail",
+	"direction": "server",
+	"fields": [
+		{ "name": "unknown1", "type": "uint32" }
+	]
+}

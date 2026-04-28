@@ -1,0 +1,9 @@
+{
+	"name": "LearnTalent",
+	"opcode": "cmsg_learn_talent",
+	"direction": "client",
+	"fields": [
+		{ "name": "talent",         "type": "Talent" },
+		{ "name": "requested_rank", "type": "uint32" }
+	]
+}

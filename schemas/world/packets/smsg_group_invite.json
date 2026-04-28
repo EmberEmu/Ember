@@ -1,0 +1,8 @@
+{
+	"name": "GroupInvite",
+	"opcode": "smsg_group_invite",
+	"direction": "server",
+	"fields": [
+		{ "name": "name", "type": "CString" }
+	]
+}

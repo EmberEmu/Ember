@@ -1,0 +1,8 @@
+{
+	"name": "CharDelete",
+	"opcode": "smsg_char_delete",
+	"direction": "server",
+	"fields": [
+		{ "name": "result", "type": "Result" }
+	]
+}

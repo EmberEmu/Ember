@@ -1,0 +1,9 @@
+{
+	"name": "PetUnlearnConfirm",
+	"opcode": "smsg_pet_unlearn_confirm",
+	"direction": "server",
+	"fields": [
+		{ "name": "pet",               "type": "uint64" },
+		{ "name": "talent_reset_cost", "type": "uint32" }
+	]
+}

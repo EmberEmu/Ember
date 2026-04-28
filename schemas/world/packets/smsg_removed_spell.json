@@ -1,0 +1,8 @@
+{
+	"name": "RemovedSpell",
+	"opcode": "smsg_removed_spell",
+	"direction": "server",
+	"fields": [
+		{ "name": "spell", "type": "uint16" }
+	]
+}

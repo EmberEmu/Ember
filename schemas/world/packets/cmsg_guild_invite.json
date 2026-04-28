@@ -1,0 +1,8 @@
+{
+	"name": "GuildInvite",
+	"opcode": "cmsg_guild_invite",
+	"direction": "client",
+	"fields": [
+		{ "name": "invited_player", "type": "CString" }
+	]
+}

@@ -1,0 +1,17 @@
+{
+	"name": "PvpLogDataServer",
+	"opcode": "smsg_pvp_log_data_server",
+	"direction": "server",
+	"fields": [
+		{ "name": "status", "type": "BattlegroundEndStatus" },
+		{
+			"type": "group",
+			"when": { "op": "eq", "field": "status", "value": "ended" },
+			"fields": [
+				{ "name": "winner", "type": "BattlegroundWinner" }
+			]
+		},
+		{ "name": "amount_of_players", "type": "uint32" },
+		{ "name": "players",           "type": "BattlegroundPlayer", "array": {"count_field": "amount_of_players"} }
+	]
+}

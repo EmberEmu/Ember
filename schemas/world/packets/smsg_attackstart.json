@@ -1,0 +1,9 @@
+{
+	"name": "Attackstart",
+	"opcode": "smsg_attackstart",
+	"direction": "server",
+	"fields": [
+		{ "name": "attacker", "type": "uint64" },
+		{ "name": "victim",   "type": "uint64" }
+	]
+}

@@ -1,0 +1,11 @@
+{
+	"name": "AuctionListBidderItems",
+	"opcode": "cmsg_auction_list_bidder_items",
+	"direction": "client",
+	"fields": [
+		{ "name": "auctioneer",             "type": "uint64" },
+		{ "name": "start_from_page",        "type": "uint32" },
+		{ "name": "amount_of_outbid_items", "type": "uint32" },
+		{ "name": "outbid_item_ids",        "type": "uint32", "array": {"count_field": "amount_of_outbid_items"} }
+	]
+}

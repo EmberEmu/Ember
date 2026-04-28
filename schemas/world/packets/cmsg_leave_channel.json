@@ -1,0 +1,8 @@
+{
+	"name": "LeaveChannel",
+	"opcode": "cmsg_leave_channel",
+	"direction": "client",
+	"fields": [
+		{ "name": "channel_name", "type": "CString" }
+	]
+}

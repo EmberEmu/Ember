@@ -1,0 +1,9 @@
+{
+	"name": "PetNameQuery",
+	"opcode": "cmsg_pet_name_query",
+	"direction": "client",
+	"fields": [
+		{ "name": "pet_number", "type": "uint32" },
+		{ "name": "guid",       "type": "uint64" }
+	]
+}

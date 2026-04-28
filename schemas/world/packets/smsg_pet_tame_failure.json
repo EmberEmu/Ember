@@ -1,0 +1,8 @@
+{
+	"name": "PetTameFailure",
+	"opcode": "smsg_pet_tame_failure",
+	"direction": "server",
+	"fields": [
+		{ "name": "reason", "type": "PetTameFailureReason" }
+	]
+}

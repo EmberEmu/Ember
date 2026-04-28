@@ -1,0 +1,8 @@
+{
+	"name": "GameobjUse",
+	"opcode": "cmsg_gameobj_use",
+	"direction": "client",
+	"fields": [
+		{ "name": "guid", "type": "uint64" }
+	]
+}

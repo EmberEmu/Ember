@@ -1,0 +1,8 @@
+{
+	"name": "MoveFallLandClient",
+	"opcode": "cmsg_move_fall_land_client",
+	"direction": "client",
+	"fields": [
+		{ "name": "info", "type": "MovementInfo" }
+	]
+}

@@ -1,0 +1,8 @@
+{
+	"name": "QuestupdateFailed",
+	"opcode": "smsg_questupdate_failed",
+	"direction": "server",
+	"fields": [
+		{ "name": "quest_id", "type": "uint32" }
+	]
+}

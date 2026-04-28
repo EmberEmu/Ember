@@ -1,0 +1,13 @@
+{
+	"name": "GossipMessage",
+	"opcode": "smsg_gossip_message",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid",                   "type": "uint64" },
+		{ "name": "title_text_id",          "type": "uint32" },
+		{ "name": "amount_of_gossip_items", "type": "uint32" },
+		{ "name": "gossips",                "type": "GossipItem", "array": {"count_field": "amount_of_gossip_items"} },
+		{ "name": "amount_of_quests",       "type": "uint32" },
+		{ "name": "quests",                 "type": "QuestItem", "array": {"count_field": "amount_of_quests"} }
+	]
+}

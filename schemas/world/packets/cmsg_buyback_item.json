@@ -1,0 +1,9 @@
+{
+	"name": "BuybackItem",
+	"opcode": "cmsg_buyback_item",
+	"direction": "client",
+	"fields": [
+		{ "name": "guid", "type": "uint64" },
+		{ "name": "slot", "type": "BuybackSlot" }
+	]
+}

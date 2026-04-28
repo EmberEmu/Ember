@@ -1,0 +1,12 @@
+{
+	"name": "BattlefieldList",
+	"opcode": "smsg_battlefield_list",
+	"direction": "server",
+	"fields": [
+		{ "name": "battlemaster",            "type": "uint64" },
+		{ "name": "map",                     "type": "Map" },
+		{ "name": "bracket",                 "type": "BattlegroundBracket" },
+		{ "name": "number_of_battlegrounds", "type": "uint32" },
+		{ "name": "battlegrounds",           "type": "uint32", "array": {"count_field": "number_of_battlegrounds"} }
+	]
+}

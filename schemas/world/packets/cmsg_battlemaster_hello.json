@@ -1,0 +1,8 @@
+{
+	"name": "BattlemasterHello",
+	"opcode": "cmsg_battlemaster_hello",
+	"direction": "client",
+	"fields": [
+		{ "name": "guid", "type": "uint64" }
+	]
+}

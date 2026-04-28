@@ -607,7 +607,7 @@ TEST_F(Protogen, RejectsExternalInCondition) {
 	ASSERT_ANY_THROW(validate_message_fields(fields, reg, "test"));
 }
 
-TEST_F(Protogen, RejectsFixedSizeArrayOfExternal) {
+TEST_F(Protogen, AcceptsFixedSizeArrayOfExternal) {
 	auto types_doc = jsoncons::json::parse(R"({
 		"types": {
 			"Guid": {
@@ -623,7 +623,7 @@ TEST_F(Protogen, RejectsFixedSizeArrayOfExternal) {
 		{ "name": "ids", "type": "Guid", "array": { "size": 4 } }
 	])");
 
-	ASSERT_ANY_THROW(validate_message_fields(fields, reg, "test"));
+	EXPECT_NO_THROW(validate_message_fields(fields, reg, "test"));
 }
 
 TEST_F(Protogen, StructMemberOfExternalPullsItsInclude) {
@@ -771,12 +771,12 @@ TEST_F(Protogen, RejectsArrayWithUnknownCountField) {
 	ASSERT_ANY_THROW(validate_message_fields(msg["fields"], reg, "test"));
 }
 
-TEST_F(Protogen, RejectsFixedSizeArrayOfStruct) {
+TEST_F(Protogen, AcceptsFixedSizeArrayOfStruct) {
 	auto msg = parse_fields(R"([
 		{ "name": "positions", "type": "Vector3", "array": { "size": 4 } }
 	])");
 
-	ASSERT_ANY_THROW(validate_message_fields(msg["fields"], reg, "test"));
+	EXPECT_NO_THROW(validate_message_fields(msg["fields"], reg, "test"));
 }
 
 TEST_F(Protogen, AcceptsFixedSizeArrayOfFlags) {
@@ -1165,4 +1165,421 @@ TEST_F(Protogen, RecursesValidationIntoCompoundConditions) {
 	])");
 
 	ASSERT_ANY_THROW(validate_message_fields(msg["fields"], reg, "test"));
+}
+
+// ---------------------------------------------------------------------------
+// if_chain: `if / else if / else` cascade
+// ---------------------------------------------------------------------------
+
+TEST_F(Protogen, ValidatesIfChain) {
+	auto msg = parse_fields(R"([
+		{ "name": "result", "type": "Result" },
+		{
+			"type": "if_chain",
+			"branches": [
+				{
+					"when": { "op": "eq", "field": "result", "value": "ok" },
+					"fields": [ { "name": "code", "type": "uint32" } ]
+				},
+				{
+					"when": { "op": "eq", "field": "result", "value": "queued" },
+					"fields": [ { "name": "pos", "type": "uint32" } ]
+				}
+			],
+			"else": [ { "name": "reason", "type": "uint32" } ]
+		}
+	])");
+
+	ASSERT_NO_THROW(validate_message_fields(msg["fields"], reg, "test"));
+}
+
+TEST_F(Protogen, IfChainRejectsUnknownBranchValue) {
+	auto msg = parse_fields(R"([
+		{ "name": "result", "type": "Result" },
+		{
+			"type": "if_chain",
+			"branches": [
+				{
+					"when": { "op": "eq", "field": "result", "value": "bogus" },
+					"fields": [ { "name": "code", "type": "uint32" } ]
+				}
+			]
+		}
+	])");
+
+	ASSERT_ANY_THROW(validate_message_fields(msg["fields"], reg, "test"));
+}
+
+TEST_F(Protogen, IfChainScopeIsBranchLocal) {
+	// A field declared inside one branch must not be visible to a later
+	// branch or to the `else` body.
+	auto msg = parse_fields(R"([
+		{ "name": "result", "type": "Result" },
+		{
+			"type": "if_chain",
+			"branches": [
+				{
+					"when": { "op": "eq", "field": "result", "value": "ok" },
+					"fields": [ { "name": "local_field", "type": "uint8" } ]
+				}
+			],
+			"else": [
+				{
+					"type": "group",
+					"when": { "op": "eq", "field": "local_field", "value": 1 },
+					"fields": [ { "name": "x", "type": "uint8" } ]
+				}
+			]
+		}
+	])");
+
+	ASSERT_ANY_THROW(validate_message_fields(msg["fields"], reg, "test"));
+}
+
+TEST_F(Protogen, GeneratesIfChainAsElseCascade) {
+	auto msg = jsoncons::json::parse(R"({
+		"name": "Resp",
+		"opcode": "smsg_resp",
+		"direction": "server",
+		"fields": [
+			{ "name": "result", "type": "Result" },
+			{
+				"type": "if_chain",
+				"branches": [
+					{
+						"when": { "op": "eq", "field": "result", "value": "ok" },
+						"fields": [ { "name": "code", "type": "uint32" } ]
+					},
+					{
+						"when": { "op": "eq", "field": "result", "value": "queued" },
+						"fields": [ { "name": "pos", "type": "uint32" } ]
+					}
+				],
+				"else": [ { "name": "reason", "type": "uint32" } ]
+			}
+		]
+	})");
+
+	const auto out = generate_message(msg, reg, templates_dir);
+
+	// Exactly one if, one else-if, one else — not three standalone ifs.
+	EXPECT_NE(out.content.find("if(result == Result::ok) {"), std::string::npos) << out.content;
+	EXPECT_NE(out.content.find("else if(result == Result::queued) {"), std::string::npos) << out.content;
+	EXPECT_NE(out.content.find("else {"), std::string::npos) << out.content;
+}
+
+// ---------------------------------------------------------------------------
+// `as`: semantic type cast at message-definition level
+// ---------------------------------------------------------------------------
+
+TEST_F(Protogen, AsCastMatchingUnderlyingValidates) {
+	auto msg = parse_fields(R"([
+		{ "name": "kind", "type": "uint8", "as": "Result" }
+	])");
+
+	EXPECT_NO_THROW(validate_message_fields(msg["fields"], reg, "test"));
+}
+
+TEST_F(Protogen, AsCastRejectsSizeMismatch) {
+	auto msg = parse_fields(R"([
+		{ "name": "kind", "type": "uint32", "as": "Result" }
+	])");
+
+	EXPECT_ANY_THROW(validate_message_fields(msg["fields"], reg, "test"));
+}
+
+TEST_F(Protogen, AsCastScopesFieldAsSemanticType) {
+	// A condition using the field's enum values should validate because
+	// the scope entry reflects `as`, not the wire type.
+	auto msg = parse_fields(R"([
+		{ "name": "kind", "type": "uint8", "as": "Result" },
+		{
+			"type": "group",
+			"when": { "op": "eq", "field": "kind", "value": "ok" },
+			"fields": [ { "name": "x", "type": "uint32" } ]
+		}
+	])");
+
+	EXPECT_NO_THROW(validate_message_fields(msg["fields"], reg, "test"));
+}
+
+TEST_F(Protogen, GeneratesAsCastWithRawTempAndStaticCast) {
+	auto msg = jsoncons::json::parse(R"({
+		"name": "Resp",
+		"opcode": "smsg_resp",
+		"direction": "server",
+		"fields": [
+			{ "name": "kind", "type": "uint8", "as": "Result" }
+		]
+	})");
+
+	const auto out = generate_message(msg, reg, templates_dir);
+
+	// Member exposes the enum.
+	EXPECT_NE(out.content.find("Result kind;"), std::string::npos) << out.content;
+	// Read: temporary of wire type, then static_cast into the member.
+	EXPECT_NE(out.content.find("std::uint8_t raw_"), std::string::npos) << out.content;
+	EXPECT_NE(out.content.find("kind = static_cast<Result>("), std::string::npos) << out.content;
+	// Write: static_cast the member back to the wire type.
+	EXPECT_NE(out.content.find("stream << static_cast<std::uint8_t>(kind);"), std::string::npos) << out.content;
+}
+
+// ---------------------------------------------------------------------------
+// until_end: read-to-EOF arrays
+// ---------------------------------------------------------------------------
+
+TEST_F(Protogen, ValidatesUntilEndArray) {
+	auto msg = parse_fields(R"([
+		{ "name": "tail", "type": "uint32", "array": { "until_end": true } }
+	])");
+
+	EXPECT_NO_THROW(validate_message_fields(msg["fields"], reg, "test"));
+}
+
+TEST_F(Protogen, GeneratesUntilEndLoopWithPerIterationCheck) {
+	auto msg = jsoncons::json::parse(R"({
+		"name": "Bulk",
+		"opcode": "smsg_bulk",
+		"direction": "server",
+		"fields": [
+			{ "name": "tail", "type": "uint32", "array": { "until_end": true } }
+		]
+	})");
+
+	const auto out = generate_message(msg, reg, templates_dir);
+
+	// Member is a vector, not a fixed array.
+	EXPECT_NE(out.content.find("std::vector<std::uint32_t> tail;"), std::string::npos) << out.content;
+
+	// Read: while-empty loop driving emplace_back + scalar read + error check.
+	EXPECT_NE(out.content.find("while(!stream.empty()) {"), std::string::npos) << out.content;
+	EXPECT_NE(out.content.find("tail.emplace_back();"), std::string::npos) << out.content;
+	EXPECT_NE(out.content.find("stream >> tail.back();"), std::string::npos) << out.content;
+	EXPECT_NE(out.content.find("if(!stream) return StreamResult::failed;"), std::string::npos) << out.content;
+
+	// Write is a plain range-for; the receiver's read loop stops on EOF.
+	EXPECT_NE(out.content.find("for(const auto& e : tail) {"), std::string::npos) << out.content;
+	EXPECT_NE(out.content.find("stream << e;"), std::string::npos) << out.content;
+}
+
+TEST_F(Protogen, UntilEndRejectsAlongsideSize) {
+	// schema says only one of size/count_field/until_end may be set, but
+	// the C++ validator shouldn't crash if both show up. Construct the
+	// struct manually to test the defensive path.
+	auto msg = parse_fields(R"([
+		{ "name": "tail", "type": "uint32", "array": { "size": 3, "until_end": true } }
+	])");
+
+	// validate_array doesn't care which one it sees; both branches early-
+	// return. Nothing to assert except "doesn't crash".
+	EXPECT_NO_THROW(validate_message_fields(msg["fields"], reg, "test"));
+}
+
+// ---------------------------------------------------------------------------
+// fixed-size arrays of non-primitive element types
+// ---------------------------------------------------------------------------
+
+TEST_F(Protogen, GeneratesFixedSizeStructArrayAsLoop) {
+	// Struct-element fixed arrays get a visible per-element loop because
+	// there's no generic stream >> operator for std::array<Struct, N>.
+	auto msg = jsoncons::json::parse(R"({
+		"name": "Points",
+		"opcode": "smsg_points",
+		"direction": "server",
+		"fields": [
+			{ "name": "pos", "type": "Vector3", "array": { "size": 3 } }
+		]
+	})");
+
+	const auto out = generate_message(msg, reg, templates_dir);
+
+	EXPECT_NE(out.content.find("std::array<Vector3, 3> pos{};"), std::string::npos) << out.content;
+	EXPECT_NE(out.content.find("for(auto& e : pos) {"), std::string::npos) << out.content;
+	// Struct is expanded to its fields under the loop variable.
+	EXPECT_NE(out.content.find("stream >> e.x;"), std::string::npos) << out.content;
+}
+
+// ---------------------------------------------------------------------------
+// external: cpp_type_name, underlying, stream_via
+// ---------------------------------------------------------------------------
+
+TEST_F(Protogen, ExternalWithCppTypeNameEmitsQualifiedName) {
+	auto types_doc = jsoncons::json::parse(R"({
+		"types": {
+			"MyFlag": {
+				"kind": "external",
+				"include": "foo/bar.h",
+				"cpp_namespace": "foo::container",
+				"cpp_type_name": "Inner"
+			}
+		}
+	})");
+
+	auto reg = protogen::build_registry(types_doc);
+	auto msg = jsoncons::json::parse(R"({
+		"name": "P",
+		"opcode": "smsg_p",
+		"direction": "server",
+		"fields": [ { "name": "f", "type": "MyFlag" } ]
+	})");
+
+	const auto out = generate_message(msg, reg, templates_dir);
+
+	// Member type is the namespace + cpp_type_name, not the schema key.
+	EXPECT_NE(out.content.find("foo::container::Inner f;"), std::string::npos) << out.content;
+}
+
+TEST_F(Protogen, ExternalWithUnderlyingAcceptsAsCast) {
+	// DBC inner enum pattern: external with integral underlying lets a
+	// wire-typed field cast into it via `as`.
+	auto types_doc = jsoncons::json::parse(R"({
+		"types": {
+			"DbcEnum": {
+				"kind": "external",
+				"include": "dbcs/MemoryDefs.h",
+				"cpp_namespace": "ember::dbc::Owner",
+				"cpp_type_name": "Kind",
+				"underlying": "int32"
+			}
+		}
+	})");
+
+	auto reg = protogen::build_registry(types_doc);
+	auto fields = jsoncons::json::parse(R"([
+		{ "name": "kind", "type": "uint8", "as": "DbcEnum" }
+	])");
+
+	EXPECT_NO_THROW(validate_message_fields(fields, reg, "test"));
+}
+
+TEST_F(Protogen, ExternalWithUnderlyingUsedAsTypeIsAnAlias) {
+	// An external that declares `underlying` and is referenced directly
+	// via `type` (no `as` cast) is a named alias for the primitive — the
+	// generated member takes the primitive type, no include is emitted
+	// for the external header, and the stream op is the plain primitive
+	// op. This is the DBC record-ref pattern (`Map` ≡ `uint32`).
+	auto types_doc = jsoncons::json::parse(R"({
+		"types": {
+			"Map": {
+				"kind": "external",
+				"include": "dbcs/MemoryDefs.h",
+				"cpp_namespace": "ember::dbc",
+				"underlying": "uint32"
+			}
+		}
+	})");
+
+	auto reg = protogen::build_registry(types_doc);
+	auto msg = jsoncons::json::parse(R"({
+		"name": "Joined",
+		"opcode": "smsg_joined",
+		"direction": "server",
+		"fields": [ { "name": "map", "type": "Map" } ]
+	})");
+
+	const auto out = generate_message(msg, reg, templates_dir);
+
+	EXPECT_NE(out.content.find("std::uint32_t map;"), std::string::npos) << out.content;
+	EXPECT_EQ(out.content.find("ember::dbc::Map"), std::string::npos) << out.content;
+	EXPECT_EQ(out.content.find("#include <dbcs/MemoryDefs.h>"), std::string::npos) << out.content;
+	EXPECT_NE(out.content.find("stream >> map;"), std::string::npos) << out.content;
+	EXPECT_NE(out.content.find("stream << map;"), std::string::npos) << out.content;
+}
+
+TEST_F(Protogen, AliasExternalUsableInCondition) {
+	// A field typed as an alias external is comparable — its effective
+	// type is the underlying primitive, so integer conditions validate.
+	auto types_doc = jsoncons::json::parse(R"({
+		"types": {
+			"Map": {
+				"kind": "external",
+				"include": "dbcs/MemoryDefs.h",
+				"cpp_namespace": "ember::dbc",
+				"underlying": "uint32"
+			}
+		}
+	})");
+
+	auto reg = protogen::build_registry(types_doc);
+	auto msg = jsoncons::json::parse(R"({
+		"name": "Q",
+		"opcode": "smsg_q",
+		"direction": "server",
+		"fields": [
+			{ "name": "m", "type": "Map" },
+			{
+				"type": "group",
+				"when": { "op": "neq", "field": "m", "value": 0 },
+				"fields": [ { "name": "x", "type": "uint32" } ]
+			}
+		]
+	})");
+
+	EXPECT_NO_THROW(validate_message_fields(msg["fields"], reg, "test"));
+	const auto out = generate_message(msg, reg, templates_dir);
+	EXPECT_NE(out.content.find("if(m != 0)"), std::string::npos) << out.content;
+}
+
+// ---------------------------------------------------------------------------
+// enum_class: same semantics as enum, different emit
+// ---------------------------------------------------------------------------
+
+TEST_F(Protogen, EnumClassEmitsScopedEnum) {
+	auto types_doc = jsoncons::json::parse(R"({
+		"types": {
+			"Colour": {
+				"kind": "enum_class",
+				"underlying": "uint8",
+				"values": { "red": 0, "green": 1 }
+			}
+		}
+	})");
+
+	auto reg = protogen::build_registry(types_doc);
+	const auto headers = protogen::generate_type_headers(reg, templates_dir);
+	const protogen::GeneratedFile* h = nullptr;
+	for(const auto& f : headers) {
+		if(f.relative_path == "types/Colour.h") { h = &f; }
+	}
+	ASSERT_NE(h, nullptr);
+	EXPECT_NE(h->content.find("enum class Colour : std::uint8_t"), std::string::npos) << h->content;
+}
+
+TEST_F(Protogen, EnumStaysUnscoped) {
+	auto types_doc = jsoncons::json::parse(R"({
+		"types": {
+			"Style": {
+				"kind": "enum",
+				"underlying": "uint8",
+				"values": { "plain": 0, "bold": 1 }
+			}
+		}
+	})");
+
+	auto reg = protogen::build_registry(types_doc);
+	const auto headers = protogen::generate_type_headers(reg, templates_dir);
+	const protogen::GeneratedFile* h = nullptr;
+	for(const auto& f : headers) {
+		if(f.relative_path == "types/Style.h") { h = &f; }
+	}
+	ASSERT_NE(h, nullptr);
+	EXPECT_NE(h->content.find("enum Style : std::uint8_t"), std::string::npos) << h->content;
+	EXPECT_EQ(h->content.find("enum class"), std::string::npos) << h->content;
+}
+
+TEST_F(Protogen, GeneratesFixedSizeStringArrayAsLoop) {
+	auto msg = jsoncons::json::parse(R"({
+		"name": "Names",
+		"opcode": "smsg_names",
+		"direction": "server",
+		"fields": [
+			{ "name": "n", "type": "CString", "array": { "size": 4 } }
+		]
+	})");
+
+	const auto out = generate_message(msg, reg, templates_dir);
+
+	EXPECT_NE(out.content.find("std::array<std::string, 4> n{};"), std::string::npos) << out.content;
+	EXPECT_NE(out.content.find("for(auto& e : n) {"), std::string::npos) << out.content;
+	EXPECT_NE(out.content.find("spark::io::null_terminated(e)"), std::string::npos) << out.content;
 }

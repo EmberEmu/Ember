@@ -1,0 +1,8 @@
+{
+	"name": "ListInventory",
+	"opcode": "cmsg_list_inventory",
+	"direction": "client",
+	"fields": [
+		{ "name": "guid", "type": "uint64" }
+	]
+}

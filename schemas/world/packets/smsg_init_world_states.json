@@ -1,0 +1,11 @@
+{
+	"name": "InitWorldStates",
+	"opcode": "smsg_init_world_states",
+	"direction": "server",
+	"fields": [
+		{ "name": "map",              "type": "Map" },
+		{ "name": "area",             "type": "Area" },
+		{ "name": "amount_of_states", "type": "uint16" },
+		{ "name": "states",           "type": "WorldState", "array": {"count_field": "amount_of_states"} }
+	]
+}

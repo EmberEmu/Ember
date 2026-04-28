@@ -1,0 +1,10 @@
+{
+	"name": "QuestgiverChooseReward",
+	"opcode": "cmsg_questgiver_choose_reward",
+	"direction": "client",
+	"fields": [
+		{ "name": "guid",     "type": "uint64" },
+		{ "name": "quest_id", "type": "uint32" },
+		{ "name": "reward",   "type": "uint32" }
+	]
+}

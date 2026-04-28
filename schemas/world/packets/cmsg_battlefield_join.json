@@ -1,0 +1,8 @@
+{
+	"name": "BattlefieldJoin",
+	"opcode": "cmsg_battlefield_join",
+	"direction": "client",
+	"fields": [
+		{ "name": "map", "type": "Map" }
+	]
+}

@@ -1,0 +1,5 @@
+{
+	"name": "GossipComplete",
+	"opcode": "smsg_gossip_complete",
+	"direction": "server"
+}

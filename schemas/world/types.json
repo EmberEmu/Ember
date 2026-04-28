@@ -1,7 +1,7 @@
 {
 	"types": {
 		"Result": {
-			"kind": "enum",
+			"kind": "enum_class",
 			"underlying": "uint8",
 			"cpp_namespace": "ember::protocol",
 			"values": {
@@ -15,78 +15,78 @@
 				"cstatus_connecting":                     7,
 				"cstatus_negotiating_security":           8,
 				"cstatus_negotiation_complete":           9,
-				"cstatus_negotiation_failed":            10,
-				"cstatus_authenticating":                11,
-				"auth_ok":                               12,
-				"auth_failed":                           13,
-				"auth_reject":                           14,
-				"auth_bad_server_proof":                 15,
-				"auth_unavailable":                      16,
-				"auth_system_error":                     17,
-				"auth_billing_error":                    18,
-				"auth_billing_expired":                  19,
-				"auth_version_mismatch":                 20,
-				"auth_unknown_account":                  21,
-				"auth_incorrect_password":               22,
-				"auth_session_expired":                  23,
-				"auth_server_shutting_down":             24,
-				"auth_already_logging_in":               25,
-				"auth_login_server_not_found":           26,
-				"auth_wait_queue":                       27,
-				"auth_banned":                           28,
-				"auth_already_online":                   29,
-				"auth_no_time":                          30,
-				"auth_db_busy":                          31,
-				"auth_suspended":                        32,
-				"auth_parental_control":                 33,
-				"realm_list_in_progress":                34,
-				"realm_list_success":                    35,
-				"realm_list_failed":                     36,
-				"realm_list_invalid":                    37,
-				"realm_list_realm_not_found":            38,
-				"account_create_in_progress":            39,
-				"account_create_success":                40,
-				"account_create_failed":                 41,
-				"char_list_retrieving":                  42,
-				"char_list_retrieved":                   43,
-				"char_list_failed":                      44,
-				"char_create_in_progress":               45,
-				"char_create_success":                   46,
-				"char_create_error":                     47,
-				"char_create_failed":                    48,
-				"char_create_name_in_use":               49,
-				"char_create_disabled":                  50,
-				"char_create_pvp_teams_violation":       51,
-				"char_create_server_limit":              52,
-				"char_create_account_limit":             53,
-				"char_create_server_queue":              54,
-				"char_create_only_existing":             55,
-				"char_delete_in_progress":               56,
-				"char_delete_success":                   57,
-				"char_delete_failed":                    58,
-				"char_delete_failed_locked_for_transfer":59,
-				"char_login_in_progress":                60,
-				"char_login_success":                    61,
-				"char_login_no_world":                   62,
-				"char_login_duplicate_character":        63,
-				"char_login_no_instances":               64,
-				"char_login_failed":                     65,
-				"char_login_disabled":                   66,
-				"char_login_no_character":               67,
-				"char_login_locked_for_transfer":        68,
-				"char_name_no_name":                     69,
-				"char_name_too_short":                   70,
-				"char_name_too_long":                    71,
-				"char_name_only_letters":                72,
-				"char_name_mixed_languages":             73,
-				"char_name_profane":                     74,
-				"char_name_reserved":                    75,
-				"char_name_invalid_apostrophe":          76,
-				"char_name_multiple_apostrophes":        77,
-				"char_name_three_consecutive":           78,
-				"char_name_invalid_space":               79,
-				"char_name_success":                     80,
-				"char_name_failure":                     81
+				"cstatus_negotiation_failed":             10,
+				"cstatus_authenticating":                 11,
+				"auth_ok":                                12,
+				"auth_failed":                            13,
+				"auth_reject":                            14,
+				"auth_bad_server_proof":                  15,
+				"auth_unavailable":                       16,
+				"auth_system_error":                      17,
+				"auth_billing_error":                     18,
+				"auth_billing_expired":                   19,
+				"auth_version_mismatch":                  20,
+				"auth_unknown_account":                   21,
+				"auth_incorrect_password":                22,
+				"auth_session_expired":                   23,
+				"auth_server_shutting_down":              24,
+				"auth_already_logging_in":                25,
+				"auth_login_server_not_found":            26,
+				"auth_wait_queue":                        27,
+				"auth_banned":                            28,
+				"auth_already_online":                    29,
+				"auth_no_time":                           30,
+				"auth_db_busy":                           31,
+				"auth_suspended":                         32,
+				"auth_parental_control":                  33,
+				"realm_list_in_progress":                 34,
+				"realm_list_success":                     35,
+				"realm_list_failed":                      36,
+				"realm_list_invalid":                     37,
+				"realm_list_realm_not_found":             38,
+				"account_create_in_progress":             39,
+				"account_create_success":                 40,
+				"account_create_failed":                  41,
+				"char_list_retrieving":                   42,
+				"char_list_retrieved":                    43,
+				"char_list_failed":                       44,
+				"char_create_in_progress":                45,
+				"char_create_success":                    46,
+				"char_create_error":                      47,
+				"char_create_failed":                     48,
+				"char_create_name_in_use":                49,
+				"char_create_disabled":                   50,
+				"char_create_pvp_teams_violation":        51,
+				"char_create_server_limit":               52,
+				"char_create_account_limit":              53,
+				"char_create_server_queue":               54,
+				"char_create_only_existing":              55,
+				"char_delete_in_progress":                56,
+				"char_delete_success":                    57,
+				"char_delete_failed":                     58,
+				"char_delete_failed_locked_for_transfer": 59,
+				"char_login_in_progress":                 60,
+				"char_login_success":                     61,
+				"char_login_no_world":                    62,
+				"char_login_duplicate_character":         63,
+				"char_login_no_instances":                64,
+				"char_login_failed":                      65,
+				"char_login_disabled":                    66,
+				"char_login_no_character":                67,
+				"char_login_locked_for_transfer":         68,
+				"char_name_no_name":                      69,
+				"char_name_too_short":                    70,
+				"char_name_too_long":                     71,
+				"char_name_only_letters":                 72,
+				"char_name_mixed_languages":              73,
+				"char_name_profane":                      74,
+				"char_name_reserved":                     75,
+				"char_name_invalid_apostrophe":           76,
+				"char_name_multiple_apostrophes":         77,
+				"char_name_three_consecutive":            78,
+				"char_name_invalid_space":                79,
+				"char_name_success":                      80,
+				"char_name_failure":                      81
 			}
 		},
 		"MovementFlags": {
@@ -122,62 +122,62 @@
 			}
 		},
 		"ChatType": {
-			"kind": "enum",
+			"kind": "enum_class",
 			"underlying": "uint8",
-			"cpp_namespace": "ember::protocol::server",
+			"cpp_namespace": "ember::protocol",
 			"values": {
-				"SAY":                   0,
-				"PARTY":                 1,
-				"RAID":                  2,
-				"GUILD":                 3,
-				"OFFICER":               4,
-				"YELL":                  5,
-				"WHISPER":               6,
-				"WHISPER_INFORM":        7,
-				"EMOTE":                 8,
-				"TEXT_EMOTE":            9,
-				"SYSTEM":                10,
-				"MONSTER_SAY":           11,
-				"MONSTER_YELL":          12,
-				"MONSTER_EMOTE":         13,
-				"CHANNEL":               14,
-				"CHANNEL_JOIN":          15,
-				"CHANNEL_LEAVE":         16,
-				"CHANNEL_LIST":          17,
-				"CHANNEL_NOTICE":        18,
-				"CHANNEL_NOTICE_USER":   19,
-				"AFK":                   20,
-				"DND":                   21,
-				"IGNORED":               22,
-				"SKILL":                 23,
-				"LOOT":                  24,
-				"MONSTER_WHISPER":       26,
-				"BG_SYSTEM_NEUTRAL":     82,
-				"BG_SYSTEM_ALLIANCE":    83,
-				"BG_SYSTEM_HORDE":       84,
-				"RAID_LEADER":           87,
-				"RAID_WARNING":          88,
-				"RAID_BOSS_WHISPER":     89,
-				"RAID_BOSS_EMOTE":       90,
-				"BATTLEGROUND":          92,
-				"BATTLEGROUND_LEADER":   93
+				"say":                 0,
+				"party":               1,
+				"raid":                2,
+				"guild":               3,
+				"officer":             4,
+				"yell":                5,
+				"whisper":             6,
+				"whisper_inform":      7,
+				"emote":               8,
+				"text_emote":          9,
+				"system":              10,
+				"monster_say":         11,
+				"monster_yell":        12,
+				"monster_emote":       13,
+				"channel":             14,
+				"channel_join":        15,
+				"channel_leave":       16,
+				"channel_list":        17,
+				"channel_notice":      18,
+				"channel_notice_user": 19,
+				"afk":                 20,
+				"dnd":                 21,
+				"ignored":             22,
+				"skill":               23,
+				"loot":                24,
+				"monster_whisper":     26,
+				"bg_system_neutral":   82,
+				"bg_system_alliance":  83,
+				"bg_system_horde":     84,
+				"raid_leader":         87,
+				"raid_warning":        88,
+				"raid_boss_whisper":   89,
+				"raid_boss_emote":     90,
+				"battleground":        92,
+				"battleground_leader": 93
 			}
 		},
 		"PlayerChatTag": {
-			"kind": "enum",
+			"kind": "enum_class",
 			"underlying": "uint8",
-			"cpp_namespace": "ember::protocol::server",
+			"cpp_namespace": "ember::protocol",
 			"values": {
-				"TAG_NONE": 0,
-				"TAG_AFK":  1,
-				"TAG_DND":  2,
-				"TAG_GM":   3
+				"tag_none": 0,
+				"tag_afk":  1,
+				"tag_dnd":  2,
+				"tag_gm":   3
 			}
 		},
 		"StatusID": {
-			"kind": "enum",
+			"kind": "enum_class",
 			"underlying": "uint8",
-			"cpp_namespace": "ember::protocol::server",
+			"cpp_namespace": "ember::protocol",
 			"values": {
 				"none":        0,
 				"wait_queue":  1,
@@ -187,20 +187,11 @@
 			}
 		},
 		"CinematicSequence": {
-			"kind": "enum",
-			"underlying": "uint32",
-			"cpp_namespace": "ember::protocol",
-			"values": {
-				"palantir_of_azora": 1,
-				"undead":            2,
-				"orc":               21,
-				"dwarf":             41,
-				"night_elf":         61,
-				"human":             81,
-				"gnome":             101,
-				"troll":             121,
-				"tauren":            141
-			}
+			"kind": "external",
+			"include": "dbcs/MemoryDefs.h",
+			"cpp_namespace": "ember::dbc",
+			"cpp_type_name": "CinematicSequences",
+			"underlying": "uint32"
 		},
 		"Vector3": {
 			"kind": "struct",
@@ -240,9 +231,9 @@
 			"cpp_namespace": "ember::protocol",
 			"fields": [
 				{ "name": "flags",       "type": "MovementFlags" },
-				{ "name": "timestamp",   "type": "uint32"        },
-				{ "name": "position",    "type": "Vector3"       },
-				{ "name": "orientation", "type": "float"         },
+				{ "name": "timestamp",   "type": "uint32" },
+				{ "name": "position",    "type": "Vector3" },
+				{ "name": "orientation", "type": "float" },
 				{
 					"type": "group",
 					"when": { "op": "has_flag", "field": "flags", "value": "on_transport" },
@@ -285,6 +276,3553 @@
 			"kind": "string",
 			"encoding": "prefixed_null_terminated",
 			"length_type": "uint32"
+		},
+		"Vector2": {
+			"kind": "struct",
+			"cpp_namespace": "ember::protocol",
+			"fields": [
+				{ "name": "x", "type": "float" },
+				{ "name": "y", "type": "float" }
+			]
+		},
+		"AuctionListItem": {
+			"kind": "struct",
+			"cpp_namespace": "ember::protocol",
+			"fields": [
+				{ "name": "id",                      "type": "uint32" },
+				{ "name": "item",                    "type": "uint32" },
+				{ "name": "item_enchantment",        "type": "uint32" },
+				{ "name": "item_random_property_id", "type": "uint32" },
+				{ "name": "item_suffix_factor",      "type": "uint32" },
+				{ "name": "item_count",              "type": "uint32" },
+				{ "name": "item_charges",            "type": "uint32" },
+				{ "name": "item_owner",              "type": "uint64" },
+				{ "name": "start_bid",               "type": "uint32" },
+				{ "name": "minimum_bid",             "type": "uint32" },
+				{ "name": "buyout_amount",           "type": "uint32" },
+				{ "name": "time_left",               "type": "uint32" },
+				{ "name": "highest_bidder",          "type": "uint64" },
+				{ "name": "highest_bid",             "type": "uint32" }
+			]
+		},
+		"BattlegroundPlayerPosition": {
+			"kind": "struct",
+			"cpp_namespace": "ember::protocol",
+			"fields": [
+				{ "name": "player",     "type": "uint64" },
+				{ "name": "position_x", "type": "float" },
+				{ "name": "position_y", "type": "float" }
+			]
+		},
+		"AddonInfo": {
+			"kind": "struct",
+			"cpp_namespace": "ember::protocol",
+			"fields": [
+				{ "name": "addon_name",          "type": "CString" },
+				{ "name": "addon_has_signature", "type": "uint8" },
+				{ "name": "addon_crc",           "type": "uint32" },
+				{ "name": "addon_extra_crc",     "type": "uint32" }
+			]
+		},
+		"Race": {
+			"kind": "external",
+			"include": "dbcs/MemoryDefs.h",
+			"cpp_namespace": "ember::dbc",
+			"cpp_type_name": "ChrRaces",
+			"underlying": "uint8"
+		},
+		"Class": {
+			"kind": "external",
+			"include": "dbcs/MemoryDefs.h",
+			"cpp_namespace": "ember::dbc",
+			"cpp_type_name": "ChrClasses",
+			"underlying": "uint8"
+		},
+		"Gender": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"male":   0,
+				"female": 1,
+				"none":   2
+			}
+		},
+		"Area": {
+			"kind": "external",
+			"include": "dbcs/MemoryDefs.h",
+			"cpp_namespace": "ember::dbc",
+			"cpp_type_name": "AreaTable",
+			"underlying": "uint32"
+		},
+		"Map": {
+			"kind": "external",
+			"include": "dbcs/MemoryDefs.h",
+			"cpp_namespace": "ember::dbc",
+			"underlying": "uint32"
+		},
+		"CharacterFlags": {
+			"kind": "flags",
+			"underlying": "uint32",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"none":                0,
+				"locked_for_transfer": 4,
+				"hide_helm":           1024,
+				"hide_cloak":          2048,
+				"ghost":               8192,
+				"rename":              16384
+			}
+		},
+		"InventoryType": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"non_equip":         0,
+				"head":              1,
+				"neck":              2,
+				"shoulders":         3,
+				"body":              4,
+				"chest":             5,
+				"waist":             6,
+				"legs":              7,
+				"feet":              8,
+				"wrists":            9,
+				"hands":             10,
+				"finger":            11,
+				"trinket":           12,
+				"weapon":            13,
+				"shield":            14,
+				"ranged":            15,
+				"cloak":             16,
+				"two_handed_weapon": 17,
+				"bag":               18,
+				"tabard":            19,
+				"robe":              20,
+				"weapon_main_hand":  21,
+				"weapon_off_hand":   22,
+				"holdable":          23,
+				"ammo":              24,
+				"thrown":            25,
+				"ranged_right":      26,
+				"quiver":            27,
+				"relic":             28
+			}
+		},
+		"CharacterGear": {
+			"kind": "struct",
+			"cpp_namespace": "ember::protocol",
+			"fields": [
+				{ "name": "equipment_display_id", "type": "uint32" },
+				{ "name": "inventory_type",       "type": "InventoryType" }
+			]
+		},
+		"ChannelFlags": {
+			"kind": "flags",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"none":    0,
+				"custom":  1,
+				"trade":   4,
+				"not_lfg": 8,
+				"general": 16,
+				"city":    32,
+				"lfg":     64,
+				"voice":   128
+			}
+		},
+		"ChannelMemberFlags": {
+			"kind": "flags",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"none":            0,
+				"owner":           1,
+				"moderator":       4,
+				"voiced":          8,
+				"muted":           16,
+				"custom":          32,
+				"microphone_mute": 64
+			}
+		},
+		"ChannelMember": {
+			"kind": "struct",
+			"cpp_namespace": "ember::protocol",
+			"fields": [
+				{ "name": "guid",         "type": "uint64" },
+				{ "name": "member_flags", "type": "ChannelMemberFlags" }
+			]
+		},
+		"HitInfo": {
+			"kind": "enum_class",
+			"underlying": "uint32",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"normal_swing":       0,
+				"unk1":               1,
+				"affects_victim":     2,
+				"left_swing":         4,
+				"early_critical_hit": 8,
+				"miss":               16,
+				"absorb":             32,
+				"resist":             64,
+				"critical_hit":       128,
+				"unk9":               256,
+				"unk10":              8192,
+				"glancing":           16384,
+				"crushing":           32768,
+				"no_action":          65536,
+				"swing_no_hit_sound": 524288
+			}
+		},
+		"DamageInfo": {
+			"kind": "struct",
+			"cpp_namespace": "ember::protocol",
+			"fields": [
+				{ "name": "spell_school_mask", "type": "uint32" },
+				{ "name": "damage_float",      "type": "float" },
+				{ "name": "damage_uint",       "type": "uint32" },
+				{ "name": "absorb",            "type": "uint32" },
+				{ "name": "resist",            "type": "uint32" }
+			]
+		},
+		"FactionFlag": {
+			"kind": "flags",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"visible":          1,
+				"at_war":           2,
+				"hidden":           4,
+				"invisible_forced": 8,
+				"peace_forced":     16,
+				"inactive":         32,
+				"rival":            64
+			}
+		},
+		"FactionInitializer": {
+			"kind": "struct",
+			"cpp_namespace": "ember::protocol",
+			"fields": [
+				{ "name": "flag",     "type": "FactionFlag" },
+				{ "name": "standing", "type": "uint32" }
+			]
+		},
+		"FactionStanding": {
+			"kind": "struct",
+			"cpp_namespace": "ember::protocol",
+			"fields": [
+				{ "name": "faction",  "type": "uint16" },
+				{ "name": "standing", "type": "uint32" }
+			]
+		},
+		"ForcedReaction": {
+			"kind": "struct",
+			"cpp_namespace": "ember::protocol",
+			"fields": [
+				{ "name": "faction",         "type": "uint16" },
+				{ "name": "reputation_rank", "type": "uint32" }
+			]
+		},
+		"GmSurveyQuestion": {
+			"kind": "struct",
+			"cpp_namespace": "ember::protocol",
+			"fields": [
+				{ "name": "question_id", "type": "uint32" },
+				{ "name": "answer",      "type": "uint8" },
+				{ "name": "comment",     "type": "CString" }
+			]
+		},
+		"GmTicketType": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"stuck":               1,
+				"behavior_harassment": 2,
+				"guild":               3,
+				"item":                4,
+				"environmental":       5,
+				"nonquest_creep":      6,
+				"quest_questnpc":      7,
+				"technical":           8,
+				"account_billing":     9,
+				"character":           10
+			}
+		},
+		"UpdateType": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"values":               0,
+				"movement":             1,
+				"create_object":        2,
+				"create_object2":       3,
+				"out_of_range_objects": 4,
+				"near_objects":         5
+			}
+		},
+		"GossipItem": {
+			"kind": "struct",
+			"cpp_namespace": "ember::protocol",
+			"fields": [
+				{ "name": "id",        "type": "uint32" },
+				{ "name": "item_icon", "type": "uint8" },
+				{ "name": "coded",     "type": "uint8" },
+				{ "name": "message",   "type": "CString" }
+			]
+		},
+		"QuestItem": {
+			"kind": "struct",
+			"cpp_namespace": "ember::protocol",
+			"fields": [
+				{ "name": "quest_id",   "type": "uint32" },
+				{ "name": "quest_icon", "type": "uint32" },
+				{ "name": "level",      "type": "uint32" },
+				{ "name": "title",      "type": "CString" }
+			]
+		},
+		"Vector2d": {
+			"kind": "struct",
+			"cpp_namespace": "ember::protocol",
+			"fields": [
+				{ "name": "x", "type": "float" },
+				{ "name": "y", "type": "float" }
+			]
+		},
+		"GuildMemberStatus": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"offline": 0,
+				"online":  1
+			}
+		},
+		"GuildMember": {
+			"kind": "struct",
+			"cpp_namespace": "ember::protocol",
+			"fields": [
+				{ "name": "guid",   "type": "uint64" },
+				{ "name": "status", "type": "GuildMemberStatus" },
+				{ "name": "name",   "type": "CString" },
+				{ "name": "rank",   "type": "uint32" },
+				{ "name": "level",  "type": "uint8" },
+				{ "name": "class",  "type": "Class" },
+				{ "name": "area",   "type": "Area" },
+				{
+					"type": "group",
+					"when": { "op": "eq", "field": "status", "value": "offline" },
+					"fields": [
+						{ "name": "time_offline", "type": "float" }
+					]
+				},
+				{ "name": "public_note",  "type": "CString" },
+				{ "name": "officer_note", "type": "CString" }
+			]
+		},
+		"PetitionShowlist": {
+			"kind": "struct",
+			"cpp_namespace": "ember::protocol",
+			"fields": [
+				{ "name": "index",              "type": "uint32" },
+				{ "name": "charter_entry",      "type": "uint32" },
+				{ "name": "charter_display_id", "type": "uint32" },
+				{ "name": "guild_charter_cost", "type": "uint32" },
+				{ "name": "unknown1",           "type": "uint32" }
+			]
+		},
+		"PetitionSignature": {
+			"kind": "struct",
+			"cpp_namespace": "ember::protocol",
+			"fields": [
+				{ "name": "signer",   "type": "uint64" },
+				{ "name": "unknown1", "type": "uint32" }
+			]
+		},
+		"SpellCastTargetFlags": {
+			"kind": "flags",
+			"underlying": "uint16",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"self":            0,
+				"unused1":         1,
+				"unit":            2,
+				"unused2":         4,
+				"unused3":         8,
+				"item":            16,
+				"source_location": 32,
+				"dest_location":   64,
+				"object_unk":      128,
+				"unit_unk":        256,
+				"pvp_corpse":      512,
+				"unit_corpse":     1024,
+				"gameobject":      2048,
+				"trade_item":      4096,
+				"string":          8192,
+				"unk1":            16384,
+				"corpse":          32768
+			}
+		},
+		"SpellCastTargets": {
+			"kind": "struct",
+			"cpp_namespace": "ember::protocol",
+			"fields": [
+				{ "name": "target_flags", "type": "SpellCastTargetFlags" },
+				{
+					"type": "group",
+					"when": { "op": "has_flag", "field": "target_flags", "value": "unit" },
+					"fields": [
+						{ "name": "unit_target", "type": "PackedGuid" }
+					]
+				},
+				{
+					"type": "group",
+					"when": { "op": "has_flag", "field": "target_flags", "value": "gameobject" },
+					"fields": [
+						{ "name": "gameobject", "type": "PackedGuid" }
+					]
+				},
+				{
+					"type": "group",
+					"when": { "op": "has_flag", "field": "target_flags", "value": "object_unk" },
+					"fields": [
+						{ "name": "object_unk", "type": "PackedGuid" }
+					]
+				},
+				{
+					"type": "group",
+					"when": { "op": "has_flag", "field": "target_flags", "value": "item" },
+					"fields": [
+						{ "name": "item", "type": "PackedGuid" }
+					]
+				},
+				{
+					"type": "group",
+					"when": { "op": "has_flag", "field": "target_flags", "value": "trade_item" },
+					"fields": [
+						{ "name": "trade_item", "type": "PackedGuid" }
+					]
+				},
+				{
+					"type": "group",
+					"when": { "op": "has_flag", "field": "target_flags", "value": "source_location" },
+					"fields": [
+						{ "name": "source", "type": "Vector3" }
+					]
+				},
+				{
+					"type": "group",
+					"when": { "op": "has_flag", "field": "target_flags", "value": "dest_location" },
+					"fields": [
+						{ "name": "destination", "type": "Vector3" }
+					]
+				},
+				{
+					"type": "group",
+					"when": { "op": "has_flag", "field": "target_flags", "value": "string" },
+					"fields": [
+						{ "name": "target_string", "type": "CString" }
+					]
+				},
+				{
+					"type": "group",
+					"when": { "op": "has_flag", "field": "target_flags", "value": "corpse" },
+					"fields": [
+						{ "name": "corpse", "type": "PackedGuid" }
+					]
+				},
+				{
+					"type": "group",
+					"when": { "op": "has_flag", "field": "target_flags", "value": "pvp_corpse" },
+					"fields": [
+						{ "name": "pvp_corpse", "type": "PackedGuid" }
+					]
+				}
+			]
+		},
+		"ListInventoryItem": {
+			"kind": "struct",
+			"cpp_namespace": "ember::protocol",
+			"fields": [
+				{ "name": "item_stack_count", "type": "uint32" },
+				{ "name": "item",             "type": "uint32" },
+				{ "name": "item_display_id",  "type": "uint32" },
+				{ "name": "max_items",        "type": "uint32" },
+				{ "name": "price",            "type": "uint32" },
+				{ "name": "max_durability",   "type": "uint32" },
+				{ "name": "durability",       "type": "uint32" }
+			]
+		},
+		"AddonType": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"banned":   0,
+				"enabled":  1,
+				"blizzard": 2
+			}
+		},
+		"InfoBlock": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"unavailable": 0,
+				"available":   1
+			}
+		},
+		"KeyVersion": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"zero":  0,
+				"one":   1,
+				"two":   2,
+				"three": 3,
+				"four":  4,
+				"five":  5,
+				"six":   6,
+				"seven": 7,
+				"eight": 8,
+				"nine":  9
+			}
+		},
+		"UrlInfo": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"unavailable": 0,
+				"available":   1
+			}
+		},
+		"Addon": {
+			"kind": "struct",
+			"cpp_namespace": "ember::protocol",
+			"fields": [
+				{ "name": "addon_type", "type": "AddonType" },
+				{ "name": "info_block", "type": "InfoBlock" },
+				{
+					"type": "group",
+					"when": { "op": "eq", "field": "info_block", "value": "available" },
+					"fields": [
+						{ "name": "key_version", "type": "KeyVersion" },
+						{
+							"type": "group",
+							"when": { "op": "neq", "field": "key_version", "value": "zero" },
+							"fields": [
+								{ "name": "public_key", "type": "uint8", "array": {"size": 256} }
+							]
+						},
+						{ "name": "update_available_flag", "type": "uint32" }
+					]
+				},
+				{ "name": "url_info", "type": "UrlInfo" },
+				{
+					"type": "group",
+					"when": { "op": "eq", "field": "url_info", "value": "available" },
+					"fields": [
+						{ "name": "url", "type": "CString" }
+					]
+				}
+			]
+		},
+		"LootMethod": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"error":         0,
+				"corpse":        1,
+				"pickpocketing": 2,
+				"fishing":       3,
+				"disenchanting": 4,
+				"skinning":      6,
+				"fishinghole":   20,
+				"fishing_fail":  21,
+				"insignia":      22
+			}
+		},
+		"LootMethodError": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"didnt_kill":             0,
+				"too_far":                4,
+				"bad_facing":             5,
+				"locked":                 6,
+				"notstanding":            8,
+				"stunned":                9,
+				"player_not_found":       10,
+				"play_time_exceeded":     11,
+				"master_inv_full":        12,
+				"master_unique_item":     13,
+				"master_other":           14,
+				"already_pickpocketed":   15,
+				"not_while_shapeshifted": 16
+			}
+		},
+		"LootSlotType": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"type_allow_loot":   0,
+				"type_roll_ongoing": 1,
+				"type_master":       2,
+				"type_locked":       3,
+				"type_owner":        4
+			}
+		},
+		"LootItem": {
+			"kind": "struct",
+			"cpp_namespace": "ember::protocol",
+			"fields": [
+				{ "name": "index", "type": "uint8" },
+				{ "name": "item",  "type": "uint32" },
+				{ "name": "ty",    "type": "LootSlotType" }
+			]
+		},
+		"MailType": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"normal":     0,
+				"auction":    2,
+				"creature":   3,
+				"gameobject": 4,
+				"item":       5
+			}
+		},
+		"Mail": {
+			"kind": "struct",
+			"cpp_namespace": "ember::protocol",
+			"fields": [
+				{ "name": "message_id",   "type": "uint32" },
+				{ "name": "message_type", "type": "MailType" },
+				{
+					"type": "group",
+					"when": { "op": "eq", "field": "message_type", "value": "normal" },
+					"fields": [
+						{ "name": "sender", "type": "uint64" }
+					]
+				},
+				{
+					"type": "group",
+					"when": { "op": "in", "field": "message_type", "value": ["creature", "gameobject"] },
+					"fields": [
+						{ "name": "sender_id", "type": "uint32" }
+					]
+				},
+				{
+					"type": "group",
+					"when": { "op": "eq", "field": "message_type", "value": "auction" },
+					"fields": [
+						{ "name": "auction_id", "type": "uint32" }
+					]
+				},
+				{ "name": "subject",                 "type": "CString" },
+				{ "name": "item_text_id",            "type": "uint32" },
+				{ "name": "unknown1",                "type": "uint32" },
+				{ "name": "stationery",              "type": "uint32" },
+				{ "name": "item",                    "type": "uint32" },
+				{ "name": "item_enchant_id",         "type": "uint32" },
+				{ "name": "item_random_property_id", "type": "uint32" },
+				{ "name": "item_suffix_factor",      "type": "uint32" },
+				{ "name": "item_stack_size",         "type": "uint8" },
+				{ "name": "item_spell_charges",      "type": "uint32" },
+				{ "name": "max_durability",          "type": "uint32" },
+				{ "name": "durability",              "type": "uint32" },
+				{ "name": "money",                   "type": "uint32" },
+				{ "name": "cash_on_delivery_amount", "type": "uint32" },
+				{ "name": "checked_timestamp",       "type": "uint32" },
+				{ "name": "expiration_time",         "type": "float" },
+				{ "name": "mail_template_id",        "type": "uint32" }
+			]
+		},
+		"CompressedMoveOpcode": {
+			"kind": "enum_class",
+			"underlying": "uint16",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"smsg_monster_move":              221,
+				"smsg_monster_move_transport":    686,
+				"smsg_spline_set_run_speed":      766,
+				"smsg_spline_move_unroot":        772,
+				"smsg_spline_move_set_run_mode":  781,
+				"smsg_spline_move_set_walk_mode": 782
+			}
+		},
+		"MonsterMoveType": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"normal":        0,
+				"stop":          1,
+				"facing_spot":   2,
+				"facing_target": 3,
+				"facing_angle":  4
+			}
+		},
+		"SplineFlag": {
+			"kind": "flags",
+			"underlying": "uint32",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"none":         0,
+				"done":         1,
+				"falling":      2,
+				"unknown3":     4,
+				"unknown4":     8,
+				"unknown5":     16,
+				"unknown6":     32,
+				"unknown7":     64,
+				"unknown8":     128,
+				"run_mode":     256,
+				"flying":       512,
+				"no_spline":    1024,
+				"unknown12":    2048,
+				"unknown13":    4096,
+				"unknown14":    8192,
+				"unknown15":    16384,
+				"unknown16":    32768,
+				"final_point":  65536,
+				"final_target": 131072,
+				"final_angle":  262144,
+				"unknown19":    524288,
+				"cyclic":       1048576,
+				"enter_cycle":  2097152,
+				"frozen":       4194304,
+				"unknown23":    8388608,
+				"unknown24":    16777216,
+				"unknown25":    33554432,
+				"unknown26":    67108864,
+				"unknown27":    134217728,
+				"unknown28":    268435456,
+				"unknown29":    536870912,
+				"unknown30":    1073741824,
+				"unknown31":    2147483648
+			}
+		},
+		"StabledPet": {
+			"kind": "struct",
+			"cpp_namespace": "ember::protocol",
+			"fields": [
+				{ "name": "pet_number", "type": "uint32" },
+				{ "name": "entry",      "type": "uint32" },
+				{ "name": "level",      "type": "uint32" },
+				{ "name": "name",       "type": "CString" },
+				{ "name": "loyalty",    "type": "uint32" },
+				{ "name": "slot",       "type": "uint8" }
+			]
+		},
+		"PetReactState": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"passive":    0,
+				"defensive":  1,
+				"aggressive": 2
+			}
+		},
+		"PetCommandState": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"stay":    0,
+				"follow":  1,
+				"attack":  2,
+				"dismiss": 3
+			}
+		},
+		"PetEnabled": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"disabled": 0,
+				"enabled":  8
+			}
+		},
+		"PetSpellCooldown": {
+			"kind": "struct",
+			"cpp_namespace": "ember::protocol",
+			"fields": [
+				{ "name": "spell",             "type": "uint16" },
+				{ "name": "spell_category",    "type": "uint16" },
+				{ "name": "cooldown",          "type": "uint32" },
+				{ "name": "category_cooldown", "type": "uint32" }
+			]
+		},
+		"BattlegroundEndStatus": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"not_ended": 0,
+				"ended":     1
+			}
+		},
+		"BattlegroundWinner": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"horde":    0,
+				"alliance": 1,
+				"none":     2
+			}
+		},
+		"BattlegroundPlayer": {
+			"kind": "struct",
+			"cpp_namespace": "ember::protocol",
+			"fields": [
+				{ "name": "player",                 "type": "uint64" },
+				{ "name": "rank",                   "type": "uint32" },
+				{ "name": "killing_blows",          "type": "uint32" },
+				{ "name": "honorable_kills",        "type": "uint32" },
+				{ "name": "deaths",                 "type": "uint32" },
+				{ "name": "bonus_honor",            "type": "uint32" },
+				{ "name": "amount_of_extra_fields", "type": "uint32" },
+				{ "name": "fields",                 "type": "uint32", "array": {"count_field": "amount_of_extra_fields"} }
+			]
+		},
+		"ItemClassAndSubClass": {
+			"kind": "enum_class",
+			"underlying": "uint64",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"consumable":               0,
+				"bag":                      1,
+				"one_handed_axe":           2,
+				"jewelry_obsolete":         3,
+				"miscellaneous_armor":      4,
+				"reagent":                  5,
+				"wand_obsolete":            6,
+				"trade_good":               7,
+				"generic_obsolete":         8,
+				"book":                     9,
+				"money_obsolete":           10,
+				"quiver_obsolete":          11,
+				"quest":                    12,
+				"key":                      13,
+				"permanent":                14,
+				"junk":                     15,
+				"cheese_or_bread_obsolete": 4294967296,
+				"soul_bag":                 4294967297,
+				"two_handed_axe":           4294967298,
+				"cloth_armor":              4294967300,
+				"bolt_obsolete":            4294967302,
+				"part_trade_good":          4294967303,
+				"leatherworking_recipe":    4294967305,
+				"quiver_obsolete1":         4294967307,
+				"lockpick":                 4294967309,
+				"liquid_obsolete":          8589934592,
+				"herb_bag":                 8589934593,
+				"bow":                      8589934594,
+				"leather_armor":            8589934596,
+				"arrow":                    8589934598,
+				"explosive_trade_good":     8589934599,
+				"tailoring_recipe":         8589934601,
+				"quiver":                   8589934603,
+				"enchanting_bag":           12884901889,
+				"gun":                      12884901890,
+				"mail_armor":               12884901892,
+				"bullet":                   12884901894,
+				"device_trade_good":        12884901895,
+				"engineering_recipe":       12884901897,
+				"ammo_pouch":               12884901899,
+				"engineering_bag":          17179869185,
+				"one_handed_mace":          17179869186,
+				"plate_armor":              17179869188,
+				"thrown_obsolete":          17179869190,
+				"blacksmithing_recipe":     17179869193,
+				"two_handed_mace":          21474836482,
+				"buckler_obsolete":         21474836484,
+				"cooking_recipe":           21474836489,
+				"polearm":                  25769803778,
+				"shield":                   25769803780,
+				"alchemy_recipe":           25769803785,
+				"one_handed_sword":         30064771074,
+				"libram":                   30064771076,
+				"first_aid_recipe":         30064771081,
+				"two_handed_sword":         34359738370,
+				"idol":                     34359738372,
+				"enchanting_recipe":        34359738377,
+				"obsolete_weapon":          38654705666,
+				"totem":                    38654705668,
+				"fishing_recipe":           38654705673,
+				"staff":                    42949672962,
+				"one_handed_exotic":        47244640258,
+				"two_handed_exotic":        51539607554,
+				"fist_weapon":              55834574850,
+				"miscellaneous_weapon":     60129542146,
+				"dagger":                   64424509442,
+				"thrown":                   68719476738,
+				"spear":                    73014444034,
+				"crossbow":                 77309411330,
+				"wand":                     81604378626,
+				"fishing_pole":             85899345922
+			}
+		},
+		"ItemFlag": {
+			"kind": "flags",
+			"underlying": "uint32",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"none":              0,
+				"no_pickup":         1,
+				"conjured":          2,
+				"lootable":          4,
+				"deprecated":        16,
+				"indestructible":    32,
+				"player_cast":       64,
+				"no_equip_cooldown": 128,
+				"int_bonus_instead": 256,
+				"wrapper":           512,
+				"ignore_bag_space":  1024,
+				"party_loot":        2048,
+				"charter":           8192,
+				"has_text":          16384,
+				"no_disenchant":     32768,
+				"real_duration":     65536,
+				"no_creator":        131072
+			}
+		},
+		"AllowedClass": {
+			"kind": "flags",
+			"underlying": "uint32",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"all":     0,
+				"warrior": 1,
+				"paladin": 2,
+				"hunter":  4,
+				"rogue":   8,
+				"priest":  16,
+				"shaman":  64,
+				"mage":    128,
+				"warlock": 256,
+				"druid":   1024
+			}
+		},
+		"AllowedRace": {
+			"kind": "flags",
+			"underlying": "uint32",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"all":       0,
+				"human":     1,
+				"orc":       2,
+				"dwarf":     4,
+				"night_elf": 8,
+				"undead":    16,
+				"tauren":    32,
+				"gnome":     64,
+				"troll":     128,
+				"goblin":    256
+			}
+		},
+		"ItemStat": {
+			"kind": "struct",
+			"cpp_namespace": "ember::protocol",
+			"fields": [
+				{ "name": "stat_type", "type": "uint32" },
+				{ "name": "value",     "type": "int32" }
+			]
+		},
+		"NpcTextUpdateEmote": {
+			"kind": "struct",
+			"cpp_namespace": "ember::protocol",
+			"fields": [
+				{ "name": "delay", "type": "uint32" },
+				{ "name": "emote", "type": "uint32" }
+			]
+		},
+		"QuestItemRequirement": {
+			"kind": "struct",
+			"cpp_namespace": "ember::protocol",
+			"fields": [
+				{ "name": "item",            "type": "uint32" },
+				{ "name": "item_count",      "type": "uint32" },
+				{ "name": "item_display_id", "type": "uint32" }
+			]
+		},
+		"QuestItemReward": {
+			"kind": "struct",
+			"cpp_namespace": "ember::protocol",
+			"fields": [
+				{ "name": "item",       "type": "uint32" },
+				{ "name": "item_count", "type": "uint32" }
+			]
+		},
+		"QuestDetailsEmote": {
+			"kind": "struct",
+			"cpp_namespace": "ember::protocol",
+			"fields": [
+				{ "name": "emote",       "type": "uint32" },
+				{ "name": "emote_delay", "type": "uint32" }
+			]
+		},
+		"QuestCompletable": {
+			"kind": "enum_class",
+			"underlying": "uint32",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"not_completable": 0,
+				"completeable":    3
+			}
+		},
+		"RaidTargetUpdateType": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"partial": 0,
+				"full":    1
+			}
+		},
+		"RaidTargetIndex": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"unknown0":      0,
+				"unknown1":      1,
+				"unknown2":      2,
+				"unknown3":      3,
+				"unknown4":      4,
+				"unknown5":      5,
+				"unknown6":      6,
+				"unknown7":      7,
+				"unknown8":      8,
+				"request_icons": 255
+			}
+		},
+		"RaidTargetUpdate": {
+			"kind": "struct",
+			"cpp_namespace": "ember::protocol",
+			"fields": [
+				{ "name": "index", "type": "RaidTargetIndex" },
+				{ "name": "guid",  "type": "uint64" }
+			]
+		},
+		"RaidInfo": {
+			"kind": "struct",
+			"cpp_namespace": "ember::protocol",
+			"fields": [
+				{ "name": "map",         "type": "Map" },
+				{ "name": "reset_time",  "type": "uint32" },
+				{ "name": "instance_id", "type": "uint32" }
+			]
+		},
+		"FriendStatus": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"offline":  0,
+				"online":   1,
+				"afk":      2,
+				"unknown3": 3,
+				"dnd":      4
+			}
+		},
+		"Friend": {
+			"kind": "struct",
+			"cpp_namespace": "ember::protocol",
+			"fields": [
+				{ "name": "guid",   "type": "uint64" },
+				{ "name": "status", "type": "FriendStatus" },
+				{
+					"type": "group",
+					"when": { "op": "neq", "field": "status", "value": "offline" },
+					"fields": [
+						{ "name": "area",  "type": "Area" },
+						{ "name": "level", "type": "uint32" },
+						{ "name": "class", "type": "uint32" }
+					]
+				}
+			]
+		},
+		"GroupType": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"normal": 0,
+				"raid":   1
+			}
+		},
+		"GroupListMember": {
+			"kind": "struct",
+			"cpp_namespace": "ember::protocol",
+			"fields": [
+				{ "name": "name",      "type": "CString" },
+				{ "name": "guid",      "type": "uint64" },
+				{ "name": "is_online", "type": "uint8" },
+				{ "name": "flags",     "type": "uint8" }
+			]
+		},
+		"GroupLootSetting": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"free_for_all":      0,
+				"round_robin":       1,
+				"master_loot":       2,
+				"group_loot":        3,
+				"need_before_greed": 4
+			}
+		},
+		"ItemQuality": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"poor":      0,
+				"normal":    1,
+				"uncommon":  2,
+				"rare":      3,
+				"epic":      4,
+				"legendary": 5,
+				"artifact":  6
+			}
+		},
+		"GroupUpdateFlags": {
+			"kind": "flags",
+			"underlying": "uint32",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"none":           0,
+				"status":         1,
+				"cur_hp":         2,
+				"max_hp":         4,
+				"power_type":     8,
+				"cur_power":      16,
+				"max_power":      32,
+				"level":          64,
+				"zone":           128,
+				"position":       256,
+				"auras":          512,
+				"auras_2":        1024,
+				"pet_guid":       2048,
+				"pet_name":       4096,
+				"pet_model_id":   8192,
+				"pet_cur_hp":     16384,
+				"pet_max_hp":     32768,
+				"pet_power_type": 65536,
+				"pet_cur_power":  131072,
+				"pet_max_power":  262144,
+				"pet_auras":      524288,
+				"pet_auras_2":    1048576,
+				"mode_offline":   268435456
+			}
+		},
+		"GroupMemberOnlineStatus": {
+			"kind": "flags",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"offline":  0,
+				"online":   1,
+				"pvp":      2,
+				"dead":     4,
+				"ghost":    8,
+				"pvp_ffa":  16,
+				"zone_out": 32,
+				"afk":      64,
+				"dnd":      128
+			}
+		},
+		"Power": {
+			"kind": "external",
+			"include": "dbcs/MemoryDefs.h",
+			"cpp_namespace": "ember::dbc::ChrClasses",
+			"cpp_type_name": "PowerType",
+			"underlying": "int32"
+		},
+		"WhoPlayer": {
+			"kind": "struct",
+			"cpp_namespace": "ember::protocol",
+			"fields": [
+				{ "name": "name",  "type": "CString" },
+				{ "name": "guild", "type": "CString" },
+				{ "name": "level", "type": "uint32" },
+				{ "name": "class", "type": "uint32" },
+				{ "name": "race",  "type": "uint32" },
+				{ "name": "area",  "type": "Area" }
+			]
+		},
+		"InitialSpell": {
+			"kind": "struct",
+			"cpp_namespace": "ember::protocol",
+			"fields": [
+				{ "name": "spell_id", "type": "uint16" },
+				{ "name": "unknown1", "type": "uint16" }
+			]
+		},
+		"CooldownSpell": {
+			"kind": "struct",
+			"cpp_namespace": "ember::protocol",
+			"fields": [
+				{ "name": "spell_id",          "type": "uint16" },
+				{ "name": "item_id",           "type": "uint16" },
+				{ "name": "spell_category",    "type": "uint16" },
+				{ "name": "cooldown",          "type": "uint32" },
+				{ "name": "category_cooldown", "type": "uint32" }
+			]
+		},
+		"AuraType": {
+			"kind": "enum_class",
+			"underlying": "uint32",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"none":                               0,
+				"bind_sight":                         1,
+				"mod_possess":                        2,
+				"periodic_damage":                    3,
+				"dummy":                              4,
+				"mod_confuse":                        5,
+				"mod_charm":                          6,
+				"mod_fear":                           7,
+				"periodic_heal":                      8,
+				"mod_attackspeed":                    9,
+				"mod_threat":                         10,
+				"mod_taunt":                          11,
+				"mod_stun":                           12,
+				"mod_damage_done":                    13,
+				"mod_damage_taken":                   14,
+				"damage_shield":                      15,
+				"mod_stealth":                        16,
+				"mod_stealth_detect":                 17,
+				"mod_invisibility":                   18,
+				"mod_invisibility_detection":         19,
+				"obs_mod_health":                     20,
+				"obs_mod_mana":                       21,
+				"mod_resistance":                     22,
+				"periodic_trigger_spell":             23,
+				"periodic_energize":                  24,
+				"mod_pacify":                         25,
+				"mod_root":                           26,
+				"mod_silence":                        27,
+				"reflect_spells":                     28,
+				"mod_stat":                           29,
+				"mod_skill":                          30,
+				"mod_increase_speed":                 31,
+				"mod_increase_mounted_speed":         32,
+				"mod_decrease_speed":                 33,
+				"mod_increase_health":                34,
+				"mod_increase_energy":                35,
+				"mod_shapeshift":                     36,
+				"effect_immunity":                    37,
+				"state_immunity":                     38,
+				"school_immunity":                    39,
+				"damage_immunity":                    40,
+				"dispel_immunity":                    41,
+				"proc_trigger_spell":                 42,
+				"proc_trigger_damage":                43,
+				"track_creatures":                    44,
+				"track_resources":                    45,
+				"unknown46":                          46,
+				"mod_parry_percent":                  47,
+				"unknown48":                          48,
+				"mod_dodge_percent":                  49,
+				"mod_block_skill":                    50,
+				"mod_block_percent":                  51,
+				"mod_crit_percent":                   52,
+				"periodic_leech":                     53,
+				"mod_hit_chance":                     54,
+				"mod_spell_hit_chance":               55,
+				"transform":                          56,
+				"mod_spell_crit_chance":              57,
+				"mod_increase_swim_speed":            58,
+				"mod_damage_done_creature":           59,
+				"mod_pacify_silence":                 60,
+				"mod_scale":                          61,
+				"periodic_health_funnel":             62,
+				"periodic_mana_funnel":               63,
+				"periodic_mana_leech":                64,
+				"mod_casting_speed_not_stack":        65,
+				"feign_death":                        66,
+				"mod_disarm":                         67,
+				"mod_stalked":                        68,
+				"school_absorb":                      69,
+				"extra_attacks":                      70,
+				"mod_spell_crit_chance_school":       71,
+				"mod_power_cost_school_pct":          72,
+				"mod_power_cost_school":              73,
+				"reflect_spells_school":              74,
+				"mod_language":                       75,
+				"far_sight":                          76,
+				"mechanic_immunity":                  77,
+				"mounted":                            78,
+				"mod_damage_percent_done":            79,
+				"mod_percent_stat":                   80,
+				"split_damage_pct":                   81,
+				"water_breathing":                    82,
+				"mod_base_resistance":                83,
+				"mod_regen":                          84,
+				"mod_power_regen":                    85,
+				"channel_death_item":                 86,
+				"mod_damage_percent_taken":           87,
+				"mod_health_regen_percent":           88,
+				"periodic_damage_percent":            89,
+				"mod_resist_chance":                  90,
+				"mod_detect_range":                   91,
+				"prevents_fleeing":                   92,
+				"mod_unattackable":                   93,
+				"interrupt_regen":                    94,
+				"ghost":                              95,
+				"spell_magnet":                       96,
+				"mana_shield":                        97,
+				"mod_skill_talent":                   98,
+				"mod_attack_power":                   99,
+				"auras_visible":                      100,
+				"mod_resistance_pct":                 101,
+				"mod_melee_attack_power_versus":      102,
+				"mod_total_threat":                   103,
+				"water_walk":                         104,
+				"feather_fall":                       105,
+				"hover":                              106,
+				"add_flat_modifier":                  107,
+				"add_pct_modifier":                   108,
+				"add_target_trigger":                 109,
+				"mod_power_regen_percent":            110,
+				"add_caster_hit_trigger":             111,
+				"override_class_scripts":             112,
+				"mod_ranged_damage_taken":            113,
+				"mod_ranged_damage_taken_pct":        114,
+				"mod_healing":                        115,
+				"mod_regen_during_combat":            116,
+				"mod_mechanic_resistance":            117,
+				"mod_healing_pct":                    118,
+				"share_pet_tracking":                 119,
+				"untrackable":                        120,
+				"empathy":                            121,
+				"mod_offhand_damage_pct":             122,
+				"mod_target_resistance":              123,
+				"mod_ranged_attack_power":            124,
+				"mod_melee_damage_taken":             125,
+				"mod_melee_damage_taken_pct":         126,
+				"ranged_attack_power_attacker_bonus": 127,
+				"mod_possess_pet":                    128,
+				"mod_speed_always":                   129,
+				"mod_mounted_speed_always":           130,
+				"mod_ranged_attack_power_versus":     131,
+				"mod_increase_energy_percent":        132,
+				"mod_increase_health_percent":        133,
+				"mod_mana_regen_interrupt":           134,
+				"mod_healing_done":                   135,
+				"mod_healing_done_percent":           136,
+				"mod_total_stat_percentage":          137,
+				"mod_melee_haste":                    138,
+				"force_reaction":                     139,
+				"mod_ranged_haste":                   140,
+				"mod_ranged_ammo_haste":              141,
+				"mod_base_resistance_pct":            142,
+				"mod_resistance_exclusive":           143,
+				"safe_fall":                          144,
+				"charisma":                           145,
+				"persuaded":                          146,
+				"mechanic_immunity_mask":             147,
+				"retain_combo_points":                148,
+				"resist_pushback":                    149,
+				"mod_shield_blockvalue_pct":          150,
+				"track_stealthed":                    151,
+				"mod_detected_range":                 152,
+				"split_damage_flat":                  153,
+				"mod_stealth_level":                  154,
+				"mod_water_breathing":                155,
+				"mod_reputation_gain":                156,
+				"pet_damage_multi":                   157,
+				"mod_shield_blockvalue":              158,
+				"no_pvp_credit":                      159,
+				"mod_aoe_avoidance":                  160,
+				"mod_health_regen_in_combat":         161,
+				"power_burn_mana":                    162,
+				"mod_crit_damage_bonus":              163,
+				"unknown164":                         164,
+				"melee_attack_power_attacker_bonus":  165,
+				"mod_attack_power_pct":               166,
+				"mod_ranged_attack_power_pct":        167,
+				"mod_damage_done_versus":             168,
+				"mod_crit_percent_versus":            169,
+				"detect_amore":                       170,
+				"mod_speed_not_stack":                171,
+				"mod_mounted_speed_not_stack":        172,
+				"allow_champion_spells":              173,
+				"mod_spell_damage_of_stat_percent":   174,
+				"mod_spell_healing_of_stat_percent":  175,
+				"spirit_of_redemption":               176,
+				"aoe_charm":                          177,
+				"mod_debuff_resistance":              178,
+				"mod_attacker_spell_crit_chance":     179,
+				"mod_flat_spell_damage_versus":       180,
+				"mod_flat_spell_crit_damage_versus":  181,
+				"mod_resistance_of_stat_percent":     182,
+				"mod_critical_threat":                183,
+				"mod_attacker_melee_hit_chance":      184,
+				"mod_attacker_ranged_hit_chance":     185,
+				"mod_attacker_spell_hit_chance":      186,
+				"mod_attacker_melee_crit_chance":     187,
+				"mod_attacker_ranged_crit_chance":    188,
+				"mod_rating":                         189,
+				"mod_faction_reputation_gain":        190,
+				"use_normal_movement_speed":          191
+			}
+		},
+		"SpellSchool": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"normal": 0,
+				"holy":   1,
+				"fire":   2,
+				"nature": 3,
+				"frost":  4,
+				"shadow": 5,
+				"arcane": 6
+			}
+		},
+		"AuraLog": {
+			"kind": "struct",
+			"cpp_namespace": "ember::protocol",
+			"fields": [
+				{ "name": "aura_type", "type": "AuraType" },
+				{
+					"type": "group",
+					"when": { "op": "in", "field": "aura_type", "value": ["periodic_damage", "periodic_damage_percent"] },
+					"fields": [
+						{ "name": "damage1",  "type": "uint32" },
+						{ "name": "school",   "type": "SpellSchool" },
+						{ "name": "absorbed", "type": "uint32" },
+						{ "name": "resisted", "type": "uint32" }
+					]
+				},
+				{
+					"type": "group",
+					"when": { "op": "in", "field": "aura_type", "value": ["periodic_heal", "obs_mod_health"] },
+					"fields": [
+						{ "name": "damage2", "type": "uint32" }
+					]
+				},
+				{
+					"type": "group",
+					"when": { "op": "in", "field": "aura_type", "value": ["obs_mod_mana", "periodic_energize"] },
+					"fields": [
+						{ "name": "misc_value1", "type": "uint32" },
+						{ "name": "damage3",     "type": "uint32" }
+					]
+				},
+				{
+					"type": "group",
+					"when": { "op": "eq", "field": "aura_type", "value": "periodic_mana_leech" },
+					"fields": [
+						{ "name": "misc_value2",     "type": "uint32" },
+						{ "name": "damage",          "type": "uint32" },
+						{ "name": "gain_multiplier", "type": "float" }
+					]
+				}
+			]
+		},
+		"SpellEffect": {
+			"kind": "enum_class",
+			"underlying": "uint32",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"none":                       0,
+				"instakill":                  1,
+				"school_damage":              2,
+				"dummy":                      3,
+				"portal_teleport":            4,
+				"teleport_units":             5,
+				"apply_aura":                 6,
+				"environmental_damage":       7,
+				"power_drain":                8,
+				"health_leech":               9,
+				"heal":                       10,
+				"bind":                       11,
+				"portal":                     12,
+				"ritual_base":                13,
+				"ritual_specialize":          14,
+				"ritual_activate_portal":     15,
+				"quest_complete":             16,
+				"weapon_damage_noschool":     17,
+				"resurrect":                  18,
+				"add_extra_attacks":          19,
+				"dodge":                      20,
+				"evade":                      21,
+				"parry":                      22,
+				"block":                      23,
+				"create_item":                24,
+				"weapon":                     25,
+				"defense":                    26,
+				"persistent_area_aura":       27,
+				"summon":                     28,
+				"leap":                       29,
+				"energize":                   30,
+				"weapon_percent_damage":      31,
+				"trigger_missile":            32,
+				"open_lock":                  33,
+				"summon_change_item":         34,
+				"apply_area_aura_party":      35,
+				"learn_spell":                36,
+				"spell_defense":              37,
+				"dispel":                     38,
+				"language":                   39,
+				"dual_wield":                 40,
+				"summon_wild":                41,
+				"summon_guardian":            42,
+				"teleport_units_face_caster": 43,
+				"skill_step":                 44,
+				"add_honor":                  45,
+				"spawn":                      46,
+				"trade_skill":                47,
+				"stealth":                    48,
+				"detect":                     49,
+				"trans_door":                 50,
+				"force_critical_hit":         51,
+				"guarantee_hit":              52,
+				"enchant_item":               53,
+				"enchant_item_temporary":     54,
+				"tamecreature":               55,
+				"summon_pet":                 56,
+				"learn_pet_spell":            57,
+				"weapon_damage":              58,
+				"open_lock_item":             59,
+				"proficiency":                60,
+				"send_event":                 61,
+				"power_burn":                 62,
+				"threat":                     63,
+				"trigger_spell":              64,
+				"health_funnel":              65,
+				"power_funnel":               66,
+				"heal_max_health":            67,
+				"interrupt_cast":             68,
+				"distract":                   69,
+				"pull":                       70,
+				"pickpocket":                 71,
+				"add_farsight":               72,
+				"summon_possessed":           73,
+				"summon_totem":               74,
+				"heal_mechanical":            75,
+				"summon_object_wild":         76,
+				"script_effect":              77,
+				"attack":                     78,
+				"sanctuary":                  79,
+				"add_combo_points":           80,
+				"create_house":               81,
+				"bind_sight":                 82,
+				"duel":                       83,
+				"stuck":                      84,
+				"summon_player":              85,
+				"activate_object":            86,
+				"summon_totem_slot1":         87,
+				"summon_totem_slot2":         88,
+				"summon_totem_slot3":         89,
+				"summon_totem_slot4":         90,
+				"threat_all":                 91,
+				"enchant_held_item":          92,
+				"summon_phantasm":            93,
+				"self_resurrect":             94,
+				"skinning":                   95,
+				"charge":                     96,
+				"summon_critter":             97,
+				"knock_back":                 98,
+				"disenchant":                 99,
+				"inebriate":                  100,
+				"feed_pet":                   101,
+				"dismiss_pet":                102,
+				"reputation":                 103,
+				"summon_object_slot1":        104,
+				"summon_object_slot2":        105,
+				"summon_object_slot3":        106,
+				"summon_object_slot4":        107,
+				"dispel_mechanic":            108,
+				"summon_dead_pet":            109,
+				"destroy_all_totems":         110,
+				"durability_damage":          111,
+				"summon_demon":               112,
+				"resurrect_new":              113,
+				"attack_me":                  114,
+				"durability_damage_pct":      115,
+				"skin_player_corpse":         116,
+				"spirit_heal":                117,
+				"skill":                      118,
+				"apply_area_aura_pet":        119,
+				"teleport_graveyard":         120,
+				"normalized_weapon_dmg":      121,
+				"unknown122":                 122,
+				"send_taxi":                  123,
+				"player_pull":                124,
+				"modify_threat_percent":      125,
+				"unknown126":                 126,
+				"unknown127":                 127
+			}
+		},
+		"SpellLog": {
+			"kind": "struct",
+			"cpp_namespace": "ember::protocol",
+			"fields": [
+				{ "name": "effect",         "type": "SpellEffect" },
+				{ "name": "amount_of_logs", "type": "uint32" },
+				{
+					"type": "group",
+					"when": { "op": "eq", "field": "effect", "value": "power_drain" },
+					"fields": [
+						{ "name": "target1",    "type": "uint64" },
+						{ "name": "amount",     "type": "uint32" },
+						{ "name": "power",      "type": "uint32" },
+						{ "name": "multiplier", "type": "float" }
+					]
+				},
+				{
+					"type": "group",
+					"when": { "op": "in", "field": "effect", "value": ["heal", "heal_max_health"] },
+					"fields": [
+						{ "name": "target2",       "type": "uint64" },
+						{ "name": "heal_amount",   "type": "uint32" },
+						{ "name": "heal_critical", "type": "uint32" }
+					]
+				},
+				{
+					"type": "group",
+					"when": { "op": "eq", "field": "effect", "value": "energize" },
+					"fields": [
+						{ "name": "target3",         "type": "uint64" },
+						{ "name": "energize_amount", "type": "uint32" },
+						{ "name": "energize_power",  "type": "uint32" }
+					]
+				},
+				{
+					"type": "group",
+					"when": { "op": "eq", "field": "effect", "value": "add_extra_attacks" },
+					"fields": [
+						{ "name": "target4",       "type": "uint64" },
+						{ "name": "extra_attacks", "type": "uint32" }
+					]
+				},
+				{
+					"type": "group",
+					"when": { "op": "eq", "field": "effect", "value": "create_item" },
+					"fields": [
+						{ "name": "item", "type": "uint32" }
+					]
+				},
+				{
+					"type": "group",
+					"when": { "op": "eq", "field": "effect", "value": "interrupt_cast" },
+					"fields": [
+						{ "name": "target5",           "type": "uint64" },
+						{ "name": "interrupted_spell", "type": "uint32" }
+					]
+				},
+				{
+					"type": "group",
+					"when": { "op": "eq", "field": "effect", "value": "durability_damage" },
+					"fields": [
+						{ "name": "target6",        "type": "uint64" },
+						{ "name": "item_to_damage", "type": "uint32" },
+						{ "name": "unknown5",       "type": "uint32" }
+					]
+				},
+				{
+					"type": "group",
+					"when": { "op": "eq", "field": "effect", "value": "feed_pet" },
+					"fields": [
+						{ "name": "feed_pet_item", "type": "uint32" }
+					]
+				},
+				{
+					"type": "group",
+					"when": { "op": "in", "field": "effect", "value": ["instakill", "resurrect", "dispel", "threat", "distract", "sanctuary", "threat_all", "dispel_mechanic", "resurrect_new", "attack_me", "skin_player_corpse", "modify_threat_percent", "unknown126", "open_lock", "open_lock_item", "dismiss_pet", "trans_door", "summon", "summon_pet", "summon_wild", "summon_guardian", "summon_totem_slot1", "summon_totem_slot2", "summon_totem_slot3", "summon_totem_slot4", "summon_possessed", "summon_totem", "summon_critter", "summon_object_wild", "summon_object_slot1", "summon_object_slot2", "summon_object_slot3", "summon_object_slot4", "summon_demon"] },
+					"fields": [
+						{ "name": "target7", "type": "uint64" }
+					]
+				}
+			]
+		},
+		"SpellMissInfo": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"none":    0,
+				"miss":    1,
+				"resist":  2,
+				"dodge":   3,
+				"parry":   4,
+				"block":   5,
+				"evade":   6,
+				"immune":  7,
+				"immune2": 8,
+				"deflect": 9,
+				"absorb":  10,
+				"reflect": 11
+			}
+		},
+		"SpellLogMiss": {
+			"kind": "struct",
+			"cpp_namespace": "ember::protocol",
+			"fields": [
+				{ "name": "target",    "type": "uint64" },
+				{ "name": "miss_info", "type": "SpellMissInfo" }
+			]
+		},
+		"SpellCooldownStatus": {
+			"kind": "struct",
+			"cpp_namespace": "ember::protocol",
+			"fields": [
+				{ "name": "id",            "type": "uint32" },
+				{ "name": "cooldown_time", "type": "uint32" }
+			]
+		},
+		"CastFlags": {
+			"kind": "flags",
+			"underlying": "uint16",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"none":             0,
+				"hidden_combatlog": 1,
+				"unknown2":         2,
+				"unknown3":         4,
+				"unknown4":         8,
+				"unknown5":         16,
+				"ammo":             32,
+				"unknown7":         64,
+				"unknown8":         128,
+				"unknown9":         256
+			}
+		},
+		"SpellMiss": {
+			"kind": "struct",
+			"cpp_namespace": "ember::protocol",
+			"fields": [
+				{ "name": "target",    "type": "uint64" },
+				{ "name": "miss_info", "type": "SpellMissInfo" }
+			]
+		},
+		"TrainerSpellState": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"green": 0,
+				"red":   1,
+				"gray":  2
+			}
+		},
+		"TrainerSpell": {
+			"kind": "struct",
+			"cpp_namespace": "ember::protocol",
+			"fields": [
+				{ "name": "spell",                "type": "uint32" },
+				{ "name": "state",                "type": "TrainerSpellState" },
+				{ "name": "spell_cost",           "type": "uint32" },
+				{ "name": "talent_point_cost",    "type": "uint32" },
+				{ "name": "first_rank",           "type": "uint32" },
+				{ "name": "required_level",       "type": "uint8" },
+				{ "name": "required_skill",       "type": "uint32" },
+				{ "name": "required_skill_value", "type": "uint32" },
+				{ "name": "required_spells",      "type": "uint32", "array": {"size": 3} }
+			]
+		},
+		"TradeSlot": {
+			"kind": "struct",
+			"cpp_namespace": "ember::protocol",
+			"fields": [
+				{ "name": "trade_slot_number",         "type": "uint8" },
+				{ "name": "item",                      "type": "uint32" },
+				{ "name": "display_id",                "type": "uint32" },
+				{ "name": "stack_count",               "type": "uint32" },
+				{ "name": "wrapped",                   "type": "uint32" },
+				{ "name": "gift_wrapper",              "type": "uint64" },
+				{ "name": "enchantment",               "type": "uint32" },
+				{ "name": "item_creator",              "type": "uint64" },
+				{ "name": "spell_charges",             "type": "uint32" },
+				{ "name": "item_suffix_factor",        "type": "uint32" },
+				{ "name": "item_random_properties_id", "type": "uint32" },
+				{ "name": "lock_id",                   "type": "uint32" },
+				{ "name": "max_durability",            "type": "uint32" },
+				{ "name": "durability",                "type": "uint32" }
+			]
+		},
+		"WorldState": {
+			"kind": "struct",
+			"cpp_namespace": "ember::protocol",
+			"fields": [
+				{ "name": "state", "type": "uint32" },
+				{ "name": "value", "type": "uint32" }
+			]
+		},
+		"CreatureFamily": {
+			"kind": "external",
+			"include": "dbcs/MemoryDefs.h",
+			"cpp_namespace": "ember::dbc",
+			"underlying": "uint8"
+		},
+		"Character": {
+			"kind": "struct",
+			"cpp_namespace": "ember::protocol",
+			"fields": [
+				{ "name": "guid",                   "type": "uint64" },
+				{ "name": "name",                   "type": "CString" },
+				{ "name": "race",                   "type": "Race" },
+				{ "name": "class",                  "type": "Class" },
+				{ "name": "gender",                 "type": "Gender" },
+				{ "name": "skin",                   "type": "uint8" },
+				{ "name": "face",                   "type": "uint8" },
+				{ "name": "hair_style",             "type": "uint8" },
+				{ "name": "hair_color",             "type": "uint8" },
+				{ "name": "facial_hair",            "type": "uint8" },
+				{ "name": "level",                  "type": "uint8" },
+				{ "name": "area",                   "type": "Area" },
+				{ "name": "map",                    "type": "Map" },
+				{ "name": "position",               "type": "Vector3" },
+				{ "name": "guild_id",               "type": "uint32" },
+				{ "name": "flags",                  "type": "CharacterFlags" },
+				{ "name": "first_login",            "type": "uint8" },
+				{ "name": "pet_display_id",         "type": "uint32" },
+				{ "name": "pet_level",              "type": "uint32" },
+				{ "name": "pet_family",             "type": "uint32" },
+				{ "name": "equipment",              "type": "CharacterGear", "array": {"size": 19} },
+				{ "name": "first_bag_display_id",   "type": "uint32" },
+				{ "name": "first_bag_inventory_id", "type": "uint8" }
+			]
+		},
+		"Language": {
+			"kind": "external",
+			"include": "dbcs/MemoryDefs.h",
+			"cpp_namespace": "ember::dbc",
+			"cpp_type_name": "Languages",
+			"underlying": "uint32"
+		},
+		"NpcTextUpdate": {
+			"kind": "struct",
+			"cpp_namespace": "ember::protocol",
+			"fields": [
+				{ "name": "probability", "type": "float" },
+				{ "name": "texts",       "type": "CString", "array": {"size": 2} },
+				{ "name": "language",    "type": "Language" },
+				{ "name": "emotes",      "type": "NpcTextUpdateEmote", "array": {"size": 3} }
+			]
+		},
+		"ItemDamageType": {
+			"kind": "struct",
+			"cpp_namespace": "ember::protocol",
+			"fields": [
+				{ "name": "damage_minimum", "type": "float" },
+				{ "name": "damage_maximum", "type": "float" },
+				{ "name": "school",         "type": "uint32" }
+			]
+		},
+		"SpellTriggerType": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"on_use":        0,
+				"on_equip":      1,
+				"chance_on_hit": 2
+			}
+		},
+		"ItemSpells": {
+			"kind": "struct",
+			"cpp_namespace": "ember::protocol",
+			"fields": [
+				{ "name": "spell",                   "type": "uint32" },
+				{ "name": "spell_trigger",           "type": "uint32" },
+				{ "name": "spell_charges",           "type": "int32" },
+				{ "name": "spell_cooldown",          "type": "int32" },
+				{ "name": "spell_category",          "type": "uint32" },
+				{ "name": "spell_category_cooldown", "type": "int32" }
+			]
+		},
+		"Bonding": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"no_bind":     0,
+				"pick_up":     1,
+				"equip":       2,
+				"use":         3,
+				"quest_item":  4,
+				"quest_item1": 5
+			}
+		},
+		"PageTextMaterial": {
+			"kind": "external",
+			"include": "dbcs/MemoryDefs.h",
+			"cpp_namespace": "ember::dbc",
+			"underlying": "uint8"
+		},
+		"SheatheType": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"none":               0,
+				"main_hand":          1,
+				"off_hand":           2,
+				"large_weapon_left":  3,
+				"large_weapon_right": 4,
+				"hip_weapon_left":    5,
+				"hip_weapon_right":   6,
+				"shield":             7
+			}
+		},
+		"ItemSet": {
+			"kind": "external",
+			"include": "dbcs/MemoryDefs.h",
+			"cpp_namespace": "ember::dbc",
+			"underlying": "uint16"
+		},
+		"BagFamily": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"none":                 0,
+				"arrows":               1,
+				"bullets":              2,
+				"soul_shards":          3,
+				"unknown4":             4,
+				"unknown5":             5,
+				"herbs":                6,
+				"enchanting_supplies":  7,
+				"engineering_supplies": 8,
+				"keys":                 9
+			}
+		},
+		"QuestObjective": {
+			"kind": "struct",
+			"cpp_namespace": "ember::protocol",
+			"fields": [
+				{ "name": "creature_id",         "type": "uint32" },
+				{ "name": "kill_count",          "type": "uint32" },
+				{ "name": "required_item_id",    "type": "uint32" },
+				{ "name": "required_item_count", "type": "uint32" }
+			]
+		},
+		"AuctionHouse": {
+			"kind": "external",
+			"include": "dbcs/MemoryDefs.h",
+			"cpp_namespace": "ember::dbc",
+			"underlying": "uint32"
+		},
+		"AuctionCommandAction": {
+			"kind": "enum_class",
+			"underlying": "uint32",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"started":    0,
+				"removed":    1,
+				"bid_placed": 2
+			}
+		},
+		"AuctionCommandResult": {
+			"kind": "enum_class",
+			"underlying": "uint32",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"ok":                     0,
+				"err_inventory":          1,
+				"err_database":           2,
+				"err_not_enough_money":   3,
+				"err_item_not_found":     4,
+				"err_higher_bid":         5,
+				"err_bid_increment":      7,
+				"err_bid_own":            10,
+				"err_restricted_account": 13
+			}
+		},
+		"InventoryResult": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"ok":                             0,
+				"cant_equip_level_i":             1,
+				"cant_equip_skill":               2,
+				"item_doesnt_go_to_slot":         3,
+				"bag_full":                       4,
+				"nonempty_bag_over_other_bag":    5,
+				"cant_trade_equip_bags":          6,
+				"only_ammo_can_go_here":          7,
+				"no_required_proficiency":        8,
+				"no_equipment_slot_available":    9,
+				"you_can_never_use_that_item":    10,
+				"you_can_never_use_that_item2":   11,
+				"no_equipment_slot_available2":   12,
+				"cant_equip_with_twohanded":      13,
+				"cant_dual_wield":                14,
+				"item_doesnt_go_into_bag":        15,
+				"item_doesnt_go_into_bag2":       16,
+				"cant_carry_more_of_this":        17,
+				"no_equipment_slot_available3":   18,
+				"item_cant_stack":                19,
+				"item_cant_be_equipped":          20,
+				"items_cant_be_swapped":          21,
+				"slot_is_empty":                  22,
+				"item_not_found":                 23,
+				"cant_drop_soulbound":            24,
+				"out_of_range":                   25,
+				"tried_to_split_more_than_count": 26,
+				"couldnt_split_items":            27,
+				"missing_reagent":                28,
+				"not_enough_money":               29,
+				"not_a_bag":                      30,
+				"can_only_do_with_empty_bags":    31,
+				"dont_own_that_item":             32,
+				"can_equip_only1_quiver":         33,
+				"must_purchase_that_bag_slot":    34,
+				"too_far_away_from_bank":         35,
+				"item_locked":                    36,
+				"you_are_stunned":                37,
+				"you_are_dead":                   38,
+				"cant_do_right_now":              39,
+				"int_bag_error":                  40,
+				"can_equip_only1_bolt":           41,
+				"can_equip_only1_ammopouch":      42,
+				"stackable_cant_be_wrapped":      43,
+				"equipped_cant_be_wrapped":       44,
+				"wrapped_cant_be_wrapped":        45,
+				"bound_cant_be_wrapped":          46,
+				"unique_cant_be_wrapped":         47,
+				"bags_cant_be_wrapped":           48,
+				"already_looted":                 49,
+				"inventory_full":                 50,
+				"bank_full":                      51,
+				"item_is_currently_sold_out":     52,
+				"bag_full3":                      53,
+				"item_not_found2":                54,
+				"item_cant_stack2":               55,
+				"bag_full4":                      56,
+				"item_sold_out":                  57,
+				"object_is_busy":                 58,
+				"none":                           59,
+				"not_in_combat":                  60,
+				"not_while_disarmed":             61,
+				"bag_full6":                      62,
+				"cant_equip_rank":                63,
+				"cant_equip_reputation":          64,
+				"too_many_special_bags":          65,
+				"loot_cant_loot_that_now":        66
+			}
+		},
+		"AuctionCommandResultTwo": {
+			"kind": "enum_class",
+			"underlying": "uint32",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"ok":                     0,
+				"err_inventory":          1,
+				"err_database":           2,
+				"err_not_enough_money":   3,
+				"err_item_not_found":     4,
+				"err_higher_bid":         5,
+				"err_bid_increment":      7,
+				"err_bid_own":            10,
+				"err_restricted_account": 13
+			}
+		},
+		"BattlefieldPortAction": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"leave_queue":  0,
+				"enter_battle": 1
+			}
+		},
+		"BattlegroundBracket": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"tens":     0,
+				"twenties": 1,
+				"thirties": 2,
+				"forties":  3,
+				"fifties":  4,
+				"sixty":    5
+			}
+		},
+		"Emote": {
+			"kind": "external",
+			"include": "dbcs/MemoryDefs.h",
+			"cpp_namespace": "ember::dbc",
+			"cpp_type_name": "Emotes",
+			"underlying": "uint32"
+		},
+		"TextEmote": {
+			"kind": "enum_class",
+			"underlying": "uint32",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"agree":            1,
+				"amaze":            2,
+				"angry":            3,
+				"apologize":        4,
+				"applaud":          5,
+				"bashful":          6,
+				"beckon":           7,
+				"beg":              8,
+				"bite":             9,
+				"bleed":            10,
+				"blink":            11,
+				"blush":            12,
+				"bonk":             13,
+				"bored":            14,
+				"bounce":           15,
+				"brb":              16,
+				"bow":              17,
+				"burp":             18,
+				"bye":              19,
+				"cackle":           20,
+				"cheer":            21,
+				"chicken":          22,
+				"chuckle":          23,
+				"clap":             24,
+				"confused":         25,
+				"congratulate":     26,
+				"cough":            27,
+				"cower":            28,
+				"crack":            29,
+				"cringe":           30,
+				"cry":              31,
+				"curious":          32,
+				"curtsey":          33,
+				"dance":            34,
+				"drink":            35,
+				"drool":            36,
+				"eat":              37,
+				"eye":              38,
+				"fart":             39,
+				"fidget":           40,
+				"flex":             41,
+				"frown":            42,
+				"gasp":             43,
+				"gaze":             44,
+				"giggle":           45,
+				"glare":            46,
+				"gloat":            47,
+				"greet":            48,
+				"grin":             49,
+				"groan":            50,
+				"grovel":           51,
+				"guffaw":           52,
+				"hail":             53,
+				"happy":            54,
+				"hello":            55,
+				"hug":              56,
+				"hungry":           57,
+				"kiss":             58,
+				"kneel":            59,
+				"laugh":            60,
+				"laydown":          61,
+				"massage":          62,
+				"moan":             63,
+				"moon":             64,
+				"mourn":            65,
+				"no":               66,
+				"nod":              67,
+				"nose_pick":        68,
+				"panic":            69,
+				"peer":             70,
+				"plead":            71,
+				"point":            72,
+				"poke":             73,
+				"pray":             74,
+				"roar":             75,
+				"rofl":             76,
+				"rude":             77,
+				"salute":           78,
+				"scratch":          79,
+				"sexy":             80,
+				"shake":            81,
+				"shout":            82,
+				"shrug":            83,
+				"shy":              84,
+				"sigh":             85,
+				"sit":              86,
+				"sleep":            87,
+				"snarl":            88,
+				"spit":             89,
+				"stare":            90,
+				"surprised":        91,
+				"surrender":        92,
+				"talk":             93,
+				"talk_ex":          94,
+				"talk_q":           95,
+				"tap":              96,
+				"thank":            97,
+				"threaten":         98,
+				"tired":            99,
+				"victory":          100,
+				"wave":             101,
+				"welcome":          102,
+				"whine":            103,
+				"whistle":          104,
+				"work":             105,
+				"yawn":             106,
+				"boggle":           107,
+				"calm":             108,
+				"cold":             109,
+				"comfort":          110,
+				"cuddle":           111,
+				"duck":             112,
+				"insult":           113,
+				"introduce":        114,
+				"jk":               115,
+				"lick":             116,
+				"listen":           117,
+				"lost":             118,
+				"mock":             119,
+				"ponder":           120,
+				"pounce":           121,
+				"praise":           122,
+				"purr":             123,
+				"puzzle":           124,
+				"raise":            125,
+				"ready":            126,
+				"shimmy":           127,
+				"shiver":           128,
+				"shoo":             129,
+				"slap":             130,
+				"smirk":            131,
+				"sniff":            132,
+				"snub":             133,
+				"soothe":           134,
+				"stink":            135,
+				"taunt":            136,
+				"tease":            137,
+				"thirsty":          138,
+				"veto":             139,
+				"snicker":          140,
+				"stand":            141,
+				"tickle":           142,
+				"violin":           143,
+				"smile":            163,
+				"rasp":             183,
+				"pity":             203,
+				"growl":            204,
+				"bark":             205,
+				"scared":           223,
+				"flop":             224,
+				"love":             225,
+				"moo":              226,
+				"commend":          243,
+				"train":            264,
+				"helpme":           303,
+				"incoming":         304,
+				"charge":           305,
+				"flee":             306,
+				"attack_my_target": 307,
+				"oom":              323,
+				"follow":           324,
+				"wait":             325,
+				"heal_me":          326,
+				"open_fire":        327,
+				"flirt":            328,
+				"joke":             329,
+				"golf_clap":        343,
+				"wink":             363,
+				"pat":              364
+			}
+		},
+		"ChatNotify": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"joined_notice":                0,
+				"left_notice":                  1,
+				"you_joined_notice":            2,
+				"you_left_notice":              3,
+				"wrong_password_notice":        4,
+				"not_member_notice":            5,
+				"not_moderator_notice":         6,
+				"password_changed_notice":      7,
+				"owner_changed_notice":         8,
+				"player_not_found_notice":      9,
+				"not_owner_notice":             10,
+				"channel_owner_notice":         11,
+				"mode_change_notice":           12,
+				"announcements_on_notice":      13,
+				"announcements_off_notice":     14,
+				"moderation_on_notice":         15,
+				"moderation_off_notice":        16,
+				"muted_notice":                 17,
+				"player_kicked_notice":         18,
+				"banned_notice":                19,
+				"player_banned_notice":         20,
+				"player_unbanned_notice":       21,
+				"player_not_banned_notice":     22,
+				"player_already_member_notice": 23,
+				"invite_notice":                24,
+				"invite_wrong_faction_notice":  25,
+				"wrong_faction_notice":         26,
+				"invalid_name_notice":          27,
+				"not_moderated_notice":         28,
+				"player_invited_notice":        29,
+				"player_invite_banned_notice":  30,
+				"throttled_notice":             31
+			}
+		},
+		"ServerMessageType": {
+			"kind": "enum_class",
+			"underlying": "uint32",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"shutdown_time":      1,
+				"restart_time":       2,
+				"custom":             3,
+				"shutdown_cancelled": 4,
+				"restart_cancelled":  5
+			}
+		},
+		"CinematicSequenceId": {
+			"kind": "enum_class",
+			"underlying": "uint32",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"goblin":    0,
+				"undead":    2,
+				"orc":       21,
+				"dwarf":     41,
+				"night_elf": 61,
+				"human":     81,
+				"gnome":     101,
+				"troll":     121,
+				"tauren":    141
+			}
+		},
+		"SheathState": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"unarmed": 0,
+				"melee":   1,
+				"ranged":  2
+			}
+		},
+		"AiReaction": {
+			"kind": "enum_class",
+			"underlying": "uint32",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"alert":    0,
+				"friendly": 1,
+				"hostile":  2,
+				"afraid":   3,
+				"destroy":  4
+			}
+		},
+		"EnvironmentalDamageType": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"exhausted": 0,
+				"drowning":  1,
+				"fall":      2,
+				"lava":      3,
+				"slime":     4,
+				"fire":      5
+			}
+		},
+		"LogFormat": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"default": 0,
+				"debug":   1
+			}
+		},
+		"DuelWinnerReason": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"won":  0,
+				"fled": 1
+			}
+		},
+		"ExperienceAwardType": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"kill":     0,
+				"non_kill": 1
+			}
+		},
+		"GmTicketResponse": {
+			"kind": "enum_class",
+			"underlying": "uint32",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"not_exist":      0,
+				"already_exist":  1,
+				"create_success": 2,
+				"create_error":   3,
+				"update_success": 4,
+				"update_error":   5,
+				"ticket_deleted": 9
+			}
+		},
+		"GmTicketStatus": {
+			"kind": "enum_class",
+			"underlying": "uint32",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"db_error": 0,
+				"has_text": 6,
+				"default":  10
+			}
+		},
+		"GmTicketEscalationStatus": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"gmticket_assignedtogm_status_not_assigned": 0,
+				"gmticket_assignedtogm_status_assigned":     1,
+				"gmticket_assignedtogm_status_escalated":    2
+			}
+		},
+		"GmTicketQueueStatus": {
+			"kind": "enum_class",
+			"underlying": "uint32",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"disabled": 0,
+				"enabled":  1
+			}
+		},
+		"GmTicketStatusResponse": {
+			"kind": "enum_class",
+			"underlying": "uint32",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"updated": 1,
+				"closed":  2,
+				"survey":  3
+			}
+		},
+		"GuildEmblemResult": {
+			"kind": "enum_class",
+			"underlying": "uint32",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"success":               0,
+				"invalid_tabard_colors": 1,
+				"no_guild":              2,
+				"not_guild_master":      3,
+				"not_enough_money":      4,
+				"no_message":            5
+			}
+		},
+		"GuildCommand": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"create":    0,
+				"invite":    1,
+				"quit":      3,
+				"founder":   14,
+				"unknown19": 19,
+				"unknown20": 20
+			}
+		},
+		"GuildCommandResult": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"player_no_more_in_guild":     0,
+				"guild_internal":              1,
+				"already_in_guild":            2,
+				"already_in_guild_s":          3,
+				"invited_to_guild":            4,
+				"already_invited_to_guild_s":  5,
+				"guild_name_invalid":          6,
+				"guild_name_exists_s":         7,
+				"guild_permissions_or_leader": 8,
+				"guild_player_not_in_guild":   9,
+				"guild_player_not_in_guild_s": 10,
+				"guild_player_not_found_s":    11,
+				"guild_not_allied":            12,
+				"guild_rank_too_high_s":       13,
+				"guild_rank_too_low_s":        14
+			}
+		},
+		"GuildEvent": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"promotion":      0,
+				"demotion":       1,
+				"motd":           2,
+				"joined":         3,
+				"left":           4,
+				"removed":        5,
+				"leader_is":      6,
+				"leader_changed": 7,
+				"disbanded":      8,
+				"tabard_changed": 9,
+				"unknown10":      10,
+				"roster_update":  11,
+				"signed_on":      12,
+				"signed_off":     13
+			}
+		},
+		"PetitionResult": {
+			"kind": "enum_class",
+			"underlying": "uint32",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"ok":               0,
+				"already_signed":   1,
+				"already_in_guild": 2,
+				"cant_sign_own":    3,
+				"need_more":        4,
+				"not_server":       5
+			}
+		},
+		"BuybackSlot": {
+			"kind": "enum_class",
+			"underlying": "uint32",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"slot1":  69,
+				"slot2":  70,
+				"slot3":  71,
+				"slot4":  72,
+				"slot5":  73,
+				"slot6":  74,
+				"slot7":  75,
+				"slot8":  76,
+				"slot9":  77,
+				"slot10": 78,
+				"slot11": 79,
+				"slot12": 80,
+				"slot13": 81
+			}
+		},
+		"ItemSlot": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"head":              0,
+				"neck":              1,
+				"shoulders":         2,
+				"shirt":             3,
+				"chest":             4,
+				"waist":             5,
+				"legs":              6,
+				"boots":             7,
+				"wrist":             8,
+				"hands":             9,
+				"ring1":             10,
+				"ring2":             11,
+				"trinket1":          12,
+				"trinket2":          13,
+				"back":              14,
+				"main_hand":         15,
+				"off_hand":          16,
+				"ranged_or_relic":   17,
+				"tabard":            18,
+				"bag1":              19,
+				"bag2":              20,
+				"bag3":              21,
+				"bag4":              22,
+				"inventory_0":       23,
+				"inventory_1":       24,
+				"inventory_2":       25,
+				"inventory_3":       26,
+				"inventory_4":       27,
+				"inventory_5":       28,
+				"inventory_6":       29,
+				"inventory_7":       30,
+				"inventory_8":       31,
+				"inventory_9":       32,
+				"inventory_10":      33,
+				"inventory_11":      34,
+				"inventory_12":      35,
+				"inventory_13":      36,
+				"inventory_14":      37,
+				"inventory_15":      38,
+				"bank_1":            39,
+				"bank_2":            40,
+				"bank_3":            41,
+				"bank_4":            42,
+				"bank_5":            43,
+				"bank_6":            44,
+				"bank_7":            45,
+				"bank_8":            46,
+				"bank_9":            47,
+				"bank_10":           48,
+				"bank_11":           49,
+				"bank_12":           50,
+				"bank_13":           51,
+				"bank_14":           52,
+				"bank_15":           53,
+				"bank_16":           54,
+				"bank_17":           55,
+				"bank_18":           56,
+				"bank_19":           57,
+				"bank_20":           58,
+				"bank_21":           59,
+				"bank_22":           60,
+				"bank_23":           61,
+				"bank_24":           62,
+				"bank_bag_slot_1":   63,
+				"bank_bag_slot_2":   64,
+				"bank_bag_slot_3":   65,
+				"bank_bag_slot_4":   66,
+				"bank_bag_slot_5":   67,
+				"bank_bag_slot_6":   68,
+				"vendor_buyback_1":  69,
+				"vendor_buyback_2":  70,
+				"vendor_buyback_3":  71,
+				"vendor_buyback_4":  72,
+				"vendor_buyback_5":  73,
+				"vendor_buyback_6":  74,
+				"vendor_buyback_7":  75,
+				"vendor_buyback_8":  76,
+				"vendor_buyback_9":  77,
+				"vendor_buyback_10": 78,
+				"vendor_buyback_11": 79,
+				"vendor_buyback_12": 80,
+				"keyring_1":         81,
+				"keyring_2":         82,
+				"keyring_3":         83,
+				"keyring_4":         84,
+				"keyring_5":         85,
+				"keyring_6":         86,
+				"keyring_7":         87,
+				"keyring_8":         88,
+				"keyring_9":         89,
+				"keyring_10":        90,
+				"keyring_11":        91,
+				"keyring_12":        92,
+				"keyring_13":        93,
+				"keyring_14":        94,
+				"keyring_15":        95,
+				"keyring_16":        96,
+				"keyring_17":        97,
+				"keyring_18":        98,
+				"keyring_19":        99,
+				"keyring_20":        100,
+				"keyring_21":        101,
+				"keyring_22":        102,
+				"keyring_23":        103,
+				"keyring_24":        104,
+				"keyring_25":        105,
+				"keyring_26":        106,
+				"keyring_27":        107,
+				"keyring_28":        108,
+				"keyring_29":        109,
+				"keyring_30":        110,
+				"keyring_31":        111,
+				"keyring_32":        112
+			}
+		},
+		"BuyBankSlotResult": {
+			"kind": "enum_class",
+			"underlying": "uint32",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"failed_too_many":    0,
+				"insufficient_funds": 1,
+				"not_banker":         2,
+				"ok":                 3
+			}
+		},
+		"BuyResult": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"cant_find_item":       0,
+				"item_already_sold":    1,
+				"not_enough_money":     2,
+				"seller_dont_like_you": 4,
+				"distance_too_far":     5,
+				"item_sold_out":        7,
+				"cant_carry_more":      8,
+				"rank_require":         11,
+				"reputation_require":   12
+			}
+		},
+		"NewItemSource": {
+			"kind": "enum_class",
+			"underlying": "uint32",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"looted":   0,
+				"from_npc": 1
+			}
+		},
+		"NewItemCreationType": {
+			"kind": "enum_class",
+			"underlying": "uint32",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"received": 0,
+				"created":  1
+			}
+		},
+		"NewItemChatAlert": {
+			"kind": "enum_class",
+			"underlying": "uint32",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"do_not_show": 0,
+				"show":        1
+			}
+		},
+		"SellItemResult": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"cant_find_item":         1,
+				"cant_sell_item":         2,
+				"cant_find_vendor":       3,
+				"you_dont_own_that_item": 4,
+				"unk":                    5,
+				"only_empty_bag":         6
+			}
+		},
+		"ItemClass": {
+			"kind": "external",
+			"include": "dbcs/MemoryDefs.h",
+			"cpp_namespace": "ember::dbc::ItemClass",
+			"cpp_type_name": "Class",
+			"underlying": "int32"
+		},
+		"AccountDataType": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"global_config_cache":          0,
+				"per_character_config_cache":   1,
+				"global_bindings_cache":        2,
+				"per_character_bindings_cache": 3,
+				"global_macros_cache":          4,
+				"per_character_macros_cache":   5,
+				"per_character_layout_cache":   6,
+				"per_character_chat_cache":     7,
+				"num_account_data_types":       8
+			}
+		},
+		"LogoutResult": {
+			"kind": "enum_class",
+			"underlying": "uint32",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"success":                    0,
+				"failure_in_combat":          1,
+				"failure_frozen_by_gm":       2,
+				"failure_jumping_or_falling": 3
+			}
+		},
+		"LogoutSpeed": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"delayed": 0,
+				"instant": 1
+			}
+		},
+		"RollVote": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"pass":  0,
+				"need":  1,
+				"greed": 2
+			}
+		},
+		"MailAction": {
+			"kind": "enum_class",
+			"underlying": "uint32",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"send":               0,
+				"money_taken":        1,
+				"item_taken":         2,
+				"returned_to_sender": 3,
+				"deleted":            4,
+				"made_permanent":     5
+			}
+		},
+		"MailResult": {
+			"kind": "enum_class",
+			"underlying": "uint32",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"ok":                          0,
+				"err_equip_error":             1,
+				"err_cannot_send_to_self":     2,
+				"err_not_enough_money":        3,
+				"err_recipient_not_found":     4,
+				"err_not_your_team":           5,
+				"err_internal_error":          6,
+				"err_disabled_for_trial_acc":  14,
+				"err_recipient_cap_reached":   15,
+				"err_cant_send_wrapped_cod":   16,
+				"err_mail_and_chat_suspended": 17,
+				"err_too_many_attachments":    18,
+				"err_mail_attachment_invalid": 19
+			}
+		},
+		"MailResultTwo": {
+			"kind": "enum_class",
+			"underlying": "uint32",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"ok":                          0,
+				"err_equip_error":             1,
+				"err_cannot_send_to_self":     2,
+				"err_not_enough_money":        3,
+				"err_recipient_not_found":     4,
+				"err_not_your_team":           5,
+				"err_internal_error":          6,
+				"err_disabled_for_trial_acc":  14,
+				"err_recipient_cap_reached":   15,
+				"err_cant_send_wrapped_cod":   16,
+				"err_mail_and_chat_suspended": 17,
+				"err_too_many_attachments":    18,
+				"err_mail_attachment_invalid": 19
+			}
+		},
+		"MeetingStoneFailure": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"meetingstone_fail_partyleader": 1,
+				"meetingstone_fail_full_group":  2,
+				"meetingstone_fail_raid_group":  3
+			}
+		},
+		"MeetingStoneStatus": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"leave_queue":                        0,
+				"joined_queue":                       1,
+				"party_member_left_lfg":              2,
+				"party_member_removed_party_removed": 3,
+				"looking_for_new_party_in_queue":     4,
+				"none":                               5
+			}
+		},
+		"DismountResult": {
+			"kind": "enum_class",
+			"underlying": "uint32",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"not_mounted": 1,
+				"ok":          3
+			}
+		},
+		"MountResult": {
+			"kind": "enum_class",
+			"underlying": "uint32",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"invalid_mountee": 0,
+				"too_far_away":    1,
+				"already_mounted": 2,
+				"not_mountable":   3,
+				"not_your_pet":    4,
+				"other":           5,
+				"looting":         6,
+				"race_cant_mount": 7,
+				"shapeshifted":    8,
+				"forced_dismount": 9,
+				"ok":              10
+			}
+		},
+		"ActivateTaxiReply": {
+			"kind": "enum_class",
+			"underlying": "uint32",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"ok":                       0,
+				"unspecified_server_error": 1,
+				"no_such_path":             2,
+				"not_enough_money":         3,
+				"too_far_away":             4,
+				"no_vendor_nearby":         5,
+				"not_visited":              6,
+				"player_busy":              7,
+				"player_already_mounted":   8,
+				"player_shape_shifted":     9,
+				"player_moving":            10,
+				"same_node":                11,
+				"not_standing":             12
+			}
+		},
+		"TransferAbortReason": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"none":               0,
+				"is_full":            1,
+				"not_found":          2,
+				"too_many_instances": 3,
+				"zone_is_in_combat":  5
+			}
+		},
+		"PetFeedback": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"pet_dead":           1,
+				"nothing_to_attack":  2,
+				"cant_attack_target": 3,
+				"no_path_to":         4
+			}
+		},
+		"PetTalkReason": {
+			"kind": "enum_class",
+			"underlying": "uint32",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"special_spell": 0,
+				"attack":        1
+			}
+		},
+		"SpellCastResult": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"affecting_combat":             0,
+				"already_at_full_health":       1,
+				"already_at_full_mana":         2,
+				"already_being_tamed":          3,
+				"already_have_charm":           4,
+				"already_have_summon":          5,
+				"already_open":                 6,
+				"more_powerful_spell_active":   7,
+				"bad_implicit_targets":         9,
+				"bad_targets":                  10,
+				"cant_be_charmed":              11,
+				"cant_be_disenchanted":         12,
+				"cant_be_prospected":           13,
+				"cant_cast_on_tapped":          14,
+				"cant_duel_while_invisible":    15,
+				"cant_duel_while_stealthed":    16,
+				"cant_too_close_to_enemy":      17,
+				"cant_do_that_yet":             18,
+				"caster_dead":                  19,
+				"charmed":                      20,
+				"chest_in_use":                 21,
+				"confused":                     22,
+				"dont_report":                  23,
+				"equipped_item":                24,
+				"equipped_item_class":          25,
+				"equipped_item_class_mainhand": 26,
+				"equipped_item_class_offhand":  27,
+				"error":                        28,
+				"fizzle":                       29,
+				"fleeing":                      30,
+				"food_lowlevel":                31,
+				"highlevel":                    32,
+				"immune":                       34,
+				"interrupted":                  35,
+				"interrupted_combat":           36,
+				"item_already_enchanted":       37,
+				"item_gone":                    38,
+				"enchant_not_existing_item":    39,
+				"item_not_ready":               40,
+				"level_requirement":            41,
+				"line_of_sight":                42,
+				"lowlevel":                     43,
+				"skill_not_high_enough":        44,
+				"mainhand_empty":               45,
+				"moving":                       46,
+				"need_ammo":                    47,
+				"need_requires_something":      48,
+				"need_exotic_ammo":             49,
+				"nopath":                       50,
+				"not_behind":                   51,
+				"not_fishable":                 52,
+				"not_here":                     53,
+				"not_infront":                  54,
+				"not_in_control":               55,
+				"not_known":                    56,
+				"not_mounted":                  57,
+				"not_on_taxi":                  58,
+				"not_on_transport":             59,
+				"not_ready":                    60,
+				"not_shapeshift":               61,
+				"not_standing":                 62,
+				"not_tradeable":                63,
+				"not_trading":                  64,
+				"not_unsheathed":               65,
+				"not_while_ghost":              66,
+				"no_ammo":                      67,
+				"no_charges_remain":            68,
+				"no_champion":                  69,
+				"no_combo_points":              70,
+				"no_dueling":                   71,
+				"no_endurance":                 72,
+				"no_fish":                      73,
+				"no_items_while_shapeshifted":  74,
+				"no_mounts_allowed":            75,
+				"no_pet":                       76,
+				"no_power":                     77,
+				"nothing_to_dispel":            78,
+				"nothing_to_steal":             79,
+				"only_abovewater":              80,
+				"only_daytime":                 81,
+				"only_indoors":                 82,
+				"only_mounted":                 83,
+				"only_nighttime":               84,
+				"only_outdoors":                85,
+				"only_shapeshift":              86,
+				"only_stealthed":               87,
+				"only_underwater":              88,
+				"out_of_range":                 89,
+				"pacified":                     90,
+				"possessed":                    91,
+				"requires_area":                93,
+				"requires_spell_focus":         94,
+				"rooted":                       95,
+				"silenced":                     96,
+				"spell_in_progress":            97,
+				"spell_learned":                98,
+				"spell_unavailable":            99,
+				"stunned":                      100,
+				"targets_dead":                 101,
+				"target_affecting_combat":      102,
+				"target_aurastate":             103,
+				"target_dueling":               104,
+				"target_enemy":                 105,
+				"target_enraged":               106,
+				"target_friendly":              107,
+				"target_in_combat":             108,
+				"target_is_player":             109,
+				"target_not_dead":              110,
+				"target_not_in_party":          111,
+				"target_not_looted":            112,
+				"target_not_player":            113,
+				"target_no_pockets":            114,
+				"target_no_weapons":            115,
+				"target_unskinnable":           116,
+				"thirst_satiated":              117,
+				"too_close":                    118,
+				"too_many_of_item":             119,
+				"training_points":              121,
+				"try_again":                    122,
+				"unit_not_behind":              123,
+				"unit_not_infront":             124,
+				"wrong_pet_food":               125,
+				"not_while_fatigued":           126,
+				"target_not_in_instance":       127,
+				"not_while_trading":            128,
+				"target_not_in_raid":           129,
+				"disenchant_while_looting":     130,
+				"prospect_while_looting":       131,
+				"target_freeforall":            133,
+				"no_edible_corpses":            134,
+				"only_battlegrounds":           135,
+				"target_not_ghost":             136,
+				"too_many_skills":              137,
+				"cant_use_new_item":            138,
+				"wrong_weather":                139,
+				"damage_immune":                140,
+				"prevented_by_mechanic":        141,
+				"play_time":                    142,
+				"reputation":                   143,
+				"min_skill":                    144,
+				"unknown":                      145
+			}
+		},
+		"PetTameFailureReason": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"invalid_creature":       1,
+				"too_many":               2,
+				"creature_already_owned": 3,
+				"not_tameable":           4,
+				"another_summon_active":  5,
+				"units_cant_tame":        6,
+				"no_pet_available":       7,
+				"internal_error":         8,
+				"too_high_level":         9,
+				"dead":                   10,
+				"not_dead":               11,
+				"unknown_error":          12
+			}
+		},
+		"StableResult": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"err_money":        1,
+				"err_stable":       6,
+				"success_stable":   8,
+				"success_unstable": 9,
+				"success_buy_slot": 10
+			}
+		},
+		"PvpRank": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"no_rank":        0,
+				"pariah":         1,
+				"outlaw":         2,
+				"exiled":         3,
+				"dishonored":     4,
+				"rank1":          5,
+				"rank2":          6,
+				"rank3":          7,
+				"rank4":          8,
+				"rank5":          9,
+				"rank6":          10,
+				"rank7":          11,
+				"rank8":          12,
+				"rank9":          13,
+				"rank10":         14,
+				"rank11":         15,
+				"rank12":         16,
+				"rank13":         17,
+				"rank14":         18,
+				"faction_leader": 19
+			}
+		},
+		"CorpseQueryResult": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"not_found": 0,
+				"found":     1
+			}
+		},
+		"QuestPartyMessage": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"sharing_quest":   0,
+				"cant_take_quest": 1,
+				"accept_quest":    2,
+				"decline_quest":   3,
+				"too_far":         4,
+				"busy":            5,
+				"log_full":        6,
+				"have_quest":      7,
+				"finish_quest":    8
+			}
+		},
+		"InstanceResetFailedReason": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"general":  0,
+				"offline":  1,
+				"zoning":   2,
+				"silently": 3
+			}
+		},
+		"RaidInstanceMessage": {
+			"kind": "enum_class",
+			"underlying": "uint32",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"warning_hours":    1,
+				"warning_min":      2,
+				"warning_min_soon": 3,
+				"welcome":          4
+			}
+		},
+		"UnitStandState": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"stand":            0,
+				"sit":              1,
+				"sit_chair":        2,
+				"sleep":            3,
+				"sit_low_chair":    4,
+				"sit_medium_chair": 5,
+				"sit_high_chair":   6,
+				"dead":             7,
+				"kneel":            8,
+				"custom":           9
+			}
+		},
+		"FriendResult": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"db_error":         0,
+				"list_full":        1,
+				"online":           2,
+				"offline":          3,
+				"not_found":        4,
+				"removed":          5,
+				"added_online":     6,
+				"added_offline":    7,
+				"already":          8,
+				"self":             9,
+				"enemy":            10,
+				"ignore_full":      11,
+				"ignore_self":      12,
+				"ignore_not_found": 13,
+				"ignore_already":   14,
+				"ignore_added":     15,
+				"ignore_removed":   16,
+				"ignore_ambiguous": 17,
+				"mute_full":        18,
+				"mute_self":        19,
+				"mute_not_found":   20,
+				"mute_already":     21,
+				"mute_added":       22,
+				"mute_removed":     23,
+				"mute_ambiguous":   24,
+				"unknown19":        25,
+				"unknown20":        26
+			}
+		},
+		"BgTypeId": {
+			"kind": "enum_class",
+			"underlying": "uint32",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"not_eligible":      0,
+				"queued_for_av":     1,
+				"queued_for_wsg":    2,
+				"queued_for_ab":     3,
+				"remove_from_queue": 4294967294
+			}
+		},
+		"PartyOperation": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"invite": 0,
+				"leave":  2
+			}
+		},
+		"PartyResult": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"success":              0,
+				"bad_player_name":      1,
+				"target_not_in_group":  2,
+				"group_full":           3,
+				"already_in_group":     4,
+				"not_in_group":         5,
+				"not_leader":           6,
+				"player_wrong_faction": 7,
+				"ignoring_you":         8
+			}
+		},
+		"RaidGroupError": {
+			"kind": "enum_class",
+			"underlying": "uint32",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"required": 1,
+				"full":     2
+			}
+		},
+		"FarSightOperation": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"remove": 0,
+				"add":    1
+			}
+		},
+		"Talent": {
+			"kind": "external",
+			"include": "dbcs/MemoryDefs.h",
+			"cpp_namespace": "ember::dbc",
+			"underlying": "uint32"
+		},
+		"SimpleSpellCastResult": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"success": 0,
+				"failure": 2
+			}
+		},
+		"CastFailureReason": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"affecting_combat":             0,
+				"already_at_full_health":       1,
+				"already_at_full_power":        2,
+				"already_being_tamed":          3,
+				"already_have_charm":           4,
+				"already_have_summon":          5,
+				"already_open":                 6,
+				"aura_bounced":                 7,
+				"autotrack_interrupted":        8,
+				"bad_implicit_targets":         9,
+				"bad_targets":                  10,
+				"cant_be_charmed":              11,
+				"cant_be_disenchanted":         12,
+				"cant_be_prospected":           13,
+				"cant_cast_on_tapped":          14,
+				"cant_duel_while_invisible":    15,
+				"cant_duel_while_stealthed":    16,
+				"cant_stealth":                 17,
+				"caster_aurastate":             18,
+				"caster_dead":                  19,
+				"charmed":                      20,
+				"chest_in_use":                 21,
+				"confused":                     22,
+				"dont_report":                  23,
+				"equipped_item":                24,
+				"equipped_item_class":          25,
+				"equipped_item_class_mainhand": 26,
+				"equipped_item_class_offhand":  27,
+				"error":                        28,
+				"fizzle":                       29,
+				"fleeing":                      30,
+				"food_lowlevel":                31,
+				"highlevel":                    32,
+				"hunger_satiated":              33,
+				"immune":                       34,
+				"interrupted":                  35,
+				"interrupted_combat":           36,
+				"item_already_enchanted":       37,
+				"item_gone":                    38,
+				"item_not_found":               39,
+				"item_not_ready":               40,
+				"level_requirement":            41,
+				"line_of_sight":                42,
+				"lowlevel":                     43,
+				"low_castlevel":                44,
+				"mainhand_empty":               45,
+				"moving":                       46,
+				"need_ammo":                    47,
+				"need_ammo_pouch":              48,
+				"need_exotic_ammo":             49,
+				"nopath":                       50,
+				"not_behind":                   51,
+				"not_fishable":                 52,
+				"not_here":                     53,
+				"not_infront":                  54,
+				"not_in_control":               55,
+				"not_known":                    56,
+				"not_mounted":                  57,
+				"not_on_taxi":                  58,
+				"not_on_transport":             59,
+				"not_ready":                    60,
+				"not_shapeshift":               61,
+				"not_standing":                 62,
+				"not_tradeable":                63,
+				"not_trading":                  64,
+				"not_unsheathed":               65,
+				"not_while_ghost":              66,
+				"no_ammo":                      67,
+				"no_charges_remain":            68,
+				"no_champion":                  69,
+				"no_combo_points":              70,
+				"no_dueling":                   71,
+				"no_endurance":                 72,
+				"no_fish":                      73,
+				"no_items_while_shapeshifted":  74,
+				"no_mounts_allowed":            75,
+				"no_pet":                       76,
+				"no_power":                     77,
+				"nothing_to_dispel":            78,
+				"nothing_to_steal":             79,
+				"only_abovewater":              80,
+				"only_daytime":                 81,
+				"only_indoors":                 82,
+				"only_mounted":                 83,
+				"only_nighttime":               84,
+				"only_outdoors":                85,
+				"only_shapeshift":              86,
+				"only_stealthed":               87,
+				"only_underwater":              88,
+				"out_of_range":                 89,
+				"pacified":                     90,
+				"possessed":                    91,
+				"reagents":                     92,
+				"requires_area":                93,
+				"requires_spell_focus":         94,
+				"rooted":                       95,
+				"silenced":                     96,
+				"spell_in_progress":            97,
+				"spell_learned":                98,
+				"spell_unavailable":            99,
+				"stunned":                      100,
+				"targets_dead":                 101,
+				"target_affecting_combat":      102,
+				"target_aurastate":             103,
+				"target_dueling":               104,
+				"target_enemy":                 105,
+				"target_enraged":               106,
+				"target_friendly":              107,
+				"target_in_combat":             108,
+				"target_is_player":             109,
+				"target_not_dead":              110,
+				"target_not_in_party":          111,
+				"target_not_looted":            112,
+				"target_not_player":            113,
+				"target_no_pockets":            114,
+				"target_no_weapons":            115,
+				"target_unskinnable":           116,
+				"thirst_satiated":              117,
+				"too_close":                    118,
+				"too_many_of_item":             119,
+				"totems":                       120,
+				"training_points":              121,
+				"try_again":                    122,
+				"unit_not_behind":              123,
+				"unit_not_infront":             124,
+				"wrong_pet_food":               125,
+				"not_while_fatigued":           126,
+				"target_not_in_instance":       127,
+				"not_while_trading":            128,
+				"target_not_in_raid":           129,
+				"disenchant_while_looting":     130,
+				"prospect_while_looting":       131,
+				"prospect_need_more":           132,
+				"target_freeforall":            133,
+				"no_edible_corpses":            134,
+				"only_battlegrounds":           135,
+				"target_not_ghost":             136,
+				"too_many_skills":              137,
+				"transform_unusable":           138,
+				"wrong_weather":                139,
+				"damage_immune":                140,
+				"prevented_by_mechanic":        141,
+				"play_time":                    142,
+				"reputation":                   143,
+				"min_skill":                    144,
+				"unknown":                      145
+			}
+		},
+		"TimerType": {
+			"kind": "enum_class",
+			"underlying": "uint32",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"fatigue":       0,
+				"breath":        1,
+				"feign_death":   2,
+				"environmental": 3
+			}
+		},
+		"TrainingFailureReason": {
+			"kind": "enum_class",
+			"underlying": "uint32",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"unavailable":      0,
+				"not_enough_money": 1,
+				"not_enough_skill": 2
+			}
+		},
+		"TradeStatus": {
+			"kind": "enum_class",
+			"underlying": "uint32",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"busy":           0,
+				"begin_trade":    1,
+				"open_window":    2,
+				"trade_canceled": 3,
+				"trade_accept":   4,
+				"busy_2":         5,
+				"no_target":      6,
+				"back_to_trade":  7,
+				"trade_complete": 8,
+				"trade_rejected": 9,
+				"target_to_far":  10,
+				"wrong_faction":  11,
+				"close_window":   12,
+				"unknown_13":     13,
+				"ignore_you":     14,
+				"you_stunned":    15,
+				"target_stunned": 16,
+				"you_dead":       17,
+				"target_dead":    18,
+				"you_logout":     19,
+				"target_logout":  20,
+				"trial_account":  21,
+				"only_conjured":  22,
+				"not_on_taplist": 23
+			}
+		},
+		"WeatherType": {
+			"kind": "enum_class",
+			"underlying": "uint32",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"fine":  0,
+				"rain":  1,
+				"snow":  2,
+				"storm": 3
+			}
+		},
+		"WeatherChangeType": {
+			"kind": "enum_class",
+			"underlying": "uint8",
+			"cpp_namespace": "ember::protocol",
+			"values": {
+				"smooth":  0,
+				"instant": 1
+			}
 		}
 	}
 }

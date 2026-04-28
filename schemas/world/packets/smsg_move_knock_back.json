@@ -1,0 +1,13 @@
+{
+	"name": "MoveKnockBack",
+	"opcode": "smsg_move_knock_back",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid",             "type": "PackedGuid" },
+		{ "name": "movement_counter", "type": "uint32" },
+		{ "name": "v_cos",            "type": "float" },
+		{ "name": "v_sin",            "type": "float" },
+		{ "name": "horizontal_speed", "type": "float" },
+		{ "name": "vertical_speed",   "type": "float" }
+	]
+}

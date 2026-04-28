@@ -3,7 +3,7 @@
 	"opcode": "msg_move_fall_land",
 	"direction": "server",
 	"fields": [
-		{ "name": "guid", "type": "uint64"       },
+		{ "name": "guid", "type": "uint64" },
 		{ "name": "info", "type": "MovementInfo" }
 	]
 }

@@ -1,0 +1,8 @@
+{
+	"name": "UnlearnSkill",
+	"opcode": "cmsg_unlearn_skill",
+	"direction": "client",
+	"fields": [
+		{ "name": "skill", "type": "uint32" }
+	]
+}

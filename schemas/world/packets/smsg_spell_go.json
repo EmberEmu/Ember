@@ -1,0 +1,24 @@
+{
+	"name": "SpellGo",
+	"opcode": "smsg_spell_go",
+	"direction": "server",
+	"fields": [
+		{ "name": "cast_item",        "type": "PackedGuid" },
+		{ "name": "caster",           "type": "PackedGuid" },
+		{ "name": "spell",            "type": "uint32" },
+		{ "name": "flags",            "type": "CastFlags" },
+		{ "name": "amount_of_hits",   "type": "uint8" },
+		{ "name": "hits",             "type": "uint64", "array": {"count_field": "amount_of_hits"} },
+		{ "name": "amount_of_misses", "type": "uint8" },
+		{ "name": "misses",           "type": "SpellMiss", "array": {"count_field": "amount_of_misses"} },
+		{ "name": "targets",          "type": "SpellCastTargets" },
+		{
+			"type": "group",
+			"when": { "op": "has_flag", "field": "flags", "value": "ammo" },
+			"fields": [
+				{ "name": "ammo_display_id",     "type": "uint32" },
+				{ "name": "ammo_inventory_type", "type": "uint32" }
+			]
+		}
+	]
+}

@@ -1,0 +1,11 @@
+{
+	"name": "Spelldamageshield",
+	"opcode": "smsg_spelldamageshield",
+	"direction": "server",
+	"fields": [
+		{ "name": "victim", "type": "uint64" },
+		{ "name": "caster", "type": "uint64" },
+		{ "name": "damage", "type": "uint32" },
+		{ "name": "school", "type": "uint32" }
+	]
+}

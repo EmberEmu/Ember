@@ -1,0 +1,10 @@
+{
+	"name": "LootMethod",
+	"opcode": "cmsg_loot_method",
+	"direction": "client",
+	"fields": [
+		{ "name": "loot_setting",   "type": "uint32" },
+		{ "name": "loot_master",    "type": "uint64" },
+		{ "name": "loot_threshold", "type": "uint32" }
+	]
+}

@@ -1,0 +1,8 @@
+{
+	"name": "QuestConfirmAccept",
+	"opcode": "cmsg_quest_confirm_accept",
+	"direction": "client",
+	"fields": [
+		{ "name": "quest_id", "type": "uint32" }
+	]
+}

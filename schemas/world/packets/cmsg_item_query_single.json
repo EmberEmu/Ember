@@ -3,7 +3,7 @@
 	"opcode": "cmsg_item_query_single",
 	"direction": "client",
 	"fields": [
-		{ "name": "item",  "type": "uint32"  },
+		{ "name": "item",  "type": "uint32" },
 		{ "name": "query", "type": "uint64" }
 	]
 }

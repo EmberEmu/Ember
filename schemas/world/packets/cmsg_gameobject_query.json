@@ -1,0 +1,9 @@
+{
+	"name": "GameobjectQuery",
+	"opcode": "cmsg_gameobject_query",
+	"direction": "client",
+	"fields": [
+		{ "name": "entry_id", "type": "uint32" },
+		{ "name": "guid",     "type": "uint64" }
+	]
+}

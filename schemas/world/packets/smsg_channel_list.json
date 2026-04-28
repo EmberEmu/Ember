@@ -1,0 +1,11 @@
+{
+	"name": "ChannelList",
+	"opcode": "smsg_channel_list",
+	"direction": "server",
+	"fields": [
+		{ "name": "channel_name",      "type": "CString" },
+		{ "name": "channel_flags",     "type": "ChannelFlags" },
+		{ "name": "amount_of_members", "type": "uint32" },
+		{ "name": "members",           "type": "ChannelMember", "array": {"count_field": "amount_of_members"} }
+	]
+}

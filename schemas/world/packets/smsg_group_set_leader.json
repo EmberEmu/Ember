@@ -1,0 +1,8 @@
+{
+	"name": "GroupSetLeader",
+	"opcode": "smsg_group_set_leader",
+	"direction": "server",
+	"fields": [
+		{ "name": "name", "type": "CString" }
+	]
+}

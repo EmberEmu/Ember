@@ -1,0 +1,5 @@
+{
+	"name": "PlayerLogout",
+	"opcode": "cmsg_player_logout",
+	"direction": "client"
+}

@@ -1,0 +1,8 @@
+{
+	"name": "SplineMoveWaterWalk",
+	"opcode": "smsg_spline_move_water_walk",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid", "type": "PackedGuid" }
+	]
+}

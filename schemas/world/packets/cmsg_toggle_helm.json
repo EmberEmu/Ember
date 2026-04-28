@@ -1,0 +1,5 @@
+{
+	"name": "ToggleHelm",
+	"opcode": "cmsg_toggle_helm",
+	"direction": "client"
+}

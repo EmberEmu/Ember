@@ -1,0 +1,9 @@
+{
+	"name": "ReadItem",
+	"opcode": "cmsg_read_item",
+	"direction": "client",
+	"fields": [
+		{ "name": "bag_index", "type": "uint8" },
+		{ "name": "slot",      "type": "uint8" }
+	]
+}

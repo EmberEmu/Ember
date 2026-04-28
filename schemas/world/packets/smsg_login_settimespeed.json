@@ -1,0 +1,9 @@
+{
+	"name": "LoginSettimespeed",
+	"opcode": "smsg_login_settimespeed",
+	"direction": "server",
+	"fields": [
+		{ "name": "datetime",  "type": "uint32" },
+		{ "name": "timescale", "type": "float" }
+	]
+}

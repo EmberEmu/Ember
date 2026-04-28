@@ -1,0 +1,21 @@
+{
+	"name": "QuestgiverOfferReward",
+	"opcode": "smsg_questgiver_offer_reward",
+	"direction": "server",
+	"fields": [
+		{ "name": "npc",                           "type": "uint64" },
+		{ "name": "quest_id",                      "type": "uint32" },
+		{ "name": "title",                         "type": "CString" },
+		{ "name": "offer_reward_text",             "type": "CString" },
+		{ "name": "auto_finish",                   "type": "uint32" },
+		{ "name": "amount_of_emotes",              "type": "uint32" },
+		{ "name": "emotes",                        "type": "NpcTextUpdateEmote", "array": {"count_field": "amount_of_emotes"} },
+		{ "name": "amount_of_choice_item_rewards", "type": "uint32" },
+		{ "name": "choice_item_rewards",           "type": "QuestItemRequirement", "array": {"count_field": "amount_of_choice_item_rewards"} },
+		{ "name": "amount_of_item_rewards",        "type": "uint32" },
+		{ "name": "item_rewards",                  "type": "QuestItemRequirement", "array": {"count_field": "amount_of_item_rewards"} },
+		{ "name": "money_reward",                  "type": "uint32" },
+		{ "name": "reward_spell",                  "type": "uint32" },
+		{ "name": "reward_spell_cast",             "type": "uint32" }
+	]
+}

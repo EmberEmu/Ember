@@ -1,0 +1,9 @@
+{
+	"name": "CharEnum",
+	"opcode": "smsg_char_enum",
+	"direction": "server",
+	"fields": [
+		{ "name": "count", "type": "uint8" },
+		{ "name": "characters",           "type": "Character", "array": {"count_field": "count"} }
+	]
+}

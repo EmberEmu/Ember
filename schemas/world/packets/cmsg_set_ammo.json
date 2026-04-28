@@ -1,0 +1,8 @@
+{
+	"name": "SetAmmo",
+	"opcode": "cmsg_set_ammo",
+	"direction": "client",
+	"fields": [
+		{ "name": "item", "type": "uint32" }
+	]
+}

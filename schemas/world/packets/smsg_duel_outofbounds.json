@@ -1,0 +1,5 @@
+{
+	"name": "DuelOutofbounds",
+	"opcode": "smsg_duel_outofbounds",
+	"direction": "server"
+}

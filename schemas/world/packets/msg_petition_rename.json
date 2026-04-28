@@ -1,0 +1,9 @@
+{
+	"name": "PetitionRename",
+	"opcode": "msg_petition_rename",
+	"direction": "client",
+	"fields": [
+		{ "name": "petition", "type": "uint64" },
+		{ "name": "new_name", "type": "CString" }
+	]
+}

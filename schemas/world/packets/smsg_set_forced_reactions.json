@@ -1,0 +1,9 @@
+{
+	"name": "SetForcedReactions",
+	"opcode": "smsg_set_forced_reactions",
+	"direction": "server",
+	"fields": [
+		{ "name": "amount_of_reactions", "type": "uint32" },
+		{ "name": "reactions",           "type": "ForcedReaction", "array": {"count_field": "amount_of_reactions"} }
+	]
+}

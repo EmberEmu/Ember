@@ -1,0 +1,8 @@
+{
+	"name": "SpiritHealerActivate",
+	"opcode": "cmsg_spirit_healer_activate",
+	"direction": "client",
+	"fields": [
+		{ "name": "guid", "type": "uint64" }
+	]
+}

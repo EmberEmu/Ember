@@ -1,0 +1,9 @@
+{
+	"name": "GroupSwapSubGroup",
+	"opcode": "cmsg_group_swap_sub_group",
+	"direction": "client",
+	"fields": [
+		{ "name": "name",           "type": "CString" },
+		{ "name": "swap_with_name", "type": "CString" }
+	]
+}

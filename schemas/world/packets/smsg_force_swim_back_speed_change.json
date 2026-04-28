@@ -1,0 +1,10 @@
+{
+	"name": "ForceSwimBackSpeedChange",
+	"opcode": "smsg_force_swim_back_speed_change",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid",       "type": "PackedGuid" },
+		{ "name": "move_event", "type": "uint32" },
+		{ "name": "speed",      "type": "float" }
+	]
+}

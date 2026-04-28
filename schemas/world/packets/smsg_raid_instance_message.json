@@ -1,0 +1,10 @@
+{
+	"name": "RaidInstanceMessage",
+	"opcode": "smsg_raid_instance_message",
+	"direction": "server",
+	"fields": [
+		{ "name": "message_type", "type": "RaidInstanceMessage" },
+		{ "name": "map",          "type": "Map" },
+		{ "name": "time_left",    "type": "uint32" }
+	]
+}

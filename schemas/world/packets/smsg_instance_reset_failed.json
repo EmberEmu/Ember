@@ -1,0 +1,9 @@
+{
+	"name": "InstanceResetFailed",
+	"opcode": "smsg_instance_reset_failed",
+	"direction": "server",
+	"fields": [
+		{ "name": "reason", "type": "uint32" },
+		{ "name": "map",    "type": "Map" }
+	]
+}

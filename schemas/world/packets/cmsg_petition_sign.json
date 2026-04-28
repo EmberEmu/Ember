@@ -1,0 +1,9 @@
+{
+	"name": "PetitionSign",
+	"opcode": "cmsg_petition_sign",
+	"direction": "client",
+	"fields": [
+		{ "name": "petition", "type": "uint64" },
+		{ "name": "unknown1", "type": "uint8" }
+	]
+}

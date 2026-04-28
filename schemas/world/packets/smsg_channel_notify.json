@@ -1,0 +1,9 @@
+{
+	"name": "ChannelNotify",
+	"opcode": "smsg_channel_notify",
+	"direction": "server",
+	"fields": [
+		{ "name": "notify_type",  "type": "ChatNotify" },
+		{ "name": "channel_name", "type": "CString" }
+	]
+}

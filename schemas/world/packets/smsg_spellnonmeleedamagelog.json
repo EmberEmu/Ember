@@ -1,0 +1,19 @@
+{
+	"name": "Spellnonmeleedamagelog",
+	"opcode": "smsg_spellnonmeleedamagelog",
+	"direction": "server",
+	"fields": [
+		{ "name": "target",          "type": "PackedGuid" },
+		{ "name": "attacker",        "type": "PackedGuid" },
+		{ "name": "spell",           "type": "uint32" },
+		{ "name": "damage",          "type": "uint32" },
+		{ "name": "school",          "type": "SpellSchool" },
+		{ "name": "absorbed_damage", "type": "uint32" },
+		{ "name": "resisted",        "type": "uint32" },
+		{ "name": "periodic_log",    "type": "uint8" },
+		{ "name": "unused",          "type": "uint8" },
+		{ "name": "blocked",         "type": "uint32" },
+		{ "name": "hit_info",        "type": "HitInfo" },
+		{ "name": "extend_flag",     "type": "uint8" }
+	]
+}

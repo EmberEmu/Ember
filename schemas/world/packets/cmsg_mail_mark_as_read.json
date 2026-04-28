@@ -1,0 +1,9 @@
+{
+	"name": "MailMarkAsRead",
+	"opcode": "cmsg_mail_mark_as_read",
+	"direction": "client",
+	"fields": [
+		{ "name": "mailbox", "type": "uint64" },
+		{ "name": "mail_id", "type": "uint32" }
+	]
+}

@@ -1,0 +1,8 @@
+{
+	"name": "SplineMoveUnroot",
+	"opcode": "smsg_spline_move_unroot",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid", "type": "PackedGuid" }
+	]
+}

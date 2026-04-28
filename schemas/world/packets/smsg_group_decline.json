@@ -1,0 +1,8 @@
+{
+	"name": "GroupDecline",
+	"opcode": "smsg_group_decline",
+	"direction": "server",
+	"fields": [
+		{ "name": "name", "type": "CString" }
+	]
+}

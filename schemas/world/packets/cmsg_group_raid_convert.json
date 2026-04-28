@@ -1,0 +1,5 @@
+{
+	"name": "GroupRaidConvert",
+	"opcode": "cmsg_group_raid_convert",
+	"direction": "client"
+}

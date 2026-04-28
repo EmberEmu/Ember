@@ -1,0 +1,8 @@
+{
+	"name": "MoveStartTurnLeftClient",
+	"opcode": "cmsg_move_start_turn_left_client",
+	"direction": "client",
+	"fields": [
+		{ "name": "info", "type": "MovementInfo" }
+	]
+}

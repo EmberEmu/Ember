@@ -1,0 +1,8 @@
+{
+	"name": "GameobjectResetState",
+	"opcode": "smsg_gameobject_reset_state",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid", "type": "uint64" }
+	]
+}

@@ -1,0 +1,15 @@
+{
+	"name": "LootRollWon",
+	"opcode": "smsg_loot_roll_won",
+	"direction": "server",
+	"fields": [
+		{ "name": "looted_target",           "type": "uint64" },
+		{ "name": "loot_slot",               "type": "uint32" },
+		{ "name": "item",                    "type": "uint32" },
+		{ "name": "item_random_suffix",      "type": "uint32" },
+		{ "name": "item_random_property_id", "type": "uint32" },
+		{ "name": "winning_player",          "type": "uint64" },
+		{ "name": "winning_roll",            "type": "uint8" },
+		{ "name": "vote",                    "type": "RollVote" }
+	]
+}

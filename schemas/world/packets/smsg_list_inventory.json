@@ -1,0 +1,10 @@
+{
+	"name": "ListInventory",
+	"opcode": "smsg_list_inventory",
+	"direction": "server",
+	"fields": [
+		{ "name": "vendor",          "type": "uint64" },
+		{ "name": "amount_of_items", "type": "uint8" },
+		{ "name": "items",           "type": "ListInventoryItem", "array": {"count_field": "amount_of_items"} }
+	]
+}

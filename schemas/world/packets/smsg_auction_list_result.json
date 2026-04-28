@@ -1,0 +1,10 @@
+{
+	"name": "AuctionListResult",
+	"opcode": "smsg_auction_list_result",
+	"direction": "server",
+	"fields": [
+		{ "name": "count",                    "type": "uint32" },
+		{ "name": "auctions",                 "type": "AuctionListItem", "array": {"count_field": "count"} },
+		{ "name": "total_amount_of_auctions", "type": "uint32" }
+	]
+}

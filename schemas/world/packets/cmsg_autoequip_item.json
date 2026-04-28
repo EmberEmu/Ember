@@ -1,0 +1,9 @@
+{
+	"name": "AutoequipItem",
+	"opcode": "cmsg_autoequip_item",
+	"direction": "client",
+	"fields": [
+		{ "name": "source_bag",  "type": "uint8" },
+		{ "name": "source_slot", "type": "uint8" }
+	]
+}

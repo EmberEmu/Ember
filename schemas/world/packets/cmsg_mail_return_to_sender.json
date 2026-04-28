@@ -1,0 +1,9 @@
+{
+	"name": "MailReturnToSender",
+	"opcode": "cmsg_mail_return_to_sender",
+	"direction": "client",
+	"fields": [
+		{ "name": "mailbox_id", "type": "uint64" },
+		{ "name": "mail_id",    "type": "uint32" }
+	]
+}

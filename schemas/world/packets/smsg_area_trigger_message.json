@@ -1,0 +1,8 @@
+{
+	"name": "AreaTriggerMessage",
+	"opcode": "smsg_area_trigger_message",
+	"direction": "server",
+	"fields": [
+		{ "name": "message", "type": "PrefixedString32" }
+	]
+}

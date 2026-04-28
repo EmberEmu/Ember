@@ -1,0 +1,8 @@
+{
+	"name": "GmticketDeleteticket",
+	"opcode": "smsg_gmticket_deleteticket",
+	"direction": "server",
+	"fields": [
+		{ "name": "response", "type": "GmTicketResponse" }
+	]
+}

@@ -1,0 +1,8 @@
+{
+	"name": "InitiateTrade",
+	"opcode": "cmsg_initiate_trade",
+	"direction": "client",
+	"fields": [
+		{ "name": "guid", "type": "uint64" }
+	]
+}

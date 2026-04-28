@@ -1,0 +1,9 @@
+{
+	"name": "MoveWaterWalk",
+	"opcode": "smsg_move_water_walk",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid",    "type": "PackedGuid" },
+		{ "name": "counter", "type": "uint32" }
+	]
+}

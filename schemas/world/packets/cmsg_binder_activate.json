@@ -1,0 +1,8 @@
+{
+	"name": "BinderActivate",
+	"opcode": "cmsg_binder_activate",
+	"direction": "client",
+	"fields": [
+		{ "name": "guid", "type": "uint64" }
+	]
+}

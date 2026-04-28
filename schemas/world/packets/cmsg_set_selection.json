@@ -1,0 +1,8 @@
+{
+	"name": "SetSelection",
+	"opcode": "cmsg_set_selection",
+	"direction": "client",
+	"fields": [
+		{ "name": "target", "type": "uint64" }
+	]
+}

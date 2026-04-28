@@ -1,0 +1,13 @@
+{
+	"name": "NameQueryResponse",
+	"opcode": "smsg_name_query_response",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid",           "type": "uint64" },
+		{ "name": "character_name", "type": "CString" },
+		{ "name": "realm_name",     "type": "CString" },
+		{ "name": "race",           "type": "uint32" },
+		{ "name": "gender",         "type": "uint32" },
+		{ "name": "class",          "type": "uint32" }
+	]
+}

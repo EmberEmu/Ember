@@ -1,0 +1,8 @@
+{
+	"name": "Activatetaxireply",
+	"opcode": "smsg_activatetaxireply",
+	"direction": "server",
+	"fields": [
+		{ "name": "reply", "type": "ActivateTaxiReply" }
+	]
+}

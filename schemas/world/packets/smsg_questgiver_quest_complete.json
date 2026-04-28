@@ -1,0 +1,13 @@
+{
+	"name": "QuestgiverQuestComplete",
+	"opcode": "smsg_questgiver_quest_complete",
+	"direction": "server",
+	"fields": [
+		{ "name": "quest_id",               "type": "uint32" },
+		{ "name": "unknown",                "type": "uint32" },
+		{ "name": "experience_reward",      "type": "uint32" },
+		{ "name": "money_reward",           "type": "uint32" },
+		{ "name": "amount_of_item_rewards", "type": "uint32" },
+		{ "name": "item_rewards",           "type": "QuestItemReward", "array": {"count_field": "amount_of_item_rewards"} }
+	]
+}

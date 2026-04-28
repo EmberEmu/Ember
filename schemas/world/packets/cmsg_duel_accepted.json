@@ -1,0 +1,8 @@
+{
+	"name": "DuelAccepted",
+	"opcode": "cmsg_duel_accepted",
+	"direction": "client",
+	"fields": [
+		{ "name": "guid", "type": "uint64" }
+	]
+}

@@ -1,0 +1,9 @@
+{
+	"name": "GameobjectCustomAnim",
+	"opcode": "smsg_gameobject_custom_anim",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid",         "type": "uint64" },
+		{ "name": "animation_id", "type": "uint32" }
+	]
+}

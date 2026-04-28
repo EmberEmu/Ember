@@ -1,0 +1,5 @@
+{
+	"name": "RequestRaidInfo",
+	"opcode": "cmsg_request_raid_info",
+	"direction": "client"
+}

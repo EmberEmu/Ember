@@ -1,0 +1,10 @@
+{
+	"name": "ResurrectRequest",
+	"opcode": "smsg_resurrect_request",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid",   "type": "uint64" },
+		{ "name": "name",   "type": "PrefixedString32" },
+		{ "name": "player", "type": "uint8" }
+	]
+}

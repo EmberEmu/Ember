@@ -1,0 +1,8 @@
+{
+	"name": "MoveStartForwardClient",
+	"opcode": "cmsg_move_start_forward_client",
+	"direction": "client",
+	"fields": [
+		{ "name": "info", "type": "MovementInfo" }
+	]
+}

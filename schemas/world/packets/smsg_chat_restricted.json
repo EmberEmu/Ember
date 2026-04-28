@@ -1,0 +1,5 @@
+{
+	"name": "ChatRestricted",
+	"opcode": "smsg_chat_restricted",
+	"direction": "server"
+}

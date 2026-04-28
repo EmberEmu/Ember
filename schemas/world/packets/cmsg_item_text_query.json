@@ -1,0 +1,10 @@
+{
+	"name": "ItemTextQuery",
+	"opcode": "cmsg_item_text_query",
+	"direction": "client",
+	"fields": [
+		{ "name": "item_text_id", "type": "uint32" },
+		{ "name": "mail_id",      "type": "uint32" },
+		{ "name": "unknown1",     "type": "uint32" }
+	]
+}

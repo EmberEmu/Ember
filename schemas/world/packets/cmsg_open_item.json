@@ -1,0 +1,9 @@
+{
+	"name": "OpenItem",
+	"opcode": "cmsg_open_item",
+	"direction": "client",
+	"fields": [
+		{ "name": "bag_index", "type": "uint8" },
+		{ "name": "slot",      "type": "uint8" }
+	]
+}

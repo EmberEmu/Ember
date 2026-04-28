@@ -1,0 +1,8 @@
+{
+	"name": "SplineMoveUnsetHover",
+	"opcode": "smsg_spline_move_unset_hover",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid", "type": "PackedGuid" }
+	]
+}

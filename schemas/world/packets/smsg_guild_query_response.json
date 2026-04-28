@@ -1,0 +1,15 @@
+{
+	"name": "GuildQueryResponse",
+	"opcode": "smsg_guild_query_response",
+	"direction": "server",
+	"fields": [
+		{ "name": "id",               "type": "uint32" },
+		{ "name": "name",             "type": "CString" },
+		{ "name": "rank_names",       "type": "CString", "array": {"size": 10} },
+		{ "name": "emblem_style",     "type": "uint32" },
+		{ "name": "emblem_color",     "type": "uint32" },
+		{ "name": "border_style",     "type": "uint32" },
+		{ "name": "border_color",     "type": "uint32" },
+		{ "name": "background_color", "type": "uint32" }
+	]
+}

@@ -1,0 +1,8 @@
+{
+	"name": "GossipHello",
+	"opcode": "cmsg_gossip_hello",
+	"direction": "client",
+	"fields": [
+		{ "name": "guid", "type": "uint64" }
+	]
+}

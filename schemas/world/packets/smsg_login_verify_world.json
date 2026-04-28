@@ -1,0 +1,10 @@
+{
+	"name": "LoginVerifyWorld",
+	"opcode": "smsg_login_verify_world",
+	"direction": "server",
+	"fields": [
+		{ "name": "map",         "type": "Map" },
+		{ "name": "position",    "type": "Vector3" },
+		{ "name": "orientation", "type": "float" }
+	]
+}

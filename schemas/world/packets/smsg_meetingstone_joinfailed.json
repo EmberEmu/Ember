@@ -1,0 +1,8 @@
+{
+	"name": "MeetingstoneJoinfailed",
+	"opcode": "smsg_meetingstone_joinfailed",
+	"direction": "server",
+	"fields": [
+		{ "name": "reason", "type": "MeetingStoneFailure" }
+	]
+}

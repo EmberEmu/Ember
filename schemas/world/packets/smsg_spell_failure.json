@@ -1,0 +1,10 @@
+{
+	"name": "SpellFailure",
+	"opcode": "smsg_spell_failure",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid",   "type": "uint64" },
+		{ "name": "spell",  "type": "uint32" },
+		{ "name": "result", "type": "SpellCastResult" }
+	]
+}

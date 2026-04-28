@@ -1,0 +1,14 @@
+{
+	"name": "AuctionBidderNotification",
+	"opcode": "smsg_auction_bidder_notification",
+	"direction": "server",
+	"fields": [
+		{ "name": "auction_house",           "type": "AuctionHouse" },
+		{ "name": "auction_id",              "type": "uint32" },
+		{ "name": "bidder",                  "type": "uint64" },
+		{ "name": "won",                     "type": "uint32" },
+		{ "name": "out_bid",                 "type": "uint32" },
+		{ "name": "item_template",           "type": "uint32" },
+		{ "name": "item_random_property_id", "type": "uint32" }
+	]
+}

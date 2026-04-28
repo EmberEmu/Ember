@@ -1,0 +1,8 @@
+{
+	"name": "InstanceReset",
+	"opcode": "smsg_instance_reset",
+	"direction": "server",
+	"fields": [
+		{ "name": "map", "type": "Map" }
+	]
+}

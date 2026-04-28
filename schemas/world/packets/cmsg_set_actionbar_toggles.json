@@ -1,0 +1,8 @@
+{
+	"name": "SetActionbarToggles",
+	"opcode": "cmsg_set_actionbar_toggles",
+	"direction": "client",
+	"fields": [
+		{ "name": "action_bar", "type": "uint8" }
+	]
+}

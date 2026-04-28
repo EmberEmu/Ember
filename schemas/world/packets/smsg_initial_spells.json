@@ -1,0 +1,12 @@
+{
+	"name": "InitialSpells",
+	"opcode": "smsg_initial_spells",
+	"direction": "server",
+	"fields": [
+		{ "name": "unknown1",       "type": "uint8" },
+		{ "name": "spell_count",    "type": "uint16" },
+		{ "name": "initial_spells", "type": "InitialSpell", "array": {"count_field": "spell_count"} },
+		{ "name": "cooldown_count", "type": "uint16" },
+		{ "name": "cooldowns",      "type": "CooldownSpell", "array": {"count_field": "cooldown_count"} }
+	]
+}

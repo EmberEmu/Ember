@@ -1,0 +1,10 @@
+{
+	"name": "PetitionSignResults",
+	"opcode": "smsg_petition_sign_results",
+	"direction": "server",
+	"fields": [
+		{ "name": "petition", "type": "uint64" },
+		{ "name": "owner",    "type": "uint64" },
+		{ "name": "result",   "type": "PetitionResult" }
+	]
+}

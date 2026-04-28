@@ -1,0 +1,8 @@
+{
+	"name": "TrainerList",
+	"opcode": "cmsg_trainer_list",
+	"direction": "client",
+	"fields": [
+		{ "name": "guid", "type": "uint64" }
+	]
+}

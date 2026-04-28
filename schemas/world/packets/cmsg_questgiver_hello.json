@@ -1,0 +1,8 @@
+{
+	"name": "QuestgiverHello",
+	"opcode": "cmsg_questgiver_hello",
+	"direction": "client",
+	"fields": [
+		{ "name": "guid", "type": "uint64" }
+	]
+}

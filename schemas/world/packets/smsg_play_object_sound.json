@@ -1,0 +1,9 @@
+{
+	"name": "PlayObjectSound",
+	"opcode": "smsg_play_object_sound",
+	"direction": "server",
+	"fields": [
+		{ "name": "sound_id", "type": "uint32" },
+		{ "name": "guid",     "type": "uint64" }
+	]
+}

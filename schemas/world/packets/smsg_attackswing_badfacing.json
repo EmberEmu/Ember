@@ -1,0 +1,5 @@
+{
+	"name": "AttackswingBadfacing",
+	"opcode": "smsg_attackswing_badfacing",
+	"direction": "server"
+}

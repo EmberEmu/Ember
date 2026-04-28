@@ -1,0 +1,9 @@
+{
+	"name": "SpellCooldown",
+	"opcode": "smsg_spell_cooldown",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid",      "type": "uint64" },
+		{ "name": "cooldowns", "type": "SpellCooldownStatus", "array": {"until_end": true} }
+	]
+}

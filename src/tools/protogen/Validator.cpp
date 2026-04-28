@@ -20,30 +20,13 @@ using Scope = std::vector<ScopeEntry>;
 void validate_condition(const jsoncons::json& cond, const Scope& scope,
                         const TypeRegistry& types, std::string_view context);
 
-void validate_array(const jsoncons::json& array, const std::string& field_type,
+void validate_array(const jsoncons::json& array, const std::string& /*field_type*/,
                     const std::string& field_name, const Scope& scope,
-                    const TypeRegistry& types, std::string_view context) {
-	if(array.contains("size")) {
-		if(is_primitive(field_type)) {
-			return;
-		}
-
-		const auto* def = types.find(field_type);
-
-		if(!def) {
-			return; // unknown-type error already emitted by the field type check
-		}
-
-		const auto kind = (*def)["kind"].as<std::string>();
-
-		if(kind != "enum" && kind != "flags") {
-			throw std::runtime_error(std::format(
-				"{}: fixed-size array '{}' of type '{}' (kind '{}') is not supported; "
-				"only primitive, enum, or flags element types are permitted",
-				context, field_name, field_type, kind
-			));
-		}
-
+                    const TypeRegistry& /*types*/, std::string_view context) {
+	// Fixed-size arrays of any kind (primitive, enum/flags, struct, string)
+	// are allowed — the generator emits an element-by-element loop for the
+	// kinds that don't have a whole-array stream overload.
+	if(array.contains("size") || array.contains("until_end")) {
 		return;
 	}
 
@@ -65,6 +48,64 @@ void validate_array(const jsoncons::json& array, const std::string& field_type,
 	}
 }
 
+void validate_as_cast(const jsoncons::json& field, const TypeRegistry& types,
+                      std::string_view context) {
+	if(!field.contains("as")) {
+		return;
+	}
+
+	const auto wire = field["type"].as<std::string>();
+	const auto as = field["as"].as<std::string>();
+	const auto name = field["name"].as<std::string>();
+
+	if(!is_primitive(wire)) {
+		throw std::runtime_error(std::format(
+			"{}: field '{}' has 'as'='{}' but wire type '{}' isn't primitive; "
+			"'as' only applies when the wire type is a bare primitive",
+			context, name, as, wire
+		));
+	}
+
+	const auto* def = types.find(as);
+
+	if(!def) {
+		throw std::runtime_error(std::format(
+			"{}: field '{}' declares 'as'='{}' which isn't a declared type",
+			context, name, as
+		));
+	}
+
+	const auto kind = (*def)["kind"].as<std::string>();
+
+	if(is_enum_kind(kind) || kind == "flags") {
+		const auto declared = (*def)["underlying"].as<std::string>();
+		// The cast is sound only when the enum/flag and wire types have
+		// the same size and signedness — otherwise reinterpreting bytes
+		// between them would silently truncate or widen.
+		if(declared != wire) {
+			throw std::runtime_error(std::format(
+				"{}: field '{}' 'as'='{}' has underlying '{}' but wire type is '{}'; "
+				"the two must match for the cast to be sound",
+				context, name, as, declared, wire
+			));
+		}
+		return;
+	}
+
+	if(kind == "external" && def->contains("underlying")) {
+		// An integral-convertible external (typically a DBC inner enum)
+		// opts in to `as` casting by declaring `underlying`. Any primitive
+		// wire is allowed — the generator emits an explicit static_cast,
+		// so a size change is intentional and visible at the call site.
+		return;
+	}
+
+	throw std::runtime_error(std::format(
+		"{}: field '{}' 'as'='{}' resolves to kind '{}'; only enum / flags or external-with-underlying are supported",
+		context, name, as, kind
+	));
+}
+
 void validate_fields(const jsoncons::json& fields, const TypeRegistry& types,
                      Scope& scope, std::string_view context) {
 	for(const auto& field : fields.array_range()) {
@@ -84,12 +125,33 @@ void validate_fields(const jsoncons::json& fields, const TypeRegistry& types,
 			continue;
 		}
 
+		if(type == "if_chain") {
+			// Each branch is an independent conditional scope — like a
+			// sequence of groups — so their fields must not leak either.
+			for(const auto& branch : field["branches"].array_range()) {
+				validate_condition(branch["when"], scope, types, context);
+				const auto outer_size = scope.size();
+				validate_fields(branch["fields"], types, scope, context);
+				scope.resize(outer_size);
+			}
+
+			if(field.contains("else")) {
+				const auto outer_size = scope.size();
+				validate_fields(field["else"], types, scope, context);
+				scope.resize(outer_size);
+			}
+
+			continue;
+		}
+
 		if(!is_primitive(type) && !types.find(type)) {
 			throw std::runtime_error(std::format(
 				"{}: field '{}' references unknown type '{}'",
 				context, field["name"].as<std::string>(), type
 			));
 		}
+
+		validate_as_cast(field, types, context);
 
 		if(field.contains("when")) {
 			validate_condition(field["when"], scope, types, context);
@@ -102,7 +164,22 @@ void validate_fields(const jsoncons::json& fields, const TypeRegistry& types,
 			);
 		}
 
-		scope.push_back({field["name"].as<std::string>(), type});
+		// The scope entry records the semantic type:
+		//   - `as` cast wins when present (the field is exposed as an
+		//     enum/flags for condition checks).
+		//   - An external with `underlying` but no `as` is an alias for
+		//     that primitive — the scope reports the primitive so conditions
+		//     against the field validate against the integer domain.
+		//   - Otherwise the declared type stands as-is.
+		auto semantic_type = type;
+		if(field.contains("as")) {
+			semantic_type = field["as"].as<std::string>();
+		} else if(const auto* def = types.find(type);
+		          def && (*def)["kind"].as<std::string>() == "external"
+		          && def->contains("underlying")) {
+			semantic_type = (*def)["underlying"].as<std::string>();
+		}
+		scope.push_back({field["name"].as<std::string>(), semantic_type});
 	}
 }
 
@@ -131,7 +208,7 @@ void check_named_value(const jsoncons::json& value, const ScopeEntry& entry,
 
 	const auto kind = (*def)["kind"].as<std::string>();
 
-	if(kind != "enum" && kind != "flags") {
+	if(!is_enum_kind(kind) && kind != "flags") {
 		throw std::runtime_error(std::format(
 			"{}: named value '{}' requires field '{}' to be an enum or flags type, got '{}'",
 			context, name, entry.name, kind
@@ -166,7 +243,7 @@ void check_value(const jsoncons::json& value, const ScopeEntry& entry, const Sco
 		const auto* def = types.find(ref->type);
 		const auto kind = def? (*def)["kind"].as<std::string>() : std::string();
 
-		if(kind != "enum" && kind != "flags") {
+		if(!is_enum_kind(kind) && kind != "flags") {
 			throw std::runtime_error(std::format(
 				"{}: value references field '{}' of type '{}' which can't be used in a condition",
 				context, ref_name, ref->type
@@ -238,7 +315,7 @@ void validate_condition(const jsoncons::json& cond, const Scope& scope,
 		const auto* def = types.find(entry->type);
 		const auto kind = def? (*def)["kind"].as<std::string>() : std::string();
 
-		if(kind != "enum" && kind != "flags") {
+		if(!is_enum_kind(kind) && kind != "flags") {
 			throw std::runtime_error(std::format(
 				"{}: field '{}' of type '{}' can't be used in a condition",
 				context, field_name, entry->type

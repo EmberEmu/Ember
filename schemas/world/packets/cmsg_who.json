@@ -1,0 +1,17 @@
+{
+	"name": "Who",
+	"opcode": "cmsg_who",
+	"direction": "client",
+	"fields": [
+		{ "name": "minimum_level",     "type": "uint32" },
+		{ "name": "maximum_level",     "type": "uint32" },
+		{ "name": "player_name",       "type": "CString" },
+		{ "name": "guild_name",        "type": "CString" },
+		{ "name": "race_mask",         "type": "uint32" },
+		{ "name": "class_mask",        "type": "uint32" },
+		{ "name": "amount_of_zones",   "type": "uint32" },
+		{ "name": "zones",             "type": "uint32", "array": {"count_field": "amount_of_zones"} },
+		{ "name": "amount_of_strings", "type": "uint32" },
+		{ "name": "search_strings",    "type": "CString", "array": {"count_field": "amount_of_strings"} }
+	]
+}

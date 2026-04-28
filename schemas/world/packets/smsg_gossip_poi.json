@@ -1,0 +1,12 @@
+{
+	"name": "GossipPoi",
+	"opcode": "smsg_gossip_poi",
+	"direction": "server",
+	"fields": [
+		{ "name": "flags",         "type": "uint32" },
+		{ "name": "position",      "type": "Vector2d" },
+		{ "name": "icon",          "type": "uint32" },
+		{ "name": "data",          "type": "uint32" },
+		{ "name": "location_name", "type": "CString" }
+	]
+}

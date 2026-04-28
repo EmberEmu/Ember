@@ -1,0 +1,8 @@
+{
+	"name": "LootRelease",
+	"opcode": "cmsg_loot_release",
+	"direction": "client",
+	"fields": [
+		{ "name": "guid", "type": "uint64" }
+	]
+}

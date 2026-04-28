@@ -1,0 +1,8 @@
+{
+	"name": "RequestPartyMemberStats",
+	"opcode": "cmsg_request_party_member_stats",
+	"direction": "client",
+	"fields": [
+		{ "name": "guid", "type": "uint64" }
+	]
+}

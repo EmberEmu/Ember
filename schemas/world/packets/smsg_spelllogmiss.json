@@ -1,0 +1,12 @@
+{
+	"name": "Spelllogmiss",
+	"opcode": "smsg_spelllogmiss",
+	"direction": "server",
+	"fields": [
+		{ "name": "id",                "type": "uint32" },
+		{ "name": "caster",            "type": "uint64" },
+		{ "name": "unknown1",          "type": "uint8" },
+		{ "name": "amount_of_targets", "type": "uint32" },
+		{ "name": "targets",           "type": "SpellLogMiss", "array": {"count_field": "amount_of_targets"} }
+	]
+}

@@ -1,0 +1,9 @@
+{
+	"name": "UnstablePet",
+	"opcode": "cmsg_unstable_pet",
+	"direction": "client",
+	"fields": [
+		{ "name": "stable_master", "type": "uint64" },
+		{ "name": "pet_number",    "type": "uint32" }
+	]
+}

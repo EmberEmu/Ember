@@ -1,0 +1,8 @@
+{
+	"name": "SetWatchedFaction",
+	"opcode": "cmsg_set_watched_faction",
+	"direction": "client",
+	"fields": [
+		{ "name": "faction", "type": "uint16" }
+	]
+}

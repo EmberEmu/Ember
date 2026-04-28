@@ -1,0 +1,8 @@
+{
+	"name": "Inspect",
+	"opcode": "smsg_inspect",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid", "type": "uint64" }
+	]
+}

@@ -1,0 +1,5 @@
+{
+	"name": "MeetingstoneInProgress",
+	"opcode": "smsg_meetingstone_in_progress",
+	"direction": "server"
+}

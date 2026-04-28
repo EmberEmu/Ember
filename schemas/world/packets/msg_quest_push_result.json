@@ -1,0 +1,9 @@
+{
+	"name": "QuestPushResult",
+	"opcode": "msg_quest_push_result",
+	"direction": "client",
+	"fields": [
+		{ "name": "guid",    "type": "uint64" },
+		{ "name": "message", "type": "QuestPartyMessage" }
+	]
+}

@@ -1,0 +1,9 @@
+{
+	"name": "MoveTimeSkipped",
+	"opcode": "cmsg_move_time_skipped",
+	"direction": "client",
+	"fields": [
+		{ "name": "guid", "type": "uint64" },
+		{ "name": "lag",  "type": "uint32" }
+	]
+}

@@ -1,0 +1,8 @@
+{
+	"name": "TurnInPetitionResults",
+	"opcode": "smsg_turn_in_petition_results",
+	"direction": "server",
+	"fields": [
+		{ "name": "result", "type": "PetitionResult" }
+	]
+}

@@ -1,0 +1,5 @@
+{
+	"name": "ResetInstances",
+	"opcode": "cmsg_reset_instances",
+	"direction": "client"
+}

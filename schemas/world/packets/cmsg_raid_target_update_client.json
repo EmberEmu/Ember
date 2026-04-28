@@ -1,0 +1,15 @@
+{
+	"name": "RaidTargetUpdateClient",
+	"opcode": "cmsg_raid_target_update_client",
+	"direction": "client",
+	"fields": [
+		{ "name": "target_index", "type": "RaidTargetIndex" },
+		{
+			"type": "group",
+			"when": { "op": "neq", "field": "target_index", "value": "request_icons" },
+			"fields": [
+				{ "name": "target", "type": "uint64" }
+			]
+		}
+	]
+}

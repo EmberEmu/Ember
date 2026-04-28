@@ -1,0 +1,11 @@
+{
+	"name": "WorldTeleport",
+	"opcode": "cmsg_world_teleport",
+	"direction": "client",
+	"fields": [
+		{ "name": "time",        "type": "uint32" },
+		{ "name": "map",         "type": "Map" },
+		{ "name": "position",    "type": "Vector3" },
+		{ "name": "orientation", "type": "float" }
+	]
+}

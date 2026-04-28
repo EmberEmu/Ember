@@ -1,0 +1,9 @@
+{
+	"name": "ItemTextQueryResponse",
+	"opcode": "smsg_item_text_query_response",
+	"direction": "server",
+	"fields": [
+		{ "name": "item_text_id", "type": "uint32" },
+		{ "name": "text",         "type": "CString" }
+	]
+}

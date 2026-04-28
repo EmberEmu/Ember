@@ -1,0 +1,9 @@
+{
+	"name": "TrainerBuySucceeded",
+	"opcode": "smsg_trainer_buy_succeeded",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid", "type": "uint64" },
+		{ "name": "id",   "type": "uint32" }
+	]
+}

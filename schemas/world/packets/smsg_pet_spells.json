@@ -1,0 +1,24 @@
+{
+	"name": "PetSpells",
+	"opcode": "smsg_pet_spells",
+	"direction": "server",
+	"fields": [
+		{ "name": "pet", "type": "uint64" },
+		{
+			"type": "group",
+			"when": { "op": "stream_not_empty" },
+			"fields": [
+				{ "name": "duration",            "type": "uint32" },
+				{ "name": "react",               "type": "PetReactState" },
+				{ "name": "command",             "type": "PetCommandState" },
+				{ "name": "unknown",             "type": "uint8" },
+				{ "name": "pet_enabled",         "type": "PetEnabled" },
+				{ "name": "action_bars",         "type": "uint32", "array": {"size": 10} },
+				{ "name": "amount_of_spells",    "type": "uint8" },
+				{ "name": "spells",              "type": "uint32", "array": {"count_field": "amount_of_spells"} },
+				{ "name": "amount_of_cooldowns", "type": "uint8" },
+				{ "name": "cooldowns",           "type": "PetSpellCooldown", "array": {"count_field": "amount_of_cooldowns"} }
+			]
+		}
+	]
+}

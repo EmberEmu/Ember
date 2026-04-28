@@ -1,0 +1,17 @@
+{
+	"name": "CorpseQueryServer",
+	"opcode": "smsg_corpse_query_server",
+	"direction": "server",
+	"fields": [
+		{ "name": "result", "type": "CorpseQueryResult" },
+		{
+			"type": "group",
+			"when": { "op": "eq", "field": "result", "value": "found" },
+			"fields": [
+				{ "name": "map",        "type": "Map" },
+				{ "name": "position",   "type": "Vector3" },
+				{ "name": "corpse_map", "type": "Map" }
+			]
+		}
+	]
+}

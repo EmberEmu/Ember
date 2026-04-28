@@ -1,0 +1,24 @@
+{
+	"name": "InventoryChangeFailure",
+	"opcode": "smsg_inventory_change_failure",
+	"direction": "server",
+	"fields": [
+		{ "name": "result", "type": "InventoryResult" },
+		{
+			"type": "group",
+			"when": { "op": "eq", "field": "result", "value": "cant_equip_level_i" },
+			"fields": [
+				{ "name": "required_level", "type": "uint32" }
+			]
+		},
+		{
+			"type": "group",
+			"when": { "op": "neq", "field": "result", "value": "ok" },
+			"fields": [
+				{ "name": "item1",             "type": "uint64" },
+				{ "name": "item2",             "type": "uint64" },
+				{ "name": "bag_type_subclass", "type": "uint8" }
+			]
+		}
+	]
+}

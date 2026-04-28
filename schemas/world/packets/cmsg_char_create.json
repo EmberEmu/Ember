@@ -1,0 +1,17 @@
+{
+	"name": "CharCreate",
+	"opcode": "cmsg_char_create",
+	"direction": "client",
+	"fields": [
+		{ "name": "name",        "type": "CString" },
+		{ "name": "race",        "type": "Race" },
+		{ "name": "class",       "type": "Class" },
+		{ "name": "gender",      "type": "Gender" },
+		{ "name": "skin_color",  "type": "uint8" },
+		{ "name": "face",        "type": "uint8" },
+		{ "name": "hair_style",  "type": "uint8" },
+		{ "name": "hair_color",  "type": "uint8" },
+		{ "name": "facial_hair", "type": "uint8" },
+		{ "name": "outfit_id",   "type": "uint8" }
+	]
+}

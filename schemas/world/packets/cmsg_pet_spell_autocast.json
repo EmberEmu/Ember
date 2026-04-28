@@ -1,0 +1,10 @@
+{
+	"name": "PetSpellAutocast",
+	"opcode": "cmsg_pet_spell_autocast",
+	"direction": "client",
+	"fields": [
+		{ "name": "guid",             "type": "uint64" },
+		{ "name": "id",               "type": "uint32" },
+		{ "name": "autocast_enabled", "type": "uint8" }
+	]
+}

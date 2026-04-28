@@ -1,0 +1,8 @@
+{
+	"name": "Whois",
+	"opcode": "smsg_whois",
+	"direction": "server",
+	"fields": [
+		{ "name": "message", "type": "CString" }
+	]
+}

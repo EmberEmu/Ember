@@ -1,0 +1,8 @@
+{
+	"name": "GmticketCreate",
+	"opcode": "smsg_gmticket_create",
+	"direction": "server",
+	"fields": [
+		{ "name": "response", "type": "GmTicketResponse" }
+	]
+}

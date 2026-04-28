@@ -1,0 +1,10 @@
+{
+	"name": "PageTextQueryResponse",
+	"opcode": "smsg_page_text_query_response",
+	"direction": "server",
+	"fields": [
+		{ "name": "page_id",      "type": "uint32" },
+		{ "name": "text",         "type": "CString" },
+		{ "name": "next_page_id", "type": "uint32" }
+	]
+}

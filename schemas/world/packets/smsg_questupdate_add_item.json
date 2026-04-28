@@ -1,0 +1,9 @@
+{
+	"name": "QuestupdateAddItem",
+	"opcode": "smsg_questupdate_add_item",
+	"direction": "server",
+	"fields": [
+		{ "name": "required_item_id", "type": "uint32" },
+		{ "name": "items_required",   "type": "uint32" }
+	]
+}

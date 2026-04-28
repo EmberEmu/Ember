@@ -1,0 +1,9 @@
+{
+	"name": "GroupChangeSubGroup",
+	"opcode": "cmsg_group_change_sub_group",
+	"direction": "client",
+	"fields": [
+		{ "name": "name",         "type": "CString" },
+		{ "name": "group_number", "type": "uint8" }
+	]
+}

@@ -1,0 +1,5 @@
+{
+	"name": "GroupDecline",
+	"opcode": "cmsg_group_decline",
+	"direction": "client"
+}

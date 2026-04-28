@@ -1,0 +1,14 @@
+{
+	"name": "Resistlog",
+	"opcode": "smsg_resistlog",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid1",    "type": "uint64" },
+		{ "name": "guid2",    "type": "uint64" },
+		{ "name": "unknown1", "type": "uint32" },
+		{ "name": "unknown2", "type": "float" },
+		{ "name": "unknown3", "type": "float" },
+		{ "name": "unknown4", "type": "uint32" },
+		{ "name": "unknown5", "type": "uint32" }
+	]
+}
