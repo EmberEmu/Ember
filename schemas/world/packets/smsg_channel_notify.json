@@ -4,6 +4,19 @@
 	"direction": "server",
 	"fields": [
 		{ "name": "notify_type",  "type": "ChatNotify" },
-		{ "name": "channel_name", "type": "CString" }
+		{ "name": "channel_name", "type": "CString" },
+		{
+			"type": "if_chain",
+			"branches": [
+				{
+					"when": { "op": "eq", "field": "notify_type", "value": "you_joined_notice" },
+					"fields": [
+						{ "name": "unused",           "type": "uint32" },
+						{ "name": "channel_instance", "type": "uint32" },
+						{ "name": "operation",        "type": "CString" }
+					]
+				}
+			]
+		}
 	]
 }

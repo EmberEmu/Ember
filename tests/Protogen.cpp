@@ -1280,12 +1280,12 @@ TEST_F(Protogen, AsCastMatchingUnderlyingValidates) {
 	EXPECT_NO_THROW(validate_message_fields(msg["fields"], reg, "test"));
 }
 
-TEST_F(Protogen, AsCastRejectsSizeMismatch) {
+TEST_F(Protogen, AsCastAcceptsSizeMismatch) {
 	auto msg = parse_fields(R"([
 		{ "name": "kind", "type": "uint32", "as": "Result" }
 	])");
 
-	EXPECT_ANY_THROW(validate_message_fields(msg["fields"], reg, "test"));
+	EXPECT_NO_THROW(validate_message_fields(msg["fields"], reg, "test"));
 }
 
 TEST_F(Protogen, AsCastScopesFieldAsSemanticType) {

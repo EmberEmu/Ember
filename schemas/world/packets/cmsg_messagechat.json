@@ -3,7 +3,7 @@
 	"opcode": "cmsg_messagechat",
 	"direction": "client",
 	"fields": [
-		{ "name": "type",      "type": "ChatType" },
+		{ "name": "type",      "type": "uint32", "as": "ChatType" },
 		{ "name": "language",  "type": "Language" },
 		{
 			"type": "if_chain",

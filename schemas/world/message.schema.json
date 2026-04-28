@@ -82,7 +82,7 @@
 				},
 				"as": {
 					"type": "string",
-					"description": "Semantic type exposed in the generated struct. The on-wire representation is still `type`; reads/writes cast between the two. Must be a declared enum/flags whose underlying matches `type` OR a declared struct whose layout is equivalent.",
+					"description": "Semantic type exposed in the generated struct. The on-wire representation is still `type`; reads/writes cast between the two.",
 					"pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
 				},
 				"when": {

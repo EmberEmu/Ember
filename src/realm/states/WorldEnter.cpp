@@ -298,6 +298,8 @@ void handle_join_channel(ClientContext& ctx) {
 	protocol::smsg_channel_notify response;
 	response->notify_type = protocol::ChatNotify::you_joined_notice;
 	response->channel_name = packet->name;
+	response->unused = 0;
+	response->channel_instance = 0;
 	ctx.send(response);
 
 	LOG_DEBUG(ctx.logger, "{}", response->channel_name);
@@ -431,14 +433,14 @@ void handle_messagechat(ClientContext& ctx) {
 	}
 
 	protocol::smsg_messagechat response;
-	response->type = (decltype(response->type))packet->type; // kek
+	response->type = packet->type;
 	response->message = packet->message;
 	response->language = 0; // universal, we don't have any learned skills in this test
 	response->player_guid = packed_guid;
 	response->player_tag = protocol::PlayerChatTag::tag_gm;
 	
 	if(packet->type == protocol::ChatType::channel) {
-		response->channel_name = packet->target_player;
+		response->channel_name = packet->channel;
 		response->player_rank = 14;
 	} else {
 		response->player_guid = packed_guid;

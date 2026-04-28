@@ -9,6 +9,21 @@
 			"type": "if_chain",
 			"branches": [
 				{
+					"when": { "op": "in", "field": "type", "value": ["monster_whisper", "raid_boss_emote", "monster_emote"] },
+					"fields": [
+						{ "name": "monster_name", "type": "PrefixedString32" },
+						{ "name": "monster",     "type": "uint64" }
+					]
+				},
+				{
+					"when": { "op": "in", "field": "type", "value": ["monster_say", "monster_yell"] },
+					"fields": [
+						{ "name": "sender1", "type": "uint64" },
+						{ "name": "sender_name", "type": "PrefixedString32" },
+						{ "name": "target",     "type": "uint64" }
+					]
+				},
+				{
 					"when": { "op": "in", "field": "type", "value": ["say", "yell", "party"] },
 					"fields": [
 						{ "name": "speech_bubble_attr", "type": "uint64" },
@@ -18,9 +33,15 @@
 				{
 					"when": { "op": "eq", "field": "type", "value": "channel" },
 					"fields": [
-						{ "name": "channel_name", "type": "PrefixedString32" },
+						{ "name": "channel_name", "type": "CString" },
 						{ "name": "player_rank",  "type": "uint32" },
 						{ "name": "player_guid",  "type": "uint64" }
+					]
+				},
+				{
+					"when": { "op": "neq", "field": "type", "value": "channel" },
+					"fields": [
+						{ "name": "sender2", "type": "uint64" }
 					]
 				}
 			]

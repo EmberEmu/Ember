@@ -3,6 +3,6 @@
 	"opcode": "cmsg_standstatechange",
 	"direction": "client",
 	"fields": [
-		{ "name": "animation_state", "type": "uint32" }
+		{ "name": "state", "type":"uint32", "as": "UnitStandState" }
 	]
 }

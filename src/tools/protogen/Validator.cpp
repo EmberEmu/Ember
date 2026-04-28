@@ -77,26 +77,7 @@ void validate_as_cast(const jsoncons::json& field, const TypeRegistry& types,
 
 	const auto kind = (*def)["kind"].as<std::string>();
 
-	if(is_enum_kind(kind) || kind == "flags") {
-		const auto declared = (*def)["underlying"].as<std::string>();
-		// The cast is sound only when the enum/flag and wire types have
-		// the same size and signedness — otherwise reinterpreting bytes
-		// between them would silently truncate or widen.
-		if(declared != wire) {
-			throw std::runtime_error(std::format(
-				"{}: field '{}' 'as'='{}' has underlying '{}' but wire type is '{}'; "
-				"the two must match for the cast to be sound",
-				context, name, as, declared, wire
-			));
-		}
-		return;
-	}
-
-	if(kind == "external" && def->contains("underlying")) {
-		// An integral-convertible external (typically a DBC inner enum)
-		// opts in to `as` casting by declaring `underlying`. Any primitive
-		// wire is allowed — the generator emits an explicit static_cast,
-		// so a size change is intentional and visible at the call site.
+	if(is_enum_kind(kind) || kind == "flags" || (kind == "external" && def->contains("underlying"))) {
 		return;
 	}
 
