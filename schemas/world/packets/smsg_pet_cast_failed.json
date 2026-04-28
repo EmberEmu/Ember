@@ -1,0 +1,10 @@
+{
+	"name": "PetCastFailed",
+	"opcode": "smsg_pet_cast_failed",
+	"direction": "server",
+	"fields": [
+		{ "name": "id",       "type": "uint32" },
+		{ "name": "unknown1", "type": "uint8" },
+		{ "name": "result",   "type": "SpellCastResult" }
+	]
+}

@@ -1,0 +1,8 @@
+{
+	"name": "DestroyObject",
+	"opcode": "smsg_destroy_object",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid", "type": "uint64" }
+	]
+}

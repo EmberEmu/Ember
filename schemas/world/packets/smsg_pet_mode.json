@@ -1,0 +1,12 @@
+{
+	"name": "PetMode",
+	"opcode": "smsg_pet_mode",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid",          "type": "uint64" },
+		{ "name": "react_state",   "type": "PetReactState" },
+		{ "name": "command_state", "type": "PetCommandState" },
+		{ "name": "unknown1",      "type": "uint8" },
+		{ "name": "pet_enabled",   "type": "PetEnabled" }
+	]
+}

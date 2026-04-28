@@ -1,0 +1,9 @@
+{
+	"name": "IgnoreList",
+	"opcode": "smsg_ignore_list",
+	"direction": "server",
+	"fields": [
+		{ "name": "amount_of_ignored", "type": "uint8" },
+		{ "name": "ignored",           "type": "uint64", "array": {"count_field": "amount_of_ignored"} }
+	]
+}

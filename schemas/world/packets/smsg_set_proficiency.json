@@ -1,0 +1,9 @@
+{
+	"name": "SetProficiency",
+	"opcode": "smsg_set_proficiency",
+	"direction": "server",
+	"fields": [
+		{ "name": "class",               "type": "uint8", "as": "ItemClass" },
+		{ "name": "item_sub_class_mask", "type": "uint32" }
+	]
+}

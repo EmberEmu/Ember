@@ -1,0 +1,64 @@
+{
+	"name": "AuctionCommandResult",
+	"opcode": "smsg_auction_command_result",
+	"direction": "server",
+	"fields": [
+		{ "name": "auction_id", "type": "uint32" },
+		{ "name": "action",     "type": "AuctionCommandAction" },
+		{
+			"type": "if_chain",
+			"branches": [
+				{
+					"when": { "op": "eq", "field": "action", "value": "bid_placed" },
+					"fields": [
+						{ "name": "result", "type": "AuctionCommandResult" },
+						{
+							"type": "if_chain",
+							"branches": [
+								{
+									"when": { "op": "eq", "field": "result", "value": "ok" },
+									"fields": [
+										{ "name": "auction_outbid1", "type": "uint32" }
+									]
+								},
+								{
+									"when": { "op": "eq", "field": "result", "value": "err_inventory" },
+									"fields": [
+										{ "name": "inventory_result", "type": "InventoryResult" }
+									]
+								},
+								{
+									"when": { "op": "eq", "field": "result", "value": "err_higher_bid" },
+									"fields": [
+										{ "name": "higher_bidder",   "type": "uint64" },
+										{ "name": "new_bid",         "type": "uint32" },
+										{ "name": "auction_outbid2", "type": "uint32" }
+									]
+								}
+							]
+						}
+					]
+				}
+			],
+			"else": [
+				{ "name": "result2", "type": "uint32" },
+				{
+					"type": "group",
+					"when": { "op": "eq", "field": "result2", "value": 1 },
+					"fields": [
+						{ "name": "inventory_result2", "type": "uint8" }
+					]
+				},
+				{
+					"type": "group",
+					"when": { "op": "eq", "field": "result2", "value": 5 },
+					"fields": [
+						{ "name": "higher_bidder2",  "type": "uint64" },
+						{ "name": "new_bid2",        "type": "uint32" },
+						{ "name": "auction_outbid3", "type": "uint32" }
+					]
+				}
+			]
+		}
+	]
+}

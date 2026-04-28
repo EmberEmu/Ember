@@ -1,0 +1,9 @@
+{
+	"name": "BattlefieldPort",
+	"opcode": "cmsg_battlefield_port",
+	"direction": "client",
+	"fields": [
+		{ "name": "map",    "type": "Map" },
+		{ "name": "action", "type": "BattlefieldPortAction" }
+	]
+}

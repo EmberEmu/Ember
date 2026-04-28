@@ -1,0 +1,8 @@
+{
+	"name": "SetActiveMover",
+	"opcode": "cmsg_set_active_mover",
+	"direction": "client",
+	"fields": [
+		{ "name": "guid", "type": "uint64" }
+	]
+}

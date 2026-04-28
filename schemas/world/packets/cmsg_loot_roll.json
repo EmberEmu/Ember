@@ -1,0 +1,10 @@
+{
+	"name": "LootRoll",
+	"opcode": "cmsg_loot_roll",
+	"direction": "client",
+	"fields": [
+		{ "name": "item",      "type": "uint64" },
+		{ "name": "item_slot", "type": "uint32" },
+		{ "name": "vote",      "type": "RollVote" }
+	]
+}

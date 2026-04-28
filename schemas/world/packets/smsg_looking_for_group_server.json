@@ -1,0 +1,8 @@
+{
+	"name": "LookingForGroupServer",
+	"opcode": "smsg_looking_for_group_server",
+	"direction": "server",
+	"fields": [
+		{ "name": "unknown1", "type": "uint32" }
+	]
+}

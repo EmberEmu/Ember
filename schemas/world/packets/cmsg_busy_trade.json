@@ -1,0 +1,5 @@
+{
+	"name": "BusyTrade",
+	"opcode": "cmsg_busy_trade",
+	"direction": "client"
+}

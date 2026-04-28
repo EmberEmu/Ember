@@ -1,0 +1,19 @@
+{
+	"name": "LootResponse",
+	"opcode": "smsg_loot_response",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid",        "type": "uint64" },
+		{ "name": "loot_method", "type": "LootMethod" },
+		{
+			"type": "group",
+			"when": { "op": "eq", "field": "loot_method", "value": "error" },
+			"fields": [
+				{ "name": "loot_error", "type": "LootMethodError" }
+			]
+		},
+		{ "name": "gold",            "type": "uint32" },
+		{ "name": "amount_of_items", "type": "uint8" },
+		{ "name": "items",           "type": "LootItem", "array": {"count_field": "amount_of_items"} }
+	]
+}

@@ -1,0 +1,10 @@
+{
+	"name": "AuctionRemovedNotification",
+	"opcode": "smsg_auction_removed_notification",
+	"direction": "server",
+	"fields": [
+		{ "name": "item",               "type": "uint32" },
+		{ "name": "item_template",      "type": "uint32" },
+		{ "name": "random_property_id", "type": "uint32" }
+	]
+}

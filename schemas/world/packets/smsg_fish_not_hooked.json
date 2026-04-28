@@ -1,0 +1,5 @@
+{
+	"name": "FishNotHooked",
+	"opcode": "smsg_fish_not_hooked",
+	"direction": "server"
+}

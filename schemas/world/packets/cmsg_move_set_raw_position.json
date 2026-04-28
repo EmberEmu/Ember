@@ -1,0 +1,9 @@
+{
+	"name": "MoveSetRawPosition",
+	"opcode": "cmsg_move_set_raw_position",
+	"direction": "client",
+	"fields": [
+		{ "name": "position",    "type": "Vector3" },
+		{ "name": "orientation", "type": "float" }
+	]
+}

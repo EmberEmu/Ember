@@ -1,0 +1,8 @@
+{
+	"name": "ReadItemFailed",
+	"opcode": "smsg_read_item_failed",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid", "type": "uint64" }
+	]
+}

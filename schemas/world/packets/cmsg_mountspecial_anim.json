@@ -1,0 +1,5 @@
+{
+	"name": "MountspecialAnim",
+	"opcode": "cmsg_mountspecial_anim",
+	"direction": "client"
+}

@@ -1,0 +1,9 @@
+{
+	"name": "MoveNormalFall",
+	"opcode": "smsg_move_normal_fall",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid",    "type": "PackedGuid" },
+		{ "name": "counter", "type": "uint32" }
+	]
+}

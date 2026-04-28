@@ -1,0 +1,8 @@
+{
+	"name": "GuildInfoText",
+	"opcode": "cmsg_guild_info_text",
+	"direction": "client",
+	"fields": [
+		{ "name": "guild_info", "type": "CString" }
+	]
+}

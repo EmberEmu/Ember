@@ -1,0 +1,12 @@
+{
+	"name": "SplitItem",
+	"opcode": "cmsg_split_item",
+	"direction": "client",
+	"fields": [
+		{ "name": "source_bag",       "type": "uint8" },
+		{ "name": "source_slot",      "type": "uint8" },
+		{ "name": "destination_bag",  "type": "uint8" },
+		{ "name": "destination_slot", "type": "uint8" },
+		{ "name": "amount",           "type": "uint8" }
+	]
+}

@@ -1,0 +1,24 @@
+{
+	"name": "PetitionQueryResponse",
+	"opcode": "smsg_petition_query_response",
+	"direction": "server",
+	"fields": [
+		{ "name": "petition_id",            "type": "uint32" },
+		{ "name": "charter_owner",          "type": "uint64" },
+		{ "name": "guild_name",             "type": "CString" },
+		{ "name": "body_text",              "type": "CString" },
+		{ "name": "unknown_flags",          "type": "uint32" },
+		{ "name": "minimum_signatures",     "type": "uint32" },
+		{ "name": "maximum_signatures",     "type": "uint32" },
+		{ "name": "deadline",               "type": "uint32" },
+		{ "name": "issue_date",             "type": "uint32" },
+		{ "name": "allowed_guild_id",       "type": "uint32" },
+		{ "name": "allowed_class",          "type": "AllowedClass" },
+		{ "name": "allowed_race",           "type": "AllowedRace" },
+		{ "name": "allowed_genders",        "type": "uint16" },
+		{ "name": "allowed_minimum_level",  "type": "uint32" },
+		{ "name": "allowed_maximum_level",  "type": "uint32" },
+		{ "name": "todo_amount_of_signers", "type": "uint32" },
+		{ "name": "number_of_choices",      "type": "uint32" }
+	]
+}

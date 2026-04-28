@@ -1,0 +1,8 @@
+{
+	"name": "GroupUninvite",
+	"opcode": "cmsg_group_uninvite",
+	"direction": "client",
+	"fields": [
+		{ "name": "name", "type": "CString" }
+	]
+}

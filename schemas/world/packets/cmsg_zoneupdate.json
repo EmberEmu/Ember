@@ -3,6 +3,6 @@
 	"opcode": "cmsg_zoneupdate",
 	"direction": "client",
 	"fields": [
-		{ "name": "area", "type": "uint32" }
+		{ "name": "area", "type": "Area" }
 	]
 }

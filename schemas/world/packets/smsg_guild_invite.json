@@ -1,0 +1,9 @@
+{
+	"name": "GuildInvite",
+	"opcode": "smsg_guild_invite",
+	"direction": "server",
+	"fields": [
+		{ "name": "player_name", "type": "CString" },
+		{ "name": "guild_name",  "type": "CString" }
+	]
+}

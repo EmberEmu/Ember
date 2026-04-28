@@ -1,0 +1,9 @@
+{
+	"name": "RaidGroupOnly",
+	"opcode": "smsg_raid_group_only",
+	"direction": "server",
+	"fields": [
+		{ "name": "homebind_timer", "type": "uint32" },
+		{ "name": "error",          "type": "RaidGroupError" }
+	]
+}

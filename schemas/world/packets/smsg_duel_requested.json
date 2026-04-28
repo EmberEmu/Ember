@@ -1,0 +1,9 @@
+{
+	"name": "DuelRequested",
+	"opcode": "smsg_duel_requested",
+	"direction": "server",
+	"fields": [
+		{ "name": "initiator", "type": "uint64" },
+		{ "name": "target",    "type": "uint64" }
+	]
+}

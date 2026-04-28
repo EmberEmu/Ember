@@ -1,0 +1,10 @@
+{
+	"name": "PetAction",
+	"opcode": "cmsg_pet_action",
+	"direction": "client",
+	"fields": [
+		{ "name": "pet",    "type": "uint64" },
+		{ "name": "data",   "type": "uint32" },
+		{ "name": "target", "type": "uint64" }
+	]
+}

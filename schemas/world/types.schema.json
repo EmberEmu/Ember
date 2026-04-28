@@ -64,7 +64,7 @@
 			"required": ["kind", "underlying", "values"],
 			"additionalProperties": false,
 			"properties": {
-				"kind":          { "const": "enum" },
+				"kind":          { "enum": ["enum", "enum_class"] },
 				"underlying":    { "$ref": "#/$defs/primitive" },
 				"values":        { "$ref": "#/$defs/values" },
 				"cpp_namespace": { "$ref": "#/$defs/cpp_namespace" }
@@ -93,13 +93,22 @@
 		},
 		"external_type": {
 			"type": "object",
-			"description": "Escape hatch: the type is defined in hand-written C++. protogen won't generate a header for it, but packet code can reference it — the generator emits the given include path and qualifies the name with cpp_namespace (if set). The user is responsible for overloading stream operators.",
+			"description": "Escape hatch: the type is defined in hand-written C++. When `underlying` is set, the external behaves as a named alias for that primitive — the generated struct holds the underlying integer and streams it directly. Without `underlying`, the user provides their own stream operator overloads.",
 			"required": ["kind", "include"],
 			"additionalProperties": false,
 			"properties": {
 				"kind":          { "const": "external" },
-				"include":       { "type": "string", "description": "Header path used when emitting #include <...>" },
-				"cpp_namespace": { "$ref": "#/$defs/cpp_namespace" }
+				"include":       { "type": "string", "description": "Header path used when emitting #include <...>. Ignored when the external is used via `underlying` as a primitive alias — no external header is needed for a raw int." },
+				"cpp_namespace": { "$ref": "#/$defs/cpp_namespace" },
+				"cpp_type_name": {
+					"type": "string",
+					"pattern": "^[A-Za-z_][A-Za-z0-9_:]*$",
+					"description": "C++ type name to emit — overrides the schema key. Use this to name a nested enum like 'ItemClass::Class' from a DBC header."
+				},
+				"underlying":    {
+					"$ref": "#/$defs/primitive",
+					"description": "Makes the external an alias for this primitive. Fields that reference the external by `type` take the primitive as their member type and stream it directly (e.g. a `Map` field becomes `std::uint32_t map;`). Fields that reference it via `as` take the external's C++ type as their member type and the generator inserts `static_cast` between the wire primitive and the external — the inner-DBC-enum pattern."
+				}
 			}
 		},
 		"string_type": {
@@ -127,7 +136,8 @@
 			"items": {
 				"oneOf": [
 					{ "$ref": "#/$defs/field" },
-					{ "$ref": "#/$defs/group" }
+					{ "$ref": "#/$defs/group" },
+					{ "$ref": "#/$defs/if_chain" }
 				]
 			},
 			"minItems": 1,
@@ -138,6 +148,7 @@
 			"properties": {
 				"name":  { "type": "string" },
 				"type":  { "$ref": "#/$defs/field_type" },
+				"as":    { "type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*$" },
 				"when":  { "$ref": "#/$defs/condition" },
 				"array": { "$ref": "#/$defs/array" }
 			},
@@ -148,12 +159,14 @@
 			"type": "object",
 			"properties": {
 				"size":        { "type": "integer", "minimum": 1 },
-				"count_field": { "type": "string" }
+				"count_field": { "type": "string" },
+				"until_end":   { "const": true }
 			},
 			"additionalProperties": false,
 			"oneOf": [
-				{ "required": ["size"],        "not": { "required": ["count_field"] } },
-				{ "required": ["count_field"], "not": { "required": ["size"] } }
+				{ "required": ["size"],        "not": { "anyOf": [ { "required": ["count_field"] }, { "required": ["until_end"] } ] } },
+				{ "required": ["count_field"], "not": { "anyOf": [ { "required": ["size"] },        { "required": ["until_end"] } ] } },
+				{ "required": ["until_end"],   "not": { "anyOf": [ { "required": ["size"] },        { "required": ["count_field"] } ] } }
 			]
 		},
 		"group": {
@@ -164,6 +177,28 @@
 				"fields": { "$ref": "#/$defs/fields" }
 			},
 			"required": ["type", "fields"],
+			"additionalProperties": false
+		},
+		"if_chain": {
+			"type": "object",
+			"properties": {
+				"type":     { "const": "if_chain" },
+				"branches": {
+					"type": "array",
+					"minItems": 1,
+					"items": {
+						"type": "object",
+						"required": ["when", "fields"],
+						"additionalProperties": false,
+						"properties": {
+							"when":   { "$ref": "#/$defs/condition" },
+							"fields": { "$ref": "#/$defs/fields" }
+						}
+					}
+				},
+				"else":     { "$ref": "#/$defs/fields" }
+			},
+			"required": ["type", "branches"],
 			"additionalProperties": false
 		},
 		"value_ref": {

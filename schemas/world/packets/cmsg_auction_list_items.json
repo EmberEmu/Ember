@@ -1,0 +1,17 @@
+{
+	"name": "AuctionListItems",
+	"opcode": "cmsg_auction_list_items",
+	"direction": "client",
+	"fields": [
+		{ "name": "auctioneer",            "type": "uint64" },
+		{ "name": "list_start_item",       "type": "uint32" },
+		{ "name": "searched_name",         "type": "CString" },
+		{ "name": "minimum_level",         "type": "uint8" },
+		{ "name": "maximum_level",         "type": "uint8" },
+		{ "name": "auction_slot_id",       "type": "uint32" },
+		{ "name": "auction_main_category", "type": "uint32" },
+		{ "name": "auction_sub_category",  "type": "uint32" },
+		{ "name": "auction_quality",       "type": "uint32" },
+		{ "name": "usable",                "type": "uint8" }
+	]
+}

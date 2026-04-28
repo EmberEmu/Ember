@@ -1,0 +1,11 @@
+{
+	"name": "Weather",
+	"opcode": "smsg_weather",
+	"direction": "server",
+	"fields": [
+		{ "name": "weather_type", "type": "WeatherType" },
+		{ "name": "grade",        "type": "float" },
+		{ "name": "sound_id",     "type": "uint32" },
+		{ "name": "change",       "type": "WeatherChangeType" }
+	]
+}

@@ -1,0 +1,8 @@
+{
+	"name": "GuildCreate",
+	"opcode": "cmsg_guild_create",
+	"direction": "client",
+	"fields": [
+		{ "name": "guild_name", "type": "CString" }
+	]
+}

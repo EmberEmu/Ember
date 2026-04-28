@@ -1,0 +1,10 @@
+{
+	"name": "TransferAborted",
+	"opcode": "smsg_transfer_aborted",
+	"direction": "server",
+	"fields": [
+		{ "name": "map",      "type": "Map" },
+		{ "name": "reason",   "type": "TransferAbortReason" },
+		{ "name": "argument", "type": "uint8" }
+	]
+}

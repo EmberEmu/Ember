@@ -1,0 +1,10 @@
+{
+	"name": "MoveSplineDone",
+	"opcode": "cmsg_move_spline_done",
+	"direction": "client",
+	"fields": [
+		{ "name": "info",             "type": "MovementInfo" },
+		{ "name": "movement_counter", "type": "uint32" },
+		{ "name": "unknown1",         "type": "uint32" }
+	]
+}

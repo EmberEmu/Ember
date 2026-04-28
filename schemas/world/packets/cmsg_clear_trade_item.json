@@ -1,0 +1,8 @@
+{
+	"name": "ClearTradeItem",
+	"opcode": "cmsg_clear_trade_item",
+	"direction": "client",
+	"fields": [
+		{ "name": "trade_slot", "type": "uint8" }
+	]
+}

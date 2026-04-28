@@ -1,0 +1,5 @@
+{
+	"name": "LogoutRequest",
+	"opcode": "cmsg_logout_request",
+	"direction": "client"
+}

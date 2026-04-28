@@ -1,0 +1,8 @@
+{
+	"name": "OpenContainer",
+	"opcode": "smsg_open_container",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid", "type": "uint64" }
+	]
+}

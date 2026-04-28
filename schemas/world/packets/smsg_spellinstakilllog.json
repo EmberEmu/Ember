@@ -1,0 +1,9 @@
+{
+	"name": "Spellinstakilllog",
+	"opcode": "smsg_spellinstakilllog",
+	"direction": "server",
+	"fields": [
+		{ "name": "target", "type": "uint64" },
+		{ "name": "spell",  "type": "uint32" }
+	]
+}

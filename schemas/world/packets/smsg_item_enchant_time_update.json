@@ -1,0 +1,11 @@
+{
+	"name": "ItemEnchantTimeUpdate",
+	"opcode": "smsg_item_enchant_time_update",
+	"direction": "server",
+	"fields": [
+		{ "name": "item",     "type": "uint64" },
+		{ "name": "slot",     "type": "uint32" },
+		{ "name": "duration", "type": "uint32" },
+		{ "name": "player",   "type": "uint64" }
+	]
+}

@@ -1,0 +1,5 @@
+{
+	"name": "QuestlogFull",
+	"opcode": "smsg_questlog_full",
+	"direction": "server"
+}

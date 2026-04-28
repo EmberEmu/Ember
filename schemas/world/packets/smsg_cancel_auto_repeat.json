@@ -1,0 +1,5 @@
+{
+	"name": "CancelAutoRepeat",
+	"opcode": "smsg_cancel_auto_repeat",
+	"direction": "server"
+}

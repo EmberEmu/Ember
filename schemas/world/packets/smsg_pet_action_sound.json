@@ -1,0 +1,9 @@
+{
+	"name": "PetActionSound",
+	"opcode": "smsg_pet_action_sound",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid",   "type": "uint64" },
+		{ "name": "reason", "type": "PetTalkReason" }
+	]
+}

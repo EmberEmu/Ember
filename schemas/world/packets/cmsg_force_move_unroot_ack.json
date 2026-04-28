@@ -1,0 +1,10 @@
+{
+	"name": "ForceMoveUnrootAck",
+	"opcode": "cmsg_force_move_unroot_ack",
+	"direction": "client",
+	"fields": [
+		{ "name": "guid",             "type": "uint64" },
+		{ "name": "movement_counter", "type": "uint32" },
+		{ "name": "info",             "type": "MovementInfo" }
+	]
+}

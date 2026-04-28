@@ -1,0 +1,23 @@
+{
+	"name": "InspectHonorStatsServer",
+	"opcode": "smsg_inspect_honor_stats_server",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid",                             "type": "uint64" },
+		{ "name": "highest_rank",                     "type": "PvpRank" },
+		{ "name": "today_honorable_and_dishonorable", "type": "uint32" },
+		{ "name": "yesterday_honorable",              "type": "uint16" },
+		{ "name": "unknown1",                         "type": "uint16" },
+		{ "name": "last_week_honorable",              "type": "uint16" },
+		{ "name": "unknown2",                         "type": "uint16" },
+		{ "name": "this_week_honorable",              "type": "uint16" },
+		{ "name": "unknown3",                         "type": "uint16" },
+		{ "name": "lifetime_honorable",               "type": "uint32" },
+		{ "name": "lifetime_dishonorable",            "type": "uint32" },
+		{ "name": "yesterday_honor",                  "type": "uint32" },
+		{ "name": "last_week_honor",                  "type": "uint32" },
+		{ "name": "this_week_honor",                  "type": "uint32" },
+		{ "name": "last_week_standing",               "type": "uint32" },
+		{ "name": "rank_progress_bar",                "type": "uint8" }
+	]
+}

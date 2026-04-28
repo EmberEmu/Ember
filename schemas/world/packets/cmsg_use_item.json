@@ -1,0 +1,11 @@
+{
+	"name": "UseItem",
+	"opcode": "cmsg_use_item",
+	"direction": "client",
+	"fields": [
+		{ "name": "bag_index",   "type": "uint8" },
+		{ "name": "bag_slot",    "type": "uint8" },
+		{ "name": "spell_index", "type": "uint8" },
+		{ "name": "targets",     "type": "SpellCastTargets" }
+	]
+}

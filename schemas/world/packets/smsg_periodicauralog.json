@@ -1,0 +1,12 @@
+{
+	"name": "Periodicauralog",
+	"opcode": "smsg_periodicauralog",
+	"direction": "server",
+	"fields": [
+		{ "name": "target",          "type": "PackedGuid" },
+		{ "name": "caster",          "type": "PackedGuid" },
+		{ "name": "spell",           "type": "uint32" },
+		{ "name": "amount_of_auras", "type": "uint32" },
+		{ "name": "auras",           "type": "AuraLog", "array": {"count_field": "amount_of_auras"} }
+	]
+}

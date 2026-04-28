@@ -1,0 +1,5 @@
+{
+	"name": "LootMoney",
+	"opcode": "cmsg_loot_money",
+	"direction": "client"
+}

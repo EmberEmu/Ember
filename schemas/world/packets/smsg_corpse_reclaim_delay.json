@@ -1,0 +1,8 @@
+{
+	"name": "CorpseReclaimDelay",
+	"opcode": "smsg_corpse_reclaim_delay",
+	"direction": "server",
+	"fields": [
+		{ "name": "delay", "type": "uint32" }
+	]
+}

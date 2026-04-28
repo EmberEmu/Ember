@@ -1,0 +1,9 @@
+{
+	"name": "SetFactionAtwar",
+	"opcode": "cmsg_set_faction_atwar",
+	"direction": "client",
+	"fields": [
+		{ "name": "faction", "type": "uint16" },
+		{ "name": "flags",   "type": "FactionFlag" }
+	]
+}

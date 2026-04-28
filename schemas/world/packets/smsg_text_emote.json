@@ -1,0 +1,11 @@
+{
+	"name": "TextEmote",
+	"opcode": "smsg_text_emote",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid",       "type": "uint64" },
+		{ "name": "text_emote", "type": "TextEmote" },
+		{ "name": "emote",      "type": "uint32" },
+		{ "name": "name",       "type": "PrefixedString32" }
+	]
+}

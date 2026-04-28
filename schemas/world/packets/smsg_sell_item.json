@@ -1,0 +1,10 @@
+{
+	"name": "SellItem",
+	"opcode": "smsg_sell_item",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid",   "type": "uint64" },
+		{ "name": "item",   "type": "uint64" },
+		{ "name": "result", "type": "SellItemResult" }
+	]
+}

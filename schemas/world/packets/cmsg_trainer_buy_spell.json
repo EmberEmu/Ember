@@ -1,0 +1,9 @@
+{
+	"name": "TrainerBuySpell",
+	"opcode": "cmsg_trainer_buy_spell",
+	"direction": "client",
+	"fields": [
+		{ "name": "guid", "type": "uint64" },
+		{ "name": "id",   "type": "uint32" }
+	]
+}

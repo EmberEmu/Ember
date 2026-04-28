@@ -1,0 +1,5 @@
+{
+	"name": "NewTaxiPath",
+	"opcode": "smsg_new_taxi_path",
+	"direction": "server"
+}

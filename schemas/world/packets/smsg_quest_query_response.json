@@ -1,0 +1,33 @@
+{
+	"name": "QuestQueryResponse",
+	"opcode": "smsg_quest_query_response",
+	"direction": "server",
+	"fields": [
+		{ "name": "quest_id",                           "type": "uint32" },
+		{ "name": "quest_method",                       "type": "uint32" },
+		{ "name": "quest_level",                        "type": "uint32" },
+		{ "name": "zone_or_sort",                       "type": "uint32" },
+		{ "name": "quest_type",                         "type": "uint32" },
+		{ "name": "reputation_objective_faction",       "type": "uint16" },
+		{ "name": "reputation_objective_value",         "type": "uint32" },
+		{ "name": "required_opposite_faction",          "type": "uint16" },
+		{ "name": "required_opposite_reputation_value", "type": "uint32" },
+		{ "name": "next_quest_in_chain",                "type": "uint32" },
+		{ "name": "money_reward",                       "type": "uint32" },
+		{ "name": "max_level_money_reward",             "type": "uint32" },
+		{ "name": "reward_spell",                       "type": "uint32" },
+		{ "name": "source_item_id",                     "type": "uint32" },
+		{ "name": "quest_flags",                        "type": "uint32" },
+		{ "name": "rewards",                            "type": "QuestItemReward", "array": {"size": 4} },
+		{ "name": "choice_rewards",                     "type": "QuestItemReward", "array": {"size": 6} },
+		{ "name": "point_map_id",                       "type": "uint32" },
+		{ "name": "position",                           "type": "Vector2d" },
+		{ "name": "point_opt",                          "type": "uint32" },
+		{ "name": "title",                              "type": "CString" },
+		{ "name": "objective_text",                     "type": "CString" },
+		{ "name": "details",                            "type": "CString" },
+		{ "name": "end_text",                           "type": "CString" },
+		{ "name": "objectives",                         "type": "QuestObjective", "array": {"size": 4} },
+		{ "name": "objective_texts",                    "type": "CString", "array": {"size": 4} }
+	]
+}

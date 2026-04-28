@@ -1,0 +1,12 @@
+{
+	"name": "PetitionShowSignatures",
+	"opcode": "smsg_petition_show_signatures",
+	"direction": "server",
+	"fields": [
+		{ "name": "item",                 "type": "uint64" },
+		{ "name": "owner",                "type": "uint64" },
+		{ "name": "petition",             "type": "uint32" },
+		{ "name": "amount_of_signatures", "type": "uint8" },
+		{ "name": "signatures",           "type": "PetitionSignature", "array": {"count_field": "amount_of_signatures"} }
+	]
+}

@@ -1,0 +1,11 @@
+{
+	"name": "SwapItem",
+	"opcode": "cmsg_swap_item",
+	"direction": "client",
+	"fields": [
+		{ "name": "destination_bag",   "type": "uint8" },
+		{ "name": "destionation_slot", "type": "uint8" },
+		{ "name": "source_bag",        "type": "uint8" },
+		{ "name": "source_slot",       "type": "uint8" }
+	]
+}

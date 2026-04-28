@@ -1,0 +1,8 @@
+{
+	"name": "MoveStopStrafeClient",
+	"opcode": "cmsg_move_stop_strafe_client",
+	"direction": "client",
+	"fields": [
+		{ "name": "info", "type": "MovementInfo" }
+	]
+}

@@ -1,0 +1,9 @@
+{
+	"name": "MailTakeItem",
+	"opcode": "cmsg_mail_take_item",
+	"direction": "client",
+	"fields": [
+		{ "name": "mailbox", "type": "uint64" },
+		{ "name": "mail_id", "type": "uint32" }
+	]
+}

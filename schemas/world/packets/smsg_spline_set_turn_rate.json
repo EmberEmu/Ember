@@ -1,0 +1,9 @@
+{
+	"name": "SplineSetTurnRate",
+	"opcode": "smsg_spline_set_turn_rate",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid",  "type": "PackedGuid" },
+		{ "name": "speed", "type": "float" }
+	]
+}

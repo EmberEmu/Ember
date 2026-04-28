@@ -1,0 +1,5 @@
+{
+	"name": "TutorialClear",
+	"opcode": "cmsg_tutorial_clear",
+	"direction": "client"
+}

@@ -1,0 +1,9 @@
+{
+	"name": "MoveStartTurnRightServer",
+	"opcode": "smsg_move_start_turn_right_server",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid", "type": "PackedGuid" },
+		{ "name": "info", "type": "MovementInfo" }
+	]
+}

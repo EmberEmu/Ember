@@ -1,0 +1,9 @@
+{
+	"name": "RepairItem",
+	"opcode": "cmsg_repair_item",
+	"direction": "client",
+	"fields": [
+		{ "name": "npc",  "type": "uint64" },
+		{ "name": "item", "type": "uint64" }
+	]
+}

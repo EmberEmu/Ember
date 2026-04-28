@@ -1,0 +1,5 @@
+{
+	"name": "DurabilityDamageDeath",
+	"opcode": "smsg_durability_damage_death",
+	"direction": "server"
+}

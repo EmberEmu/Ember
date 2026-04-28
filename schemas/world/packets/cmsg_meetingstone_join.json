@@ -1,0 +1,8 @@
+{
+	"name": "MeetingstoneJoin",
+	"opcode": "cmsg_meetingstone_join",
+	"direction": "client",
+	"fields": [
+		{ "name": "guid", "type": "uint64" }
+	]
+}

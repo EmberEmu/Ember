@@ -1,0 +1,9 @@
+{
+	"name": "MailListResult",
+	"opcode": "smsg_mail_list_result",
+	"direction": "server",
+	"fields": [
+		{ "name": "amount_of_mails", "type": "uint8" },
+		{ "name": "mails",           "type": "Mail", "array": {"count_field": "amount_of_mails"} }
+	]
+}

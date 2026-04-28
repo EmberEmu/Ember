@@ -1,0 +1,8 @@
+{
+	"name": "SplineMoveStartSwim",
+	"opcode": "smsg_spline_move_start_swim",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid", "type": "PackedGuid" }
+	]
+}

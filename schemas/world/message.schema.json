@@ -59,7 +59,8 @@
 			"items": {
 				"oneOf": [
 					{ "$ref": "#/$defs/field" },
-					{ "$ref": "#/$defs/group" }
+					{ "$ref": "#/$defs/group" },
+					{ "$ref": "#/$defs/if_chain" }
 				]
 			},
 			"minItems": 1,
@@ -74,6 +75,11 @@
 				"type": {
 					"$ref": "#/$defs/field_type"
 				},
+				"as": {
+					"type": "string",
+					"description": "Semantic type exposed in the generated struct. The on-wire representation is still `type`; reads/writes cast between the two. Must be a declared enum/flags whose underlying matches `type` OR a declared struct whose layout is equivalent.",
+					"pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+				},
 				"when": {
 					"$ref": "#/$defs/condition"
 				},
@@ -86,15 +92,17 @@
 		},
 		"array": {
 			"type": "object",
-			"description": "Marks the field as either a fixed-size array (size) or a dynamic vector sized by a prior field (count_field)",
+			"description": "Marks the field as a fixed-size array (size), a dynamic vector sized by a prior field (count_field), or an unbounded vector read until the stream is drained (until_end).",
 			"properties": {
 				"size":        { "type": "integer", "minimum": 1 },
-				"count_field": { "type": "string" }
+				"count_field": { "type": "string" },
+				"until_end":   { "const": true }
 			},
 			"additionalProperties": false,
 			"oneOf": [
-				{ "required": ["size"],        "not": { "required": ["count_field"] } },
-				{ "required": ["count_field"], "not": { "required": ["size"] } }
+				{ "required": ["size"],        "not": { "anyOf": [ { "required": ["count_field"] }, { "required": ["until_end"] } ] } },
+				{ "required": ["count_field"], "not": { "anyOf": [ { "required": ["size"] },        { "required": ["until_end"] } ] } },
+				{ "required": ["until_end"],   "not": { "anyOf": [ { "required": ["size"] },        { "required": ["count_field"] } ] } }
 			]
 		},
 		"group": {
@@ -112,6 +120,29 @@
 				}
 			},
 			"required": ["type", "fields"],
+			"additionalProperties": false
+		},
+		"if_chain": {
+			"type": "object",
+			"description": "if / else-if / else cascade. Branches are evaluated in order; the first `when` that matches selects a body. The optional `else` body runs when none of the branches matched. Semantically identical to a sequence of `group` entries, but the generator emits `if / else if / else` instead of independent `if` blocks (clearer code and one compile-time check per chain).",
+			"properties": {
+				"type":     { "const": "if_chain" },
+				"branches": {
+					"type": "array",
+					"minItems": 1,
+					"items": {
+						"type": "object",
+						"required": ["when", "fields"],
+						"additionalProperties": false,
+						"properties": {
+							"when":   { "$ref": "#/$defs/condition" },
+							"fields": { "$ref": "#/$defs/fields" }
+						}
+					}
+				},
+				"else":     { "$ref": "#/$defs/fields" }
+			},
+			"required": ["type", "branches"],
 			"additionalProperties": false
 		},
 		"value_ref": {

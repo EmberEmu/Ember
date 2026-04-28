@@ -1,0 +1,8 @@
+{
+	"name": "MoveJumpClient",
+	"opcode": "cmsg_move_jump_client",
+	"direction": "client",
+	"fields": [
+		{ "name": "info", "type": "MovementInfo" }
+	]
+}

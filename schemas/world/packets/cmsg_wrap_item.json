@@ -1,0 +1,11 @@
+{
+	"name": "WrapItem",
+	"opcode": "cmsg_wrap_item",
+	"direction": "client",
+	"fields": [
+		{ "name": "gift_bag_index", "type": "uint8" },
+		{ "name": "gift_slot",      "type": "uint8" },
+		{ "name": "item_bag_index", "type": "uint8" },
+		{ "name": "item_slot",      "type": "uint8" }
+	]
+}

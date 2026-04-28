@@ -1,0 +1,10 @@
+{
+	"name": "MailCreateTextItem",
+	"opcode": "cmsg_mail_create_text_item",
+	"direction": "client",
+	"fields": [
+		{ "name": "mailbox",          "type": "uint64" },
+		{ "name": "mail_id",          "type": "uint32" },
+		{ "name": "mail_template_id", "type": "uint32" }
+	]
+}

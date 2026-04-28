@@ -1,0 +1,8 @@
+{
+	"name": "QuestupdateFailedtimer",
+	"opcode": "smsg_questupdate_failedtimer",
+	"direction": "server",
+	"fields": [
+		{ "name": "quest_id", "type": "uint32" }
+	]
+}

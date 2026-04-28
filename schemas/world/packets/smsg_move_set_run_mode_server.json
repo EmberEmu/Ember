@@ -1,0 +1,9 @@
+{
+	"name": "MoveSetRunModeServer",
+	"opcode": "smsg_move_set_run_mode_server",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid", "type": "PackedGuid" },
+		{ "name": "info", "type": "MovementInfo" }
+	]
+}

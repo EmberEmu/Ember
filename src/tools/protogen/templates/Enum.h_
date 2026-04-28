@@ -19,7 +19,7 @@
 
 namespace {{ namespace }} {
 
-enum {{ name }} : {{ underlying }} {
+enum {% if is_class %}class {% endif %}{{ name }} : {{ underlying }} {
 ## for v in values
 	{{ v.name }} = {{ v.value }},
 ## endfor

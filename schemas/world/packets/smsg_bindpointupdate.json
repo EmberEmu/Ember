@@ -1,0 +1,10 @@
+{
+	"name": "Bindpointupdate",
+	"opcode": "smsg_bindpointupdate",
+	"direction": "server",
+	"fields": [
+		{ "name": "position", "type": "Vector3" },
+		{ "name": "map",      "type": "Map" },
+		{ "name": "area",     "type": "Area" }
+	]
+}

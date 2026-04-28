@@ -1,0 +1,8 @@
+{
+	"name": "LootRemoved",
+	"opcode": "smsg_loot_removed",
+	"direction": "server",
+	"fields": [
+		{ "name": "slot", "type": "uint8" }
+	]
+}

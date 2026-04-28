@@ -1,0 +1,5 @@
+{
+	"name": "GuildDelRank",
+	"opcode": "cmsg_guild_del_rank",
+	"direction": "client"
+}

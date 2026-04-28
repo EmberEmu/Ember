@@ -1,0 +1,9 @@
+{
+	"name": "OfferPetition",
+	"opcode": "cmsg_offer_petition",
+	"direction": "client",
+	"fields": [
+		{ "name": "petition", "type": "uint64" },
+		{ "name": "target",   "type": "uint64" }
+	]
+}

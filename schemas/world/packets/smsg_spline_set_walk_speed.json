@@ -1,0 +1,9 @@
+{
+	"name": "SplineSetWalkSpeed",
+	"opcode": "smsg_spline_set_walk_speed",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid",  "type": "PackedGuid" },
+		{ "name": "speed", "type": "float" }
+	]
+}

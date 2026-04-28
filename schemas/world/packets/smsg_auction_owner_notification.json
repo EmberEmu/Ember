@@ -1,0 +1,13 @@
+{
+	"name": "AuctionOwnerNotification",
+	"opcode": "smsg_auction_owner_notification",
+	"direction": "server",
+	"fields": [
+		{ "name": "auction_id",              "type": "uint32" },
+		{ "name": "bid",                     "type": "uint32" },
+		{ "name": "auction_out_bid",         "type": "uint32" },
+		{ "name": "bidder",                  "type": "uint64" },
+		{ "name": "item",                    "type": "uint32" },
+		{ "name": "item_random_property_id", "type": "uint32" }
+	]
+}

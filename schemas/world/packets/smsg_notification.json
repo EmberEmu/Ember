@@ -1,0 +1,8 @@
+{
+	"name": "Notification",
+	"opcode": "smsg_notification",
+	"direction": "server",
+	"fields": [
+		{ "name": "notification", "type": "CString" }
+	]
+}

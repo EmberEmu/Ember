@@ -1,0 +1,8 @@
+{
+	"name": "TaxinodeStatusQuery",
+	"opcode": "cmsg_taxinode_status_query",
+	"direction": "client",
+	"fields": [
+		{ "name": "guid", "type": "uint64" }
+	]
+}

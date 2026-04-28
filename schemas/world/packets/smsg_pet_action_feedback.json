@@ -1,0 +1,8 @@
+{
+	"name": "PetActionFeedback",
+	"opcode": "smsg_pet_action_feedback",
+	"direction": "server",
+	"fields": [
+		{ "name": "feedback", "type": "PetFeedback" }
+	]
+}

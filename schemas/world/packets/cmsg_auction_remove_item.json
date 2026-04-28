@@ -3,7 +3,7 @@
 	"opcode": "cmsg_auction_remove_item",
 	"direction": "client",
 	"fields": [
-		{ "name": "auctioneer", "type": "uint64" }, // todo, guid
+		{ "name": "auctioneer", "type": "uint64" },
 		{ "name": "guid",       "type": "uint32" }
 	]
 }

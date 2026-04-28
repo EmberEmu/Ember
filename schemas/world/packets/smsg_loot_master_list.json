@@ -1,0 +1,9 @@
+{
+	"name": "LootMasterList",
+	"opcode": "smsg_loot_master_list",
+	"direction": "server",
+	"fields": [
+		{ "name": "amount_of_players", "type": "uint8" },
+		{ "name": "guids",             "type": "uint64", "array": {"count_field": "amount_of_players"} }
+	]
+}

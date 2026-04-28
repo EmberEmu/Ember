@@ -1,0 +1,8 @@
+{
+	"name": "TurnInPetition",
+	"opcode": "cmsg_turn_in_petition",
+	"direction": "client",
+	"fields": [
+		{ "name": "petition", "type": "uint64" }
+	]
+}

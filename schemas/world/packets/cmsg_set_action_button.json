@@ -1,0 +1,11 @@
+{
+	"name": "SetActionButton",
+	"opcode": "cmsg_set_action_button",
+	"direction": "client",
+	"fields": [
+		{ "name": "button",      "type": "uint8" },
+		{ "name": "action",      "type": "uint16" },
+		{ "name": "misc",        "type": "uint8" },
+		{ "name": "action_type", "type": "uint8" }
+	]
+}

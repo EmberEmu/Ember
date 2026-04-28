@@ -1,0 +1,5 @@
+{
+	"name": "SelfRes",
+	"opcode": "cmsg_self_res",
+	"direction": "client"
+}

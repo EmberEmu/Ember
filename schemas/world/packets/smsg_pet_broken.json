@@ -1,0 +1,5 @@
+{
+	"name": "PetBroken",
+	"opcode": "smsg_pet_broken",
+	"direction": "server"
+}

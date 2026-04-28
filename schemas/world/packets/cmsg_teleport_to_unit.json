@@ -1,0 +1,8 @@
+{
+	"name": "TeleportToUnit",
+	"opcode": "cmsg_teleport_to_unit",
+	"direction": "client",
+	"fields": [
+		{ "name": "name", "type": "CString" }
+	]
+}

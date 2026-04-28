@@ -1,0 +1,12 @@
+{
+	"name": "EnvironmentalDamageLog",
+	"opcode": "smsg_environmental_damage_log",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid",        "type": "uint64" },
+		{ "name": "damage_type", "type": "EnvironmentalDamageType" },
+		{ "name": "damage",      "type": "uint32" },
+		{ "name": "absorb",      "type": "uint32" },
+		{ "name": "resist",      "type": "uint32" }
+	]
+}

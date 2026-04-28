@@ -1,0 +1,10 @@
+{
+	"name": "SetTradeItem",
+	"opcode": "cmsg_set_trade_item",
+	"direction": "client",
+	"fields": [
+		{ "name": "trade_slot", "type": "uint8" },
+		{ "name": "bag",        "type": "uint8" },
+		{ "name": "slot",       "type": "uint8" }
+	]
+}

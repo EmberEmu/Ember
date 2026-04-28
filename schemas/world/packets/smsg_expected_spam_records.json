@@ -1,0 +1,9 @@
+{
+	"name": "ExpectedSpamRecords",
+	"opcode": "smsg_expected_spam_records",
+	"direction": "server",
+	"fields": [
+		{ "name": "amount_of_records", "type": "uint32" },
+		{ "name": "records",           "type": "CString", "array": {"count_field": "amount_of_records"} }
+	]
+}

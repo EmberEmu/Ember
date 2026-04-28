@@ -1,0 +1,18 @@
+{
+	"name": "PetSetAction",
+	"opcode": "cmsg_pet_set_action",
+	"direction": "client",
+	"fields": [
+		{ "name": "guid",      "type": "uint64" },
+		{ "name": "position1", "type": "uint32" },
+		{ "name": "data1",     "type": "uint32" },
+		{
+			"type": "group",
+			"when": { "op": "stream_not_empty" },
+			"fields": [
+				{ "name": "position2", "type": "uint32" },
+				{ "name": "data2",     "type": "uint32" }
+			]
+		}
+	]
+}

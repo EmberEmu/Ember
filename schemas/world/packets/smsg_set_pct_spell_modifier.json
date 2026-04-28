@@ -1,0 +1,10 @@
+{
+	"name": "SetPctSpellModifier",
+	"opcode": "smsg_set_pct_spell_modifier",
+	"direction": "server",
+	"fields": [
+		{ "name": "eff",   "type": "uint8" },
+		{ "name": "op",    "type": "uint8" },
+		{ "name": "value", "type": "uint32" }
+	]
+}

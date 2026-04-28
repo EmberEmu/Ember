@@ -1,0 +1,12 @@
+{
+	"name": "QuestupdateAddKill",
+	"opcode": "smsg_questupdate_add_kill",
+	"direction": "server",
+	"fields": [
+		{ "name": "quest_id",            "type": "uint32" },
+		{ "name": "creature_id",         "type": "uint32" },
+		{ "name": "kill_count",          "type": "uint32" },
+		{ "name": "required_kill_count", "type": "uint32" },
+		{ "name": "guid",                "type": "uint64" }
+	]
+}

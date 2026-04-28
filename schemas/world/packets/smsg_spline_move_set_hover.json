@@ -1,0 +1,8 @@
+{
+	"name": "SplineMoveSetHover",
+	"opcode": "smsg_spline_move_set_hover",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid", "type": "PackedGuid" }
+	]
+}

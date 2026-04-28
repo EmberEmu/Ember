@@ -1,0 +1,9 @@
+{
+	"name": "AreaSpiritHealerTime",
+	"opcode": "smsg_area_spirit_healer_time",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid",                "type": "uint64" },
+		{ "name": "next_resurrect_time", "type": "uint32" }
+	]
+}

@@ -1,0 +1,8 @@
+{
+	"name": "BattlegroundPlayerJoined",
+	"opcode": "smsg_battleground_player_joined",
+	"direction": "server",
+	"fields": [
+		{ "name": "player", "type": "uint64" }
+	]
+}

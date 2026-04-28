@@ -1,0 +1,8 @@
+{
+	"name": "ZoneUnderAttack",
+	"opcode": "smsg_zone_under_attack",
+	"direction": "server",
+	"fields": [
+		{ "name": "zone_id", "type": "Area" }
+	]
+}

@@ -1,0 +1,9 @@
+{
+	"name": "SpellDelayed",
+	"opcode": "smsg_spell_delayed",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid",       "type": "uint64" },
+		{ "name": "delay_time", "type": "uint32" }
+	]
+}

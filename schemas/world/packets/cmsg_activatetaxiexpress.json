@@ -1,0 +1,11 @@
+{
+	"name": "Activatetaxiexpress",
+	"opcode": "cmsg_activatetaxiexpress",
+	"direction": "client",
+	"fields": [
+		{ "name": "guid",       "type": "uint64" },
+		{ "name": "total_cost", "type": "uint32" },
+		{ "name": "node_count", "type": "uint32" },
+		{ "name": "nodes",      "type": "uint32", "array": {"count_field": "node_count"} }
+	]
+}

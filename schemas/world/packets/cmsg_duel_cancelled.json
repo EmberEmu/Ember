@@ -1,0 +1,8 @@
+{
+	"name": "DuelCancelled",
+	"opcode": "cmsg_duel_cancelled",
+	"direction": "client",
+	"fields": [
+		{ "name": "guid", "type": "uint64" }
+	]
+}

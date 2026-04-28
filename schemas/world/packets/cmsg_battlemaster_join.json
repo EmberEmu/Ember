@@ -1,0 +1,11 @@
+{
+	"name": "BattlemasterJoin",
+	"opcode": "cmsg_battlemaster_join",
+	"direction": "client",
+	"fields": [
+		{ "name": "guid",          "type": "uint64" },
+		{ "name": "map",           "type": "Map" },
+		{ "name": "instance_id",   "type": "uint32" },
+		{ "name": "join_as_group", "type": "uint8" }
+	]
+}

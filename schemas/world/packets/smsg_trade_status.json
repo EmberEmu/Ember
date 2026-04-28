@@ -1,0 +1,33 @@
+{
+	"name": "TradeStatus",
+	"opcode": "smsg_trade_status",
+	"direction": "server",
+	"fields": [
+		{ "name": "status", "type": "TradeStatus" },
+		{
+			"type": "if_chain",
+			"branches": [
+				{
+					"when": { "op": "eq", "field": "status", "value": "begin_trade" },
+					"fields": [
+						{ "name": "unknown1", "type": "uint64" }
+					]
+				},
+				{
+					"when": { "op": "eq", "field": "status", "value": "close_window" },
+					"fields": [
+						{ "name": "inventory_result",       "type": "uint32" },
+						{ "name": "target_error",           "type": "uint8" },
+						{ "name": "item_limit_category_id", "type": "uint32" }
+					]
+				},
+				{
+					"when": { "op": "in", "field": "status", "value": ["only_conjured", "not_on_taplist"] },
+					"fields": [
+						{ "name": "slot", "type": "uint8" }
+					]
+				}
+			]
+		}
+	]
+}

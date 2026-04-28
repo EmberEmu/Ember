@@ -1,0 +1,16 @@
+{
+	"name": "GossipSelectOption",
+	"opcode": "cmsg_gossip_select_option",
+	"direction": "client",
+	"fields": [
+		{ "name": "guid",           "type": "uint64" },
+		{ "name": "gossip_list_id", "type": "uint32" },
+		{
+			"type": "group",
+			"when": { "op": "stream_not_empty" },
+			"fields": [
+				{ "name": "code", "type": "CString" }
+			]
+		}
+	]
+}

@@ -1,0 +1,41 @@
+{
+	"name": "CastResult",
+	"opcode": "smsg_cast_result",
+	"direction": "server",
+	"fields": [
+		{ "name": "spell",  "type": "uint32" },
+		{ "name": "result", "type": "SimpleSpellCastResult" },
+		{
+			"type": "group",
+			"when": { "op": "neq", "field": "result", "value": "failure" },
+			"fields": [
+				{ "name": "reason", "type": "CastFailureReason" },
+				{
+					"type": "if_chain",
+					"branches": [
+						{
+							"when": { "op": "eq", "field": "reason", "value": "requires_spell_focus" },
+							"fields": [
+								{ "name": "required_spell_focus", "type": "uint32" }
+							]
+						},
+						{
+							"when": { "op": "eq", "field": "reason", "value": "requires_area" },
+							"fields": [
+								{ "name": "area", "type": "Area" }
+							]
+						},
+						{
+							"when": { "op": "eq", "field": "reason", "value": "equipped_item_class" },
+							"fields": [
+								{ "name": "equipped_item_class",               "type": "uint32" },
+								{ "name": "equipped_item_subclass_mask",       "type": "uint32" },
+								{ "name": "equipped_item_inventory_type_mask", "type": "uint32" }
+							]
+						}
+					]
+				}
+			]
+		}
+	]
+}

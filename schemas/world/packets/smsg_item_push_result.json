@@ -1,0 +1,17 @@
+{
+	"name": "ItemPushResult",
+	"opcode": "smsg_item_push_result",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid",                    "type": "uint64" },
+		{ "name": "source",                  "type": "NewItemSource" },
+		{ "name": "creation_type",           "type": "NewItemCreationType" },
+		{ "name": "alert_chat",              "type": "NewItemChatAlert" },
+		{ "name": "bag_slot",                "type": "uint8" },
+		{ "name": "item_slot",               "type": "uint32" },
+		{ "name": "item",                    "type": "uint32" },
+		{ "name": "item_suffix_factor",      "type": "uint32" },
+		{ "name": "item_random_property_id", "type": "uint32" },
+		{ "name": "item_count",              "type": "uint32" }
+	]
+}

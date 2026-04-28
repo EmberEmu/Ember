@@ -1,0 +1,10 @@
+{
+	"name": "Who",
+	"opcode": "smsg_who",
+	"direction": "server",
+	"fields": [
+		{ "name": "listed_players", "type": "uint32" },
+		{ "name": "online_players", "type": "uint32" },
+		{ "name": "players",        "type": "WhoPlayer", "array": {"count_field": "listed_players"} }
+	]
+}

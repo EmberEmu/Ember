@@ -1,0 +1,9 @@
+{
+	"name": "MoveLandWalk",
+	"opcode": "smsg_move_land_walk",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid",    "type": "PackedGuid" },
+		{ "name": "counter", "type": "uint32" }
+	]
+}

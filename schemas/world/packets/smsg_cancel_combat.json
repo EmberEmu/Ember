@@ -1,0 +1,5 @@
+{
+	"name": "CancelCombat",
+	"opcode": "smsg_cancel_combat",
+	"direction": "server"
+}

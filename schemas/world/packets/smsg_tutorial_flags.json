@@ -1,0 +1,8 @@
+{
+	"name": "TutorialFlags",
+	"opcode": "smsg_tutorial_flags",
+	"direction": "server",
+	"fields": [
+		{ "name": "tutorial_data", "type": "uint32", "array": {"size": 8} }
+	]
+}

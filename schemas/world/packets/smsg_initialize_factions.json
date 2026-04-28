@@ -1,0 +1,9 @@
+{
+	"name": "InitializeFactions",
+	"opcode": "smsg_initialize_factions",
+	"direction": "server",
+	"fields": [
+		{ "name": "amount_of_factions", "type": "uint32" },
+		{ "name": "factions",           "type": "FactionInitializer", "array": {"count_field": "amount_of_factions"} }
+	]
+}

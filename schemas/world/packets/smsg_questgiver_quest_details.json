@@ -1,0 +1,21 @@
+{
+	"name": "QuestgiverQuestDetails",
+	"opcode": "smsg_questgiver_quest_details",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid",                          "type": "uint64" },
+		{ "name": "quest_id",                      "type": "uint32" },
+		{ "name": "title",                         "type": "CString" },
+		{ "name": "details",                       "type": "CString" },
+		{ "name": "objectives",                    "type": "CString" },
+		{ "name": "auto_finish",                   "type": "uint32" },
+		{ "name": "amount_of_choice_item_rewards", "type": "uint32" },
+		{ "name": "choice_item_rewards",           "type": "QuestItemReward", "array": {"count_field": "amount_of_choice_item_rewards"} },
+		{ "name": "amount_of_item_rewards",        "type": "uint32" },
+		{ "name": "item_rewards",                  "type": "QuestItemReward", "array": {"count_field": "amount_of_item_rewards"} },
+		{ "name": "money_reward",                  "type": "uint32" },
+		{ "name": "reward_spell",                  "type": "uint32" },
+		{ "name": "amount_of_emotes",              "type": "uint32" },
+		{ "name": "emotes",                        "type": "QuestDetailsEmote", "array": {"count_field": "amount_of_emotes"} }
+	]
+}

@@ -1,0 +1,8 @@
+{
+	"name": "LeaveBattlefield",
+	"opcode": "cmsg_leave_battlefield",
+	"direction": "client",
+	"fields": [
+		{ "name": "map", "type": "Map" }
+	]
+}

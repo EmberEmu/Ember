@@ -1,0 +1,8 @@
+{
+	"name": "DuelComplete",
+	"opcode": "smsg_duel_complete",
+	"direction": "server",
+	"fields": [
+		{ "name": "ended_without_interruption", "type": "uint8" }
+	]
+}

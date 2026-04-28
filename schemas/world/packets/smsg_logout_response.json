@@ -1,0 +1,9 @@
+{
+	"name": "LogoutResponse",
+	"opcode": "smsg_logout_response",
+	"direction": "server",
+	"fields": [
+		{ "name": "result", "type": "LogoutResult" },
+		{ "name": "speed",  "type": "LogoutSpeed" }
+	]
+}

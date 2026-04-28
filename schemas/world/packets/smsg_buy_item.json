@@ -1,0 +1,11 @@
+{
+	"name": "BuyItem",
+	"opcode": "smsg_buy_item",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid",            "type": "uint64" },
+		{ "name": "vendor_slot",     "type": "uint32" },
+		{ "name": "amount_for_sale", "type": "uint32" },
+		{ "name": "amount_bought",   "type": "uint32" }
+	]
+}

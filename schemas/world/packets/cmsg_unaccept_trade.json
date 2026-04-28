@@ -1,0 +1,5 @@
+{
+	"name": "UnacceptTrade",
+	"opcode": "cmsg_unaccept_trade",
+	"direction": "client"
+}

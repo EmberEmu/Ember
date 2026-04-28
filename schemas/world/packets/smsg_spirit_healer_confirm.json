@@ -1,0 +1,8 @@
+{
+	"name": "SpiritHealerConfirm",
+	"opcode": "smsg_spirit_healer_confirm",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid", "type": "uint64" }
+	]
+}

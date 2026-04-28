@@ -1,0 +1,8 @@
+{
+	"name": "StableResult",
+	"opcode": "smsg_stable_result",
+	"direction": "server",
+	"fields": [
+		{ "name": "result", "type": "StableResult" }
+	]
+}

@@ -1,0 +1,10 @@
+{
+	"name": "SellItem",
+	"opcode": "cmsg_sell_item",
+	"direction": "client",
+	"fields": [
+		{ "name": "vendor", "type": "uint64" },
+		{ "name": "item",   "type": "uint64" },
+		{ "name": "amount", "type": "uint8" }
+	]
+}

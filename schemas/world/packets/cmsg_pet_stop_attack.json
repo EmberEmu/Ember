@@ -1,0 +1,8 @@
+{
+	"name": "PetStopAttack",
+	"opcode": "cmsg_pet_stop_attack",
+	"direction": "client",
+	"fields": [
+		{ "name": "pet", "type": "uint64" }
+	]
+}

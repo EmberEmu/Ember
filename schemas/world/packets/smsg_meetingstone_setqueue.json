@@ -1,0 +1,9 @@
+{
+	"name": "MeetingstoneSetqueue",
+	"opcode": "smsg_meetingstone_setqueue",
+	"direction": "server",
+	"fields": [
+		{ "name": "area",   "type": "Area" },
+		{ "name": "status", "type": "MeetingStoneStatus" }
+	]
+}

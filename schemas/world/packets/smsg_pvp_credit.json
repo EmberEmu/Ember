@@ -1,0 +1,10 @@
+{
+	"name": "PvpCredit",
+	"opcode": "smsg_pvp_credit",
+	"direction": "server",
+	"fields": [
+		{ "name": "honor_points", "type": "uint32" },
+		{ "name": "victim",       "type": "uint64" },
+		{ "name": "rank",         "type": "uint32" }
+	]
+}

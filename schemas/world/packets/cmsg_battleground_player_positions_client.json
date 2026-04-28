@@ -1,0 +1,5 @@
+{
+	"name": "BattlegroundPlayerPositionsClient",
+	"opcode": "cmsg_battleground_player_positions_client",
+	"direction": "client"
+}

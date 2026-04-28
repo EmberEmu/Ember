@@ -1,0 +1,10 @@
+{
+	"name": "PartyCommandResult",
+	"opcode": "smsg_party_command_result",
+	"direction": "server",
+	"fields": [
+		{ "name": "operation", "type": "uint32" },
+		{ "name": "member",    "type": "CString" },
+		{ "name": "result",    "type": "uint32" }
+	]
+}

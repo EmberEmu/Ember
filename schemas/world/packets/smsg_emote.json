@@ -1,0 +1,9 @@
+{
+	"name": "Emote",
+	"opcode": "smsg_emote",
+	"direction": "server",
+	"fields": [
+		{ "name": "emote", "type": "Emote" },
+		{ "name": "guid",  "type": "uint64" }
+	]
+}

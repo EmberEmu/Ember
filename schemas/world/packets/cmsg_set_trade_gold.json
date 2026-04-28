@@ -1,0 +1,8 @@
+{
+	"name": "SetTradeGold",
+	"opcode": "cmsg_set_trade_gold",
+	"direction": "client",
+	"fields": [
+		{ "name": "gold", "type": "uint32" }
+	]
+}

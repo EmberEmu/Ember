@@ -1,0 +1,8 @@
+{
+	"name": "UpdateWorldState",
+	"opcode": "smsg_update_world_state",
+	"direction": "server",
+	"fields": [
+		{ "name": "state", "type": "WorldState" }
+	]
+}

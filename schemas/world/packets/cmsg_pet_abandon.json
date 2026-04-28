@@ -1,0 +1,8 @@
+{
+	"name": "PetAbandon",
+	"opcode": "cmsg_pet_abandon",
+	"direction": "client",
+	"fields": [
+		{ "name": "pet", "type": "uint64" }
+	]
+}

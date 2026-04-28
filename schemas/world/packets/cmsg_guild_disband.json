@@ -1,0 +1,5 @@
+{
+	"name": "GuildDisband",
+	"opcode": "cmsg_guild_disband",
+	"direction": "client"
+}

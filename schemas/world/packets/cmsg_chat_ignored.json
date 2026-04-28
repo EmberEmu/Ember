@@ -1,0 +1,8 @@
+{
+	"name": "ChatIgnored",
+	"opcode": "cmsg_chat_ignored",
+	"direction": "client",
+	"fields": [
+		{ "name": "guid", "type": "uint64" }
+	]
+}

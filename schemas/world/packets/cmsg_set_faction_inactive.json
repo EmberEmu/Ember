@@ -1,0 +1,9 @@
+{
+	"name": "SetFactionInactive",
+	"opcode": "cmsg_set_faction_inactive",
+	"direction": "client",
+	"fields": [
+		{ "name": "faction",  "type": "uint16" },
+		{ "name": "inactive", "type": "uint8" }
+	]
+}

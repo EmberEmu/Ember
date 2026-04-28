@@ -1,0 +1,8 @@
+{
+	"name": "Mountresult",
+	"opcode": "smsg_mountresult",
+	"direction": "server",
+	"fields": [
+		{ "name": "result", "type": "MountResult" }
+	]
+}

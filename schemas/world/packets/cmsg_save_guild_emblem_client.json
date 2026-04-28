@@ -1,0 +1,13 @@
+{
+	"name": "SaveGuildEmblemClient",
+	"opcode": "cmsg_save_guild_emblem_client",
+	"direction": "client",
+	"fields": [
+		{ "name": "vendor",           "type": "uint64" },
+		{ "name": "emblem_style",     "type": "uint32" },
+		{ "name": "emblem_color",     "type": "uint32" },
+		{ "name": "border_style",     "type": "uint32" },
+		{ "name": "border_color",     "type": "uint32" },
+		{ "name": "background_color", "type": "uint32" }
+	]
+}

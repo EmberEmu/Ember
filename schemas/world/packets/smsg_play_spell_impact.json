@@ -1,0 +1,9 @@
+{
+	"name": "PlaySpellImpact",
+	"opcode": "smsg_play_spell_impact",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid",             "type": "uint64" },
+		{ "name": "spell_visual_kit", "type": "uint32" }
+	]
+}

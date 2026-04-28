@@ -1,0 +1,11 @@
+{
+	"name": "Spelldispellog",
+	"opcode": "smsg_spelldispellog",
+	"direction": "server",
+	"fields": [
+		{ "name": "victim",           "type": "PackedGuid" },
+		{ "name": "caster",           "type": "PackedGuid" },
+		{ "name": "amount_of_spells", "type": "uint32" },
+		{ "name": "spells",           "type": "uint32", "array": {"count_field": "amount_of_spells"} }
+	]
+}

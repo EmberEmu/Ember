@@ -1,0 +1,9 @@
+{
+	"name": "GroupAssistantLeader",
+	"opcode": "cmsg_group_assistant_leader",
+	"direction": "client",
+	"fields": [
+		{ "name": "guid",          "type": "uint64" },
+		{ "name": "set_assistant", "type": "uint8" }
+	]
+}

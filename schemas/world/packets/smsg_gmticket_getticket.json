@@ -1,0 +1,21 @@
+{
+	"name": "GmticketGetticket",
+	"opcode": "smsg_gmticket_getticket",
+	"direction": "server",
+	"fields": [
+		{ "name": "status", "type": "GmTicketStatus" },
+		{
+			"type": "group",
+			"when": { "op": "eq", "field": "status", "value": "has_text" },
+			"fields": [
+				{ "name": "text",                              "type": "CString" },
+				{ "name": "ticket_type",                       "type": "GmTicketType" },
+				{ "name": "days_since_ticket_creation",        "type": "float" },
+				{ "name": "days_since_oldest_ticket_creation", "type": "float" },
+				{ "name": "days_since_last_updated",           "type": "float" },
+				{ "name": "escalation_status",                 "type": "GmTicketEscalationStatus" },
+				{ "name": "read_by_gm",                        "type": "uint8" }
+			]
+		}
+	]
+}

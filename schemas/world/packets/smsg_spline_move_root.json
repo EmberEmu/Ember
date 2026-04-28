@@ -1,0 +1,8 @@
+{
+	"name": "SplineMoveRoot",
+	"opcode": "smsg_spline_move_root",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid", "type": "uint64" }
+	]
+}

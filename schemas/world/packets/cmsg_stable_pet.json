@@ -1,0 +1,8 @@
+{
+	"name": "StablePet",
+	"opcode": "cmsg_stable_pet",
+	"direction": "client",
+	"fields": [
+		{ "name": "stable_master", "type": "uint64" }
+	]
+}

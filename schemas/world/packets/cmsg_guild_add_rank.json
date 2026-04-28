@@ -1,0 +1,8 @@
+{
+	"name": "GuildAddRank",
+	"opcode": "cmsg_guild_add_rank",
+	"direction": "client",
+	"fields": [
+		{ "name": "rank_name", "type": "CString" }
+	]
+}

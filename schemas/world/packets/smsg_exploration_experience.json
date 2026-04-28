@@ -1,0 +1,9 @@
+{
+	"name": "ExplorationExperience",
+	"opcode": "smsg_exploration_experience",
+	"direction": "server",
+	"fields": [
+		{ "name": "area",       "type": "Area" },
+		{ "name": "experience", "type": "uint32" }
+	]
+}

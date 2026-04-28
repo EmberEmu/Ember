@@ -1,0 +1,10 @@
+{
+	"name": "PetitionShowlist",
+	"opcode": "smsg_petition_showlist",
+	"direction": "server",
+	"fields": [
+		{ "name": "npc",                 "type": "uint64" },
+		{ "name": "amount_of_petitions", "type": "uint8" },
+		{ "name": "petitions",           "type": "PetitionShowlist", "array": {"count_field": "amount_of_petitions"} }
+	]
+}

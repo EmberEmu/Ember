@@ -1,0 +1,13 @@
+{
+	"name": "GuildRoster",
+	"opcode": "smsg_guild_roster",
+	"direction": "server",
+	"fields": [
+		{ "name": "amount_of_members", "type": "uint32" },
+		{ "name": "motd",              "type": "CString" },
+		{ "name": "guild_info",        "type": "CString" },
+		{ "name": "amount_of_rights",  "type": "uint32" },
+		{ "name": "rights",            "type": "uint32", "array": {"count_field": "amount_of_rights"} },
+		{ "name": "members",           "type": "GuildMember", "array": {"count_field": "amount_of_members"} }
+	]
+}

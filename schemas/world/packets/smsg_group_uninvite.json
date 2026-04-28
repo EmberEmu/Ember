@@ -1,0 +1,5 @@
+{
+	"name": "GroupUninvite",
+	"opcode": "smsg_group_uninvite",
+	"direction": "server"
+}

@@ -1,0 +1,9 @@
+{
+	"name": "AutostoreBankItem",
+	"opcode": "cmsg_autostore_bank_item",
+	"direction": "client",
+	"fields": [
+		{ "name": "bag_index",  "type": "uint8" },
+		{ "name": "slot_index", "type": "uint8" }
+	]
+}

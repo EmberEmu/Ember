@@ -1,0 +1,8 @@
+{
+	"name": "SetTargetObsolete",
+	"opcode": "cmsg_set_target_obsolete",
+	"direction": "client",
+	"fields": [
+		{ "name": "guid", "type": "uint64" }
+	]
+}

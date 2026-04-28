@@ -1,0 +1,8 @@
+{
+	"name": "SplineMoveStopSwim",
+	"opcode": "smsg_spline_move_stop_swim",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid", "type": "PackedGuid" }
+	]
+}

@@ -1,0 +1,9 @@
+{
+	"name": "MailTakeMoney",
+	"opcode": "cmsg_mail_take_money",
+	"direction": "client",
+	"fields": [
+		{ "name": "mailbox", "type": "uint64" },
+		{ "name": "mail_id", "type": "uint32" }
+	]
+}

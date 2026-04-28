@@ -1,0 +1,5 @@
+{
+	"name": "GuildRoster",
+	"opcode": "cmsg_guild_roster",
+	"direction": "client"
+}

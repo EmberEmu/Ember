@@ -1,0 +1,5 @@
+{
+	"name": "GroupDestroyed",
+	"opcode": "smsg_group_destroyed",
+	"direction": "server"
+}

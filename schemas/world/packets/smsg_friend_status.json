@@ -1,0 +1,9 @@
+{
+	"name": "FriendStatus",
+	"opcode": "smsg_friend_status",
+	"direction": "server",
+	"fields": [
+		{ "name": "result", "type": "FriendResult" },
+		{ "name": "guid",   "type": "uint64" }
+	]
+}

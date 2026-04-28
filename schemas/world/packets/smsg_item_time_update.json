@@ -1,0 +1,9 @@
+{
+	"name": "ItemTimeUpdate",
+	"opcode": "smsg_item_time_update",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid",     "type": "uint64" },
+		{ "name": "duration", "type": "uint32" }
+	]
+}

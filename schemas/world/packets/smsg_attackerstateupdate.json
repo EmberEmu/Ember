@@ -1,0 +1,17 @@
+{
+	"name": "Attackerstateupdate",
+	"opcode": "smsg_attackerstateupdate",
+	"direction": "server",
+	"fields": [
+		{ "name": "hit_info",          "type": "HitInfo" },
+		{ "name": "attacker",          "type": "PackedGuid" },
+		{ "name": "target",            "type": "PackedGuid" },
+		{ "name": "total_damage",      "type": "uint32" },
+		{ "name": "amount_of_damages", "type": "uint8" },
+		{ "name": "damages",           "type": "DamageInfo", "array": {"count_field": "amount_of_damages"} },
+		{ "name": "damage_state",      "type": "uint32" },
+		{ "name": "unknown1",          "type": "uint32" },
+		{ "name": "spell_id",          "type": "uint32" },
+		{ "name": "blocked_amount",    "type": "uint32" }
+	]
+}

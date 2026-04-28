@@ -1,0 +1,8 @@
+{
+	"name": "PlayMusic",
+	"opcode": "smsg_play_music",
+	"direction": "server",
+	"fields": [
+		{ "name": "sound_id", "type": "uint32" }
+	]
+}

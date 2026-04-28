@@ -1,0 +1,5 @@
+{
+	"name": "FeignDeathResisted",
+	"opcode": "smsg_feign_death_resisted",
+	"direction": "server"
+}

@@ -1,0 +1,8 @@
+{
+	"name": "InstanceSaveCreated",
+	"opcode": "smsg_instance_save_created",
+	"direction": "server",
+	"fields": [
+		{ "name": "unknown", "type": "uint32" }
+	]
+}

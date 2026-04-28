@@ -1,0 +1,8 @@
+{
+	"name": "MeetingstoneMemberAdded",
+	"opcode": "smsg_meetingstone_member_added",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid", "type": "uint64" }
+	]
+}

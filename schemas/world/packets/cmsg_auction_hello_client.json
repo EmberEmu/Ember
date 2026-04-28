@@ -1,0 +1,8 @@
+{
+	"name": "AuctionHelloClient",
+	"opcode": "cmsg_auction_hello_client",
+	"direction": "client",
+	"fields": [
+		{ "name": "auctioneer", "type": "uint64" }
+	]
+}

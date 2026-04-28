@@ -1,0 +1,8 @@
+{
+	"name": "GameobjectDespawnAnim",
+	"opcode": "smsg_gameobject_despawn_anim",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid", "type": "uint64" }
+	]
+}

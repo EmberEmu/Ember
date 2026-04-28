@@ -1,0 +1,9 @@
+{
+	"name": "PlaySpellVisual",
+	"opcode": "smsg_play_spell_visual",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid",          "type": "uint64" },
+		{ "name": "spell_art_kit", "type": "uint32" }
+	]
+}

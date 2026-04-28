@@ -1,0 +1,9 @@
+{
+	"name": "TaxinodeStatus",
+	"opcode": "smsg_taxinode_status",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid",                 "type": "uint64" },
+		{ "name": "taxi_mask_node_known", "type": "uint8" }
+	]
+}

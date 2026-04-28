@@ -1,0 +1,9 @@
+{
+	"name": "AuctionHelloServer",
+	"opcode": "smsg_auction_hello_server",
+	"direction": "server",
+	"fields": [
+		{ "name": "auctioneer",    "type": "uint64" },
+		{ "name": "auction_house", "type": "AuctionHouse" }
+	]
+}

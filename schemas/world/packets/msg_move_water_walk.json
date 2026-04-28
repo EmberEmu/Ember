@@ -1,0 +1,9 @@
+{
+	"name": "MoveWaterWalk",
+	"opcode": "msg_move_water_walk",
+	"direction": "client",
+	"fields": [
+		{ "name": "player", "type": "PackedGuid" },
+		{ "name": "info",   "type": "MovementInfo" }
+	]
+}

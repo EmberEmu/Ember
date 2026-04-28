@@ -30,6 +30,9 @@ struct WalkState {
 	std::vector<std::string> write_ops;
 	int read_tab = 2;
 	int write_tab = 2;
+	// Monotonically increasing so the loop variables and temporaries we
+	// synthesise don't collide with sibling loops / casts in the same scope.
+	int temp_counter = 0;
 };
 
 void walk(const jsoncons::json& fields, const TypeRegistry& reg, WalkState& state,
@@ -59,6 +62,26 @@ std::string kind_of(const jsoncons::json& def) {
 	return def["kind"].as<std::string>();
 }
 
+// A field whose `type` is an external carrying an `underlying` primitive
+// and which has no `as` cast is just a named alias — effectively `using
+// Map = std::uint32_t`. The generator treats such fields as the primitive
+// everywhere (member type, stream ops, includes, scope for conditions),
+// so the external's name is purely schematic and doesn't leak into the
+// C++ output. Externals used via `as` (inner-DBC-enum pattern) keep the
+// external's C++ type — that path goes through `emit_scalar_stream_op`'s
+// as-cast branch.
+std::string effective_field_type(const jsoncons::json& field, const TypeRegistry& reg) {
+	const auto type = field["type"].as<std::string>();
+	if(field.contains("as")) {
+		return type;
+	}
+	const auto* def = reg.find(type);
+	if(def && kind_of(*def) == "external" && def->contains("underlying")) {
+		return (*def)["underlying"].as<std::string>();
+	}
+	return type;
+}
+
 void add_type_include(const std::string& type, const TypeRegistry& reg, std::set<std::string>& out) {
 	if(is_primitive(type)) {
 		return;
@@ -74,7 +97,7 @@ void add_type_include(const std::string& type, const TypeRegistry& reg, std::set
 
 	const auto kind = kind_of(*def);
 
-	if(kind == "enum" || kind == "flags" || kind == "struct") {
+	if(is_enum_kind(kind) || kind == "flags" || kind == "struct") {
 		out.emplace(std::format("generated/types/{}.h", type));
 	} else if(kind == "external") {
 		out.emplace((*def)["include"].as<std::string>());
@@ -105,11 +128,17 @@ std::string cpp_type_name(const std::string& type, const TypeRegistry& reg) {
 		return "std::string";
 	}
 
+	// External types may override the emitted name with `cpp_type_name`
+	// (useful for qualified names like `ItemClass::Class` from a DBC
+	// header where the schema key must stay a plain identifier).
+	const auto leaf = def->contains("cpp_type_name")
+		? (*def)["cpp_type_name"].as<std::string>() : type;
+
 	if(def->contains("cpp_namespace")) {
-		return std::format("{}::{}", (*def)["cpp_namespace"].as<std::string>(), type);
+		return std::format("{}::{}", (*def)["cpp_namespace"].as<std::string>(), leaf);
 	}
 
-	return type;
+	return leaf;
 }
 
 std::string string_adaptor_expr(const jsoncons::json& type_def, std::string_view expr) {
@@ -233,21 +262,66 @@ std::string cpp_element_type(const std::string& type, const TypeRegistry& reg) {
 	return cpp_type_name(type, reg);
 }
 
-// emits stream ops for a single scalar value - writes to both read_ops and write_ops
+enum class Dir { Read, Write, Both };
+
+// Emits stream ops for a single scalar value. `dir` controls which of
+// `read_ops` / `write_ops` are appended to — helpers that build their own
+// loops (e.g. until_end, which has asymmetric read vs write) use Read /
+// Write and drive each side separately.
 void emit_scalar_stream_op(const std::string& name, const std::string& type,
+                           const std::string& as_type,
                            const TypeRegistry& reg, WalkState& state,
-                           std::string_view prefix) {
+                           std::string_view prefix, Dir dir = Dir::Both) {
 	const auto qualified = std::format("{}{}", prefix, name);
+	const bool do_read  = dir != Dir::Write;
+	const bool do_write = dir != Dir::Read;
+
+	// `as` cast: the wire type is primitive (enforced by validator) and the
+	// user-visible type is an enum/flags with the same underlying. Read goes
+	// via a temporary so we don't trigger the enum/flags stream overload
+	// (which would read the enum's native width, ignoring the cast). The
+	// temp name comes off `temp_counter` because `name` may be an lvalue
+	// expression like `foo.back()` that isn't a valid identifier.
+	if(!as_type.empty()) {
+		const auto wire_cpp = cpp_type_for_primitive(type);
+		const auto semantic_cpp = cpp_type_name(as_type, reg);
+
+		if(do_read) {
+			const auto raw_name = std::format("raw_{}", state.temp_counter++);
+			state.read_ops.emplace_back(std::format(
+				"{0}{1} {2};", indent(state.read_tab), wire_cpp, raw_name
+			));
+			state.read_ops.emplace_back(std::format(
+				"{0}stream >> {1};", indent(state.read_tab), raw_name
+			));
+			state.read_ops.emplace_back(std::format(
+				"{0}{1} = static_cast<{2}>({3});",
+				indent(state.read_tab), qualified, semantic_cpp, raw_name
+			));
+		}
+
+		if(do_write) {
+			state.write_ops.emplace_back(std::format(
+				"{}stream << static_cast<{}>({});",
+				indent(state.write_tab), wire_cpp, qualified
+			));
+		}
+
+		add_type_include(as_type, reg, state.includes);
+		return;
+	}
 
 	if(is_primitive(type)) {
-		state.read_ops.emplace_back(
-			std::format("{}stream >> {};", indent(state.read_tab), qualified)
-		);
-
-		state.write_ops.emplace_back(
-			std::format("{}stream << {};", indent(state.write_tab), qualified)
-		);
-
+		if(do_read) {
+			state.read_ops.emplace_back(
+				std::format("{}stream >> {};", indent(state.read_tab), qualified)
+			);
+		}
+		if(do_write) {
+			state.write_ops.emplace_back(
+				std::format("{}stream << {};", indent(state.write_tab), qualified)
+			);
+		}
 		return;
 	}
 
@@ -261,29 +335,70 @@ void emit_scalar_stream_op(const std::string& name, const std::string& type,
 
 	const auto kind = kind_of(*def);
 
-	if(kind == "enum" || kind == "flags" || kind == "external") {
-		state.read_ops.emplace_back(
-			std::format("{}stream >> {};", indent(state.read_tab), qualified)
-		);
+	if(is_enum_kind(kind) || kind == "flags") {
+		if(do_read) {
+			state.read_ops.emplace_back(
+				std::format("{}stream >> {};", indent(state.read_tab), qualified)
+			);
+		}
+		if(do_write) {
+			state.write_ops.emplace_back(
+				std::format("{}stream << {};", indent(state.write_tab), qualified)
+			);
+		}
+		return;
+	}
 
-		state.write_ops.emplace_back(
-			std::format("{}stream << {};", indent(state.write_tab), qualified)
-		);
-
+	if(kind == "external") {
+		// Plain external: the user provides `operator>>` / `operator<<`.
+		// The alias case (external with `underlying`, referenced via
+		// `type` rather than `as`) is handled upstream — the effective
+		// type has already been substituted with the underlying primitive
+		// by the time emit gets here, so this branch sees only the
+		// hand-overloaded externals like PackedGuid.
+		if(do_read) {
+			state.read_ops.emplace_back(
+				std::format("{}stream >> {};", indent(state.read_tab), qualified)
+			);
+		}
+		if(do_write) {
+			state.write_ops.emplace_back(
+				std::format("{}stream << {};", indent(state.write_tab), qualified)
+			);
+		}
 		return;
 	}
 
 	if(kind == "string") {
 		const auto adaptor = string_adaptor_expr(*def, qualified);
-		state.read_ops.emplace_back(std::format("{}stream >> {};", indent(state.read_tab), adaptor));
-		state.write_ops.emplace_back(std::format("{}stream << {};", indent(state.write_tab), adaptor));
+		if(do_read) {
+			state.read_ops.emplace_back(std::format("{}stream >> {};", indent(state.read_tab), adaptor));
+		}
+		if(do_write) {
+			state.write_ops.emplace_back(std::format("{}stream << {};", indent(state.write_tab), adaptor));
+		}
 		state.includes.insert("spark/buffers/StringAdaptors.h");
 		return;
 	}
 
 	if(kind == "struct") {
+		// Structs expand into per-field stream ops on both sides; there's
+		// no asymmetry to worry about, so Dir::Both is the natural choice.
+		// Callers that need one side only are emitting loops with a visible
+		// loop variable, so a struct field inside means visiting that
+		// variable's members — which must happen in both directions anyway
+		// for symmetric read/write. We honour the flag by walking the
+		// struct's fields and stripping the unwanted vector afterwards.
+		const auto read_before  = state.read_ops.size();
+		const auto write_before = state.write_ops.size();
 		std::vector<ScopeEntry> nested_scope;
 		walk((*def)["fields"], reg, state, nested_scope, qualified + ".");
+		if(!do_read) {
+			state.read_ops.resize(read_before);
+		}
+		if(!do_write) {
+			state.write_ops.resize(write_before);
+		}
 		return;
 	}
 
@@ -292,27 +407,107 @@ void emit_scalar_stream_op(const std::string& name, const std::string& type,
 	);
 }
 
+// True when `stream >> arr` / `stream << arr` compiles for std::array<T,N>
+// via the built-in arithmetic / iterable stream overloads. Struct and string
+// element types don't qualify — they need explicit per-element loops.
+bool has_whole_array_stream_op(const std::string& type, const std::string& as_type,
+                               const TypeRegistry& reg) {
+	if(!as_type.empty()) {
+		return false;  // every element needs a cast, so we always loop
+	}
+
+	if(is_primitive(type)) {
+		return true;
+	}
+
+	const auto* def = reg.find(type);
+
+	if(!def) {
+		return false;
+	}
+
+	const auto kind = kind_of(*def);
+	return is_enum_kind(kind) || kind == "flags" || kind == "external";
+}
+
 void emit_stream_op(const jsoncons::json& field, const std::string& type,
                     const TypeRegistry& reg, WalkState& state, const std::string& prefix) {
 	const auto name = field["name"].as<std::string>();
+	const std::string as_type =
+		field.contains("as") ? field["as"].as<std::string>() : std::string();
 
 	if(!field.contains("array")) {
-		emit_scalar_stream_op(name, type, reg, state, prefix);
+		emit_scalar_stream_op(name, type, as_type, reg, state, prefix);
 		return;
 	}
 
 	const auto& arr = field["array"];
 	const auto qualified = prefix + name;
 
-	// fixed-size arrays - rely on the stream overloads for std::array
 	if(arr.contains("size")) {
-		state.read_ops.emplace_back(std::format("{}stream >> {};", indent(state.read_tab), qualified));
-		state.write_ops.emplace_back(std::format("{}stream << {};", indent(state.write_tab), qualified));
+		// Primitives/enums/flags have a whole-array stream operator — fall
+		// back to that for compactness. Anything else (struct / string /
+		// `as`-cast element) needs a visible loop so the per-element ops
+		// fire for each slot.
+		if(has_whole_array_stream_op(type, as_type, reg)) {
+			state.read_ops.emplace_back(std::format("{}stream >> {};", indent(state.read_tab), qualified));
+			state.write_ops.emplace_back(std::format("{}stream << {};", indent(state.write_tab), qualified));
+			state.includes.insert("array");
+			return;
+		}
+
 		state.includes.insert("array");
+		state.read_ops.emplace_back(
+			std::format("{}for(auto& e : {}) {{", indent(state.read_tab), qualified)
+		);
+		state.write_ops.emplace_back(
+			std::format("{}for(const auto& e : {}) {{", indent(state.write_tab), qualified)
+		);
+		++state.read_tab;
+		++state.write_tab;
+		emit_scalar_stream_op("e", type, as_type, reg, state, std::string());
+		--state.read_tab;
+		--state.write_tab;
+		state.read_ops.emplace_back(std::format("{}}}", indent(state.read_tab)));
+		state.write_ops.emplace_back(std::format("{}}}", indent(state.write_tab)));
 		return;
 	}
 
-	// vector with size held in preceding field
+	// Unbounded: read until the stream is drained. Per-iteration error
+	// check so a malformed payload is surfaced immediately rather than
+	// after a possibly-unbounded loop. Writing just emits the elements —
+	// the receiver's loop will stop when the stream's out of data.
+	if(arr.contains("until_end")) {
+		state.includes.emplace("vector");
+
+		state.read_ops.emplace_back(
+			std::format("{}while(!stream.empty()) {{", indent(state.read_tab))
+		);
+		++state.read_tab;
+		state.read_ops.emplace_back(
+			std::format("{}{}.emplace_back();", indent(state.read_tab), qualified)
+		);
+		emit_scalar_stream_op(
+			std::format("{}.back()", qualified), type, as_type,
+			reg, state, std::string(), Dir::Read
+		);
+		state.read_ops.emplace_back(
+			std::format("{}if(!stream) return StreamResult::failed;", indent(state.read_tab))
+		);
+		--state.read_tab;
+		state.read_ops.emplace_back(std::format("{}}}", indent(state.read_tab)));
+
+		state.write_ops.emplace_back(
+			std::format("{}for(const auto& e : {}) {{", indent(state.write_tab), qualified)
+		);
+		++state.write_tab;
+		emit_scalar_stream_op("e", type, as_type, reg, state, std::string(), Dir::Write);
+		--state.write_tab;
+		state.write_ops.emplace_back(std::format("{}}}", indent(state.write_tab)));
+		return;
+	}
+
+	// Count-prefixed vector: size held in a preceding field.
 	const auto count_field = arr["count_field"].as<std::string>();
 	const auto qualified_count = prefix + count_field;
 	state.includes.emplace("vector");
@@ -331,7 +526,7 @@ void emit_stream_op(const jsoncons::json& field, const std::string& type,
 
 	++state.read_tab;
 	++state.write_tab;
-	emit_scalar_stream_op("e", type, reg, state, std::string());
+	emit_scalar_stream_op("e", type, as_type, reg, state, std::string());
 	--state.read_tab;
 	--state.write_tab;
 
@@ -341,8 +536,14 @@ void emit_stream_op(const jsoncons::json& field, const std::string& type,
 
 std::string member_decl(const jsoncons::json& field, const TypeRegistry& reg) {
 	const auto name = field["name"].as<std::string>();
-	const auto type = field["type"].as<std::string>();
-	const auto elem = cpp_element_type(type, reg);
+	// The declared member type follows the schema's user-facing intent:
+	//   - `as` cast wins (the field is exposed as its semantic enum/flags).
+	//   - Otherwise use the effective type, which unwraps alias-externals
+	//     to the underlying primitive so record-ref DBC types become a
+	//     plain `std::uint32_t` instead of the DBC struct.
+	const auto declared_type = field.contains("as")
+		? field["as"].as<std::string>() : effective_field_type(field, reg);
+	const auto elem = cpp_element_type(declared_type, reg);
 
 	if(field.contains("array")) {
 		const auto& arr = field["array"];
@@ -351,22 +552,33 @@ std::string member_decl(const jsoncons::json& field, const TypeRegistry& reg) {
 			const auto sz = arr["size"].as<std::int64_t>();
 			return std::format("\tstd::array<{}, {}> {}{{}};", elem, sz, name);
 		}
+		// count_field and until_end both produce a dynamically-sized vector.
 		return std::format("\tstd::vector<{}> {};", elem, name);
 	}
 
 	return std::format("\t{} {};", elem, name);
 }
 
+void emit_branch_body(const jsoncons::json& branch_fields, const TypeRegistry& reg,
+                      WalkState& state, std::vector<ScopeEntry>& scope,
+                      const std::string& prefix) {
+	const auto outer_size = scope.size();
+	walk(branch_fields, reg, state, scope, prefix);
+	scope.resize(outer_size);
+}
+
 void walk(const jsoncons::json& fields, const TypeRegistry& reg, WalkState& state,
           std::vector<ScopeEntry>& scope, const std::string& prefix) {
 	const bool emit_members = prefix.empty();
 	bool first = true;
-	bool prev_is_group = false;
+	bool prev_is_block = false;
 
 	for(const auto& field : fields.array_range()) {
 		const auto type = field["type"].as<std::string>();
 		const bool current_is_group = (type == "group");
-		const bool need_blank = !first && (prev_is_group || current_is_group);
+		const bool current_is_if_chain = (type == "if_chain");
+		const bool current_is_block = current_is_group || current_is_if_chain;
+		const bool need_blank = !first && (prev_is_block || current_is_block);
 
 		if(need_blank) {
 			state.read_ops.emplace_back("");
@@ -397,12 +609,7 @@ void walk(const jsoncons::json& fields, const TypeRegistry& reg, WalkState& stat
 				++state.write_tab;
 			}
 
-			// group-local field names must not leak past the closing brace,
-			// so they can't be referenced by later scope lookups
-			// (e.g. in a sibling group's `when` expression)
-			const auto outer_size = scope.size();
-			walk(field["fields"], reg, state, scope, prefix);
-			scope.resize(outer_size);
+			emit_branch_body(field["fields"], reg, state, scope, prefix);
 
 			--state.read_tab;
 
@@ -419,24 +626,83 @@ void walk(const jsoncons::json& fields, const TypeRegistry& reg, WalkState& stat
 					std::format("{}}}", indent(state.write_tab))
 				);
 			}
+		} else if(current_is_if_chain) {
+			// Emit `if(A) { ... } else if(B) { ... } else { ... }` so the
+			// branches read as one cascade rather than a soup of unrelated
+			// ifs. The trailing `}` for each intermediate branch is on the
+			// same line as the next `else if`, matching hand-written style.
+			const auto& branches = field["branches"];
+			std::size_t idx = 0;
+			const std::size_t branch_count = branches.size();
+
+			for(const auto& branch : branches.array_range()) {
+				const auto cond = render_condition(branch["when"], reg, prefix, scope);
+				const std::string_view prefix_word = (idx == 0) ? "if" : "else if";
+
+				state.read_ops .emplace_back(std::format(
+					"{}{}({}) {{", indent(state.read_tab), prefix_word, cond
+				));
+				state.write_ops.emplace_back(std::format(
+					"{}{}({}) {{", indent(state.write_tab), prefix_word, cond
+				));
+
+				++state.read_tab;
+				++state.write_tab;
+				emit_branch_body(branch["fields"], reg, state, scope, prefix);
+				--state.read_tab;
+				--state.write_tab;
+
+				const bool last_in_chain = (idx + 1 == branch_count) && !field.contains("else");
+				state.read_ops .emplace_back(std::format(
+					"{}{}", indent(state.read_tab), last_in_chain ? "}" : "}"
+				));
+				state.write_ops.emplace_back(std::format(
+					"{}{}", indent(state.write_tab), last_in_chain ? "}" : "}"
+				));
+				++idx;
+			}
+
+			if(field.contains("else")) {
+				state.read_ops .emplace_back(std::format("{}else {{", indent(state.read_tab)));
+				state.write_ops.emplace_back(std::format("{}else {{", indent(state.write_tab)));
+				++state.read_tab;
+				++state.write_tab;
+				emit_branch_body(field["else"], reg, state, scope, prefix);
+				--state.read_tab;
+				--state.write_tab;
+				state.read_ops .emplace_back(std::format("{}}}", indent(state.read_tab)));
+				state.write_ops.emplace_back(std::format("{}}}", indent(state.write_tab)));
+			}
 		} else {
-			scope.emplace_back(field["name"].as<std::string>(), type);
-			add_type_include(type, reg, state.includes);
+			// Scope entry carries the semantic (`as`-cast) type so that
+			// condition RHS names resolve against the enum, not the wire
+			// primitive. For plain external-with-underlying aliases the
+			// effective type is the underlying primitive — condition
+			// values stay integer literals as expected.
+			const auto effective = effective_field_type(field, reg);
+			const auto semantic_type = field.contains("as")
+				? field["as"].as<std::string>() : effective;
+			scope.emplace_back(field["name"].as<std::string>(), semantic_type);
+			add_type_include(effective, reg, state.includes);
+
+			if(field.contains("as")) {
+				add_type_include(field["as"].as<std::string>(), reg, state.includes);
+			}
 
 			if(emit_members) {
 				state.members.emplace_back(member_decl(field, reg));
-				const auto* def = reg.find(type);
+				const auto* def = reg.find(semantic_type);
 
 				if(def && kind_of(*def) == "string") {
 					state.includes.emplace("string");
 				}
 			}
 
-			emit_stream_op(field, type, reg, state, prefix);
+			emit_stream_op(field, effective, reg, state, prefix);
 		}
 
 		first = false;
-		prev_is_group = current_is_group;
+		prev_is_block = current_is_block;
 	}
 }
 
@@ -521,7 +787,23 @@ void collect_struct_members(const jsoncons::json& fields, const TypeRegistry& re
 			continue;
 		}
 
-		const auto elem = cpp_element_type(type, reg);
+		if(type == "if_chain") {
+			for(const auto& branch : field["branches"].array_range()) {
+				collect_struct_members(branch["fields"], reg, out, includes);
+			}
+			if(field.contains("else")) {
+				collect_struct_members(field["else"], reg, out, includes);
+			}
+			continue;
+		}
+
+		// Members expose the `as`-cast (semantic) type when present;
+		// otherwise the effective type (unwrapping alias-externals to
+		// their underlying primitive).
+		const auto effective = effective_field_type(field, reg);
+		const auto declared_type = field.contains("as")
+			? field["as"].as<std::string>() : effective;
+		const auto elem = cpp_element_type(declared_type, reg);
 
 		std::string decl_type;
 		std::string suffix;
@@ -534,6 +816,7 @@ void collect_struct_members(const jsoncons::json& fields, const TypeRegistry& re
 				suffix = "{}";
 				includes.emplace("array");
 			} else {
+				// count_field and until_end both map to vector<T>.
 				decl_type = std::format("std::vector<{}>", elem);
 				includes.emplace("vector");
 			}
@@ -547,20 +830,28 @@ void collect_struct_members(const jsoncons::json& fields, const TypeRegistry& re
 		entry["suffix"] = suffix;
 		out.push_back(std::move(entry));
 
-		if(is_primitive(type)) {
-			includes.emplace("cstdint");
-			continue;
-		}
-
-		const auto* def = reg.find(type);
-		const auto kind = kind_of(*def);
-
-		if(kind == "string") {
-			includes.emplace("string");
-		} else if(kind == "external") {
-			includes.emplace((*def)["include"].as<std::string>());
-		} else {
-			includes.emplace(std::format("generated/types/{}.h", type));
+		// Includes for both the wire primitive and any `as` semantic type.
+		const auto register_include_for = [&](const std::string& ty) {
+			if(is_primitive(ty)) {
+				includes.emplace("cstdint");
+				return;
+			}
+			const auto* def = reg.find(ty);
+			if(!def) {
+				return;
+			}
+			const auto kind = kind_of(*def);
+			if(kind == "string") {
+				includes.emplace("string");
+			} else if(kind == "external") {
+				includes.emplace((*def)["include"].as<std::string>());
+			} else {
+				includes.emplace(std::format("generated/types/{}.h", ty));
+			}
+		};
+		register_include_for(effective);
+		if(field.contains("as")) {
+			register_include_for(field["as"].as<std::string>());
 		}
 	}
 }
@@ -587,8 +878,9 @@ std::vector<GeneratedFile> generate_type_headers(const TypeRegistry& reg, const 
 		data["namespace"] = header_namespace(def);
 		data["year"] = 	year;
 
-		if(kind == "enum" || kind == "flags") {
+		if(is_enum_kind(kind) || kind == "flags") {
 			data["underlying"] = cpp_type_for_primitive(def["underlying"].as<std::string>());
+			data["is_class"] = (kind == "enum_class");
 
 			auto values = nlohmann::json::array();
 
@@ -598,8 +890,8 @@ std::vector<GeneratedFile> generate_type_headers(const TypeRegistry& reg, const 
 				v["value"] = pair.value().as<std::int64_t>();
 				values.emplace_back(std::move(v));
 			}
-		
-			if(kind == "enum") { // ensure enumerators are sorted numerically (0 .. n)
+
+			if(is_enum_kind(kind)) { // ensure enumerators are sorted numerically (0 .. n)
 				std::sort(values.begin(), values.end(), [](auto& lhs, auto& rhs) {
 					return rhs["value"] > lhs["value"];
 				});

@@ -1,0 +1,8 @@
+{
+	"name": "SplineMoveSetRunMode",
+	"opcode": "smsg_spline_move_set_run_mode",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid", "type": "PackedGuid" }
+	]
+}

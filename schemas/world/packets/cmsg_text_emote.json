@@ -1,0 +1,10 @@
+{
+	"name": "TextEmote",
+	"opcode": "cmsg_text_emote",
+	"direction": "client",
+	"fields": [
+		{ "name": "text_emote", "type": "TextEmote" },
+		{ "name": "emote",      "type": "uint32" },
+		{ "name": "target",     "type": "uint64" }
+	]
+}

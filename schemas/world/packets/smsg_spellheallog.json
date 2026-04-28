@@ -1,0 +1,12 @@
+{
+	"name": "Spellheallog",
+	"opcode": "smsg_spellheallog",
+	"direction": "server",
+	"fields": [
+		{ "name": "victim",   "type": "PackedGuid" },
+		{ "name": "caster",   "type": "PackedGuid" },
+		{ "name": "id",       "type": "uint32" },
+		{ "name": "damage",   "type": "uint32" },
+		{ "name": "critical", "type": "uint8" }
+	]
+}

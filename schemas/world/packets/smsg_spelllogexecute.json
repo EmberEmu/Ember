@@ -1,0 +1,11 @@
+{
+	"name": "Spelllogexecute",
+	"opcode": "smsg_spelllogexecute",
+	"direction": "server",
+	"fields": [
+		{ "name": "caster",            "type": "PackedGuid" },
+		{ "name": "spell",             "type": "uint32" },
+		{ "name": "amount_of_effects", "type": "uint32" },
+		{ "name": "logs",              "type": "SpellLog", "array": {"count_field": "amount_of_effects"} }
+	]
+}

@@ -1,0 +1,8 @@
+{
+	"name": "GuildMotd",
+	"opcode": "cmsg_guild_motd",
+	"direction": "client",
+	"fields": [
+		{ "name": "message_of_the_day", "type": "CString" }
+	]
+}

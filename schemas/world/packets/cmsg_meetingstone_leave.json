@@ -1,0 +1,5 @@
+{
+	"name": "MeetingstoneLeave",
+	"opcode": "cmsg_meetingstone_leave",
+	"direction": "client"
+}

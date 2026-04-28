@@ -1,8 +1,0 @@
-{
-	"name": "AuthChallenge",
-	"opcode": "smsg_auth_challenge",
-	"direction": "server",
-	"fields": [
-		{ "name": "seed", "type": "uint32" }
-	]
-}

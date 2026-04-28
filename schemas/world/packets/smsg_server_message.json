@@ -1,0 +1,9 @@
+{
+	"name": "ServerMessage",
+	"opcode": "smsg_server_message",
+	"direction": "server",
+	"fields": [
+		{ "name": "message_type", "type": "ServerMessageType" },
+		{ "name": "message",      "type": "CString" }
+	]
+}

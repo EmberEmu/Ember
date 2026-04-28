@@ -1,0 +1,8 @@
+{
+	"name": "BuyBankSlot",
+	"opcode": "cmsg_buy_bank_slot",
+	"direction": "client",
+	"fields": [
+		{ "name": "guid", "type": "uint64" }
+	]
+}

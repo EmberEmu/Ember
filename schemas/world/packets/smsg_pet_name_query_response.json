@@ -1,0 +1,10 @@
+{
+	"name": "PetNameQueryResponse",
+	"opcode": "smsg_pet_name_query_response",
+	"direction": "server",
+	"fields": [
+		{ "name": "pet_number",         "type": "uint32" },
+		{ "name": "name",               "type": "CString" },
+		{ "name": "pet_name_timestamp", "type": "uint32" }
+	]
+}

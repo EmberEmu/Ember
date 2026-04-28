@@ -1,0 +1,8 @@
+{
+	"name": "ChatPlayerNotFound",
+	"opcode": "smsg_chat_player_not_found",
+	"direction": "server",
+	"fields": [
+		{ "name": "name", "type": "CString" }
+	]
+}

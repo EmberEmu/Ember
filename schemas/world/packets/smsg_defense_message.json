@@ -1,0 +1,9 @@
+{
+	"name": "DefenseMessage",
+	"opcode": "smsg_defense_message",
+	"direction": "server",
+	"fields": [
+		{ "name": "area",    "type": "Area" },
+		{ "name": "message", "type": "PrefixedString32" }
+	]
+}

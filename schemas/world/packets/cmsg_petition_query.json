@@ -1,0 +1,9 @@
+{
+	"name": "PetitionQuery",
+	"opcode": "cmsg_petition_query",
+	"direction": "client",
+	"fields": [
+		{ "name": "guild_id", "type": "uint32" },
+		{ "name": "petition", "type": "uint64" }
+	]
+}

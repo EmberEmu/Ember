@@ -1,0 +1,9 @@
+{
+	"name": "PlayedTime",
+	"opcode": "smsg_played_time",
+	"direction": "server",
+	"fields": [
+		{ "name": "total_played_time", "type": "uint32" },
+		{ "name": "level_played_time", "type": "uint32" }
+	]
+}

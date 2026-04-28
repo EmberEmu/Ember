@@ -1,0 +1,9 @@
+{
+	"name": "QuestlogSwapQuest",
+	"opcode": "cmsg_questlog_swap_quest",
+	"direction": "client",
+	"fields": [
+		{ "name": "slot1", "type": "uint8" },
+		{ "name": "slot2", "type": "uint8" }
+	]
+}

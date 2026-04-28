@@ -1,0 +1,8 @@
+{
+	"name": "GameobjectPagetext",
+	"opcode": "smsg_gameobject_pagetext",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid", "type": "uint64" }
+	]
+}

@@ -1,0 +1,8 @@
+{
+	"name": "UpdateInstanceOwnership",
+	"opcode": "smsg_update_instance_ownership",
+	"direction": "server",
+	"fields": [
+		{ "name": "player_is_saved_to_a_raid", "type": "uint32" }
+	]
+}

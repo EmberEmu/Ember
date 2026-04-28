@@ -1,0 +1,21 @@
+{
+	"name": "GroupList",
+	"opcode": "smsg_group_list",
+	"direction": "server",
+	"fields": [
+		{ "name": "group_type",        "type": "GroupType" },
+		{ "name": "flags",             "type": "uint8" },
+		{ "name": "amount_of_members", "type": "uint32" },
+		{ "name": "members",           "type": "GroupListMember", "array": {"count_field": "amount_of_members"} },
+		{ "name": "leader",            "type": "uint64" },
+		{
+			"type": "group",
+			"when": { "op": "stream_not_empty" },
+			"fields": [
+				{ "name": "loot_setting",   "type": "GroupLootSetting" },
+				{ "name": "master_loot",    "type": "uint64" },
+				{ "name": "loot_threshold", "type": "ItemQuality" }
+			]
+		}
+	]
+}

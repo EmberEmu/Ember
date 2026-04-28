@@ -1,0 +1,8 @@
+{
+	"name": "Standstatechange",
+	"opcode": "cmsg_standstatechange",
+	"direction": "client",
+	"fields": [
+		{ "name": "animation_state", "type": "uint32" }
+	]
+}

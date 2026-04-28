@@ -4,7 +4,7 @@
 	"direction": "server",
 	"fields": [
 		{ "name": "position", "type": "uint32" },
-		{ "name": "map",      "type": "uint32" },
+		{ "name": "map",      "type": "Map" },
 		{
 			"type": "group",
 			"when": { "op": "neq", "field": "map", "value": 0 },
@@ -20,18 +20,21 @@
 					]
 				},
 				{
-					"type": "group",
-					"when": { "op": "eq", "field": "status", "value": "wait_join" },
-					"fields": [
-						{ "name": "time_to_remove_in_queue_ms", "type": "uint32" }
-					]
-				},
-				{
-					"type": "group",
-					"when": { "op": "eq", "field": "status", "value": "in_progress" },
-					"fields": [
-						{ "name": "time_to_bg_autoleave_ms", "type": "uint32" },
-						{ "name": "time_to_bg_start_ms",     "type": "uint32" }
+					"type": "if_chain",
+					"branches": [
+						{
+							"when": { "op": "eq", "field": "status", "value": "wait_join" },
+							"fields": [
+								{ "name": "time_to_remove_in_queue_ms", "type": "uint32" }
+							]
+						},
+						{
+							"when": { "op": "eq", "field": "status", "value": "in_progress" },
+							"fields": [
+								{ "name": "time_to_bg_autoleave_ms", "type": "uint32" },
+								{ "name": "time_to_bg_start_ms",     "type": "uint32" }
+							]
+						}
 					]
 				}
 			]
