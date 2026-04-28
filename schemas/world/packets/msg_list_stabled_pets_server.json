@@ -1,0 +1,12 @@
+{
+	"name": "ListStabledPets",
+	"opcode": "msg_list_stabled_pets",
+	"alias": "msg_list_stabled_pets_s",
+	"direction": "server",
+	"fields": [
+		{ "name": "npc",            "type": "uint64" },
+		{ "name": "amount_of_pets", "type": "uint8" },
+		{ "name": "stable_slots",   "type": "uint8" },
+		{ "name": "pets",           "type": "StabledPet", "array": {"count_field": "amount_of_pets"} }
+	]
+}

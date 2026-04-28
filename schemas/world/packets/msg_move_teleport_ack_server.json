@@ -1,0 +1,11 @@
+{
+	"name": "MoveTeleportAck",
+	"opcode": "msg_move_teleport_ack",
+	"alias": "msg_move_teleport_ack_s",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid",             "type": "PackedGuid" },
+		{ "name": "movement_counter", "type": "uint32" },
+		{ "name": "info",             "type": "MovementInfo" }
+	]
+}

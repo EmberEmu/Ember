@@ -1,0 +1,9 @@
+{
+	"name": "MoveJump",
+	"opcode": "msg_move_jump",
+	"alias": "msg_move_jump_c",
+	"direction": "client",
+	"fields": [
+		{ "name": "info", "type": "MovementInfo" }
+	]
+}

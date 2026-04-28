@@ -1,5 +1,0 @@
-{
-	"name": "QueryNextMailTimeClient",
-	"opcode": "cmsg_query_next_mail_time_client",
-	"direction": "client"
-}

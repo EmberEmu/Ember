@@ -9,6 +9,7 @@
 #pragma once
 
 #include <protocol/Concepts.h>
+#include <protocol/Packet.h>
 #include <protocol/StreamResult.h>
 #include <spark/buffers/BinaryStream.h>
 #include <spark/buffers/BufferAdaptor.h>
@@ -116,3 +117,9 @@ struct AuthSession final {
 };
 
 } // client, protocol, ember
+
+namespace ember::protocol {
+
+using cmsg_auth_session = ClientPacket<ClientOpcode::cmsg_auth_session, client::AuthSession>;
+
+} // protocol, ember

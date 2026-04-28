@@ -1,8 +1,0 @@
-{
-	"name": "MoveStartStrafeLeftClient",
-	"opcode": "cmsg_move_start_strafe_left_client",
-	"direction": "client",
-	"fields": [
-		{ "name": "info", "type": "MovementInfo" }
-	]
-}

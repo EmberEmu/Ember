@@ -1,0 +1,12 @@
+{
+	"name": "RandomRoll",
+	"opcode": "msg_random_roll",
+	"alias": "msg_random_roll_s",
+	"direction": "server",
+	"fields": [
+		{ "name": "minimum",     "type": "uint32" },
+		{ "name": "maximum",     "type": "uint32" },
+		{ "name": "actual_roll", "type": "uint32" },
+		{ "name": "guid",        "type": "uint64" }
+	]
+}

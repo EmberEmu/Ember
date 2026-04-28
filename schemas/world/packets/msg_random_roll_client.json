@@ -1,0 +1,10 @@
+{
+	"name": "RandomRoll",
+	"opcode": "msg_random_roll",
+	"alias": "msg_random_roll_c",
+	"direction": "client",
+	"fields": [
+		{ "name": "minimum", "type": "uint32" },
+		{ "name": "maximum", "type": "uint32" }
+	]
+}

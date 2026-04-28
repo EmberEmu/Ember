@@ -1,9 +1,0 @@
-{
-	"name": "ChannelStartServer",
-	"opcode": "smsg_channel_start_server",
-	"direction": "server",
-	"fields": [
-		{ "name": "spell",    "type": "uint32" },
-		{ "name": "duration", "type": "uint32" }
-	]
-}

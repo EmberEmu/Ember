@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include <protocol/Packets.h>
 #include <spark/buffers/pmr/Buffer.h>
 
 namespace ember::realm {

@@ -1,8 +1,0 @@
-{
-	"name": "MoveStopClient",
-	"opcode": "cmsg_move_stop_client",
-	"direction": "client",
-	"fields": [
-		{ "name": "info", "type": "MovementInfo" }
-	]
-}

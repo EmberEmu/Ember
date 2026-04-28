@@ -1,8 +1,0 @@
-{
-	"name": "ListStabledPetsClient",
-	"opcode": "cmsg_list_stabled_pets_client",
-	"direction": "client",
-	"fields": [
-		{ "name": "npc", "type": "uint64" }
-	]
-}

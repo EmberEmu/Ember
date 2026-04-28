@@ -1,0 +1,9 @@
+{
+	"name": "MoveStartSwim",
+	"opcode": "msg_move_start_swim",
+	"alias": "msg_move_start_swim_c",
+	"direction": "client",
+	"fields": [
+		{ "name": "info", "type": "MovementInfo" }
+	]
+}

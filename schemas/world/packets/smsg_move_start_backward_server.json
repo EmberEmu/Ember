@@ -1,9 +1,0 @@
-{
-	"name": "MoveStartBackwardServer",
-	"opcode": "smsg_move_start_backward_server",
-	"direction": "server",
-	"fields": [
-		{ "name": "guid", "type": "PackedGuid" },
-		{ "name": "info", "type": "MovementInfo" }
-	]
-}

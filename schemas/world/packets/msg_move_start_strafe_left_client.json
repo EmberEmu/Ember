@@ -1,0 +1,9 @@
+{
+	"name": "MoveStartStrafeLeft",
+	"opcode": "msg_move_start_strafe_left",
+	"alias": "msg_move_start_strafe_left_c",
+	"direction": "client",
+	"fields": [
+		{ "name": "info", "type": "MovementInfo" }
+	]
+}

@@ -1,9 +1,0 @@
-{
-	"name": "MoveSetWalkModeServer",
-	"opcode": "smsg_move_set_walk_mode_server",
-	"direction": "server",
-	"fields": [
-		{ "name": "guid", "type": "PackedGuid" },
-		{ "name": "info", "type": "MovementInfo" }
-	]
-}

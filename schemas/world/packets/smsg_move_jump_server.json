@@ -1,9 +1,0 @@
-{
-	"name": "MoveJumpServer",
-	"opcode": "smsg_move_jump_server",
-	"direction": "server",
-	"fields": [
-		{ "name": "guid", "type": "PackedGuid" },
-		{ "name": "info", "type": "MovementInfo" }
-	]
-}

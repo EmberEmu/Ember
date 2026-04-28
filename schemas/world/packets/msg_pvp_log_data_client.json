@@ -1,0 +1,6 @@
+{
+	"name": "PvpLogData",
+	"opcode": "msg_pvp_log_data",
+	"alias": "msg_pvp_log_data_c",
+	"direction": "client"
+}

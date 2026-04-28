@@ -1,0 +1,6 @@
+{
+	"name": "LookingForGroup",
+	"opcode": "msg_looking_for_group",
+	"alias": "msg_looking_for_group_c",
+	"direction": "client"
+}

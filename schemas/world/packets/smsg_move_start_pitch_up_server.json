@@ -1,9 +1,0 @@
-{
-	"name": "MoveStartPitchUpServer",
-	"opcode": "smsg_move_start_pitch_up_server",
-	"direction": "server",
-	"fields": [
-		{ "name": "guid", "type": "PackedGuid" },
-		{ "name": "info", "type": "MovementInfo" }
-	]
-}

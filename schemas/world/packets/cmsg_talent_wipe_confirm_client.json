@@ -1,8 +1,0 @@
-{
-	"name": "TalentWipeConfirmClient",
-	"opcode": "cmsg_talent_wipe_confirm_client",
-	"direction": "client",
-	"fields": [
-		{ "name": "wiping_npc", "type": "uint64" }
-	]
-}

@@ -3,19 +3,19 @@
 	"opcode": "cmsg_messagechat",
 	"direction": "client",
 	"fields": [
-		{ "name": "chat_type", "type": "uint32" },
+		{ "name": "type",      "type": "ChatType" },
 		{ "name": "language",  "type": "Language" },
 		{
 			"type": "if_chain",
 			"branches": [
 				{
-					"when": { "op": "eq", "field": "chat_type", "value": 6 },
+					"when": { "op": "eq", "field": "type", "value": "whisper" },
 					"fields": [
 						{ "name": "target_player", "type": "CString" }
 					]
 				},
 				{
-					"when": { "op": "eq", "field": "chat_type", "value": 14 },
+					"when": { "op": "eq", "field": "type", "value": "channel" },
 					"fields": [
 						{ "name": "channel", "type": "CString" }
 					]

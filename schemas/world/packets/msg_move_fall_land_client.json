@@ -1,0 +1,9 @@
+{
+	"name": "MoveFallLand",
+	"opcode": "msg_move_fall_land",
+	"alias": "msg_move_fall_land_c",
+	"direction": "client",
+	"fields": [
+		{ "name": "info", "type": "MovementInfo" }
+	]
+}

@@ -11,7 +11,7 @@
 #include "Config.h"
 #include <Character_generated.h>
 #include <dbcreader/Storage.h>
-#include <protocol/ResultCodes.h>
+#include <protocol/types/Result.h>
 #include <shared/database/daos/CharacterDAO.h>
 #include <shared/utility/PCREHelper.h>
 #include <shared/utility/UTF8.h>

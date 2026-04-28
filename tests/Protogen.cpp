@@ -694,8 +694,8 @@ TEST_F(Protogen, StructPullsInGeneratedHeadersForCustomMembers) {
 	}
 
 	ASSERT_NE(outer, nullptr);
-	EXPECT_NE(outer->content.find("#include <generated/types/Mode.h>"), std::string::npos) << outer->content;
-	EXPECT_NE(outer->content.find("#include <generated/types/Inner.h>"), std::string::npos) << outer->content;
+	EXPECT_NE(outer->content.find("#include <protocol/types/Mode.h>"), std::string::npos) << outer->content;
+	EXPECT_NE(outer->content.find("#include <protocol/types/Inner.h>"), std::string::npos) << outer->content;
 }
 
 TEST_F(Protogen, QualifiesEnumAndMemberWithCppNamespace) {
@@ -742,7 +742,7 @@ TEST_F(Protogen, AggregatorIncludesEachHeader) {
 	const auto out = protogen::generate_aggregator(headers, templates_dir);
 
 	for(const auto& h : headers) {
-		EXPECT_NE(out.find(std::string("#include <generated/") + h + ">"), std::string::npos) << out;
+		EXPECT_NE(out.find(std::string("#include <protocol/") + h + ">"), std::string::npos) << out;
 	}
 }
 
@@ -1436,7 +1436,7 @@ TEST_F(Protogen, ExternalWithUnderlyingAcceptsAsCast) {
 		"types": {
 			"DbcEnum": {
 				"kind": "external",
-				"include": "dbcs/MemoryDefs.h",
+				"include": "dbcreader/MemoryDefs.h",
 				"cpp_namespace": "ember::dbc::Owner",
 				"cpp_type_name": "Kind",
 				"underlying": "int32"
@@ -1462,7 +1462,7 @@ TEST_F(Protogen, ExternalWithUnderlyingUsedAsTypeIsAnAlias) {
 		"types": {
 			"Map": {
 				"kind": "external",
-				"include": "dbcs/MemoryDefs.h",
+				"include": "dbcreader/MemoryDefs.h",
 				"cpp_namespace": "ember::dbc",
 				"underlying": "uint32"
 			}
@@ -1481,7 +1481,7 @@ TEST_F(Protogen, ExternalWithUnderlyingUsedAsTypeIsAnAlias) {
 
 	EXPECT_NE(out.content.find("std::uint32_t map;"), std::string::npos) << out.content;
 	EXPECT_EQ(out.content.find("ember::dbc::Map"), std::string::npos) << out.content;
-	EXPECT_EQ(out.content.find("#include <dbcs/MemoryDefs.h>"), std::string::npos) << out.content;
+	EXPECT_EQ(out.content.find("#include <dbcreader/MemoryDefs.h>"), std::string::npos) << out.content;
 	EXPECT_NE(out.content.find("stream >> map;"), std::string::npos) << out.content;
 	EXPECT_NE(out.content.find("stream << map;"), std::string::npos) << out.content;
 }
@@ -1493,7 +1493,7 @@ TEST_F(Protogen, AliasExternalUsableInCondition) {
 		"types": {
 			"Map": {
 				"kind": "external",
-				"include": "dbcs/MemoryDefs.h",
+				"include": "dbcreader/MemoryDefs.h",
 				"cpp_namespace": "ember::dbc",
 				"underlying": "uint32"
 			}

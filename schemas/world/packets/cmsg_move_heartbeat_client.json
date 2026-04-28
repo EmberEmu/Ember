@@ -1,8 +1,0 @@
-{
-	"name": "MoveHeartbeatClient",
-	"opcode": "cmsg_move_heartbeat_client",
-	"direction": "client",
-	"fields": [
-		{ "name": "info", "type": "MovementInfo" }
-	]
-}

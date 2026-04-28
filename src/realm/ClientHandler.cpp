@@ -15,7 +15,6 @@
 #include "states/StateJumpTables.h"
 #include <logger/Logger.h>
 #include <protocol/Deserialise.h>
-#include <protocol/Packets.h>
 #include <protocol/server/Pong.h>
 #include <shared/Realm.h>
 #include <shared/utility/TickCount.h>

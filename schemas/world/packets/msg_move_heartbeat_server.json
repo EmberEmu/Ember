@@ -1,0 +1,10 @@
+{
+	"name": "MoveHeartbeat",
+	"opcode": "msg_move_heartbeat",
+	"alias": "msg_move_heartbeat_s",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid", "type": "PackedGuid" },
+		{ "name": "info", "type": "MovementInfo" }
+	]
+}

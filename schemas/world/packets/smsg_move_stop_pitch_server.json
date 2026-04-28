@@ -1,9 +1,0 @@
-{
-	"name": "MoveStopPitchServer",
-	"opcode": "smsg_move_stop_pitch_server",
-	"direction": "server",
-	"fields": [
-		{ "name": "guid", "type": "PackedGuid" },
-		{ "name": "info", "type": "MovementInfo" }
-	]
-}

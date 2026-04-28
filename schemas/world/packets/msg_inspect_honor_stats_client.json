@@ -1,0 +1,9 @@
+{
+	"name": "InspectHonorStats",
+	"opcode": "msg_inspect_honor_stats",
+	"alias": "msg_inspect_honor_stats_c",
+	"direction": "client",
+	"fields": [
+		{ "name": "guid", "type": "uint64" }
+	]
+}

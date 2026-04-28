@@ -11,7 +11,7 @@
 #include "ConfigStore.h"
 #include <logger/LoggerFwd.h>
 #include <CharacterClientStub.h>
-#include <protocol/ResultCodes.h>
+#include <protocol/types/Result.h>
 #include <shared/database/objects/Character.h>
 
 namespace ember::realm {

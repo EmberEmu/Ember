@@ -9,14 +9,15 @@
 #pragma once
 
 #include <protocol/Concepts.h>
+#include <protocol/Packet.h>
 #include <protocol/StreamResult.h>
-#include <protocol/ResultCodes.h>
+#include <protocol/types/Result.h>
 #include <stdexcept>
 #include <cstdint>
 
 namespace ember::protocol::server {
 
-struct ChannelNotify final {
+struct ChannelNotify_Temp final {
 	enum ChatNotify : std::uint8_t {
 		/// %s joined channel,
 		JOINED_NOTICE = 0x00,

@@ -1,0 +1,9 @@
+{
+	"name": "MoveStartBackward",
+	"opcode": "msg_move_start_backward",
+	"alias": "msg_move_start_backward_c",
+	"direction": "client",
+	"fields": [
+		{ "name": "info", "type": "MovementInfo" }
+	]
+}

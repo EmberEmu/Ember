@@ -1,0 +1,10 @@
+{
+	"name": "MoveFallLand",
+	"opcode": "msg_move_fall_land",
+	"alias": "msg_move_fall_land_s",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid", "type": "PackedGuid" },
+		{ "name": "info", "type": "MovementInfo" }
+	]
+}

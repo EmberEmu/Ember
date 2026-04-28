@@ -9,6 +9,7 @@
 #pragma once
 
 #include <protocol/Concepts.h>
+#include <protocol/Packet.h>
 #include <protocol/StreamResult.h>
 #include <Character_generated.h>
 #include <shared/database/objects/Character.h>
@@ -53,3 +54,9 @@ struct CharacterCreate final {
 };
 
 } // client, protocol, ember
+
+namespace ember::protocol {
+
+using cmsg_char_create = ClientPacket<ClientOpcode::cmsg_char_create, client::CharacterCreate>;
+
+} // protocol, ember
