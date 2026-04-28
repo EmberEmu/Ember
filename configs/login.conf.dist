@@ -24,7 +24,7 @@ path = Survey.mpq # path to survey MPQ file
 
 [network]
 interface = 0.0.0.0  # IPv4 or IPv6 bind interface - use 0.0.0.0 for all IPv4 interfaces
-port = 3724          # Port for the server to listen to client connections on
+port = 3724          # Port for the server to listen for client connections on
 tcp_no_delay = true  # Toggle Nagle's algorithm
 
 [spark]
