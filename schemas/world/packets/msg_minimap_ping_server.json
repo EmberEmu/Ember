@@ -1,0 +1,11 @@
+{
+	"name": "MinimapPing",
+	"opcode": "msg_minimap_ping",
+	"alias": "msg_minimap_ping_s",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid",       "type": "uint64" },
+		{ "name": "position_x", "type": "float" },
+		{ "name": "position_y", "type": "float" }
+	]
+}

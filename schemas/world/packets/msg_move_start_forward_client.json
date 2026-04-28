@@ -1,0 +1,9 @@
+{
+	"name": "MoveStartForward",
+	"opcode": "msg_move_start_forward",
+	"alias": "msg_move_start_forward_c",
+	"direction": "client",
+	"fields": [
+		{ "name": "info", "type": "MovementInfo" }
+	]
+}

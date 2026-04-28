@@ -1,0 +1,9 @@
+{
+	"name": "MoveSetRunMode",
+	"opcode": "msg_move_set_run_mode",
+	"alias": "msg_move_set_run_mode_c",
+	"direction": "client",
+	"fields": [
+		{ "name": "info", "type": "MovementInfo" }
+	]
+}

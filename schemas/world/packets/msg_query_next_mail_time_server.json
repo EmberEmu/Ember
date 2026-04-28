@@ -1,0 +1,9 @@
+{
+	"name": "QueryNextMailTime",
+	"opcode": "msg_query_next_mail_time",
+	"alias": "msg_query_next_mail_time_s",
+	"direction": "server",
+	"fields": [
+		{ "name": "next_time", "type": "float" }
+	]
+}

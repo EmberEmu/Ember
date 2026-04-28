@@ -1,0 +1,9 @@
+{
+	"name": "MoveStartPitchDown",
+	"opcode": "msg_move_start_pitch_down",
+	"alias": "msg_move_start_pitch_down_c",
+	"direction": "client",
+	"fields": [
+		{ "name": "info", "type": "MovementInfo" }
+	]
+}

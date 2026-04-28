@@ -1,8 +1,0 @@
-{
-	"name": "QueryNextMailTimeServer",
-	"opcode": "smsg_query_next_mail_time_server",
-	"direction": "server",
-	"fields": [
-		{ "name": "unread_mails", "type": "float" }
-	]
-}

@@ -1,9 +1,0 @@
-{
-	"name": "MoveStartForwardServer",
-	"opcode": "smsg_move_start_forward_server",
-	"direction": "server",
-	"fields": [
-		{ "name": "guid", "type": "PackedGuid" },
-		{ "name": "info", "type": "MovementInfo" }
-	]
-}

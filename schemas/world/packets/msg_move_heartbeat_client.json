@@ -1,0 +1,9 @@
+{
+	"name": "MoveHeartbeat",
+	"opcode": "msg_move_heartbeat",
+	"alias": "msg_move_heartbeat_c",
+	"direction": "client",
+	"fields": [
+		{ "name": "info", "type": "MovementInfo" }
+	]
+}

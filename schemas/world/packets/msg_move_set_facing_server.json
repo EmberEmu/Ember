@@ -1,0 +1,10 @@
+{
+	"name": "MoveSetFacing",
+	"opcode": "msg_move_set_facing",
+	"alias": "msg_move_set_facing_s",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid", "type": "PackedGuid" },
+		{ "name": "info", "type": "MovementInfo" }
+	]
+}

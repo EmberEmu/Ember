@@ -9,6 +9,7 @@
 #pragma once
 
 #include <protocol/Concepts.h>
+#include <protocol/Packet.h>
 #include <protocol/StreamResult.h>
 #include <spark/buffers/Shared.h>
 #include <spark/buffers/StringAdaptors.h>
@@ -100,3 +101,9 @@ struct CharacterEnum final {
 };
 
 } // server, protocol, ember
+
+namespace ember::protocol {
+
+using smsg_char_enum = ServerPacket<ServerOpcode::smsg_char_enum, server::CharacterEnum>;
+
+} // protocol, ember

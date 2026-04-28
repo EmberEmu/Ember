@@ -1,8 +1,0 @@
-{
-	"name": "MoveSetPitchClient",
-	"opcode": "cmsg_move_set_pitch_client",
-	"direction": "client",
-	"fields": [
-		{ "name": "info", "type": "MovementInfo" }
-	]
-}

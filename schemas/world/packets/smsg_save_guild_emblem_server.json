@@ -1,8 +1,0 @@
-{
-	"name": "SaveGuildEmblemServer",
-	"opcode": "smsg_save_guild_emblem_server",
-	"direction": "server",
-	"fields": [
-		{ "name": "result", "type": "GuildEmblemResult" }
-	]
-}

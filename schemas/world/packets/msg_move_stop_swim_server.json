@@ -1,0 +1,10 @@
+{
+	"name": "MoveStopSwim",
+	"opcode": "msg_move_stop_swim",
+	"alias": "msg_move_stop_swim_s",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid", "type": "PackedGuid" },
+		{ "name": "info", "type": "MovementInfo" }
+	]
+}

@@ -1,0 +1,10 @@
+{
+	"name": "MoveStop",
+	"opcode": "msg_move_stop",
+	"alias": "msg_move_stop_s",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid", "type": "PackedGuid" },
+		{ "name": "info", "type": "MovementInfo" }
+	]
+}

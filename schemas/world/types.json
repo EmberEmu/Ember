@@ -94,31 +94,31 @@
 			"underlying": "uint32",
 			"cpp_namespace": "ember::protocol",
 			"values": {
-				"none":             0,
-				"forward":          1,
-				"backward":         2,
-				"strafe_left":      4,
-				"strafe_right":     8,
-				"turn_left":        16,
-				"turn_right":       32,
-				"pitch_up":         64,
-				"pitch_down":       128,
-				"walk_mode":        256,
-				"on_transport":     512,
-				"levitating":       1024,
-				"fixed_z":          2048,
-				"root":             4096,
-				"jumping":          8192,
-				"fallingfar":       16384,
-				"swimming":         2097152,
-				"spline_enabled":   4194304,
-				"can_fly":          8388608,
-				"flying":           16777216,
-				"ontransport":      33554432,
-				"spline_elevation": 67108864,
-				"waterwalking":     268435456,
-				"safe_fall":        536870912,
-				"hover":            1073741824
+				"mf_none":             0,
+				"mf_forward":          1,
+				"mf_backward":         2,
+				"mf_strafe_left":      4,
+				"mf_strafe_right":     8,
+				"mf_turn_left":        16,
+				"mf_turn_right":       32,
+				"mf_pitch_up":         64,
+				"mf_pitch_down":       128,
+				"mf_walk_mode":        256,
+				"mf_on_transport":     512,
+				"mf_levitating":       1024,
+				"mf_fixed_z":          2048,
+				"mf_root":             4096,
+				"mf_jumping":          8192,
+				"mf_fallingfar":       16384,
+				"mf_swimming":         2097152,
+				"mf_spline_enabled":   4194304,
+				"mf_can_fly":          8388608,
+				"mf_flying":           16777216,
+				"mf_ontransport":      33554432,
+				"mf_spline_elevation": 67108864,
+				"mf_waterwalking":     268435456,
+				"mf_safe_fall":        536870912,
+				"mf_hover":            1073741824
 			}
 		},
 		"ChatType": {
@@ -188,7 +188,7 @@
 		},
 		"CinematicSequence": {
 			"kind": "external",
-			"include": "dbcs/MemoryDefs.h",
+			"include": "dbcreader/MemoryDefs.h",
 			"cpp_namespace": "ember::dbc",
 			"cpp_type_name": "CinematicSequences",
 			"underlying": "uint32"
@@ -236,14 +236,14 @@
 				{ "name": "orientation", "type": "float" },
 				{
 					"type": "group",
-					"when": { "op": "has_flag", "field": "flags", "value": "on_transport" },
+					"when": { "op": "has_flag", "field": "flags", "value": "mf_on_transport" },
 					"fields": [
 						{ "name": "transport", "type": "TransportInfo" }
 					]
 				},
 				{
 					"type": "group",
-					"when": { "op": "has_flag", "field": "flags", "value": "swimming" },
+					"when": { "op": "has_flag", "field": "flags", "value": "mf_swimming" },
 					"fields": [
 						{ "name": "pitch", "type": "float" }
 					]
@@ -251,7 +251,7 @@
 				{ "name": "fall_time", "type": "float" },
 				{
 					"type": "group",
-					"when": { "op": "has_flag", "field": "flags", "value": "jumping" },
+					"when": { "op": "has_flag", "field": "flags", "value": "mf_jumping" },
 					"fields": [
 						{ "name": "z_speed",   "type": "float" },
 						{ "name": "cos_angle", "type": "float" },
@@ -261,7 +261,7 @@
 				},
 				{
 					"type": "group",
-					"when": { "op": "has_flag", "field": "flags", "value": "spline_elevation" },
+					"when": { "op": "has_flag", "field": "flags", "value": "mf_spline_elevation" },
 					"fields": [
 						{ "name": "spline_elevation", "type": "float" }
 					]
@@ -326,14 +326,14 @@
 		},
 		"Race": {
 			"kind": "external",
-			"include": "dbcs/MemoryDefs.h",
+			"include": "dbcreader/MemoryDefs.h",
 			"cpp_namespace": "ember::dbc",
 			"cpp_type_name": "ChrRaces",
 			"underlying": "uint8"
 		},
 		"Class": {
 			"kind": "external",
-			"include": "dbcs/MemoryDefs.h",
+			"include": "dbcreader/MemoryDefs.h",
 			"cpp_namespace": "ember::dbc",
 			"cpp_type_name": "ChrClasses",
 			"underlying": "uint8"
@@ -350,14 +350,14 @@
 		},
 		"Area": {
 			"kind": "external",
-			"include": "dbcs/MemoryDefs.h",
+			"include": "dbcreader/MemoryDefs.h",
 			"cpp_namespace": "ember::dbc",
 			"cpp_type_name": "AreaTable",
 			"underlying": "uint32"
 		},
 		"Map": {
 			"kind": "external",
-			"include": "dbcs/MemoryDefs.h",
+			"include": "dbcreader/MemoryDefs.h",
 			"cpp_namespace": "ember::dbc",
 			"underlying": "uint32"
 		},
@@ -366,12 +366,12 @@
 			"underlying": "uint32",
 			"cpp_namespace": "ember::protocol",
 			"values": {
-				"none":                0,
-				"locked_for_transfer": 4,
-				"hide_helm":           1024,
-				"hide_cloak":          2048,
-				"ghost":               8192,
-				"rename":              16384
+				"chf_none":                0,
+				"chf_locked_for_transfer": 4,
+				"chf_hide_helm":           1024,
+				"chf_hide_cloak":          2048,
+				"chf_ghost":               8192,
+				"chf_rename":              16384
 			}
 		},
 		"InventoryType": {
@@ -423,14 +423,14 @@
 			"underlying": "uint8",
 			"cpp_namespace": "ember::protocol",
 			"values": {
-				"none":    0,
-				"custom":  1,
-				"trade":   4,
-				"not_lfg": 8,
-				"general": 16,
-				"city":    32,
-				"lfg":     64,
-				"voice":   128
+				"cflag_none":    0,
+				"cflag_custom":  1,
+				"cflag_trade":   4,
+				"cflag_not_lfg": 8,
+				"cflag_general": 16,
+				"cflag_city":    32,
+				"cflag_lfg":     64,
+				"cflag_voice":   128
 			}
 		},
 		"ChannelMemberFlags": {
@@ -438,13 +438,13 @@
 			"underlying": "uint8",
 			"cpp_namespace": "ember::protocol",
 			"values": {
-				"none":            0,
-				"owner":           1,
-				"moderator":       4,
-				"voiced":          8,
-				"muted":           16,
-				"custom":          32,
-				"microphone_mute": 64
+				"cmflag_none":            0,
+				"cmflag_owner":           1,
+				"cmflag_moderator":       4,
+				"cmflag_voiced":          8,
+				"cmflag_muted":           16,
+				"cmflag_custom":          32,
+				"cmflag_microphone_mute": 64
 			}
 		},
 		"ChannelMember": {
@@ -611,7 +611,7 @@
 				{ "name": "name",   "type": "CString" },
 				{ "name": "rank",   "type": "uint32" },
 				{ "name": "level",  "type": "uint8" },
-				{ "name": "class",  "type": "Class" },
+				{ "name": "class_", "type": "Class" },
 				{ "name": "area",   "type": "Area" },
 				{
 					"type": "group",
@@ -978,39 +978,39 @@
 			"underlying": "uint32",
 			"cpp_namespace": "ember::protocol",
 			"values": {
-				"none":         0,
-				"done":         1,
-				"falling":      2,
-				"unknown3":     4,
-				"unknown4":     8,
-				"unknown5":     16,
-				"unknown6":     32,
-				"unknown7":     64,
-				"unknown8":     128,
-				"run_mode":     256,
-				"flying":       512,
-				"no_spline":    1024,
-				"unknown12":    2048,
-				"unknown13":    4096,
-				"unknown14":    8192,
-				"unknown15":    16384,
-				"unknown16":    32768,
-				"final_point":  65536,
-				"final_target": 131072,
-				"final_angle":  262144,
-				"unknown19":    524288,
-				"cyclic":       1048576,
-				"enter_cycle":  2097152,
-				"frozen":       4194304,
-				"unknown23":    8388608,
-				"unknown24":    16777216,
-				"unknown25":    33554432,
-				"unknown26":    67108864,
-				"unknown27":    134217728,
-				"unknown28":    268435456,
-				"unknown29":    536870912,
-				"unknown30":    1073741824,
-				"unknown31":    2147483648
+				"sf_none":         0,
+				"sf_done":         1,
+				"sf_falling":      2,
+				"sf_unknown3":     4,
+				"sf_unknown4":     8,
+				"sf_unknown5":     16,
+				"sf_unknown6":     32,
+				"sf_unknown7":     64,
+				"sf_unknown8":     128,
+				"sf_run_mode":     256,
+				"sf_flying":       512,
+				"sf_no_spline":    1024,
+				"sf_unknown12":    2048,
+				"sf_unknown13":    4096,
+				"sf_unknown14":    8192,
+				"sf_unknown15":    16384,
+				"sf_unknown16":    32768,
+				"sf_final_point":  65536,
+				"sf_final_target": 131072,
+				"sf_final_angle":  262144,
+				"sf_unknown19":    524288,
+				"sf_cyclic":       1048576,
+				"sf_enter_cycle":  2097152,
+				"sf_frozen":       4194304,
+				"sf_unknown23":    8388608,
+				"sf_unknown24":    16777216,
+				"sf_unknown25":    33554432,
+				"sf_unknown26":    67108864,
+				"sf_unknown27":    134217728,
+				"sf_unknown28":    268435456,
+				"sf_unknown29":    536870912,
+				"sf_unknown30":    1073741824,
+				"sf_unknown31":    2147483648
 			}
 		},
 		"StabledPet": {
@@ -1181,23 +1181,23 @@
 			"underlying": "uint32",
 			"cpp_namespace": "ember::protocol",
 			"values": {
-				"none":              0,
-				"no_pickup":         1,
-				"conjured":          2,
-				"lootable":          4,
-				"deprecated":        16,
-				"indestructible":    32,
-				"player_cast":       64,
-				"no_equip_cooldown": 128,
-				"int_bonus_instead": 256,
-				"wrapper":           512,
-				"ignore_bag_space":  1024,
-				"party_loot":        2048,
-				"charter":           8192,
-				"has_text":          16384,
-				"no_disenchant":     32768,
-				"real_duration":     65536,
-				"no_creator":        131072
+				"if_none":              0,
+				"if_no_pickup":         1,
+				"if_conjured":          2,
+				"if_lootable":          4,
+				"if_deprecated":        16,
+				"if_indestructible":    32,
+				"if_player_cast":       64,
+				"if_no_equip_cooldown": 128,
+				"if_int_bonus_instead": 256,
+				"if_wrapper":           512,
+				"if_ignore_bag_space":  1024,
+				"if_party_loot":        2048,
+				"if_charter":           8192,
+				"if_has_text":          16384,
+				"if_no_disenchant":     32768,
+				"if_real_duration":     65536,
+				"if_no_creator":        131072
 			}
 		},
 		"AllowedClass": {
@@ -1205,16 +1205,16 @@
 			"underlying": "uint32",
 			"cpp_namespace": "ember::protocol",
 			"values": {
-				"all":     0,
-				"warrior": 1,
-				"paladin": 2,
-				"hunter":  4,
-				"rogue":   8,
-				"priest":  16,
-				"shaman":  64,
-				"mage":    128,
-				"warlock": 256,
-				"druid":   1024
+				"ac_all":     0,
+				"ac_warrior": 1,
+				"ac_paladin": 2,
+				"ac_hunter":  4,
+				"ac_rogue":   8,
+				"ac_priest":  16,
+				"ac_shaman":  64,
+				"ac_mage":    128,
+				"ac_warlock": 256,
+				"ac_druid":   1024
 			}
 		},
 		"AllowedRace": {
@@ -1349,9 +1349,9 @@
 					"type": "group",
 					"when": { "op": "neq", "field": "status", "value": "offline" },
 					"fields": [
-						{ "name": "area",  "type": "Area" },
-						{ "name": "level", "type": "uint32" },
-						{ "name": "class", "type": "uint32" }
+						{ "name": "area",   "type": "Area" },
+						{ "name": "level",  "type": "uint32" },
+						{ "name": "class_", "type": "uint32" }
 					]
 				}
 			]
@@ -1406,29 +1406,29 @@
 			"underlying": "uint32",
 			"cpp_namespace": "ember::protocol",
 			"values": {
-				"none":           0,
-				"status":         1,
-				"cur_hp":         2,
-				"max_hp":         4,
-				"power_type":     8,
-				"cur_power":      16,
-				"max_power":      32,
-				"level":          64,
-				"zone":           128,
-				"position":       256,
-				"auras":          512,
-				"auras_2":        1024,
-				"pet_guid":       2048,
-				"pet_name":       4096,
-				"pet_model_id":   8192,
-				"pet_cur_hp":     16384,
-				"pet_max_hp":     32768,
-				"pet_power_type": 65536,
-				"pet_cur_power":  131072,
-				"pet_max_power":  262144,
-				"pet_auras":      524288,
-				"pet_auras_2":    1048576,
-				"mode_offline":   268435456
+				"guf_none":           0,
+				"guf_status":         1,
+				"guf_cur_hp":         2,
+				"guf_max_hp":         4,
+				"guf_power_type":     8,
+				"guf_cur_power":      16,
+				"guf_max_power":      32,
+				"guf_level":          64,
+				"guf_zone":           128,
+				"guf_position":       256,
+				"guf_auras":          512,
+				"guf_auras_2":        1024,
+				"guf_pet_guid":       2048,
+				"guf_pet_name":       4096,
+				"guf_pet_model_id":   8192,
+				"guf_pet_cur_hp":     16384,
+				"guf_pet_max_hp":     32768,
+				"guf_pet_power_type": 65536,
+				"guf_pet_cur_power":  131072,
+				"guf_pet_max_power":  262144,
+				"guf_pet_auras":      524288,
+				"guf_pet_auras_2":    1048576,
+				"guf_mode_offline":   268435456
 			}
 		},
 		"GroupMemberOnlineStatus": {
@@ -1436,20 +1436,20 @@
 			"underlying": "uint8",
 			"cpp_namespace": "ember::protocol",
 			"values": {
-				"offline":  0,
-				"online":   1,
-				"pvp":      2,
-				"dead":     4,
-				"ghost":    8,
-				"pvp_ffa":  16,
-				"zone_out": 32,
-				"afk":      64,
-				"dnd":      128
+				"status_offline":  0,
+				"status_online":   1,
+				"status_pvp":      2,
+				"status_dead":     4,
+				"status_ghost":    8,
+				"status_pvp_ffa":  16,
+				"status_zone_out": 32,
+				"status_afk":      64,
+				"status_dnd":      128
 			}
 		},
 		"Power": {
 			"kind": "external",
-			"include": "dbcs/MemoryDefs.h",
+			"include": "dbcreader/MemoryDefs.h",
 			"cpp_namespace": "ember::dbc::ChrClasses",
 			"cpp_type_name": "PowerType",
 			"underlying": "int32"
@@ -1458,12 +1458,12 @@
 			"kind": "struct",
 			"cpp_namespace": "ember::protocol",
 			"fields": [
-				{ "name": "name",  "type": "CString" },
-				{ "name": "guild", "type": "CString" },
-				{ "name": "level", "type": "uint32" },
-				{ "name": "class", "type": "uint32" },
-				{ "name": "race",  "type": "uint32" },
-				{ "name": "area",  "type": "Area" }
+				{ "name": "name",   "type": "CString" },
+				{ "name": "guild",  "type": "CString" },
+				{ "name": "level",  "type": "uint32" },
+				{ "name": "class_", "type": "uint32" },
+				{ "name": "race",   "type": "uint32" },
+				{ "name": "area",   "type": "Area" }
 			]
 		},
 		"InitialSpell": {
@@ -1996,16 +1996,16 @@
 			"underlying": "uint16",
 			"cpp_namespace": "ember::protocol",
 			"values": {
-				"none":             0,
-				"hidden_combatlog": 1,
-				"unknown2":         2,
-				"unknown3":         4,
-				"unknown4":         8,
-				"unknown5":         16,
-				"ammo":             32,
-				"unknown7":         64,
-				"unknown8":         128,
-				"unknown9":         256
+				"cf_none":             0,
+				"cf_hidden_combatlog": 1,
+				"cf_unknown2":         2,
+				"cf_unknown3":         4,
+				"cf_unknown4":         8,
+				"cf_unknown5":         16,
+				"cf_ammo":             32,
+				"cf_unknown7":         64,
+				"cf_unknown8":         128,
+				"cf_unknown9":         256
 			}
 		},
 		"SpellMiss": {
@@ -2071,7 +2071,7 @@
 		},
 		"CreatureFamily": {
 			"kind": "external",
-			"include": "dbcs/MemoryDefs.h",
+			"include": "dbcreader/MemoryDefs.h",
 			"cpp_namespace": "ember::dbc",
 			"underlying": "uint8"
 		},
@@ -2082,7 +2082,7 @@
 				{ "name": "guid",                   "type": "uint64" },
 				{ "name": "name",                   "type": "CString" },
 				{ "name": "race",                   "type": "Race" },
-				{ "name": "class",                  "type": "Class" },
+				{ "name": "class_",                 "type": "Class" },
 				{ "name": "gender",                 "type": "Gender" },
 				{ "name": "skin",                   "type": "uint8" },
 				{ "name": "face",                   "type": "uint8" },
@@ -2106,7 +2106,7 @@
 		},
 		"Language": {
 			"kind": "external",
-			"include": "dbcs/MemoryDefs.h",
+			"include": "dbcreader/MemoryDefs.h",
 			"cpp_namespace": "ember::dbc",
 			"cpp_type_name": "Languages",
 			"underlying": "uint32"
@@ -2167,7 +2167,7 @@
 		},
 		"PageTextMaterial": {
 			"kind": "external",
-			"include": "dbcs/MemoryDefs.h",
+			"include": "dbcreader/MemoryDefs.h",
 			"cpp_namespace": "ember::dbc",
 			"underlying": "uint8"
 		},
@@ -2188,7 +2188,7 @@
 		},
 		"ItemSet": {
 			"kind": "external",
-			"include": "dbcs/MemoryDefs.h",
+			"include": "dbcreader/MemoryDefs.h",
 			"cpp_namespace": "ember::dbc",
 			"underlying": "uint16"
 		},
@@ -2221,7 +2221,7 @@
 		},
 		"AuctionHouse": {
 			"kind": "external",
-			"include": "dbcs/MemoryDefs.h",
+			"include": "dbcreader/MemoryDefs.h",
 			"cpp_namespace": "ember::dbc",
 			"underlying": "uint32"
 		},
@@ -2365,7 +2365,7 @@
 		},
 		"Emote": {
 			"kind": "external",
-			"include": "dbcs/MemoryDefs.h",
+			"include": "dbcreader/MemoryDefs.h",
 			"cpp_namespace": "ember::dbc",
 			"cpp_type_name": "Emotes",
 			"underlying": "uint32"
@@ -2653,8 +2653,8 @@
 			"underlying": "uint8",
 			"cpp_namespace": "ember::protocol",
 			"values": {
-				"default": 0,
-				"debug":   1
+				"default_fmt": 0,
+				"debug":       1
 			}
 		},
 		"DuelWinnerReason": {
@@ -2696,7 +2696,7 @@
 			"values": {
 				"db_error": 0,
 				"has_text": 6,
-				"default":  10
+				"default_status": 10
 			}
 		},
 		"GmTicketEscalationStatus": {
@@ -3019,7 +3019,7 @@
 		},
 		"ItemClass": {
 			"kind": "external",
-			"include": "dbcs/MemoryDefs.h",
+			"include": "dbcreader/MemoryDefs.h",
 			"cpp_namespace": "ember::dbc::ItemClass",
 			"cpp_type_name": "Class",
 			"underlying": "int32"
@@ -3586,7 +3586,7 @@
 		},
 		"Talent": {
 			"kind": "external",
-			"include": "dbcs/MemoryDefs.h",
+			"include": "dbcreader/MemoryDefs.h",
 			"cpp_namespace": "ember::dbc",
 			"underlying": "uint32"
 		},

@@ -15,5 +15,5 @@
 #pragma once
 
 ## for header in headers
-#include <generated/{{ header }}>
+#include <protocol/{{ header }}>
 ## endfor

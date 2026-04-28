@@ -1,9 +1,0 @@
-{
-	"name": "MoveStartStrafeLeftServer",
-	"opcode": "smsg_move_start_strafe_left_server",
-	"direction": "server",
-	"fields": [
-		{ "name": "guid", "type": "PackedGuid" },
-		{ "name": "info", "type": "MovementInfo" }
-	]
-}

@@ -19,7 +19,7 @@ function(build_messages
          message_schema)
 
     set(protogen "protogen")
-    set(output_root "${CMAKE_BINARY_DIR}/generated")
+    set(output_root "${CMAKE_BINARY_DIR}/protocol")
     set(templates_dir "$<TARGET_PROPERTY:${protogen},PROTOGEN_TEMPLATES_DIR>")
 
     file(GLOB message_jsons CONFIGURE_DEPENDS "${messages_dir}/*.json")

@@ -9,7 +9,7 @@
 #pragma once
 
 #include <CharacterServiceStub.h>
-#include <protocol/ResultCodes.h>
+#include <protocol/types/Result.h>
 #include <shared/database/objects/Character.h>
 #include <span>
 

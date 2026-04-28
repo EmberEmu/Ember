@@ -15,14 +15,7 @@
 #include <logger/CommandSink.h>
 #include <protocol/Deserialise.h>
 #include <protocol/Packets.h>
-#include <protocol/client/BattlefieldStatus.h>
-#include <protocol/client/JoinChannel.h>
-#include <protocol/client/NameQuery.h>
-#include <protocol/client/UpdateAccountData.h>
-#include <protocol/client/ZoneUpdate.h>
-#include <protocol/client/ItemQuerySingle.h>
-#include <protocol/server/BattlefieldStatus.h>
-#include <protocol/server/MessageChat.h>
+#include <protocol/server/UpdateObject.h>
 #include <chrono>
 #include <format>
 #include <span>
@@ -64,11 +57,11 @@ void initiate_player_login(ClientContext& ctx, const PlayerLogin& event) {
 	ctx.send(cinematic);
 
 	protocol::smsg_login_verify_world verify_world;
-	verify_world->map_id = 0;
+	verify_world->map = 0;
 	verify_world->position.x = -6240.32f;
 	verify_world->position.y = 331.033f;
 	verify_world->position.z = 382.758;
-	verify_world->position.o = 0.f;
+	verify_world->orientation = 0.f;
 	ctx.send(verify_world);
 
 	protocol::smsg_tutorial_flags tutorial_flags;
@@ -146,6 +139,7 @@ void handle_request_raid_info(ClientContext& ctx) {
 	}
 
 	protocol::smsg_raid_instance_info response;
+	response->amount_of_raid_infos = 0;
 	ctx.send(response);
 }
 
@@ -181,7 +175,7 @@ void handle_gmticket_getticket(ClientContext& ctx) {
 	}
 
 	protocol::smsg_gmticket_getticket response;
-	response->status = 0;
+	response->status = protocol::GmTicketStatus::default_status;
 	ctx.send(response);
 }
 
@@ -207,7 +201,7 @@ void handle_meetingstone_info(ClientContext& ctx) {
 
 	protocol::smsg_meetingstone_setqueue response;
 	response->area = 0;
-	response->status = 5;
+	response->status = protocol::MeetingStoneStatus::none;
 	ctx.send(response);
 }
 
@@ -222,15 +216,10 @@ void handle_move_time_skipped(ClientContext& ctx) {
 
 	// squirrel this away :)
 	packed_guid = packet->guid;
-
-	protocol::move_time_skipped_s response;
-	response->guid = packet->guid;
-	response->lag = packet->lag;
-	ctx.send(response);
 }
 
 void handle_move_fall_land(ClientContext& ctx) {
-	protocol::move_fall_land_c packet;
+	protocol::msg_move_fall_land_c packet;
 
 	if(auto result = protocol::deserialise(packet, ctx.stream()); !result) {
 		return ctx.stream_err(result);
@@ -238,7 +227,7 @@ void handle_move_fall_land(ClientContext& ctx) {
 }
 
 void handle_move_set_facing(ClientContext& ctx) {
-	protocol::move_set_facing_c packet;
+	protocol::msg_move_set_facing_c packet;
 
 	if(auto result = protocol::deserialise(packet, ctx.stream()); !result) {
 		return ctx.stream_err(result);
@@ -269,11 +258,11 @@ void handle_join_channel(ClientContext& ctx) {
 	}
 
 	protocol::smsg_channel_notify response;
-	response->type = response->YOU_JOINED_NOTICE;
-	response->name = packet->name;
+	response->notify_type = protocol::ChatNotify::you_joined_notice;
+	response->channel_name = packet->name;
 	ctx.send(response);
 
-	LOG_DEBUG(ctx.logger, "{}", response->name);
+	LOG_DEBUG(ctx.logger, "{}", response->channel_name);
 }
 
 void handle_tutorial_flag(ClientContext& ctx) {
@@ -370,8 +359,8 @@ bool handle_command(ClientContext& ctx, std::string_view message) try {
 			ctx.handler().log_redirect(type, severity);
 		} else {
 			protocol::smsg_notification resp;
-			resp->console = "Disable packet logging for yourself first - "
-			                "this would wipe out time, forwards and backwards";
+			resp->notification = "Disable packet logging for yourself first - "
+			                     "this would wipe out time, forwards and backwards";
 			ctx.send(resp);
 			return false;
 		}
@@ -385,18 +374,18 @@ bool handle_command(ClientContext& ctx, std::string_view message) try {
 }
 
 void handle_messagechat(ClientContext& ctx) {
-	message_view<protocol::cmsg_messagechat> packet;
+	protocol::cmsg_messagechat packet;
 
 	if(auto result = protocol::deserialise(packet, ctx.stream()); !result) {
 		return ctx.stream_err(result);
 	}
 
-	LOG_DEBUG(ctx.logger, "{}: {}", packet->destination, packet->message);
+	LOG_DEBUG(ctx.logger, "{}: {}", packet->channel, packet->message);
 
 	if(packet->message.starts_with(".")) {
 		if(!handle_command(ctx, packet->message)) {
 			protocol::smsg_notification resp;
-			resp->console = "Could not execute command";
+			resp->notification = "Could not execute command";
 			ctx.send(resp);
 		}
 
@@ -410,8 +399,8 @@ void handle_messagechat(ClientContext& ctx) {
 	response->player_guid = packed_guid;
 	response->player_tag = protocol::PlayerChatTag::tag_gm;
 	
-	if(packet->type == protocol::client::CHANNEL) {
-		response->channel_name = packet->destination;
+	if(packet->type == protocol::ChatType::channel) {
+		response->channel_name = packet->target_player;
 		response->player_rank = 14;
 	} else {
 		response->player_guid = packed_guid;
@@ -424,7 +413,7 @@ void handle_messagechat(ClientContext& ctx) {
 
 void handle_logout_request(ClientContext& ctx) {
 	protocol::smsg_character_login_failed response;
-	response->reason = protocol::Result::char_login_no_world;
+	response->result= protocol::Result::char_login_no_world;
 	ctx.send(response);
 	ctx.state_update(ClientState::cs_character_list);
 }
@@ -445,14 +434,14 @@ void handle_world_teleport(ClientContext& ctx) {
 	}
 
 	LOG_DEBUG(ctx.logger, "Worldport, map: {}, x: {}, y: {}, z: {}, o: {}",
-	          packet->map, packet->x, packet->y, packet->z, packet->o);
+	          packet->map, packet->position.x, packet->position.y, packet->position.z, packet->orientation);
 
 	protocol::smsg_new_world response;
-	response->map_id = packet->map;
-	response->position.x = packet->x;
-	response->position.y = packet->y;
-	response->position.z = packet->z;
-	response->position.o = packet->o;
+	response->map = packet->map;
+	response->position.x = packet->position.x;
+	response->position.y = packet->position.y;
+	response->position.z = packet->position.z;
+	response->orientation = packet->orientation;
 	ctx.send(response);
 
 	protocol::smsg_update_object update_object;
@@ -467,8 +456,8 @@ void handle_move_set_raw_position(ClientContext& ctx) {
 		return ctx.stream_err(result);
 	}
 
-	protocol::msg_move_set_raw_position_ack response;
-	ctx.send(response);
+	//protocol::msg_move_set_raw_position_ack response;
+	//ctx.send(response);
 }
 
 // everything in this file is for testing only
@@ -546,7 +535,7 @@ void handle_packet(ClientContext& ctx, protocol::ClientOpcode opcode) {
 
 void system_notification(ClientContext& ctx, std::string_view message) {
 	protocol::smsg_notification packet;
-	packet->console = message;
+	packet->notification = message;
 	ctx.send(packet);
 }
 

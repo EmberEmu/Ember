@@ -1,0 +1,10 @@
+{
+	"name": "MoveStartPitchUp",
+	"opcode": "msg_move_start_pitch_up",
+	"alias": "msg_move_start_pitch_up_s",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid", "type": "PackedGuid" },
+		{ "name": "info", "type": "MovementInfo" }
+	]
+}

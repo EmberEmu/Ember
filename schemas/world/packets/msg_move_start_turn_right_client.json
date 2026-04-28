@@ -1,0 +1,9 @@
+{
+	"name": "MoveStartTurnRight",
+	"opcode": "msg_move_start_turn_right",
+	"alias": "msg_move_start_turn_right_c",
+	"direction": "client",
+	"fields": [
+		{ "name": "info", "type": "MovementInfo" }
+	]
+}

@@ -1,9 +1,0 @@
-{
-	"name": "TalentWipeConfirmServer",
-	"opcode": "smsg_talent_wipe_confirm_server",
-	"direction": "server",
-	"fields": [
-		{ "name": "wiping_npc",     "type": "uint64" },
-		{ "name": "cost_in_copper", "type": "uint32" }
-	]
-}

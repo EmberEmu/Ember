@@ -45,6 +45,6 @@ struct {{ name }} final {
 
 namespace ember::protocol {
 
-using {{ opcode }} = {{ packet_template }}<{{ opcode_enum }}::{{ opcode }}, {{ direction }}::{{ name }}>;
+using {{ alias }} = {{ packet_template }}<{{ opcode_enum }}::{{ opcode }}, {{ direction }}::{{ name }}>;
 
 } // protocol, ember

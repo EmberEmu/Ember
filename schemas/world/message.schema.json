@@ -20,6 +20,11 @@
 			"pattern": "^(cmsg|smsg|msg)_[a-z0-9_]+$",
 			"description": "Wire opcode identifier in snake_case (e.g. smsg_login_verify_world)"
 		},
+		"alias": {
+			"type": "string",
+			"pattern": "^(cmsg|smsg|msg)_[a-z0-9_]+$",
+			"description": "Alias override to allow for the message name to be differentiated from the opcode"
+		},
 		"direction": {
 			"type": "string",
 			"enum": ["client", "server"],

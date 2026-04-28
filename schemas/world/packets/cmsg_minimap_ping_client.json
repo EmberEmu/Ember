@@ -1,9 +1,0 @@
-{
-	"name": "MinimapPingClient",
-	"opcode": "cmsg_minimap_ping_client",
-	"direction": "client",
-	"fields": [
-		{ "name": "position_x", "type": "float" },
-		{ "name": "position_y", "type": "float" }
-	]
-}

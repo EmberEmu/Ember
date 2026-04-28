@@ -3,7 +3,7 @@
 	"opcode": "smsg_login_settimespeed",
 	"direction": "server",
 	"fields": [
-		{ "name": "datetime",  "type": "uint32" },
-		{ "name": "timescale", "type": "float" }
+		{ "name": "time",  "type": "uint32" },
+		{ "name": "speed", "type": "float" }
 	]
 }

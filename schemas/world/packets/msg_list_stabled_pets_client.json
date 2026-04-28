@@ -1,0 +1,9 @@
+{
+	"name": "ListStabledPets",
+	"opcode": "msg_list_stabled_pets",
+	"alias": "msg_list_stabled_pets_c",
+	"direction": "client",
+	"fields": [
+		{ "name": "npc", "type": "uint64" }
+	]
+}

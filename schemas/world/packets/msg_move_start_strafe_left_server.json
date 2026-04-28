@@ -1,0 +1,10 @@
+{
+	"name": "MoveStartStrafeLeft",
+	"opcode": "msg_move_start_strafe_left",
+	"alias": "msg_move_start_strafe_left_s",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid", "type": "PackedGuid" },
+		{ "name": "info", "type": "MovementInfo" }
+	]
+}

@@ -22,10 +22,8 @@
 #include <logger/Logger.h>
 #include <protocol/Deserialise.h>
 #include <protocol/Packets.h>
-#include <protocol/client/CharacterRename.h>
-#include <protocol/client/PlayerLogin.h>
-#include <protocol/server/CharacterRename.h>
-#include <protocol/server/AuthResponse.h>
+#include <protocol/client/CharacterCreate.h>
+#include <protocol/server/CharacterEnum.h>
 #include <shared/utility/UTF8String.h>
 #include <memory>
 #include <vector>
@@ -151,7 +149,7 @@ void character_delete(ClientContext& ctx) {
 	const auto& uuid = ctx.handler().uuid();
 	auto& dispatcher = ctx.dispatcher;
 
-	ctx.character_rpc.delete_character(ctx.account->id, packet->id, [dispatcher, uuid](auto result) {
+	ctx.character_rpc.delete_character(ctx.account->id, packet->guid, [dispatcher, uuid](auto result) {
 		dispatcher.post(uuid, CharDeleteResponse(result));
 	});
 }
@@ -193,7 +191,7 @@ void enter(ClientContext& ctx) {
 void offline_response(ClientContext& ctx, protocol::ClientOpcode opcode) {
 	if(opcode == protocol::ClientOpcode::cmsg_player_login) {
 		protocol::smsg_character_login_failed response;
-		response->reason = protocol::Result::char_login_no_world;
+		response->result = protocol::Result::char_login_no_world;
 		ctx.send(response);
 	} else if(opcode != protocol::ClientOpcode::cmsg_cancel_trade) {
 		protocol::smsg_auth_response response;

@@ -20,8 +20,8 @@
 #include <logger/Logger.h>
 #include <protocol/server/AuthChallenge.h>
 #include <protocol/server/AuthResponse.h>
+#include <protocol/server/AddonInfo.h>
 #include <protocol/Deserialise.h>
-#include <protocol/Packets.h>
 #include <spark/buffers/pmr/Buffer.h>
 #include <shared/game/GameVersion.h>
 #include <shared/utility/EnumHelper.h>

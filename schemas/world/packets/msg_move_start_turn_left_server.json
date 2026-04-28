@@ -1,0 +1,10 @@
+{
+	"name": "MoveStartTurnLeft",
+	"opcode": "msg_move_start_turn_left",
+	"alias": "msg_move_start_turn_left_s",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid", "type": "PackedGuid" },
+		{ "name": "info", "type": "MovementInfo" }
+	]
+}

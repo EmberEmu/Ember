@@ -1,0 +1,10 @@
+{
+	"name": "MoveStopStrafe",
+	"opcode": "msg_move_stop_strafe",
+	"alias": "msg_move_stop_strafe_s",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid", "type": "PackedGuid" },
+		{ "name": "info", "type": "MovementInfo" }
+	]
+}

@@ -11,7 +11,7 @@
 		{ "name": "targets",   "type": "SpellCastTargets" },
 		{
 			"type": "group",
-			"when": { "op": "has_flag", "field": "flags", "value": "ammo" },
+			"when": { "op": "has_flag", "field": "flags", "value": "cf_ammo" },
 			"fields": [
 				{ "name": "ammo_display_id",     "type": "uint32" },
 				{ "name": "ammo_inventory_type", "type": "uint32" }

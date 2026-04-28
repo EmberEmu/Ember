@@ -1,9 +1,0 @@
-{
-	"name": "MoveFallLandServer",
-	"opcode": "smsg_move_fall_land_server",
-	"direction": "server",
-	"fields": [
-		{ "name": "guid", "type": "PackedGuid" },
-		{ "name": "info", "type": "MovementInfo" }
-	]
-}

@@ -1,0 +1,9 @@
+{
+	"name": "MoveSetFacing",
+	"opcode": "msg_move_set_facing",
+	"alias": "msg_move_set_facing_c",
+	"direction": "client",
+	"fields": [
+		{ "name": "info", "type": "MovementInfo" }
+	]
+}

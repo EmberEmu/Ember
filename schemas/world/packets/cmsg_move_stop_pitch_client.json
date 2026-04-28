@@ -1,8 +1,0 @@
-{
-	"name": "MoveStopPitchClient",
-	"opcode": "cmsg_move_stop_pitch_client",
-	"direction": "client",
-	"fields": [
-		{ "name": "info", "type": "MovementInfo" }
-	]
-}

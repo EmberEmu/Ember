@@ -1,1 +1,0 @@
-#include <generated/server/CharRename.h>

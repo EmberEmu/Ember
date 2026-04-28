@@ -1,0 +1,10 @@
+{
+	"name": "MoveJump",
+	"opcode": "msg_move_jump",
+	"alias": "msg_move_jump_s",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid", "type": "PackedGuid" },
+		{ "name": "info", "type": "MovementInfo" }
+	]
+}

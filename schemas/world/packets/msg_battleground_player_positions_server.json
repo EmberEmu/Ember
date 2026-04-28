@@ -1,0 +1,12 @@
+{
+	"name": "BattlegroundPlayerPositions",
+	"opcode": "msg_battleground_player_positions",
+	"alias": "msg_battleground_player_positions_s",
+	"direction": "server",
+	"fields": [
+		{ "name": "amount_of_teammates", "type": "uint32" },
+		{ "name": "teammates",           "type": "BattlegroundPlayerPosition", "array": {"count_field": "amount_of_teammates"} },
+		{ "name": "amount_of_carriers",  "type": "uint8" },
+		{ "name": "carriers",            "type": "BattlegroundPlayerPosition", "array": {"count_field": "amount_of_carriers"} }
+	]
+}

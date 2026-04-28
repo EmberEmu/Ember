@@ -1,0 +1,10 @@
+{
+	"name": "MoveStartBackward",
+	"opcode": "msg_move_start_backward",
+	"alias": "msg_move_start_backward_s",
+	"direction": "server",
+	"fields": [
+		{ "name": "guid", "type": "PackedGuid" },
+		{ "name": "info", "type": "MovementInfo" }
+	]
+}

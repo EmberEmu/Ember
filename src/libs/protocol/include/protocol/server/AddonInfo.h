@@ -9,8 +9,9 @@
 #pragma once
 
 #include <protocol/Concepts.h>
+#include <protocol/Packet.h>
 #include <protocol/StreamResult.h>
-#include <protocol/ResultCodes.h>
+#include <protocol/types/Result.h>
 #include <spark/buffers/Shared.h>
 #include <gsl/narrow>
 #include <array>
@@ -91,3 +92,9 @@ struct AddonInfo final {
 };
 
 } // server, protocol, ember
+
+namespace ember::protocol {
+
+using smsg_addon_info = ServerPacket<ServerOpcode::smsg_addon_info, server::AddonInfo>;
+
+} // protocol, ember

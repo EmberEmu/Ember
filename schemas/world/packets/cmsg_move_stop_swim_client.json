@@ -1,8 +1,0 @@
-{
-	"name": "MoveStopSwimClient",
-	"opcode": "cmsg_move_stop_swim_client",
-	"direction": "client",
-	"fields": [
-		{ "name": "info", "type": "MovementInfo" }
-	]
-}

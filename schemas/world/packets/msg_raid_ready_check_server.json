@@ -1,0 +1,16 @@
+{
+	"name": "RaidReadyCheck",
+	"opcode": "msg_raid_ready_check",
+	"alias": "msg_raid_ready_check_s",
+	"direction": "server",
+	"fields": [
+		{
+			"type": "group",
+			"when": { "op": "stream_not_empty" },
+			"fields": [
+				{ "name": "guid",  "type": "uint64" },
+				{ "name": "state", "type": "uint8" }
+			]
+		}
+	]
+}

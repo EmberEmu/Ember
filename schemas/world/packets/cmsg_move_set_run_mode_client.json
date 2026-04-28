@@ -1,8 +1,0 @@
-{
-	"name": "MoveSetRunModeClient",
-	"opcode": "cmsg_move_set_run_mode_client",
-	"direction": "client",
-	"fields": [
-		{ "name": "info", "type": "MovementInfo" }
-	]
-}

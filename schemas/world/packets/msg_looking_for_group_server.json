@@ -1,0 +1,9 @@
+{
+	"name": "LookingForGroup",
+	"opcode": "msg_looking_for_group",
+	"alias": "msg_looking_for_group_s",
+	"direction": "server",
+	"fields": [
+		{ "name": "unknown1", "type": "uint32" }
+	]
+}

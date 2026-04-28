@@ -1,8 +1,0 @@
-{
-	"name": "MoveStartPitchDownClient",
-	"opcode": "cmsg_move_start_pitch_down_client",
-	"direction": "client",
-	"fields": [
-		{ "name": "info", "type": "MovementInfo" }
-	]
-}

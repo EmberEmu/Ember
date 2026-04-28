@@ -104,7 +104,7 @@ void add_type_include(const std::string& type, const TypeRegistry& reg, std::set
 	const auto kind = kind_of(*def);
 
 	if(is_enum_kind(kind) || kind == "flags" || kind == "struct") {
-		out.emplace(std::format("generated/types/{}.h", type));
+		out.emplace(std::format("protocol/types/{}.h", type));
 	} else if(kind == "external") {
 		out.emplace((*def)["include"].as<std::string>());
 	}
@@ -734,6 +734,11 @@ GeneratedFile generate_message(const jsoncons::json& message,
 	const auto name = message["name"].as<std::string>();
 	const auto opcode = message["opcode"].as<std::string>();
 	const auto direction = message["direction"].as<std::string>();
+	auto alias = opcode;
+
+	if(message.contains("alias")) {
+		alias = message["alias"].as<std::string>();
+	}
 
 	WalkState state;
 	std::vector<ScopeEntry> scope;
@@ -752,6 +757,7 @@ GeneratedFile generate_message(const jsoncons::json& message,
 	data["members"] = join_lines(state.members);
 	data["read_body"] = join_lines(state.read_ops);
 	data["write_body"] = join_lines(state.write_ops);
+	data["alias"] = alias;
 
 	auto includes_json = nlohmann::json::array();
 
@@ -854,7 +860,7 @@ void collect_struct_members(const jsoncons::json& fields, const TypeRegistry& re
 			} else if(kind == "external") {
 				includes.emplace((*def)["include"].as<std::string>());
 			} else {
-				includes.emplace(std::format("generated/types/{}.h", ty));
+				includes.emplace(std::format("protocol/types/{}.h", ty));
 			}
 		};
 		register_include_for(effective);

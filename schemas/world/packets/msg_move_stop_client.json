@@ -1,0 +1,9 @@
+{
+	"name": "MoveStop",
+	"opcode": "msg_move_stop",
+	"alias": "msg_move_stop_c",
+	"direction": "client",
+	"fields": [
+		{ "name": "info", "type": "MovementInfo" }
+	]
+}

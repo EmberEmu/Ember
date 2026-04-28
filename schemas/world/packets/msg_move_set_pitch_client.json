@@ -1,0 +1,9 @@
+{
+	"name": "MoveSetPitch",
+	"opcode": "msg_move_set_pitch",
+	"alias": "msg_move_set_pitch_c",
+	"direction": "client",
+	"fields": [
+		{ "name": "info", "type": "MovementInfo" }
+	]
+}

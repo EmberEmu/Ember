@@ -1,0 +1,9 @@
+{
+	"name": "MoveStopSwim",
+	"opcode": "msg_move_stop_swim",
+	"alias": "msg_move_stop_swim_c",
+	"direction": "client",
+	"fields": [
+		{ "name": "info", "type": "MovementInfo" }
+	]
+}
