@@ -37,13 +37,10 @@
 						{ "name": "player_rank",  "type": "uint32" },
 						{ "name": "player_guid",  "type": "uint64" }
 					]
-				},
-				{
-					"when": { "op": "neq", "field": "type", "value": "channel" },
-					"fields": [
-						{ "name": "sender2", "type": "uint64" }
-					]
 				}
+			],
+			"else": [
+				{ "name": "sender2", "type": "uint64" }
 			]
 		},
 		{ "name": "message",    "type": "PrefixedString32" },
