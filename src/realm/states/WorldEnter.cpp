@@ -22,6 +22,7 @@
 #include <protocol/client/ZoneUpdate.h>
 #include <protocol/client/ItemQuerySingle.h>
 #include <protocol/server/BattlefieldStatus.h>
+#include <protocol/server/MessageChat.h>
 #include <chrono>
 #include <format>
 #include <span>
@@ -59,7 +60,7 @@ void initiate_player_login(ClientContext& ctx, const PlayerLogin& event) {
     state_ctx.character_id = event.character_id_;
 
 	protocol::smsg_trigger_cinematic cinematic;
-	cinematic->sequence_id = protocol::CinematicSequence::human;
+	cinematic->sequence_id = 84; // temp
 	ctx.send(cinematic);
 
 	protocol::smsg_login_verify_world verify_world;
@@ -93,10 +94,10 @@ void initiate_player_login(ClientContext& ctx, const PlayerLogin& event) {
 
 	protocol::smsg_messagechat motd;
 	motd->language = 0;
-	motd->type = protocol::server::SYSTEM;
+	motd->type = protocol::ChatType::system;
 	motd->message = "Welcome to a hacked together Ember test.";
 	motd->player_guid = 0;
-	motd->player_tag = protocol::server::TAG_NONE;
+	motd->player_tag = protocol::PlayerChatTag::tag_none;
 	ctx.send(motd);
 }
 
@@ -407,7 +408,7 @@ void handle_messagechat(ClientContext& ctx) {
 	response->message = packet->message;
 	response->language = 0; // universal, we don't have any learned skills in this test
 	response->player_guid = packed_guid;
-	response->player_tag = protocol::server::TAG_GM;
+	response->player_tag = protocol::PlayerChatTag::tag_gm;
 	
 	if(packet->type == protocol::client::CHANNEL) {
 		response->channel_name = packet->destination;
@@ -561,10 +562,10 @@ void log_msg(ClientContext& ctx, const LogRedirect& event) {
 
 	protocol::smsg_messagechat msg;
 	msg->language = 0;
-	msg->type = protocol::server::SYSTEM;
+	msg->type = protocol::ChatType::system;
 	msg->message = event.message;
 	msg->player_guid = 0;
-	msg->player_tag = protocol::server::TAG_NONE;
+	msg->player_tag = protocol::PlayerChatTag::tag_none;
 	ctx.send(msg);
 }
 
@@ -578,16 +579,16 @@ void system_msg(ClientContext& ctx, const SystemMessage& event) {
 	msg->language = 0;
 
 	if(event.type == SystemMessage::Type::whisper) {
-		msg->type = protocol::server::MONSTER_WHISPER;
-		msg->monster_name = "System";
+		msg->type = protocol::ChatType::monster_whisper;
+		msg->channel_name = "System";
 		msg->message = event.message;
 	} else {
-		msg->type = protocol::server::SYSTEM;
+		msg->type = protocol::ChatType::system;
 		msg->message = std::format("[SERVER] {}", event.message);
 	}
 
 	msg->player_guid = 0;
-	msg->player_tag = protocol::server::TAG_NONE;
+	msg->player_tag = protocol::PlayerChatTag::tag_none;
 	ctx.send(msg);
 }
 

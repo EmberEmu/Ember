@@ -23,6 +23,12 @@
 
 namespace ember::protogen {
 
+enum class Dir {
+	Read,
+	Write,
+	Both
+};
+
 struct WalkState {
 	std::vector<std::string> members;
 	std::set<std::string> includes;
@@ -141,7 +147,7 @@ std::string cpp_type_name(const std::string& type, const TypeRegistry& reg) {
 	return leaf;
 }
 
-std::string string_adaptor_expr(const jsoncons::json& type_def, std::string_view expr) {
+std::string string_adaptor_expr(const jsoncons::json& type_def, std::string_view expr, Dir dir) {
 	const auto encoding = type_def["encoding"].as<std::string>();
 
 	if(encoding == "null_terminated") {
@@ -150,13 +156,14 @@ std::string string_adaptor_expr(const jsoncons::json& type_def, std::string_view
 
 	const auto length_type = type_def["length_type"].as<std::string>();
 	const auto length_cpp = cpp_type_for_primitive(length_type);
+	std::string_view qualifier = (dir == Dir::Write)? "const " : "";
 
 	if(encoding == "prefixed") {
-		return std::format("spark::io::prefixed<std::string, {}>({})", length_cpp, expr);
+		return std::format("spark::io::prefixed<{}std::string, {}>({})", qualifier, length_cpp, expr);
 	}
 
 	if(encoding == "prefixed_null_terminated") {
-		return std::format("spark::io::prefixed_null_terminated<std::string, {}>({})", length_cpp, expr);
+		return std::format("spark::io::prefixed_null_terminated<{}std::string, {}>({})", qualifier, length_cpp, expr);
 	}
 
 	throw std::runtime_error(
@@ -261,8 +268,6 @@ std::string render_condition(const jsoncons::json& cond,
 std::string cpp_element_type(const std::string& type, const TypeRegistry& reg) {
 	return cpp_type_name(type, reg);
 }
-
-enum class Dir { Read, Write, Both };
 
 // Emits stream ops for a single scalar value. `dir` controls which of
 // `read_ops` / `write_ops` are appended to — helpers that build their own
@@ -370,13 +375,16 @@ void emit_scalar_stream_op(const std::string& name, const std::string& type,
 	}
 
 	if(kind == "string") {
-		const auto adaptor = string_adaptor_expr(*def, qualified);
 		if(do_read) {
+			const auto adaptor = string_adaptor_expr(*def, qualified, Dir::Read);
 			state.read_ops.emplace_back(std::format("{}stream >> {};", indent(state.read_tab), adaptor));
 		}
+
 		if(do_write) {
+			const auto adaptor = string_adaptor_expr(*def, qualified, Dir::Write);
 			state.write_ops.emplace_back(std::format("{}stream << {};", indent(state.write_tab), adaptor));
 		}
+
 		state.includes.insert("spark/buffers/StringAdaptors.h");
 		return;
 	}

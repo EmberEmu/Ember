@@ -124,7 +124,7 @@
 		"ChatType": {
 			"kind": "enum_class",
 			"underlying": "uint8",
-			"cpp_namespace": "ember::protocol::server",
+			"cpp_namespace": "ember::protocol",
 			"values": {
 				"say":                 0,
 				"party":               1,
@@ -166,7 +166,7 @@
 		"PlayerChatTag": {
 			"kind": "enum_class",
 			"underlying": "uint8",
-			"cpp_namespace": "ember::protocol::server",
+			"cpp_namespace": "ember::protocol",
 			"values": {
 				"tag_none": 0,
 				"tag_afk":  1,
@@ -177,7 +177,7 @@
 		"StatusID": {
 			"kind": "enum_class",
 			"underlying": "uint8",
-			"cpp_namespace": "ember::protocol::server",
+			"cpp_namespace": "ember::protocol",
 			"values": {
 				"none":        0,
 				"wait_queue":  1,
@@ -2361,18 +2361,6 @@
 				"forties":  3,
 				"fifties":  4,
 				"sixty":    5
-			}
-		},
-		"StatusId": {
-			"kind": "enum_class",
-			"underlying": "uint8",
-			"cpp_namespace": "ember::protocol",
-			"values": {
-				"none":        0,
-				"wait_queue":  1,
-				"wait_join":   2,
-				"in_progress": 3,
-				"wait_leave":  4
 			}
 		},
 		"Emote": {
