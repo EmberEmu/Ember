@@ -22,11 +22,11 @@
 #include <logger/Logger.h>
 #include <protocol/Deserialise.h>
 #include <protocol/client/CharEnum.h>
-#include <protocol/client/CharacterCreate.h>
+#include <protocol/client/CharCreate.h>
 #include <protocol/client/CharDelete.h>
 #include <protocol/client/CharRename.h>
 #include <protocol/client/PlayerLogin.h>
-#include <protocol/server/CharacterEnum.h>
+#include <protocol/server/CharEnum.h>
 #include <protocol/server/CharCreate.h>
 #include <protocol/server/CharDelete.h>
 #include <protocol/server/CharRename.h>

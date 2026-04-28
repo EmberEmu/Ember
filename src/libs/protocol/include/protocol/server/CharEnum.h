@@ -20,7 +20,7 @@
 
 namespace ember::protocol::server {
 
-struct CharacterEnum final {
+struct CharEnum final {
 	std::vector<Character> characters;
 
 	StreamResult read_from_stream(le_stream auto& stream) {
@@ -104,6 +104,6 @@ struct CharacterEnum final {
 
 namespace ember::protocol {
 
-using smsg_char_enum = ServerPacket<ServerOpcode::smsg_char_enum, server::CharacterEnum>;
+using smsg_char_enum = ServerPacket<ServerOpcode::smsg_char_enum, server::CharEnum>;
 
 } // protocol, ember

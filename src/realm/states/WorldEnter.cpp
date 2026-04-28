@@ -21,7 +21,7 @@
 #include <protocol/server/AccountDataTimes.h>
 #include <protocol/server/UpdateObject.h>
 #include <protocol/server/MessageChat.h>
-#include <protocol/client/Messagechat.h>
+#include <protocol/client/MessageChat.h>
 #include <protocol/server/NameQueryResponse.h>
 #include <protocol/client/NameQuery.h>
 #include <protocol/client/RequestRaidInfo.h>

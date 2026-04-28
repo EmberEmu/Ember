@@ -1,5 +1,5 @@
 {
-	"name": "Messagechat",
+	"name": "MessageChat",
 	"opcode": "cmsg_messagechat",
 	"direction": "client",
 	"fields": [

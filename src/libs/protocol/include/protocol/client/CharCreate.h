@@ -21,7 +21,7 @@
 
 namespace ember::protocol::client {
 
-struct CharacterCreate final {
+struct CharCreate final {
 	rpc::Character::CharacterTemplateT character;
 	
 	StreamResult read_from_stream(le_stream auto& stream) {
@@ -57,6 +57,6 @@ struct CharacterCreate final {
 
 namespace ember::protocol {
 
-using cmsg_char_create = ClientPacket<ClientOpcode::cmsg_char_create, client::CharacterCreate>;
+using cmsg_char_create = ClientPacket<ClientOpcode::cmsg_char_create, client::CharCreate>;
 
 } // protocol, ember

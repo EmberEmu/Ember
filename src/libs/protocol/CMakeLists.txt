@@ -8,11 +8,11 @@ set(LIBRARY_NAME protocol)
 
 set(CLIENT_MESSAGES
     include/protocol/client/AuthSession.h
-    include/protocol/client/CharacterCreate.h
+    include/protocol/client/CharCreate.h
 )
 
 set(SERVER_MESSAGES
-    include/protocol/server/CharacterEnum.h
+    include/protocol/server/CharEnum.h
     include/protocol/server/AddonInfo.h
     include/protocol/server/UpdateObject.h
     include/protocol/server/ChannelNotify.h
