@@ -29,6 +29,11 @@ enum class Dir {
 	Both
 };
 
+struct CountFieldLocal {
+	std::string local_var;
+	std::string wire_type;
+};
+
 struct WalkState {
 	std::vector<std::string> members;
 	std::set<std::string> includes;
@@ -36,13 +41,40 @@ struct WalkState {
 	std::vector<std::string> write_ops;
 	int read_tab = 2;
 	int write_tab = 2;
-	// Monotonically increasing so the loop variables and temporaries we
-	// synthesise don't collide with sibling loops / casts in the same scope.
 	int temp_counter = 0;
+	std::set<std::string> count_field_names;
+	std::unordered_map<std::string, CountFieldLocal> count_locals;
 };
 
 void walk(const jsoncons::json& fields, const TypeRegistry& reg, WalkState& state,
 		  std::vector<ScopeEntry>& scope, const std::string& prefix);
+
+void collect_count_field_names(const jsoncons::json& fields, std::set<std::string>& out) {
+	for(const auto& f : fields.array_range()) {
+		const auto type = f["type"].as<std::string>();
+
+		if(type == "group") {
+			collect_count_field_names(f["fields"], out);
+			continue;
+		}
+
+		if(type == "if_chain") {
+			for(const auto& branch : f["branches"].array_range()) {
+				collect_count_field_names(branch["fields"], out);
+			}
+
+			if(f.contains("else")) {
+				collect_count_field_names(f["else"], out);
+			}
+
+			continue;
+		}
+
+		if(f.contains("array") && f["array"].contains("count_field")) {
+			out.insert(f["array"]["count_field"].as<std::string>());
+		}
+	}
+}
 
 int current_year() {
 	const auto time = std::chrono::system_clock::now();
@@ -68,23 +100,19 @@ std::string kind_of(const jsoncons::json& def) {
 	return def["kind"].as<std::string>();
 }
 
-// A field whose `type` is an external carrying an `underlying` primitive
-// and which has no `as` cast is just a named alias — effectively `using
-// Map = std::uint32_t`. The generator treats such fields as the primitive
-// everywhere (member type, stream ops, includes, scope for conditions),
-// so the external's name is purely schematic and doesn't leak into the
-// C++ output. Externals used via `as` (inner-DBC-enum pattern) keep the
-// external's C++ type — that path goes through `emit_scalar_stream_op`'s
-// as-cast branch.
 std::string effective_field_type(const jsoncons::json& field, const TypeRegistry& reg) {
 	const auto type = field["type"].as<std::string>();
+
 	if(field.contains("as")) {
 		return type;
 	}
-	const auto* def = reg.find(type);
+
+	const auto def = reg.find(type);
+
 	if(def && kind_of(*def) == "external" && def->contains("underlying")) {
 		return (*def)["underlying"].as<std::string>();
 	}
+
 	return type;
 }
 
@@ -93,7 +121,7 @@ void add_type_include(const std::string& type, const TypeRegistry& reg, std::set
 		return;
 	}
 
-	const auto* def = reg.find(type);
+	const auto def = reg.find(type);
 
 	if(!def) {
 		throw std::runtime_error(std::format(
@@ -114,6 +142,7 @@ std::string header_namespace(const jsoncons::json& def) {
 	if(def.contains("cpp_namespace")) {
 		return def["cpp_namespace"].as<std::string>();
 	}
+
 	return "ember::protocol";
 }
 
@@ -122,7 +151,7 @@ std::string cpp_type_name(const std::string& type, const TypeRegistry& reg) {
 		return cpp_type_for_primitive(type);
 	}
 
-	const auto* def = reg.find(type);
+	const auto def = reg.find(type);
 
 	if(!def) {
 		throw std::runtime_error(std::format(
@@ -134,11 +163,7 @@ std::string cpp_type_name(const std::string& type, const TypeRegistry& reg) {
 		return "std::string";
 	}
 
-	// External types may override the emitted name with `cpp_type_name`
-	// (useful for qualified names like `ItemClass::Class` from a DBC
-	// header where the schema key must stay a plain identifier).
-	const auto leaf = def->contains("cpp_type_name")
-		? (*def)["cpp_type_name"].as<std::string>() : type;
+	const auto leaf = def->contains("cpp_type_name")? (*def)["cpp_type_name"].as<std::string>() : type;
 
 	if(def->contains("cpp_namespace")) {
 		return std::format("{}::{}", (*def)["cpp_namespace"].as<std::string>(), leaf);
@@ -222,7 +247,7 @@ std::string render_condition(const jsoncons::json& cond,
 
 	const auto field_name = cond["field"].as<std::string>();
 	const auto qualified = std::format("{}{}", prefix, field_name);
-	const auto* entry = lookup(scope, field_name);
+	const auto entry = lookup(scope, field_name);
 
 	if(!entry) {
 		throw std::runtime_error(std::format("condition references unknown field '{}'", field_name));
@@ -269,10 +294,7 @@ std::string cpp_element_type(const std::string& type, const TypeRegistry& reg) {
 	return cpp_type_name(type, reg);
 }
 
-// Emits stream ops for a single scalar value. `dir` controls which of
-// `read_ops` / `write_ops` are appended to — helpers that build their own
-// loops (e.g. until_end, which has asymmetric read vs write) use Read /
-// Write and drive each side separately.
+
 void emit_scalar_stream_op(const std::string& name, const std::string& type,
                            const std::string& as_type,
                            const TypeRegistry& reg, WalkState& state,
@@ -281,12 +303,6 @@ void emit_scalar_stream_op(const std::string& name, const std::string& type,
 	const bool do_read  = dir != Dir::Write;
 	const bool do_write = dir != Dir::Read;
 
-	// `as` cast: the wire type is primitive (enforced by validator) and the
-	// user-visible type is an enum/flags with the same underlying. Read goes
-	// via a temporary so we don't trigger the enum/flags stream overload
-	// (which would read the enum's native width, ignoring the cast). The
-	// temp name comes off `temp_counter` because `name` may be an lvalue
-	// expression like `foo.back()` that isn't a valid identifier.
 	if(!as_type.empty()) {
 		const auto wire_cpp = cpp_type_for_primitive(type);
 		const auto semantic_cpp = cpp_type_name(as_type, reg);
@@ -330,7 +346,7 @@ void emit_scalar_stream_op(const std::string& name, const std::string& type,
 		return;
 	}
 
-	const auto* def = reg.find(type);
+	const auto def = reg.find(type);
 
 	if(!def) {
 		throw std::runtime_error(
@@ -354,23 +370,20 @@ void emit_scalar_stream_op(const std::string& name, const std::string& type,
 		return;
 	}
 
+	// user-defined externals are expected to provide >> & << operator overloads (e.g. PackedGuid)
 	if(kind == "external") {
-		// Plain external: the user provides `operator>>` / `operator<<`.
-		// The alias case (external with `underlying`, referenced via
-		// `type` rather than `as`) is handled upstream — the effective
-		// type has already been substituted with the underlying primitive
-		// by the time emit gets here, so this branch sees only the
-		// hand-overloaded externals like PackedGuid.
 		if(do_read) {
 			state.read_ops.emplace_back(
 				std::format("{}stream >> {};", indent(state.read_tab), qualified)
 			);
 		}
+
 		if(do_write) {
 			state.write_ops.emplace_back(
 				std::format("{}stream << {};", indent(state.write_tab), qualified)
 			);
 		}
+
 		return;
 	}
 
@@ -390,23 +403,29 @@ void emit_scalar_stream_op(const std::string& name, const std::string& type,
 	}
 
 	if(kind == "struct") {
-		// Structs expand into per-field stream ops on both sides; there's
-		// no asymmetry to worry about, so Dir::Both is the natural choice.
-		// Callers that need one side only are emitting loops with a visible
-		// loop variable, so a struct field inside means visiting that
-		// variable's members — which must happen in both directions anyway
-		// for symmetric read/write. We honour the flag by walking the
-		// struct's fields and stripping the unwanted vector afterwards.
 		const auto read_before  = state.read_ops.size();
 		const auto write_before = state.write_ops.size();
+		auto saved_names = std::move(state.count_field_names);
+		auto saved_locals = std::move(state.count_locals);
+
+		state.count_field_names.clear();
+		state.count_locals.clear();
+		collect_count_field_names((*def)["fields"], state.count_field_names);
+
 		std::vector<ScopeEntry> nested_scope;
 		walk((*def)["fields"], reg, state, nested_scope, qualified + ".");
+
+		state.count_field_names = std::move(saved_names);
+		state.count_locals = std::move(saved_locals);
+
 		if(!do_read) {
 			state.read_ops.resize(read_before);
 		}
+
 		if(!do_write) {
 			state.write_ops.resize(write_before);
 		}
+
 		return;
 	}
 
@@ -415,20 +434,16 @@ void emit_scalar_stream_op(const std::string& name, const std::string& type,
 	);
 }
 
-// True when `stream >> arr` / `stream << arr` compiles for std::array<T,N>
-// via the built-in arithmetic / iterable stream overloads. Struct and string
-// element types don't qualify — they need explicit per-element loops.
-bool has_whole_array_stream_op(const std::string& type, const std::string& as_type,
-                               const TypeRegistry& reg) {
+bool has_whole_array_stream_op(const std::string& type, const std::string& as_type, const TypeRegistry& reg) {
 	if(!as_type.empty()) {
-		return false;  // every element needs a cast, so we always loop
+		return false;
 	}
 
 	if(is_primitive(type)) {
 		return true;
 	}
 
-	const auto* def = reg.find(type);
+	const auto def = reg.find(type);
 
 	if(!def) {
 		return false;
@@ -441,8 +456,7 @@ bool has_whole_array_stream_op(const std::string& type, const std::string& as_ty
 void emit_stream_op(const jsoncons::json& field, const std::string& type,
                     const TypeRegistry& reg, WalkState& state, const std::string& prefix) {
 	const auto name = field["name"].as<std::string>();
-	const std::string as_type =
-		field.contains("as") ? field["as"].as<std::string>() : std::string();
+	const auto as_type = field.contains("as")? field["as"].as<std::string>() : std::string();
 
 	if(!field.contains("array")) {
 		emit_scalar_stream_op(name, type, as_type, reg, state, prefix);
@@ -453,10 +467,6 @@ void emit_stream_op(const jsoncons::json& field, const std::string& type,
 	const auto qualified = prefix + name;
 
 	if(arr.contains("size")) {
-		// Primitives/enums/flags have a whole-array stream operator — fall
-		// back to that for compactness. Anything else (struct / string /
-		// `as`-cast element) needs a visible loop so the per-element ops
-		// fire for each slot.
 		if(has_whole_array_stream_op(type, as_type, reg)) {
 			state.read_ops.emplace_back(std::format("{}stream >> {};", indent(state.read_tab), qualified));
 			state.write_ops.emplace_back(std::format("{}stream << {};", indent(state.write_tab), qualified));
@@ -465,26 +475,27 @@ void emit_stream_op(const jsoncons::json& field, const std::string& type,
 		}
 
 		state.includes.insert("array");
+
 		state.read_ops.emplace_back(
 			std::format("{}for(auto& e : {}) {{", indent(state.read_tab), qualified)
 		);
+
 		state.write_ops.emplace_back(
 			std::format("{}for(const auto& e : {}) {{", indent(state.write_tab), qualified)
 		);
+
 		++state.read_tab;
 		++state.write_tab;
 		emit_scalar_stream_op("e", type, as_type, reg, state, std::string());
 		--state.read_tab;
 		--state.write_tab;
+
 		state.read_ops.emplace_back(std::format("{}}}", indent(state.read_tab)));
 		state.write_ops.emplace_back(std::format("{}}}", indent(state.write_tab)));
 		return;
 	}
 
-	// Unbounded: read until the stream is drained. Per-iteration error
-	// check so a malformed payload is surfaced immediately rather than
-	// after a possibly-unbounded loop. Writing just emits the elements —
-	// the receiver's loop will stop when the stream's out of data.
+	// read until the stream is empty
 	if(arr.contains("until_end")) {
 		state.includes.emplace("vector");
 
@@ -515,13 +526,18 @@ void emit_stream_op(const jsoncons::json& field, const std::string& type,
 		return;
 	}
 
-	// Count-prefixed vector: size held in a preceding field.
 	const auto count_field = arr["count_field"].as<std::string>();
-	const auto qualified_count = prefix + count_field;
+	const auto& count_info = state.count_locals.at(count_field);
+	const auto count_cpp = cpp_type_for_primitive(count_info.wire_type);
 	state.includes.emplace("vector");
 
+	state.write_ops.emplace_back(std::format(
+		"{}stream << static_cast<{}>({}.size());",
+		indent(state.write_tab), count_cpp, qualified
+	));
+
 	state.read_ops.emplace_back(
-		std::format("{}{}.resize({});", indent(state.read_tab), qualified, qualified_count)
+		std::format("{}{}.resize({});", indent(state.read_tab), qualified, count_info.local_var)
 	);
 
 	state.read_ops.emplace_back(
@@ -542,15 +558,68 @@ void emit_stream_op(const jsoncons::json& field, const std::string& type,
 	state.write_ops.emplace_back(std::format("{}}}", indent(state.write_tab)));
 }
 
+std::string default_initializer(const jsoncons::json& field, const TypeRegistry& reg) {
+	if(!field.contains("default")) {
+		return {};
+	}
+
+	const auto& v = field["default"];
+	const auto type = field.contains("as")
+		? field["as"].as<std::string>() : effective_field_type(field, reg);
+
+	if(is_primitive(type)) {
+		const auto info = type_map.at(type);
+
+		if(info.second == TypeInfo::integral) {
+			return std::format("{{{}}}", v.as<std::int64_t>());
+		}
+
+		if(info.second == TypeInfo::boolean) {
+			return v.as<bool>()? "{true}" : "{false}";
+		}
+
+		if(type == "float") {
+			return std::format("{{static_cast<float>({})}}", v.as<double>());
+		}
+
+		return std::format("{{{}}}", v.as<double>());
+	}
+
+	const auto def = reg.find(type);
+
+	if(!def) {
+		throw std::runtime_error(std::format(
+			"default for field '{}' references unknown type '{}'",
+			field["name"].as<std::string>(), type
+		));
+	}
+
+	const auto kind = kind_of(*def);
+
+	if(is_enum_kind(kind) || kind == "flags") {
+		return std::format("{{{}::{}}}", cpp_type_name(type, reg), v.as<std::string>());
+	}
+
+	if(kind == "string") {
+		std::string escaped;
+		for(const char c : v.as<std::string>()) {
+			if(c == '\\' || c == '"') {
+				escaped.push_back('\\');
+			}
+			escaped.push_back(c);
+		}
+		return std::format("{{\"{}\"}}", escaped);
+	}
+
+	throw std::runtime_error(std::format(
+		"default not supported for field '{}' of kind '{}'",
+		field["name"].as<std::string>(), kind
+	));
+}
+
 std::string member_decl(const jsoncons::json& field, const TypeRegistry& reg) {
 	const auto name = field["name"].as<std::string>();
-	// The declared member type follows the schema's user-facing intent:
-	//   - `as` cast wins (the field is exposed as its semantic enum/flags).
-	//   - Otherwise use the effective type, which unwraps alias-externals
-	//     to the underlying primitive so record-ref DBC types become a
-	//     plain `std::uint32_t` instead of the DBC struct.
-	const auto declared_type = field.contains("as")
-		? field["as"].as<std::string>() : effective_field_type(field, reg);
+	const auto declared_type = field.contains("as")? field["as"].as<std::string>() : effective_field_type(field, reg);
 	const auto elem = cpp_element_type(declared_type, reg);
 
 	if(field.contains("array")) {
@@ -560,11 +629,12 @@ std::string member_decl(const jsoncons::json& field, const TypeRegistry& reg) {
 			const auto sz = arr["size"].as<std::int64_t>();
 			return std::format("\tstd::array<{}, {}> {}{{}};", elem, sz, name);
 		}
-		// count_field and until_end both produce a dynamically-sized vector.
+
+		// count_field and until_end both produce a vector
 		return std::format("\tstd::vector<{}> {};", elem, name);
 	}
 
-	return std::format("\t{} {};", elem, name);
+	return std::format("\t{} {}{};", elem, name, default_initializer(field, reg));
 }
 
 void emit_branch_body(const jsoncons::json& branch_fields, const TypeRegistry& reg,
@@ -597,7 +667,7 @@ void walk(const jsoncons::json& fields, const TypeRegistry& reg, WalkState& stat
 			const auto& when = field["when"];
 			const auto op = when["op"].as<std::string>();
 
-			// stream_not_empty only applies to reading the packet
+			// stream_not_empty applies to reading, not writing
 			const bool read_only = (op == "stream_not_empty");
 			const auto cond = render_condition(when, reg, prefix, scope);
 
@@ -635,10 +705,6 @@ void walk(const jsoncons::json& fields, const TypeRegistry& reg, WalkState& stat
 				);
 			}
 		} else if(current_is_if_chain) {
-			// Emit `if(A) { ... } else if(B) { ... } else { ... }` so the
-			// branches read as one cascade rather than a soup of unrelated
-			// ifs. The trailing `}` for each intermediate branch is on the
-			// same line as the next `else if`, matching hand-written style.
 			const auto& branches = field["branches"];
 			std::size_t idx = 0;
 			const std::size_t branch_count = branches.size();
@@ -682,31 +748,42 @@ void walk(const jsoncons::json& fields, const TypeRegistry& reg, WalkState& stat
 				state.write_ops.emplace_back(std::format("{}}}", indent(state.write_tab)));
 			}
 		} else {
-			// Scope entry carries the semantic (`as`-cast) type so that
-			// condition RHS names resolve against the enum, not the wire
-			// primitive. For plain external-with-underlying aliases the
-			// effective type is the underlying primitive — condition
-			// values stay integer literals as expected.
 			const auto effective = effective_field_type(field, reg);
-			const auto semantic_type = field.contains("as")
-				? field["as"].as<std::string>() : effective;
-			scope.emplace_back(field["name"].as<std::string>(), semantic_type);
-			add_type_include(effective, reg, state.includes);
+			const auto semantic_type = field.contains("as")? field["as"].as<std::string>() : effective;
+			const auto field_name = field["name"].as<std::string>();
+			scope.emplace_back(field_name, semantic_type);
 
-			if(field.contains("as")) {
-				add_type_include(field["as"].as<std::string>(), reg, state.includes);
-			}
+			if(!field.contains("array") && state.count_field_names.contains(field_name)) {
+				const auto wire_type = field["type"].as<std::string>();
+				const auto cpp = cpp_type_for_primitive(wire_type);
+				const auto local = std::format("{}_{}", field_name, state.temp_counter++);
+				state.count_locals[field_name] = { local, wire_type };
 
-			if(emit_members) {
-				state.members.emplace_back(member_decl(field, reg));
-				const auto* def = reg.find(semantic_type);
+				state.read_ops.emplace_back(
+					std::format("{}{} {};", indent(state.read_tab), cpp, local)
+				);
 
-				if(def && kind_of(*def) == "string") {
-					state.includes.emplace("string");
+				state.read_ops.emplace_back(
+					std::format("{}stream >> {};", indent(state.read_tab), local)
+				);
+			} else {
+				add_type_include(effective, reg, state.includes);
+
+				if(field.contains("as")) {
+					add_type_include(field["as"].as<std::string>(), reg, state.includes);
 				}
-			}
 
-			emit_stream_op(field, effective, reg, state, prefix);
+				if(emit_members) {
+					state.members.emplace_back(member_decl(field, reg));
+					const auto def = reg.find(semantic_type);
+
+					if(def && kind_of(*def) == "string") {
+						state.includes.emplace("string");
+					}
+				}
+
+				emit_stream_op(field, effective, reg, state, prefix);
+			}
 		}
 
 		first = false;
@@ -744,6 +821,7 @@ GeneratedFile generate_message(const jsoncons::json& message,
 	std::vector<ScopeEntry> scope;
 
 	if(message.contains("fields")) {
+		collect_count_field_names(message["fields"], state.count_field_names);
 		walk(message["fields"], registry, state, scope, {});
 	}
 
@@ -792,31 +870,32 @@ std::string generate_aggregator(std::span<const std::string> relative_paths,
 }
 
 void collect_struct_members(const jsoncons::json& fields, const TypeRegistry& reg,
-                            nlohmann::json& out, std::set<std::string>& includes) {
+                            nlohmann::json& out, std::set<std::string>& includes,
+                            const std::set<std::string>& count_field_names) {
 	for(const auto& field : fields.array_range()) {
 		const auto type = field["type"].as<std::string>();
 
 		if(type == "group") {
-			collect_struct_members(field["fields"], reg, out, includes);
+			collect_struct_members(field["fields"], reg, out, includes, count_field_names);
 			continue;
 		}
 
 		if(type == "if_chain") {
 			for(const auto& branch : field["branches"].array_range()) {
-				collect_struct_members(branch["fields"], reg, out, includes);
+				collect_struct_members(branch["fields"], reg, out, includes, count_field_names);
 			}
 			if(field.contains("else")) {
-				collect_struct_members(field["else"], reg, out, includes);
+				collect_struct_members(field["else"], reg, out, includes, count_field_names);
 			}
 			continue;
 		}
 
-		// Members expose the `as`-cast (semantic) type when present;
-		// otherwise the effective type (unwrapping alias-externals to
-		// their underlying primitive).
+		if(!field.contains("array") && count_field_names.contains(field["name"].as<std::string>())) {
+			continue;
+		}
+
 		const auto effective = effective_field_type(field, reg);
-		const auto declared_type = field.contains("as")
-			? field["as"].as<std::string>() : effective;
+		const auto declared_type = field.contains("as")? field["as"].as<std::string>() : effective;
 		const auto elem = cpp_element_type(declared_type, reg);
 
 		std::string decl_type;
@@ -836,6 +915,7 @@ void collect_struct_members(const jsoncons::json& fields, const TypeRegistry& re
 			}
 		} else {
 			decl_type = elem;
+			suffix = default_initializer(field, reg);
 		}
 
 		nlohmann::json entry;
@@ -844,17 +924,21 @@ void collect_struct_members(const jsoncons::json& fields, const TypeRegistry& re
 		entry["suffix"] = suffix;
 		out.push_back(std::move(entry));
 
-		// Includes for both the wire primitive and any `as` semantic type.
+		// includes for both the wire primitive and any 'as' semantic type
 		const auto register_include_for = [&](const std::string& ty) {
 			if(is_primitive(ty)) {
 				includes.emplace("cstdint");
 				return;
 			}
-			const auto* def = reg.find(ty);
+
+			const auto def = reg.find(ty);
+
 			if(!def) {
 				return;
 			}
+
 			const auto kind = kind_of(*def);
+
 			if(kind == "string") {
 				includes.emplace("string");
 			} else if(kind == "external") {
@@ -863,7 +947,9 @@ void collect_struct_members(const jsoncons::json& fields, const TypeRegistry& re
 				includes.emplace(std::format("protocol/types/{}.h", ty));
 			}
 		};
+
 		register_include_for(effective);
+
 		if(field.contains("as")) {
 			register_include_for(field["as"].as<std::string>());
 		}
@@ -929,9 +1015,11 @@ std::vector<GeneratedFile> generate_type_headers(const TypeRegistry& reg, const 
 
 		if(kind == "struct") {
 			std::set<std::string> includes;
+			std::set<std::string> count_field_names;
 			auto fields = nlohmann::json::array();
 
-			collect_struct_members(def["fields"], reg, fields, includes);
+			collect_count_field_names(def["fields"], count_field_names);
+			collect_struct_members(def["fields"], reg, fields, includes, count_field_names);
 
 			auto includes_arr = nlohmann::json::array();
 
