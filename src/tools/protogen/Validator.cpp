@@ -23,15 +23,12 @@ void validate_condition(const jsoncons::json& cond, const Scope& scope,
 void validate_array(const jsoncons::json& array, const std::string& /*field_type*/,
                     const std::string& field_name, const Scope& scope,
                     const TypeRegistry& /*types*/, std::string_view context) {
-	// Fixed-size arrays of any kind (primitive, enum/flags, struct, string)
-	// are allowed — the generator emits an element-by-element loop for the
-	// kinds that don't have a whole-array stream overload.
 	if(array.contains("size") || array.contains("until_end")) {
 		return;
 	}
 
 	const auto count_field = array["count_field"].as<std::string>();
-	const auto* entry = lookup(scope, count_field);
+	const auto entry = lookup(scope, count_field);
 
 	if(!entry) {
 		throw std::runtime_error(std::format(
@@ -66,7 +63,7 @@ void validate_as_cast(const jsoncons::json& field, const TypeRegistry& types,
 		));
 	}
 
-	const auto* def = types.find(as);
+	const auto def = types.find(as);
 
 	if(!def) {
 		throw std::runtime_error(std::format(
@@ -143,23 +140,27 @@ void validate_fields(const jsoncons::json& fields, const TypeRegistry& types,
 				field["array"], type, field["name"].as<std::string>(),
 				scope, types, context
 			);
+
+			if(field.contains("default")) {
+				throw std::runtime_error(std::format(
+					"{}: field '{}' has 'default' but is an array — array defaults are not supported",
+					context, field["name"].as<std::string>()
+				));
+			}
 		}
 
-		// The scope entry records the semantic type:
-		//   - `as` cast wins when present (the field is exposed as an
-		//     enum/flags for condition checks).
-		//   - An external with `underlying` but no `as` is an alias for
-		//     that primitive — the scope reports the primitive so conditions
-		//     against the field validate against the integer domain.
-		//   - Otherwise the declared type stands as-is.
 		auto semantic_type = type;
+
 		if(field.contains("as")) {
 			semantic_type = field["as"].as<std::string>();
-		} else if(const auto* def = types.find(type);
-		          def && (*def)["kind"].as<std::string>() == "external"
-		          && def->contains("underlying")) {
-			semantic_type = (*def)["underlying"].as<std::string>();
+		} else {
+			const auto def = types.find(type);
+
+			if(def && (*def)["kind"].as<std::string>() == "external" && def->contains("underlying")) {
+				semantic_type = (*def)["underlying"].as<std::string>();
+			}
 		}
+
 		scope.push_back({field["name"].as<std::string>(), semantic_type});
 	}
 }
@@ -171,7 +172,7 @@ void check_named_value(const jsoncons::json& value, const ScopeEntry& entry,
 	}
 
 	const auto name = value.as<std::string>();
-	const auto* def = types.find(entry.type);
+	const auto def = types.find(entry.type);
 
 	if(!def) {
 		if(is_primitive(entry.type)) {
@@ -212,7 +213,7 @@ void check_value(const jsoncons::json& value, const ScopeEntry& entry, const Sco
 	}
 
 	const auto ref_name = value["field"].as<std::string>();
-	const auto* ref = lookup(scope, ref_name);
+	const auto ref = lookup(scope, ref_name);
 
 	if(!ref) {
 		throw std::runtime_error(std::format(
@@ -221,7 +222,7 @@ void check_value(const jsoncons::json& value, const ScopeEntry& entry, const Sco
 	}
 
 	if(!is_primitive(ref->type)) {
-		const auto* def = types.find(ref->type);
+		const auto def = types.find(ref->type);
 		const auto kind = def? (*def)["kind"].as<std::string>() : std::string();
 
 		if(!is_enum_kind(kind) && kind != "flags") {
@@ -270,7 +271,7 @@ void validate_condition(const jsoncons::json& cond, const Scope& scope,
 	}
 
 	const auto field_name = cond["field"].as<std::string>();
-	const auto* entry = lookup(scope, field_name);
+	const auto entry = lookup(scope, field_name);
 
 	if(!entry) {
 		throw std::runtime_error(std::format(
@@ -279,7 +280,7 @@ void validate_condition(const jsoncons::json& cond, const Scope& scope,
 	}
 
 	if(op == "empty") {
-		const auto* def = types.find(entry->type);
+		const auto def = types.find(entry->type);
 		const auto kind = def? (*def)["kind"].as<std::string>() : std::string();
 
 		if(kind != "string") {
@@ -293,7 +294,7 @@ void validate_condition(const jsoncons::json& cond, const Scope& scope,
 	}
 
 	if(!is_primitive(entry->type)) {
-		const auto* def = types.find(entry->type);
+		const auto def = types.find(entry->type);
 		const auto kind = def? (*def)["kind"].as<std::string>() : std::string();
 
 		if(!is_enum_kind(kind) && kind != "flags") {
@@ -307,13 +308,15 @@ void validate_condition(const jsoncons::json& cond, const Scope& scope,
 	const auto& value = cond["value"];
 
 	if(op == "has_flag") {
-		const auto* def = types.find(entry->type);
+		const auto def = types.find(entry->type);
+
 		if(!def || (*def)["kind"].as<std::string>() != "flags") {
 			throw std::runtime_error(std::format(
 				"{}: 'has_flag' requires field '{}' to be a flags type, got '{}'",
 				context, field_name, entry->type
 			));
 		}
+
 		check_named_value(value, *entry, types, context);
 	} else if(op == "eq" || op == "neq") {
 		check_value(value, *entry, scope, types, context);

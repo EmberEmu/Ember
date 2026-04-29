@@ -829,12 +829,18 @@ TEST_F(Protogen, GeneratesDynamicVectorWithCountLoop) {
 
 	EXPECT_NE(out.content.find("std::vector<std::uint32_t> items;"), std::string::npos) << out.content;
 
-	// read: resize & iterate
-	EXPECT_NE(out.content.find("items.resize(count);"), std::string::npos) << out.content;
+	// the count field is implicit: no struct member, no `stream >> count`,
+	// no `stream << count` — it lives only as a local on the read side.
+	EXPECT_EQ(out.content.find("std::uint8_t count;"), std::string::npos) << out.content;
+
+	// read: count goes into a local, vector resizes against it, then iterates
+	EXPECT_NE(out.content.find("std::uint8_t count_"), std::string::npos) << out.content;
+	EXPECT_NE(out.content.find("items.resize(count_"), std::string::npos) << out.content;
 	EXPECT_NE(out.content.find("for(auto& e : items) {"), std::string::npos) << out.content;
 	EXPECT_NE(out.content.find("stream >> e;"), std::string::npos) << out.content;
 
-	// write: no resize, iterate
+	// write: vec.size() cast to count's wire type, then iterate
+	EXPECT_NE(out.content.find("stream << static_cast<std::uint8_t>(items.size());"), std::string::npos) << out.content;
 	EXPECT_NE(out.content.find("for(const auto& e : items) {"), std::string::npos) << out.content;
 	EXPECT_NE(out.content.find("stream << e;"), std::string::npos) << out.content;
 	EXPECT_NE(out.content.find("#include <vector>"), std::string::npos) << out.content;
@@ -1147,7 +1153,7 @@ TEST_F(Protogen, RejectsNestedStreamNotEmptyInCompound) {
 }
 
 TEST_F(Protogen, RecursesValidationIntoCompoundConditions) {
-	// An unknown enum value buried inside an AND should still be caught.
+	// unknown enum value buried inside an AND should still be caught
 	auto msg = parse_fields(R"([
 		{ "name": "result", "type": "Result" },
 		{ "name": "flags",  "type": "MovementFlags" },
@@ -1166,10 +1172,6 @@ TEST_F(Protogen, RecursesValidationIntoCompoundConditions) {
 
 	ASSERT_ANY_THROW(validate_message_fields(msg["fields"], reg, "test"));
 }
-
-// ---------------------------------------------------------------------------
-// if_chain: `if / else if / else` cascade
-// ---------------------------------------------------------------------------
 
 TEST_F(Protogen, ValidatesIfChain) {
 	auto msg = parse_fields(R"([
@@ -1262,15 +1264,11 @@ TEST_F(Protogen, GeneratesIfChainAsElseCascade) {
 
 	const auto out = generate_message(msg, reg, templates_dir);
 
-	// Exactly one if, one else-if, one else — not three standalone ifs.
+	// exactly one if, one else-if, one else, not three standalone ifs
 	EXPECT_NE(out.content.find("if(result == Result::ok) {"), std::string::npos) << out.content;
 	EXPECT_NE(out.content.find("else if(result == Result::queued) {"), std::string::npos) << out.content;
 	EXPECT_NE(out.content.find("else {"), std::string::npos) << out.content;
 }
-
-// ---------------------------------------------------------------------------
-// `as`: semantic type cast at message-definition level
-// ---------------------------------------------------------------------------
 
 TEST_F(Protogen, AsCastMatchingUnderlyingValidates) {
 	auto msg = parse_fields(R"([
@@ -1289,8 +1287,6 @@ TEST_F(Protogen, AsCastAcceptsSizeMismatch) {
 }
 
 TEST_F(Protogen, AsCastScopesFieldAsSemanticType) {
-	// A condition using the field's enum values should validate because
-	// the scope entry reflects `as`, not the wire type.
 	auto msg = parse_fields(R"([
 		{ "name": "kind", "type": "uint8", "as": "Result" },
 		{
@@ -1315,18 +1311,11 @@ TEST_F(Protogen, GeneratesAsCastWithRawTempAndStaticCast) {
 
 	const auto out = generate_message(msg, reg, templates_dir);
 
-	// Member exposes the enum.
 	EXPECT_NE(out.content.find("Result kind;"), std::string::npos) << out.content;
-	// Read: temporary of wire type, then static_cast into the member.
 	EXPECT_NE(out.content.find("std::uint8_t raw_"), std::string::npos) << out.content;
 	EXPECT_NE(out.content.find("kind = static_cast<Result>("), std::string::npos) << out.content;
-	// Write: static_cast the member back to the wire type.
 	EXPECT_NE(out.content.find("stream << static_cast<std::uint8_t>(kind);"), std::string::npos) << out.content;
 }
-
-// ---------------------------------------------------------------------------
-// until_end: read-to-EOF arrays
-// ---------------------------------------------------------------------------
 
 TEST_F(Protogen, ValidatesUntilEndArray) {
 	auto msg = parse_fields(R"([
@@ -1348,40 +1337,27 @@ TEST_F(Protogen, GeneratesUntilEndLoopWithPerIterationCheck) {
 
 	const auto out = generate_message(msg, reg, templates_dir);
 
-	// Member is a vector, not a fixed array.
 	EXPECT_NE(out.content.find("std::vector<std::uint32_t> tail;"), std::string::npos) << out.content;
 
-	// Read: while-empty loop driving emplace_back + scalar read + error check.
 	EXPECT_NE(out.content.find("while(!stream.empty()) {"), std::string::npos) << out.content;
 	EXPECT_NE(out.content.find("tail.emplace_back();"), std::string::npos) << out.content;
 	EXPECT_NE(out.content.find("stream >> tail.back();"), std::string::npos) << out.content;
 	EXPECT_NE(out.content.find("if(!stream) return StreamResult::failed;"), std::string::npos) << out.content;
 
-	// Write is a plain range-for; the receiver's read loop stops on EOF.
 	EXPECT_NE(out.content.find("for(const auto& e : tail) {"), std::string::npos) << out.content;
 	EXPECT_NE(out.content.find("stream << e;"), std::string::npos) << out.content;
 }
 
 TEST_F(Protogen, UntilEndRejectsAlongsideSize) {
-	// schema says only one of size/count_field/until_end may be set, but
-	// the C++ validator shouldn't crash if both show up. Construct the
-	// struct manually to test the defensive path.
 	auto msg = parse_fields(R"([
 		{ "name": "tail", "type": "uint32", "array": { "size": 3, "until_end": true } }
 	])");
 
-	// validate_array doesn't care which one it sees; both branches early-
-	// return. Nothing to assert except "doesn't crash".
+
 	EXPECT_NO_THROW(validate_message_fields(msg["fields"], reg, "test"));
 }
 
-// ---------------------------------------------------------------------------
-// fixed-size arrays of non-primitive element types
-// ---------------------------------------------------------------------------
-
 TEST_F(Protogen, GeneratesFixedSizeStructArrayAsLoop) {
-	// Struct-element fixed arrays get a visible per-element loop because
-	// there's no generic stream >> operator for std::array<Struct, N>.
 	auto msg = jsoncons::json::parse(R"({
 		"name": "Points",
 		"opcode": "smsg_points",
@@ -1395,13 +1371,8 @@ TEST_F(Protogen, GeneratesFixedSizeStructArrayAsLoop) {
 
 	EXPECT_NE(out.content.find("std::array<Vector3, 3> pos{};"), std::string::npos) << out.content;
 	EXPECT_NE(out.content.find("for(auto& e : pos) {"), std::string::npos) << out.content;
-	// Struct is expanded to its fields under the loop variable.
 	EXPECT_NE(out.content.find("stream >> e.x;"), std::string::npos) << out.content;
 }
-
-// ---------------------------------------------------------------------------
-// external: cpp_type_name, underlying, stream_via
-// ---------------------------------------------------------------------------
 
 TEST_F(Protogen, ExternalWithCppTypeNameEmitsQualifiedName) {
 	auto types_doc = jsoncons::json::parse(R"({
@@ -1425,13 +1396,10 @@ TEST_F(Protogen, ExternalWithCppTypeNameEmitsQualifiedName) {
 
 	const auto out = generate_message(msg, reg, templates_dir);
 
-	// Member type is the namespace + cpp_type_name, not the schema key.
 	EXPECT_NE(out.content.find("foo::container::Inner f;"), std::string::npos) << out.content;
 }
 
 TEST_F(Protogen, ExternalWithUnderlyingAcceptsAsCast) {
-	// DBC inner enum pattern: external with integral underlying lets a
-	// wire-typed field cast into it via `as`.
 	auto types_doc = jsoncons::json::parse(R"({
 		"types": {
 			"DbcEnum": {
@@ -1453,11 +1421,6 @@ TEST_F(Protogen, ExternalWithUnderlyingAcceptsAsCast) {
 }
 
 TEST_F(Protogen, ExternalWithUnderlyingUsedAsTypeIsAnAlias) {
-	// An external that declares `underlying` and is referenced directly
-	// via `type` (no `as` cast) is a named alias for the primitive — the
-	// generated member takes the primitive type, no include is emitted
-	// for the external header, and the stream op is the plain primitive
-	// op. This is the DBC record-ref pattern (`Map` ≡ `uint32`).
 	auto types_doc = jsoncons::json::parse(R"({
 		"types": {
 			"Map": {
@@ -1487,8 +1450,6 @@ TEST_F(Protogen, ExternalWithUnderlyingUsedAsTypeIsAnAlias) {
 }
 
 TEST_F(Protogen, AliasExternalUsableInCondition) {
-	// A field typed as an alias external is comparable — its effective
-	// type is the underlying primitive, so integer conditions validate.
 	auto types_doc = jsoncons::json::parse(R"({
 		"types": {
 			"Map": {
@@ -1519,10 +1480,6 @@ TEST_F(Protogen, AliasExternalUsableInCondition) {
 	const auto out = generate_message(msg, reg, templates_dir);
 	EXPECT_NE(out.content.find("if(m != 0)"), std::string::npos) << out.content;
 }
-
-// ---------------------------------------------------------------------------
-// enum_class: same semantics as enum, different emit
-// ---------------------------------------------------------------------------
 
 TEST_F(Protogen, EnumClassEmitsScopedEnum) {
 	auto types_doc = jsoncons::json::parse(R"({
@@ -1582,4 +1539,139 @@ TEST_F(Protogen, GeneratesFixedSizeStringArrayAsLoop) {
 	EXPECT_NE(out.content.find("std::array<std::string, 4> n{};"), std::string::npos) << out.content;
 	EXPECT_NE(out.content.find("for(auto& e : n) {"), std::string::npos) << out.content;
 	EXPECT_NE(out.content.find("spark::io::null_terminated(e)"), std::string::npos) << out.content;
+}
+
+TEST_F(Protogen, GeneratesDefaultForIntegerField) {
+	auto msg = jsoncons::json::parse(R"({
+		"name": "Defaulted",
+		"opcode": "smsg_defaulted",
+		"direction": "server",
+		"fields": [
+			{ "name": "chat_name_attr", "type": "uint64", "default": 0 },
+			{ "name": "channel_id",     "type": "int32",  "default": -1 }
+		]
+	})");
+
+	const auto out = generate_message(msg, reg, templates_dir);
+	EXPECT_NE(out.content.find("std::uint64_t chat_name_attr{0};"), std::string::npos) << out.content;
+	EXPECT_NE(out.content.find("std::int32_t channel_id{-1};"), std::string::npos) << out.content;
+}
+
+TEST_F(Protogen, GeneratesDefaultForBoolField) {
+	auto msg = jsoncons::json::parse(R"({
+		"name": "Toggle",
+		"opcode": "smsg_toggle",
+		"direction": "server",
+		"fields": [
+			{ "name": "active", "type": "bool", "default": true }
+		]
+	})");
+
+	const auto out = generate_message(msg, reg, templates_dir);
+	EXPECT_NE(out.content.find("bool active{true};"), std::string::npos) << out.content;
+}
+
+TEST_F(Protogen, GeneratesDefaultForFloatAndDouble) {
+	auto msg = jsoncons::json::parse(R"({
+		"name": "Coords",
+		"opcode": "smsg_coords",
+		"direction": "server",
+		"fields": [
+			{ "name": "f", "type": "float",  "default": 1.5 },
+			{ "name": "d", "type": "double", "default": 2.5 }
+		]
+	})");
+
+	const auto out = generate_message(msg, reg, templates_dir);
+	EXPECT_NE(out.content.find("float f{static_cast<float>(1.5)};"), std::string::npos) << out.content;
+	EXPECT_NE(out.content.find("double d{2.5};"), std::string::npos) << out.content;
+}
+
+TEST_F(Protogen, GeneratesDefaultForEnumField) {
+	auto msg = jsoncons::json::parse(R"({
+		"name": "Resp",
+		"opcode": "smsg_resp",
+		"direction": "server",
+		"fields": [
+			{ "name": "result", "type": "Result", "default": "ok" }
+		]
+	})");
+
+	const auto out = generate_message(msg, reg, templates_dir);
+	EXPECT_NE(out.content.find("Result result{Result::ok};"), std::string::npos) << out.content;
+}
+
+TEST_F(Protogen, GeneratesDefaultForFlagsField) {
+	auto msg = jsoncons::json::parse(R"({
+		"name": "Move",
+		"opcode": "smsg_move",
+		"direction": "server",
+		"fields": [
+			{ "name": "flags", "type": "MovementFlags", "default": "swimming" }
+		]
+	})");
+
+	const auto out = generate_message(msg, reg, templates_dir);
+	EXPECT_NE(out.content.find("MovementFlags flags{MovementFlags::swimming};"), std::string::npos) << out.content;
+}
+
+TEST_F(Protogen, GeneratesDefaultForStringField) {
+	auto msg = jsoncons::json::parse(R"({
+		"name": "Greet",
+		"opcode": "smsg_greet",
+		"direction": "server",
+		"fields": [
+			{ "name": "name", "type": "CString", "default": "hello" }
+		]
+	})");
+
+	const auto out = generate_message(msg, reg, templates_dir);
+	EXPECT_NE(out.content.find("std::string name{\"hello\"};"), std::string::npos) << out.content;
+}
+
+TEST_F(Protogen, GeneratesDefaultForAsCastField) {
+	auto msg = jsoncons::json::parse(R"({
+		"name": "Resp",
+		"opcode": "smsg_resp",
+		"direction": "server",
+		"fields": [
+			{ "name": "kind", "type": "uint8", "as": "Result", "default": "ok" }
+		]
+	})");
+
+	const auto out = generate_message(msg, reg, templates_dir);
+	EXPECT_NE(out.content.find("Result kind{Result::ok};"), std::string::npos) << out.content;
+}
+
+TEST_F(Protogen, GeneratesDefaultInsideStructHeader) {
+	auto types_doc = jsoncons::json::parse(R"({
+		"types": {
+			"Counter": {
+				"kind": "struct",
+				"cpp_namespace": "ns",
+				"fields": [
+					{ "name": "value", "type": "uint32", "default": 7 }
+				]
+			}
+		}
+	})");
+
+	auto reg = protogen::build_registry(types_doc);
+	const auto headers = protogen::generate_type_headers(reg, templates_dir);
+
+	const protogen::GeneratedFile* counter = nullptr;
+	for(const auto& h : headers) {
+		if(h.relative_path == "types/Counter.h") { counter = &h; }
+	}
+
+	ASSERT_NE(counter, nullptr);
+	EXPECT_NE(counter->content.find("std::uint32_t value{7};"), std::string::npos) << counter->content;
+}
+
+TEST_F(Protogen, RejectsDefaultOnArrayField) {
+	auto msg = parse_fields(R"([
+		{ "name": "data", "type": "uint32", "array": { "size": 4 }, "default": 0 }
+	])");
+
+	ASSERT_ANY_THROW(validate_message_fields(msg["fields"], reg, "test"));
 }

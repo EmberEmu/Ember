@@ -177,7 +177,6 @@ void handle_request_raid_info(ClientContext& ctx) {
 	}
 
 	protocol::smsg_raid_instance_info response;
-	response->amount_of_raid_infos = 0;
 	ctx.send(response);
 }
 
