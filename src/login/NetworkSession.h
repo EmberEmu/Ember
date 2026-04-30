@@ -15,6 +15,7 @@
 #include <logger/Logger.h>
 #include <spark/buffers/BufferSequence.h>
 #include <allocators/AsioAllocator.h>
+#include <allocators/PoolAllocator.h>
 #include <boost/asio/bind_allocator.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/steady_timer.hpp>

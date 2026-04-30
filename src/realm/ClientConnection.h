@@ -52,7 +52,7 @@ private:
 	std::array<DynamicTLSBuffer, 2> outbound_buffers_;
 	DynamicTLSBuffer* outbound_front_;
 	DynamicTLSBuffer* outbound_back_;
-	StaticAllocator allocator_;
+	InplaceAllocator allocator_;
 
 	ClientHandler* handler_;
 	ConnectionStats stats_;

@@ -18,7 +18,7 @@
 namespace ember::allocators {
 
 template<std::size_t _size, std::size_t _elements>
-class StaticAllocator final {
+class InplaceAllocator final {
 	static constexpr std::string_view default_tag { "static_allocator" };
 	static constexpr std::string_view block_tag   { "static_allocator_block" };
 
@@ -77,18 +77,18 @@ class StaticAllocator final {
 	std::string_view tag;
 
 public:
-	StaticAllocator(std::string_view tag = default_tag)
+	InplaceAllocator(std::string_view tag = default_tag)
 		: allocator(_elements, block_tag)
 		, tag(tag) {
 		ALLOC_TRACK(tag, mem_rep_create);
 	}
 
-	~StaticAllocator() {
+	~InplaceAllocator() {
 		ALLOC_TRACK(tag, mem_rep_destroy);
 	}
 
-	StaticAllocator(const StaticAllocator&) = delete;
-	StaticAllocator& operator=(const StaticAllocator&) = delete;
+	InplaceAllocator(const InplaceAllocator&) = delete;
+	InplaceAllocator& operator=(const InplaceAllocator&) = delete;
 
 	void* allocate(std::size_t size) {
 		ALLOC_TRACK(tag, mem_rep_bytes_alloc, size);

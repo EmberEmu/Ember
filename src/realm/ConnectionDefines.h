@@ -11,7 +11,7 @@
 #include "SocketType.h"
 #include "BuildDefines.h"
 #include <allocators/AsioAllocator.h>
-#include <allocators/StaticAllocator.h>
+#include <allocators/InplaceAllocator.h>
 #include <protocol/MessageView.h>
 #include <spark/buffers/BinaryStream.h>
 #include <spark/buffers/DynamicTLSBuffer.h>
@@ -38,10 +38,10 @@ using DynamicTLSBuffer = spark::io::DynamicTLSBuffer<
 	outbound_size, prealloc_nodes, allocators::NoRefCounting, allocators::UnsafeEntrant
 >;
 
-using StaticAllocator = allocators::StaticAllocator<asio_chunk_size, asio_chunks>;
+using InplaceAllocator = allocators::InplaceAllocator<asio_chunk_size, asio_chunks>;
 
 template<typename T>
-using AsioStaticAllocator = allocators::AsioAllocator<T, StaticAllocator>;
+using AsioStaticAllocator = allocators::AsioAllocator<T, InplaceAllocator>;
 
 template<typename _ty>
 using message_view = protocol::message_view<_ty, BinaryStream>;

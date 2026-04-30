@@ -9,7 +9,7 @@ set(LIBRARY_NAME allocators)
 add_library(${LIBRARY_NAME} STATIC
     include/allocators/AsioAllocator.h
     include/allocators/PoolAllocator.h
-    include/allocators/StaticAllocator.h
+    include/allocators/InplaceAllocator.h
     include/allocators/DefaultAllocator.h
     include/allocators/TLSBlockAllocator.h
     include/allocators/BlockAllocator.h
