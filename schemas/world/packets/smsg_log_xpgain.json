@@ -1,5 +1,5 @@
 {
-	"name": "LogXpgain",
+	"name": "LogXPGain",
 	"opcode": "smsg_log_xpgain",
 	"direction": "server",
 	"fields": [
