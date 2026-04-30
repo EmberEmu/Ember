@@ -2597,22 +2597,6 @@
 				"restart_cancelled":  5
 			}
 		},
-		"CinematicSequenceId": {
-			"kind": "enum_class",
-			"underlying": "uint32",
-			"cpp_namespace": "ember::protocol",
-			"values": {
-				"goblin":    0,
-				"undead":    2,
-				"orc":       21,
-				"dwarf":     41,
-				"night_elf": 61,
-				"human":     81,
-				"gnome":     101,
-				"troll":     121,
-				"tauren":    141
-			}
-		},
 		"SheathState": {
 			"kind": "enum_class",
 			"underlying": "uint8",
