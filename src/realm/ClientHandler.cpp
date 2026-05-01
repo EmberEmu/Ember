@@ -180,7 +180,7 @@ bool ClientHandler::ping_sent_check() {
 		prev_ping_sequence_ = ping_sequence_;
 	}
 
-	if(ping_violation_ > ping_grace) {
+	if(ping_violation_ >= ping_grace) {
 		CLIENT_DEBUG(context_, "cmsg_pings absent");
 		return false;
 	}
