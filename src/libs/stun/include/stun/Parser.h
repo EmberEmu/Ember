@@ -57,8 +57,8 @@ class Parser final {
 
 public:
 	Parser(std::span<const std::uint8_t> buffer, RFCMode mode)
-		: buffer_(buffer),
-		  mode_(mode) {}
+		: buffer_(buffer)
+		, mode_(mode) {}
 
 	void set_logger(LogCB logger);
 
@@ -69,8 +69,8 @@ public:
 	std::array<std::uint8_t, hash_sizes::sha160> msg_integrity(const std::string_view password) const;
 
 	std::array<std::uint8_t, hash_sizes::sha160> msg_integrity(std::span<const std::uint8_t> username,
-	                                                         std::string_view realm,
-	                                                         std::string_view password) const;
+	                                                           std::string_view realm,
+	                                                           std::string_view password) const;
 };
 
 #include <stun/Parser.inl>
