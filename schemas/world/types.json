@@ -2607,7 +2607,7 @@
 				"ranged":  2
 			}
 		},
-		"AiReaction": {
+		"AIReaction": {
 			"kind": "enum_class",
 			"underlying": "uint32",
 			"cpp_namespace": "ember::protocol",
@@ -3513,7 +3513,7 @@
 				"unknown20":        26
 			}
 		},
-		"BgTypeId": {
+		"BgTypeID": {
 			"kind": "enum_class",
 			"underlying": "uint32",
 			"cpp_namespace": "ember::protocol",
