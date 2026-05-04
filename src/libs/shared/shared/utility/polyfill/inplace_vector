@@ -9,7 +9,10 @@
 #pragma once
 
 // std::inplace_vector is effectively static_vector - delete when no longer needed
-#if !defined __cpp_lib_inplace_vector && __GNUC__ < 16
+
+if __has_include(<inplace_vector>)
+#include <inplace_vector>
+#else
 
 #include <boost/container/static_vector.hpp>
 #include <cstddef>
@@ -21,6 +24,4 @@ using inplace_vector = boost::container::static_vector<T, N>; // it was boost al
 
 } // std
 
-#else
-#include <inplace_vector>
 #endif
