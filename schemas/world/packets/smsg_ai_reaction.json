@@ -1,9 +1,9 @@
 {
-	"name": "AiReaction",
+	"name": "AIReaction",
 	"opcode": "smsg_ai_reaction",
 	"direction": "server",
 	"fields": [
 		{ "name": "guid",     "type": "uint64" },
-		{ "name": "reaction", "type": "AiReaction" }
+		{ "name": "reaction", "type": "AIReaction" }
 	]
 }

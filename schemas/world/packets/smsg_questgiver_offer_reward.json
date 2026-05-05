@@ -9,7 +9,7 @@
 		{ "name": "offer_reward_text",             "type": "CString" },
 		{ "name": "auto_finish",                   "type": "uint32" },
 		{ "name": "amount_of_emotes",              "type": "uint32" },
-		{ "name": "emotes",                        "type": "NpcTextUpdateEmote", "array": {"count_field": "amount_of_emotes"} },
+		{ "name": "emotes",                        "type": "NPCTextUpdateEmote",   "array": {"count_field": "amount_of_emotes"} },
 		{ "name": "amount_of_choice_item_rewards", "type": "uint32" },
 		{ "name": "choice_item_rewards",           "type": "QuestItemRequirement", "array": {"count_field": "amount_of_choice_item_rewards"} },
 		{ "name": "amount_of_item_rewards",        "type": "uint32" },

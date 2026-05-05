@@ -1242,7 +1242,7 @@
 				{ "name": "value",     "type": "int32" }
 			]
 		},
-		"NpcTextUpdateEmote": {
+		"NPCTextUpdateEmote": {
 			"kind": "struct",
 			"cpp_namespace": "ember::protocol",
 			"fields": [
@@ -2111,14 +2111,14 @@
 			"cpp_type_name": "Languages",
 			"underlying": "uint32"
 		},
-		"NpcTextUpdate": {
+		"NPCTextUpdate": {
 			"kind": "struct",
 			"cpp_namespace": "ember::protocol",
 			"fields": [
 				{ "name": "probability", "type": "float" },
 				{ "name": "texts",       "type": "CString", "array": {"size": 2} },
 				{ "name": "language",    "type": "Language" },
-				{ "name": "emotes",      "type": "NpcTextUpdateEmote", "array": {"size": 3} }
+				{ "name": "emotes",      "type": "NPCTextUpdateEmote", "array": {"size": 3} }
 			]
 		},
 		"ItemDamageType": {

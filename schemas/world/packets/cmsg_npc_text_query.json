@@ -1,5 +1,5 @@
 {
-	"name": "NpcTextQuery",
+	"name": "NPCTextQuery",
 	"opcode": "cmsg_npc_text_query",
 	"direction": "client",
 	"fields": [

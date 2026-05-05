@@ -1,9 +1,9 @@
 {
-	"name": "NpcTextUpdate",
+	"name": "NPCTextUpdate",
 	"opcode": "smsg_npc_text_update",
 	"direction": "server",
 	"fields": [
 		{ "name": "text_id", "type": "uint32" },
-		{ "name": "texts",   "type": "NpcTextUpdate", "array": {"size": 8} }
+		{ "name": "texts",   "type": "NPCTextUpdate", "array": {"size": 8} }
 	]
 }
