@@ -1,10 +1,10 @@
 {
-	"name": "GmsurveySubmit",
+	"name": "GMSurveySubmit",
 	"opcode": "cmsg_gmsurvey_submit",
 	"direction": "client",
 	"fields": [
 		{ "name": "survey_id",      "type": "uint32" },
-		{ "name": "questions",      "type": "GmSurveyQuestion", "array": {"size": 10} },
+		{ "name": "questions",      "type": "GMSurveyQuestion", "array": {"size": 10} },
 		{ "name": "answer_comment", "type": "CString" }
 	]
 }

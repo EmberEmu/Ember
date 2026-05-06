@@ -38,7 +38,7 @@
 #include <protocol/client/ItemQuerySingle.h>
 #include <protocol/server/ItemQuerySingleResponse.h>
 #include <protocol/client/GMTicketGetTicket.h>
-#include <protocol/server/GmticketGetticket.h>
+#include <protocol/server/GMTicketGetTicket.h>
 #include <protocol/server/BattlefieldStatus.h>
 #include <protocol/server/MeetingstoneSetqueue.h>
 #include <protocol/client/TutorialFlag.h>
@@ -212,7 +212,7 @@ void handle_gmticket_getticket(ClientContext& ctx) {
 	}
 
 	protocol::smsg_gmticket_getticket response;
-	response->status = protocol::GmTicketStatus::default_status;
+	response->status = protocol::GMTicketStatus::default_status;
 	ctx.send(response);
 }
 

@@ -526,7 +526,7 @@
 				{ "name": "reputation_rank", "type": "uint32" }
 			]
 		},
-		"GmSurveyQuestion": {
+		"GMSurveyQuestion": {
 			"kind": "struct",
 			"cpp_namespace": "ember::protocol",
 			"fields": [
@@ -535,7 +535,7 @@
 				{ "name": "comment",     "type": "CString" }
 			]
 		},
-		"GmTicketType": {
+		"GMTicketType": {
 			"kind": "enum_class",
 			"underlying": "uint8",
 			"cpp_namespace": "ember::protocol",
@@ -583,14 +583,6 @@
 				{ "name": "quest_icon", "type": "uint32" },
 				{ "name": "level",      "type": "uint32" },
 				{ "name": "title",      "type": "CString" }
-			]
-		},
-		"Vector2d": {
-			"kind": "struct",
-			"cpp_namespace": "ember::protocol",
-			"fields": [
-				{ "name": "x", "type": "float" },
-				{ "name": "y", "type": "float" }
 			]
 		},
 		"GuildMemberStatus": {
@@ -793,7 +785,7 @@
 				"nine":  9
 			}
 		},
-		"UrlInfo": {
+		"URLInfo": {
 			"kind": "enum_class",
 			"underlying": "uint8",
 			"cpp_namespace": "ember::protocol",
@@ -823,7 +815,7 @@
 						{ "name": "update_available_flag", "type": "uint32" }
 					]
 				},
-				{ "name": "url_info", "type": "UrlInfo" },
+				{ "name": "url_info", "type": "URLInfo" },
 				{
 					"type": "group",
 					"when": { "op": "eq", "field": "url_info", "value": "available" },
@@ -2659,7 +2651,7 @@
 				"non_kill": 1
 			}
 		},
-		"GmTicketResponse": {
+		"GMTicketResponse": {
 			"kind": "enum_class",
 			"underlying": "uint32",
 			"cpp_namespace": "ember::protocol",
@@ -2673,7 +2665,7 @@
 				"ticket_deleted": 9
 			}
 		},
-		"GmTicketStatus": {
+		"GMTicketStatus": {
 			"kind": "enum_class",
 			"underlying": "uint32",
 			"cpp_namespace": "ember::protocol",
@@ -2683,7 +2675,7 @@
 				"default_status": 10
 			}
 		},
-		"GmTicketEscalationStatus": {
+		"GMTicketEscalationStatus": {
 			"kind": "enum_class",
 			"underlying": "uint8",
 			"cpp_namespace": "ember::protocol",
@@ -2693,7 +2685,7 @@
 				"gmticket_assignedtogm_status_escalated":    2
 			}
 		},
-		"GmTicketQueueStatus": {
+		"GMTicketQueueStatus": {
 			"kind": "enum_class",
 			"underlying": "uint32",
 			"cpp_namespace": "ember::protocol",
@@ -2702,7 +2694,7 @@
 				"enabled":  1
 			}
 		},
-		"GmTicketStatusResponse": {
+		"GMTicketStatusResponse": {
 			"kind": "enum_class",
 			"underlying": "uint32",
 			"cpp_namespace": "ember::protocol",
@@ -3388,7 +3380,7 @@
 				"success_buy_slot": 10
 			}
 		},
-		"PvpRank": {
+		"PvPRank": {
 			"kind": "enum_class",
 			"underlying": "uint8",
 			"cpp_namespace": "ember::protocol",
@@ -3513,7 +3505,7 @@
 				"unknown20":        26
 			}
 		},
-		"BgTypeID": {
+		"BGTypeID": {
 			"kind": "enum_class",
 			"underlying": "uint32",
 			"cpp_namespace": "ember::protocol",

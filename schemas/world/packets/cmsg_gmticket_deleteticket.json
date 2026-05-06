@@ -1,5 +1,5 @@
 {
-	"name": "GmticketDeleteticket",
+	"name": "GmTicketDeleteTicket",
 	"opcode": "cmsg_gmticket_deleteticket",
 	"direction": "client"
 }

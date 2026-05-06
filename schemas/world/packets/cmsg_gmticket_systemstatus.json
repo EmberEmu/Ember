@@ -1,5 +1,5 @@
 {
-	"name": "GmticketSystemstatus",
+	"name": "GMTicketSystemStatus",
 	"opcode": "cmsg_gmticket_systemstatus",
 	"direction": "client"
 }

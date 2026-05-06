@@ -1,8 +1,8 @@
 {
-	"name": "GmTicketStatusUpdate",
+	"name": "GMTicketStatusUpdate",
 	"opcode": "smsg_gm_ticket_status_update",
 	"direction": "server",
 	"fields": [
-		{ "name": "response", "type": "GmTicketStatusResponse" }
+		{ "name": "response", "type": "GMTicketStatusResponse" }
 	]
 }

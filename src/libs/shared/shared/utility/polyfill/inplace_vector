@@ -10,7 +10,7 @@
 
 // std::inplace_vector is effectively static_vector - delete when no longer needed
 
-if __has_include(<inplace_vector>)
+#if __has_include(<inplace_vector>)
 #include <inplace_vector>
 #else
 

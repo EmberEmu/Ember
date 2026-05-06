@@ -1,8 +1,8 @@
 {
-	"name": "GmticketUpdatetext",
+	"name": "GMTicketUpdateText",
 	"opcode": "smsg_gmticket_updatetext",
 	"direction": "server",
 	"fields": [
-		{ "name": "response", "type": "GmTicketResponse" }
+		{ "name": "response", "type": "GMTicketResponse" }
 	]
 }

@@ -1,9 +1,9 @@
 {
-	"name": "GmticketUpdatetext",
+	"name": "GMTicketUpdateText",
 	"opcode": "cmsg_gmticket_updatetext",
 	"direction": "client",
 	"fields": [
-		{ "name": "ticket_type", "type": "GmTicketType" },
+		{ "name": "ticket_type", "type": "GMTicketType" },
 		{ "name": "message",     "type": "CString" }
 	]
 }

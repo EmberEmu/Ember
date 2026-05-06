@@ -3,6 +3,6 @@
 	"opcode": "smsg_group_joined_battleground",
 	"direction": "server",
 	"fields": [
-		{ "name": "id", "type": "BgTypeID" }
+		{ "name": "id", "type": "BGTypeID" }
 	]
 }

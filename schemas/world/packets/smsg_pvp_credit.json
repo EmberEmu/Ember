@@ -1,5 +1,5 @@
 {
-	"name": "PvpCredit",
+	"name": "PvPCredit",
 	"opcode": "smsg_pvp_credit",
 	"direction": "server",
 	"fields": [

@@ -1,8 +1,8 @@
 {
-	"name": "GmticketSystemstatus",
+	"name": "GMTicketSystemStatus",
 	"opcode": "smsg_gmticket_systemstatus",
 	"direction": "server",
 	"fields": [
-		{ "name": "will_accept_tickets", "type": "GmTicketQueueStatus" }
+		{ "name": "will_accept_tickets", "type": "GMTicketQueueStatus" }
 	]
 }

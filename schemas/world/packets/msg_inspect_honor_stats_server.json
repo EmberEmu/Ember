@@ -5,7 +5,7 @@
 	"direction": "server",
 	"fields": [
 		{ "name": "guid",                             "type": "uint64" },
-		{ "name": "highest_rank",                     "type": "PvpRank" },
+		{ "name": "highest_rank",                     "type": "PvPRank" },
 		{ "name": "today_honorable_and_dishonorable", "type": "uint32" },
 		{ "name": "yesterday_honorable",              "type": "uint16" },
 		{ "name": "unknown1",                         "type": "uint16" },

@@ -21,7 +21,7 @@
 		{ "name": "rewards",                            "type": "QuestItemReward", "array": {"size": 4} },
 		{ "name": "choice_rewards",                     "type": "QuestItemReward", "array": {"size": 6} },
 		{ "name": "point_map_id",                       "type": "uint32" },
-		{ "name": "position",                           "type": "Vector2d" },
+		{ "name": "position",                           "type": "Vector2" },
 		{ "name": "point_opt",                          "type": "uint32" },
 		{ "name": "title",                              "type": "CString" },
 		{ "name": "objective_text",                     "type": "CString" },
