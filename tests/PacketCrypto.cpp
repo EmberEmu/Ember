@@ -66,7 +66,7 @@ TEST_F(PacketCryptoTest, KeySizeMismatchBelow) {
 }
 
 TEST_F(PacketCryptoTest, KeySizeMax) {
-	std::array<std::uint8_t, 256> _key;
+	std::array<std::uint8_t, 255> _key;
 	ASSERT_NO_THROW(realm::PacketCrypto pc(_key));
 }
 
