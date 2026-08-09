@@ -9,6 +9,7 @@
 #pragma once
 
 #include <boost/container/small_vector.hpp>
+#include <gsl/narrow>
 #include <limits>
 #include <span>
 #include <stdexcept>
@@ -36,7 +37,7 @@ namespace ember::realm {
  * 
  */
 template<std::size_t _key_size = 0>
-requires(_key_size <= 256)
+requires(_key_size < 256)
 class PacketCrypto final {
 	static constexpr auto key_size_hint = _key_size > 0? _key_size * 2 : 128;
 
@@ -53,13 +54,13 @@ public:
 			if(key.size() != _key_size) {
 				throw std::runtime_error("Session key did not match expected size");
 			}
-		} else if(key.size() > std::numeric_limits<std::uint8_t>::max() + 1) {
+		} else if(key.size() > std::numeric_limits<std::uint8_t>::max()) {
 			throw std::runtime_error("Session key too big");
 		} else if(key.empty()) {
 			throw std::runtime_error("Session key empty");
 		}
 
-		halved_key_size = static_cast<std::uint8_t>(key.size());
+		halved_key_size = gsl::narrow_cast<std::uint8_t>(key.size());
 		key_.resize(key.size() * 2, boost::container::default_init);
 		std::copy(key.begin(), key.end(), key_.begin());
 		std::copy(key.begin(), key.end(), key_.begin() + halved_key_size);
