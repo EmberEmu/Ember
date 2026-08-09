@@ -15,7 +15,7 @@ namespace ember::realm {
 
 template<typename _iter_type>
 class SessionIterator {
-	std::unique_lock<std::mutex> lock_;
+	std::lock_guard<std::mutex> lock_;
 	_iter_type it_;
 
 public:
