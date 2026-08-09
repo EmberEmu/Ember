@@ -157,36 +157,35 @@ void CharacterClient::handle_retrieve_reply(const spark::Link& link,
 
 	std::vector<ember::Character> characters;
 	characters.reserve(msg->characters()->size());
-	auto key = msg->characters();
 
-	for(auto i = key->begin(); i != key->end(); ++i) {
+	for(const auto key : *msg->characters()) {
 		ember::Character character;
-		character.name = i->name()->str();
-		character.id = i->id();
-		character.account_id = i->account_id();
-		character.realm_id = i->realm_id();
-		character.race = i->race();
-		character.class_ = i->class_();
-		character.gender = i->gender();
-		character.skin = i->skin();
-		character.face = i->face();
-		character.hairstyle = i->hairstyle();
-		character.haircolour = i->haircolour();
-		character.facialhair = i->facialhair();
-		character.level = i->level();
-		character.zone = i->zone();
-		character.map = i->map();
-		character.guild_id = i->guild_id();
-		character.guild_rank = i->guild_rank();
-		character.position.x = i->x();
-		character.position.y = i->y();
-		character.position.z = i->z();
-		character.orientation = i->orientation();
-		character.flags = static_cast<ember::Character::Flags>(i->flags());
-		character.first_login = i->first_login();
-		character.pet_display = i->pet_display_id();
-		character.pet_level = i->pet_level();
-		character.pet_family = i->pet_family();
+		character.name = key->name()->str();
+		character.id = key->id();
+		character.account_id = key->account_id();
+		character.realm_id = key->realm_id();
+		character.race = key->race();
+		character.class_ = key->class_();
+		character.gender = key->gender();
+		character.skin = key->skin();
+		character.face = key->face();
+		character.hairstyle = key->hairstyle();
+		character.haircolour = key->haircolour();
+		character.facialhair = key->facialhair();
+		character.level = key->level();
+		character.zone = key->zone();
+		character.map = key->map();
+		character.guild_id = key->guild_id();
+		character.guild_rank = key->guild_rank();
+		character.position.x = key->x();
+		character.position.y = key->y();
+		character.position.z = key->z();
+		character.orientation = key->orientation();
+		character.flags = static_cast<ember::Character::Flags>(key->flags());
+		character.first_login = key->first_login();
+		character.pet_display = key->pet_display_id();
+		character.pet_level = key->pet_level();
+		character.pet_family = key->pet_family();
 		characters.emplace_back(std::move(character));
 	}
 
