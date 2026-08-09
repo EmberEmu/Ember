@@ -104,7 +104,7 @@ bool EventDispatcher::try_insert(ClientType* handler, ClientIdent& ident) {
 		index = 0;
 	}
 
-	const std::size_t start = index;
+	const auto start = index;
 
 	do {
 		if(cache_[index].is_zero()) {
