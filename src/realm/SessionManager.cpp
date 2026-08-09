@@ -51,7 +51,7 @@ std::size_t SessionManager::bulk_insert(std::span<unique_client_ptr> clients) {
 }
 
 void SessionManager::process_queue() {
-	std:size_t count = 0;
+	std::size_t count = 0;
 
 	while(true) {
 		std::inplace_vector<unique_client_ptr, max_bulk_dequeue> dequeued;
