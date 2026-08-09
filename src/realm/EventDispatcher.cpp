@@ -63,7 +63,7 @@ void EventDispatcher::broadcast(std::vector<ClientIdent> clients, std::shared_pt
 		}
 
 		const auto range = std::ranges::equal_range(
-			*clients_ptr, service_id, std::ranges::greater{}, &ClientIdent::service
+			*clients_ptr, service_id, std::ranges::less{}, &ClientIdent::service
 		);
 
 		auto& service = pool_.get(i);
