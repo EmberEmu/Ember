@@ -33,7 +33,7 @@ void print_allocator_debug_table(log::Logger& logger) {
 	table.AddColumn("sys_deallocs", 13);
 	table.PrintHeader();
 
-	auto metrics = allocators::tracking::metrics();
+	const auto metrics = allocators::tracking::metrics();
 
 	for(const auto& [k, v] : metrics) {
 		table << k.substr(0, 27);
