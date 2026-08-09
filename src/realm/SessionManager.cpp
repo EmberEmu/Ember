@@ -58,7 +58,7 @@ void SessionManager::process_queue() {
 		queue_.try_dequeue_bulk(std::back_inserter(dequeued), max_bulk_dequeue);
 
 		if(dequeued.empty()) {
-			return;
+			break;
 		}
 
 		count += bulk_insert(dequeued);
