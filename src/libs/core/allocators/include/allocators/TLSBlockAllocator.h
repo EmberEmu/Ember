@@ -51,7 +51,7 @@ class TLSBlockAllocator final {
 	static inline thread_local RefCount ref_count_{};
 	const std::string_view tag_;
 
-	[[no_unique_address]] TLSHandleCache cached_handle_{};
+	[[no_unique_address]] TLSHandleCache tls_handle_{};
 
 	// Compiler will optimise calls to this out when using UnsafeEntrant
 	inline void initialise() {
@@ -64,7 +64,7 @@ class TLSBlockAllocator final {
 
 	inline AllocatorType* allocator_handle() {
 		if constexpr(std::is_same_v<EntrantPolicy, UnsafeEntrant>) {
-			return cached_handle_;
+			return tls_handle_;
 		} else {
 			return allocator_.get();
 		}
@@ -94,7 +94,7 @@ public:
 		}
 
 		if constexpr(std::is_same_v<EntrantPolicy, UnsafeEntrant>) {
-			cached_handle_ = allocator_.get();
+			tls_handle_ = allocator_.get();
 		}
 
 		if constexpr(std::is_same_v<RefCountPolicy, RefCounting>) {
