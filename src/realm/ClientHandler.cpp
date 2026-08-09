@@ -28,11 +28,9 @@ void ClientHandler::start(ClientConnection& connection) {
 }
 
 void ClientHandler::stop() {
-	if(state_ == ClientState::cs_session_closed) {
-		return;
+	if(state_ != ClientState::cs_session_closed) {
+		state_update(ClientState::cs_session_closed);
 	}
-
-	state_update(ClientState::cs_session_closed);
 }
 
 void ClientHandler::handle_message(BinaryStream& stream) {
