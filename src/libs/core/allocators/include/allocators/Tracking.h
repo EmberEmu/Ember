@@ -53,12 +53,12 @@ public:
 	}
 
 	MetricsMap get_metrics() {
-		std::unique_lock guard(lock);
+		std::lock_guard guard(lock);
 		return metrics;
 	}
 	
 	void record(std::string_view tag, Metric type, std::size_t value) {
-		std::unique_lock guard(lock);
+		std::lock_guard guard(lock);
 		auto& metrics = get_tag_metrics(tag);
 		metrics[type] += value;
 	}
