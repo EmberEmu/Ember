@@ -42,9 +42,9 @@ void ShutdownAnnouncer::set_after(std::chrono::seconds expiry, bool announce) {
 
 	if(announce) {
 		broadcast(std::move(message));
-	} else {
-		LOG_INFO(logger_, message);
 	}
+
+	LOG_INFO(logger_, message);
 
 	active_ = true;
 	expires_ = std::chrono::steady_clock::now() + expiry;
@@ -100,7 +100,6 @@ std::string ShutdownAnnouncer::time_remaining_fmt(std::chrono::seconds remaining
 }
 
 void ShutdownAnnouncer::broadcast(std::string message) {
-	LOG_INFO(logger_, message);
 	SystemMessage event(std::move(message), SystemMessage::Type::message);
 	dispatcher_.broadcast(event);
 }
