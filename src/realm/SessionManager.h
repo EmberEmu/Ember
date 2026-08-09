@@ -17,6 +17,7 @@
 #include <boost/unordered/unordered_flat_map.hpp>
 #include <moodycamel/concurrentqueue.h>
 #include <mutex>
+#include <optional>
 #include <span>
 #include <cstddef>
 #include <cstdint>
