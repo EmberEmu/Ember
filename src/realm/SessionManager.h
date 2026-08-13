@@ -56,7 +56,6 @@ public:
 
 	SessionManager(boost::asio::io_context& ioc, thread::ServicePool& pool, log::Logger& logger);
 
-	void insert(unique_client_ptr client);
 	void enqueue(unique_client_ptr client);
 	void stop();
 
