@@ -15,6 +15,8 @@ namespace ember::realm {
 
 struct Event {
 	EventType type;
+	
+	Event() = delete;
 	~Event() = default;
 
 	template<std::derived_from<Event> _ty>
@@ -26,6 +28,9 @@ struct Event {
 	auto& as() const {
 		return static_cast<const _ty&>(*this);
 	}
+
+protected:
+	Event(EventType type) : type(type) {}
 };
 
 } // realm, ember

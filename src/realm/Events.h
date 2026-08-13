@@ -23,7 +23,7 @@ namespace ember::realm {
 
 struct PlayerLogin final : Event {
 	explicit PlayerLogin(std::uint64_t character_id)
-		: Event{ EventType::player_login },
+		: Event { EventType::player_login },
 		  character_id_(character_id) { }
 
 	const std::uint64_t character_id_;
@@ -124,6 +124,34 @@ struct LogRedirect final : Event {
 
 	std::string message;
 	Type type;
+};
+
+struct RequestStop final : Event {
+	RequestStop() : Event { EventType::request_stop } {}
+};
+
+struct IntervalTimerFire final : Event {
+	IntervalTimerFire() : Event { EventType::interval_timer_fire } {}
+};
+
+struct TimerExpired final : Event {
+	TimerExpired() : Event { EventType::timer_expired } {}
+};
+
+struct QueueSuccess final : Event {
+	QueueSuccess() : Event { EventType::queue_success } {}
+};
+
+struct PacketLogEnable final : Event {
+	PacketLogEnable() : Event { EventType::packet_log_enable } {}
+};
+
+struct PacketLogDisable final : Event {
+	PacketLogDisable() : Event { EventType::packet_log_disable } {}
+};
+
+struct KickSelf final : Event {
+	KickSelf() : Event { EventType::kick_self} {}
 };
 
 } // realm, ember

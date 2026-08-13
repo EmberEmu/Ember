@@ -30,13 +30,12 @@ void toggle_logging(SessionManager::SessionID id,
 		return;
 	}
 
-	const auto type = toggle? EventType::packet_log_enable : EventType::packet_log_disable;
+	if(toggle) {
+		dispatcher.post(*ident, PacketLogEnable{});
+	} else {
+		dispatcher.post(*ident, PacketLogDisable{});
+	}
 
-	const auto event = Event{
-		.type = type
-	};
-
-	dispatcher.post(*ident, event);
 	LOG_CONSOLE(logger, "Packet logging {} for connection {}", (toggle? "enabled" : "disabled"), id);
 }
 
@@ -51,11 +50,7 @@ void kick_connection(SessionManager::SessionID id,
 		return;
 	}
 
-	const auto event = Event{
-		.type = EventType::kick_self
-	};
-
-	dispatcher.post(*ident, event);
+	dispatcher.post(*ident, KickSelf{});
 	LOG_CONSOLE(logger, "Connection {} kicked", id);
 }
 

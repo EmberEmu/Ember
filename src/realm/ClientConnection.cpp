@@ -9,6 +9,7 @@
 #include "ClientConnection.h"
 #include "ClientHandler.h"
 #include "EventDispatcher.h"
+#include "Events.h"
 #include "packet_log/FlatbuffersSink.h"
 #include "packet_log/LogSink.h"
 #include <logger/Logger.h>
@@ -227,8 +228,7 @@ void ClientConnection::stop() {
 }
 
 void ClientConnection::close_session() {
-	Event event { EventType::request_stop };
-	dispatcher_.post(ident_, event);
+	dispatcher_.post(ident_, RequestStop{});
 	stop();
 }
 

@@ -24,13 +24,9 @@ void set_offline(const commands::Arguments& args, RealmService& service,
 		return;
 	}
 
+	// allows for a graceful close
 	if(args["kick"].as<bool>()) {
-		const Event event{
-			.type = EventType::kick_self
-		};
-
-		// allows for a graceful close
-		dispatcher.broadcast(event);
+		dispatcher.broadcast(KickSelf{});
 	}
 }
 

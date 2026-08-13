@@ -12,6 +12,7 @@
 #include "ClientLogHelper.h"
 #include "ConfigConsts.h"
 #include "EventDispatcher.h"
+#include "Events.h"
 #include "states/StateJumpTables.h"
 #include <logger/Logger.h>
 #include <protocol/Deserialise.h>
@@ -119,8 +120,7 @@ void ClientHandler::handle_ping(BinaryStream& stream) {
 
 // stops the handler and requests for the session to be terminated
 void ClientHandler::close_session() {
-	Event event { EventType::request_stop };
-	context_.dispatcher.post(uuid_, event);
+	context_.dispatcher.post(uuid_, RequestStop{});
 	stop();
 }
 

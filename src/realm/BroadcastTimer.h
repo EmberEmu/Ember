@@ -9,6 +9,7 @@
 #pragma once
 
 #include "EventDispatcher.h"
+#include "Events.h"
 #include <thread/ServicePool.h>
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/as_tuple.hpp>
@@ -40,7 +41,6 @@ class BroadcastTimer {
 	using await = boost::asio::awaitable<T>;
 
 	constexpr static auto max_offset { 10u };
-	constexpr static Event event { EventType::interval_timer_fire };
 
 	const std::chrono::milliseconds frequency_;
 	const EventDispatcher& dispatcher_;
@@ -55,7 +55,7 @@ class BroadcastTimer {
 			co_return;
 		}
 
-		dispatcher_.broadcast_self(event);
+		dispatcher_.broadcast_self(IntervalTimerFire{});
 	}
 
 	// the initial firing will be slightly offset in case any of the events

@@ -103,8 +103,7 @@ void RealmQueue::free_slot() {
 	}
 
 	auto& entry = queue_.front();
-	const Event event { EventType::queue_success };
-	dispatcher_.post(entry.client, event);
+	dispatcher_.post(entry.client, QueueSuccess{});
 	queue_.pop_front();
 	dirty_ = true;
 	++active_;

@@ -8,6 +8,7 @@
 
 #include "ClientContext.h"
 #include "EventDispatcher.h"
+#include "Events.h"
 #include "ClientHandler.h"
 #include <format>
 
@@ -31,8 +32,7 @@ void ClientContext::start_timer(const std::chrono::milliseconds& time) {
 
 	timer_.async_wait([dispatcher = dispatcher, uuid = handler().uuid()](const boost::system::error_code& ec) {
 		if(!ec) {
-			Event event { EventType::timer_expired };
-			dispatcher.post(uuid, event);
+			dispatcher.post(uuid, TimerExpired{});
 		}
 	});
 }
