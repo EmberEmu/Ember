@@ -16,6 +16,7 @@
 #include <array>
 #include <chrono>
 #include <functional>
+#include <optional>
 #include <string>
 #include <cstddef>
 
@@ -45,7 +46,7 @@ private:
 	void reset();
 	void run_timer(std::chrono::seconds expiry);
 	void broadcast(std::string message);
-	iterator nearest_interval(std::chrono::duration<int> duration);
+	std::optional<std::chrono::duration<int>> nearest_interval(std::chrono::duration<int> duration);
 
 	static std::string time_remaining_fmt(std::chrono::seconds remaining);
 

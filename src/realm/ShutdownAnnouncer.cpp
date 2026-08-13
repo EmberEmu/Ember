@@ -52,36 +52,36 @@ void ShutdownAnnouncer::set_after(std::chrono::seconds expiry, bool announce) {
 	run_timer(expiry);
 }
 
-auto ShutdownAnnouncer::nearest_interval(std::chrono::duration<int> duration) -> iterator {
+auto ShutdownAnnouncer::nearest_interval(std::chrono::duration<int> duration) -> std::optional<std::chrono::duration<int>> {
 	for(auto i = intervals.begin(); i < intervals.end(); ++i) {
 		if(duration > *i) {
-			return i;
+			return *i;
 		}
 	}
 
-	return intervals.end();
+	return std::nullopt;
 }
 
 void ShutdownAnnouncer::run_timer(std::chrono::seconds expiry) {
-	const auto it = nearest_interval(expiry);
+	const auto interval = nearest_interval(expiry);
 
-	if(it == intervals.end()) {
+	if(!interval) {
 		active_ = false;
 		fn_();
 		return;
 	}
 
 	// how long we need to wait for 
-	const auto wait_for = expiry - *it;
+	const auto wait_for = expiry - *interval;
 
 	timer_.expires_after(wait_for);
-	timer_.async_wait([&, it](auto ec) {
+	timer_.async_wait([&, interval](auto ec) {
 		if(ec) {
 			return;
 		}
 
-		broadcast(std::format("Shutdown in {}", time_remaining_fmt(*it)));
-		run_timer(*it);
+		broadcast(std::format("Shutdown in {}", time_remaining_fmt(*interval)));
+		run_timer(*interval);
 	});
 }
 
