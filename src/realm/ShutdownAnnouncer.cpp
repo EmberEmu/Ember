@@ -14,14 +14,14 @@
 
 namespace ember::realm {
 
-ShutdownAnnouncer::ShutdownAnnouncer(boost::asio::io_context& ioc, ShutdownFn fn,
+ShutdownAnnouncer::ShutdownAnnouncer(boost::asio::io_context& ioc, ShutdownFn callback,
                                      EventDispatcher& dispatcher, log::Logger& logger)
 	: dispatcher_(dispatcher)
 	, timer_(ioc)
 	, logger_(logger)
 	, active_(false)
-	, fn_(std::move(fn)) {
-	assert(fn_);
+	, callback_(std::move(callback)) {
+	assert(callback_);
 }
 
 void ShutdownAnnouncer::set_at(std::chrono::steady_clock::time_point time, bool announce) {
@@ -67,7 +67,7 @@ void ShutdownAnnouncer::run_timer(std::chrono::seconds expiry) {
 
 	if(!interval) {
 		active_ = false;
-		fn_();
+		callback_();
 		return;
 	}
 

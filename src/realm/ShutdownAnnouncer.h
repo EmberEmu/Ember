@@ -40,7 +40,7 @@ private:
 	boost::asio::steady_timer timer_;
 	log::Logger& logger_;
 	bool active_;
-	ShutdownFn fn_;
+	ShutdownFn callback_;
 	std::chrono::steady_clock::time_point expires_;
 
 	void reset();
@@ -51,7 +51,7 @@ private:
 	static std::string time_remaining_fmt(std::chrono::seconds remaining);
 
 public:
-	ShutdownAnnouncer(boost::asio::io_context& ioc, ShutdownFn fn,
+	ShutdownAnnouncer(boost::asio::io_context& ioc, ShutdownFn callback,
 	                  EventDispatcher& dispatcher, log::Logger& logger);
 
 	void set_at(std::chrono::steady_clock::time_point time, bool announce);
