@@ -10,6 +10,7 @@
 #include "DNSDefines.h"
 #include <format>
 #include <sstream>
+#include <utility>
 
 namespace ember::dns {
 
