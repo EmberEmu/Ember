@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Ember
+ * Copyright (c) 2024 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -15,10 +15,24 @@ namespace ember::dns {
 
 std::string to_string(const ResourceRecord& record) {
 	std::stringstream stream;
-	stream << "Name: " << record.name << '\n';
-	stream << "Class: " << to_string(record.resource_class) << '\n';
+
+	if(record.type == RecordType::opt) {
+		// todo, should extend the parser to handle invalid OPT name values
+		if(record.name.empty()) {
+			stream << "Name: <root>" << '\n';
+		} else {
+			stream << "Name: " << "[invalid data]" << '\n';
+		}
+
+		stream << "Payload size: " << std::to_underlying(record.resource_class) << '\n';
+		stream << "Ext. RCODE & flags: " << record.ttl << '\n';
+	} else {
+		stream << "Name: " << record.name << '\n';
+		stream << "Class: " << record.resource_class << '\n';
+		stream << "TTL: " << record.ttl << '\n';
+	}
+
 	stream << "Type: " << to_string(record.type) << '\n';
-	stream << "TTL: " << record.ttl << '\n';
 	stream << "Len: " << record.rdata_len << '\n';
 	return stream.str();
 }

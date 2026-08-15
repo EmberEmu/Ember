@@ -302,6 +302,15 @@ struct Record_NSEC {
 	std::vector<RecordType> bitmap;
 };
 
+struct Record_OPT {
+	struct Option {
+		std::uint16_t option_code;
+		std::vector<std::uint8_t> option_data;
+	};
+
+	std::vector<Option> options;
+};
+
 using RecordData = std::variant<
 	Record_A,
 	Record_AAAA,
@@ -314,7 +323,8 @@ using RecordData = std::variant<
 	Record_SRV,
 	Record_CNAME,
 	Record_HINFO,
-	Record_NSEC
+	Record_NSEC,
+	Record_OPT
 >;
 
 struct ResourceRecord {

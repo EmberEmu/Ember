@@ -69,6 +69,7 @@ void parse_rdata_uri(ResourceRecord& rr, ParseContext& ctx);
 void parse_rdata_srv(ResourceRecord& rr, ParseContext& ctx);
 void parse_rdata_cname(ResourceRecord& rr, ParseContext& ctx);
 void parse_rdata_nsec(ResourceRecord& rr, ParseContext& ctx);
+void parse_rdata_opt(ResourceRecord& rr, ParseContext& ctx);
 
 // serialisation
 void write_header(const Query& query, StreamWriteBigEndian& stream);

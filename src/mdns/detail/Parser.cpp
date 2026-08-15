@@ -257,6 +257,9 @@ void parse_rdata(ResourceRecord& rr, ParseContext& ctx) try {
 		case RecordType::nsec:
 			parse_rdata_nsec(rr, ctx);
 			break;
+		case RecordType::opt:
+			parse_rdata_opt(rr, ctx);
+			break;
 		default:
 			throw Result::unhandled_rdata;
 	}
@@ -379,6 +382,23 @@ void parse_rdata_soa(ResourceRecord& rr, ParseContext& ctx) {
 	ctx.stream >> rdata.retry;
 	ctx.stream >> rdata.expire;
 	ctx.stream >> rdata.minimum;
+	rr.rdata = std::move(rdata);
+}
+
+void parse_rdata_opt(ResourceRecord& rr, ParseContext& ctx) {
+	Record_OPT rdata;
+
+	while(!ctx.stream.empty()) {
+		Record_OPT::Option opt;
+		std::uint16_t opt_len{};
+		ctx.stream >> opt.option_code;
+		ctx.stream >> opt_len;
+		std::vector<std::uint8_t> opt_data(opt_len);
+		ctx.stream.get(opt_data.data(), opt_data.size());
+		opt.option_data = std::move(opt_data);
+		rdata.options.emplace_back(std::move(opt));
+	}
+
 	rr.rdata = std::move(rdata);
 }
 

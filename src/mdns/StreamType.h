@@ -18,7 +18,7 @@ namespace ember::dns {
 using ConstBufferAdaptor = spark::io::BufferAdaptor<std::span<const std::uint8_t>>;
 
 using StreamReadBigEndian = spark::io::BinaryStream<
-	ConstBufferAdaptor ,
+	ConstBufferAdaptor,
 	spark::io::allow_throw_t,
 	spark::io::endian::as_big_t
 >;
