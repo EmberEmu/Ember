@@ -40,6 +40,7 @@ struct PackedGuid final {
 
 		stream << mask;
 
+		// if all bits are set, we can just write the uint64 in one go
 		if(set == CHAR_BIT) [[unlikely]] {
 			stream << guid;
 			return stream;
@@ -72,6 +73,7 @@ struct PackedGuid final {
 
 		const auto count = std::popcount(mask);
 
+		// if all bits are set, we can just read the uint64 in one go
 		if(count == CHAR_BIT) [[unlikely]] {
 			stream >> guid;
 			return stream;
