@@ -329,6 +329,11 @@
 
 	<field>
 		<type>int32</type>
+		<name>interrupt_flags</name>
+	</field>
+
+	<field>
+		<type>int32</type>
 		<name>aura_interrupt_flags</name>
 	</field>
 
@@ -591,11 +596,6 @@
 	<field>
 		<type>int32</type>
 		<name>spell_priority</name>
-	</field>
-
-	<field>
-		<type>int32</type>
-		<name>unknown_flag</name>
 	</field>
 
 	<field>
