@@ -241,7 +241,7 @@ void CharacterHandler::do_erase(std::uint32_t account_id, std::uint32_t realm_id
 	
 	// character must exist, belong to the same account and be on the same realm
 	if(!character || character->account_id != account_id || character->realm_id != realm_id) {
-		LOG_DEBUG(logger_, "Account {} attempted an invalid delete on character ", account_id, character_id);
+		LOG_DEBUG(logger_, "Account {} attempted an invalid delete on character {}", account_id, character_id);
 		callback(protocol::Result::char_delete_failed);
 		return;
 	}
