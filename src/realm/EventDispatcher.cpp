@@ -35,7 +35,7 @@ void EventDispatcher::post(const ClientIdent& client, std::unique_ptr<Event> eve
 	});
 }
 
-inline void EventDispatcher::deliver(const Event& event) const {
+void EventDispatcher::deliver(const Event& event) const {
 #ifndef DISABLE_FAST_DISPATCH_TABLE
 	for(auto& entry : cache_) {
 		if(!entry.is_zero()) {
@@ -48,7 +48,7 @@ inline void EventDispatcher::deliver(const Event& event) const {
 	}
 }
 
-inline Client* EventDispatcher::locate_handler(const ClientIdent& client) const {
+Client* EventDispatcher::locate_handler(const ClientIdent& client) const {
 #ifndef DISABLE_FAST_DISPATCH_TABLE
 	const auto slot = client.extract_slot();
 

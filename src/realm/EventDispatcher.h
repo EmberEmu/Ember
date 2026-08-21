@@ -40,8 +40,8 @@ class EventDispatcher final {
 	const thread::ServicePool& pool_;
 	log::Logger& logger_;
 
-	inline Client* locate_handler(const ClientIdent& client) const;
-	inline void deliver(const Event& event) const;
+	Client* locate_handler(const ClientIdent& client) const;
+	void deliver(const Event& event) const;
 
 #ifndef DISABLE_FAST_DISPATCH_TABLE
 	bool try_insert(ClientType* handler, ClientIdent& ident);
