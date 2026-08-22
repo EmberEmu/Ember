@@ -44,7 +44,7 @@ class EventDispatcher final {
 	log::Logger& logger_;
 
 	inline Client* locate_handler(const ClientIdent& client) const;
-	inline void deliver(const is_event auto& event) const;
+	void deliver(const is_event auto& event) const;
 
 #ifndef DISABLE_FAST_DISPATCH_TABLE
 	bool try_insert(ClientType* handler, ClientIdent& ident);
@@ -60,13 +60,11 @@ public:
 
 	// post an event to a specific client, if it's still connected
 	void post(const ClientIdent& client, is_event auto event) const;
+	void post(const ClientIdent& client, std::unique_ptr<Event> event) const;
 
 	// dispatch an event to a specific client, if it's still connected
 	// if caller resides on same worker as client, event will be handled synchronously
 	void dispatch(const ClientIdent& client, is_event auto event) const;
-
-	// post an event to a specific client, if it's still connected
-	void post(const ClientIdent& client, std::unique_ptr<Event> event) const;
 
 	// broadcasts an event to all handlers, across all service threads/workers
 	void broadcast(const is_event auto& event) const;
