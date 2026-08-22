@@ -22,6 +22,9 @@
 
 namespace ember::realm {
 
+template<typename T>
+concept is_event = std::derived_from<T, Event>;
+
 class EventDispatcher final {
 	using ClientType = Client;
 
@@ -40,8 +43,8 @@ class EventDispatcher final {
 	const thread::ServicePool& pool_;
 	log::Logger& logger_;
 
-	Client* locate_handler(const ClientIdent& client) const;
-	void deliver(const Event& event) const;
+	inline Client* locate_handler(const ClientIdent& client) const;
+	inline void deliver(const is_event auto& event) const;
 
 #ifndef DISABLE_FAST_DISPATCH_TABLE
 	bool try_insert(ClientType* handler, ClientIdent& ident);
@@ -52,37 +55,37 @@ public:
 		: pool_(pool)
 		, logger_(logger) {}
 
-	ClientIdent register_client(Client* client, std::size_t service_index);
-	void remove_client(const Client* client);
-
 	// execute a task, only if the specified client still exists
 	void exec(const ClientIdent& client, auto work) const;
 
 	// post an event to a specific client, if it's still connected
-	void post(const ClientIdent& client, Event event) const;
+	auto post(const ClientIdent& client, is_event auto event) const;
+
+	// dispatch an event to a specific client, if it's still connected
+	// if caller resides on same worker as client, event will be handled synchronously
+	auto dispatch(const ClientIdent& client, is_event auto event) const;
 
 	// post an event to a specific client, if it's still connected
 	void post(const ClientIdent& client, std::unique_ptr<Event> event) const;
 
-	// dispatch an event to a specific client, if it's still connected
-	// if caller resides on same worker as client, event will be handled synchronously
-	void dispatch(const ClientIdent& client, Event event) const;
-
 	// broadcasts an event to all handlers, across all service threads/workers
-	void broadcast(const Event& event) const;
+	void broadcast(const is_event auto& event) const;
 
 	// broadcasts an event to all handlers registered to the specified thread
-	void broadcast_worker(std::size_t index, Event event) const;
+	void broadcast_worker(std::size_t index, is_event auto event) const;
 
 	// broadcasts an event to all handlers registered with the worker residing on the current thread
 	// has no effect if not called from within a worker
-	void broadcast_self(Event event) const;
+	void broadcast_self(is_event auto event) const;
 
 	// broadcasts an event to all handlers, across all service threads
 	void broadcast(std::shared_ptr<const Event> event) const;
 
 	// broadcasts an event to a vector of clients - the vector is sorted to minimise the number of messages
 	void broadcast(std::vector<ClientIdent> clients, std::shared_ptr<const Event> event) const;
+
+	ClientIdent register_client(Client* client, std::size_t service_index);
+	void remove_client(const Client* client);
 };
 
 } // realm, ember
