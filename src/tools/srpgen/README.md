@@ -1,5 +1,4 @@
 # 🔥 **SRP6 Credentials Generator**
----
 
 This is a simple tool for generating SRP6 credentials for storing in the database. Simply provide a username and password on the command line and enter the provided details into the accounts table.
 

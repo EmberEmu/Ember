@@ -1,5 +1,4 @@
 # 🔥 **Spark RPC Generator (rpcgen)**
----
 
 This tool is used for converting FlatBuffers schemas into base classes for implementing services within Ember.
 

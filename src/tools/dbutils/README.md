@@ -1,5 +1,4 @@
 # 🔥 **Ember DB Utils**
----
 
 ## Overview
 

@@ -1,5 +1,4 @@
 # 🔥 **MPQ Extraction Test Utility**
----
 
 This tool only exists to test Ember's MPQ handling library, intended for future ancillary services.
 

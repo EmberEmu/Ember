@@ -1,4 +1,3 @@
-
 # 🔥 **Ember DBC Parser**
 
 ## Overview
