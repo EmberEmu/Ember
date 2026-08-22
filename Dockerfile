@@ -28,7 +28,8 @@ RUN apt-get -y update \
  && apt-get -y update \
  && apt-get install -y libpcre3 \
  && apt-get install -y libpcre3-dev \
- && apt-get install -y libjsoncons-dev
+ && apt-get install -y libjsoncons-dev \
+ && apt-get install -y angelscript-dev
 
 RUN if [ -n "$USE_CLANG" ]; then                                        \
  apt-get -y install clang;                                              \

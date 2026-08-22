@@ -242,6 +242,11 @@ endif()
 find_package(jsoncons REQUIRED)
 
 ##############################
+#         ANGELSCRIPT        #
+##############################
+find_package(angelscript 2.38.0 REQUIRED)
+
+##############################
 #         Google Test        #
 ##############################
 include(FetchContent)

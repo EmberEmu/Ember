@@ -11,6 +11,7 @@
     "flatbuffers",
     "pcre",
     "zlib",
+    "angelscript",
 	"jsoncons",
     {
       "name": "mysql-connector-cpp",
