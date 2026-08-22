@@ -13,13 +13,13 @@ set(CLIENT_MESSAGES
 
 set(SERVER_MESSAGES
     include/protocol/server/CharEnum.h
-    include/protocol/server/AddonInfo.h
     include/protocol/server/UpdateObject.h
     include/protocol/server/ChannelNotify.h
 )
 
 set(TYPE_HEADERS
     include/protocol/types/PackedGuid.h
+    include/protocol/types/AddonPubKey.h
 )
 
 set(CORE_HEADERS
