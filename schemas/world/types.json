@@ -759,71 +759,41 @@
 				"blizzard": 2
 			}
 		},
-		"InfoBlock": {
-			"kind": "enum_class",
-			"underlying": "uint8",
-			"cpp_namespace": "ember::protocol",
-			"values": {
-				"unavailable": 0,
-				"available":   1
-			}
-		},
-		"KeyVersion": {
-			"kind": "enum_class",
-			"underlying": "uint8",
-			"cpp_namespace": "ember::protocol",
-			"values": {
-				"zero":  0,
-				"one":   1,
-				"two":   2,
-				"three": 3,
-				"four":  4,
-				"five":  5,
-				"six":   6,
-				"seven": 7,
-				"eight": 8,
-				"nine":  9
-			}
-		},
-		"URLInfo": {
-			"kind": "enum_class",
-			"underlying": "uint8",
-			"cpp_namespace": "ember::protocol",
-			"values": {
-				"unavailable": 0,
-				"available":   1
-			}
-		},
 		"Addon": {
 			"kind": "struct",
 			"cpp_namespace": "ember::protocol",
 			"fields": [
 				{ "name": "addon_type", "type": "AddonType" },
-				{ "name": "info_block", "type": "InfoBlock" },
+				{ "name": "has_info_block", "type": "uint8" },
 				{
 					"type": "group",
-					"when": { "op": "eq", "field": "info_block", "value": "available" },
+					"when": { "op": "eq", "field": "has_info_block", "value": 1 },
 					"fields": [
-						{ "name": "key_version", "type": "KeyVersion" },
+						{ "name": "key_version", "type": "uint8" },
 						{
 							"type": "group",
-							"when": { "op": "neq", "field": "key_version", "value": "zero" },
+							"when": { "op": "neq", "field": "key_version", "value": 0 },
 							"fields": [
-								{ "name": "public_key", "type": "uint8", "array": {"size": 256} }
+								{ "name": "public_key", "type": "AddonPubKey" }
 							]
 						},
 						{ "name": "update_available_flag", "type": "uint32" }
 					]
 				},
-				{ "name": "url_info", "type": "URLInfo" },
+				{ "name": "has_update_url", "type": "uint8" },
 				{
 					"type": "group",
-					"when": { "op": "eq", "field": "url_info", "value": "available" },
+					"when": { "op": "eq", "field": "has_update_url", "value": 1 },
 					"fields": [
-						{ "name": "url", "type": "CString" }
+						{ "name": "update_url", "type": "CString" }
 					]
 				}
 			]
+		},
+		"AddonPubKey": {
+			"kind": "external",
+			"cpp_namespace": "ember::protocol",
+			"include": "protocol/types/AddonPubKey.h"
 		},
 		"LootMethod": {
 			"kind": "enum_class",

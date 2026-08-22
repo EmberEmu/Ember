@@ -227,18 +227,21 @@ void send_addon_data(ClientContext& ctx) {
 	for(const auto& addon : addons) {
 		CLIENT_DEBUG(ctx, "Addon: {}, Key version: {}, CRC: {}, URL CRC: {}",
 			addon.name, addon.key_version, addon.crc, addon.update_url_crc);
-		protocol::server::AddonInfo::AddonData data;
-		data.type = protocol::server::AddonInfo::AddonData::Type::blizzard;
+		protocol::Addon data;
+		data.addon_type = protocol::AddonType::blizzard;
 		data.update_available_flag = 0; // URL must be present for this to work (check URL CRC)
+		data.has_update_url = 0;
 
 		if(addon.key_version != 0 && addon.crc != 0x4C1C776D) { // todo, define?
 			CLIENT_DEBUG(ctx, "Repairing {}", addon.name);
+			data.has_info_block = 1;
 			data.key_version = 1;
 		} else {
+			data.has_info_block = 0;
 			data.key_version = 0;
 		}		
 		
-		response->addon_data.emplace_back(std::move(data));
+		response->addons.emplace_back(std::move(data));
 	}
 
 	ctx.send(response);
