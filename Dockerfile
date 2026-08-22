@@ -28,8 +28,7 @@ RUN apt-get -y update \
  && apt-get -y update \
  && apt-get install -y libpcre3 \
  && apt-get install -y libpcre3-dev \
- && apt-get install -y libjsoncons-dev \
- && apt-get install -y angelscript-dev
+ && apt-get install -y libjsoncons-dev
 
 RUN if [ -n "$USE_CLANG" ]; then                                        \
  apt-get -y install clang;                                              \
@@ -40,6 +39,13 @@ else                                                                    \
  && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-15 100  \
  && update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-15 100; \
 fi
+
+RUN wget -q https://github.com/anjo76/angelscript/archive/refs/tags/v2.38.0.tar.gz \
+ && tar -zxf v2.38.0.tar.gz \
+ && cd angelscript-2.38.0/sdk/angelscript/projects/cmake \
+ && cmake -S . -B build \
+ && cmake --build build -j$(nproc) \
+ && cmake --install build
 
 RUN wget -q https://archives.boost.io/release/1.90.0/source/boost_1_90_0.tar.gz \
  && tar -zxf boost_1_90_0.tar.gz \
