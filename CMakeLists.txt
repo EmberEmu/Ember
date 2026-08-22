@@ -244,7 +244,7 @@ find_package(jsoncons REQUIRED)
 ##############################
 #         ANGELSCRIPT        #
 ##############################
-find_package(AngelScript 2.38.0 REQUIRED)
+find_package(Angelscript 2.38.0 REQUIRED)
 
 ##############################
 #         Google Test        #
