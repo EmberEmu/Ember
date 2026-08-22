@@ -59,11 +59,11 @@ public:
 	void exec(const ClientIdent& client, auto work) const;
 
 	// post an event to a specific client, if it's still connected
-	auto post(const ClientIdent& client, is_event auto event) const;
+	void post(const ClientIdent& client, is_event auto event) const;
 
 	// dispatch an event to a specific client, if it's still connected
 	// if caller resides on same worker as client, event will be handled synchronously
-	auto dispatch(const ClientIdent& client, is_event auto event) const;
+	void dispatch(const ClientIdent& client, is_event auto event) const;
 
 	// post an event to a specific client, if it's still connected
 	void post(const ClientIdent& client, std::unique_ptr<Event> event) const;

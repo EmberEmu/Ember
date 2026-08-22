@@ -65,7 +65,7 @@ void EventDispatcher::exec(const ClientIdent& client, auto work) const {
 	});
 }
 
-auto EventDispatcher::dispatch(const ClientIdent& client, is_event auto event) const {
+void EventDispatcher::dispatch(const ClientIdent& client, is_event auto event) const {
 	auto service = pool_.get_if(client.service());
 
 	// bad service index encoded in the UUID
@@ -83,7 +83,7 @@ auto EventDispatcher::dispatch(const ClientIdent& client, is_event auto event) c
 	});
 }
 
-auto EventDispatcher::post(const ClientIdent& client, is_event auto event) const {
+void EventDispatcher::post(const ClientIdent& client, is_event auto event) const {
 	auto service = pool_.get_if(client.service());
 
 	// bad service index encoded in the UUID
