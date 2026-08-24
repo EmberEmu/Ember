@@ -8,6 +8,7 @@
 
 #include "Blaze.h"
 
-int main() {
-	// :)
-}
+namespace ember {
+
+
+} // ember
