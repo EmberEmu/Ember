@@ -7,7 +7,118 @@
  */
 
 #include "Blaze.h"
+#include <banner/Banner.h>
+#include <commands/Commands.h>
+#include <logger/Logger.h>
+#include <shared/utility/Utility.h>
+#include <shared/utility/LogConfig.h>
+#include <shared/utility/CommandHelpers.h>
+#include <boost/program_options.hpp>
+#include <fstream>
 
-int main() {
-	// :)
+using namespace ember;
+namespace opts = boost::program_options;
+
+opts::variables_map parse_arguments(int argc, const char* argv[]);
+std::shared_ptr<commands::Command> init_commands(const opts::variables_map& args, log::Logger& logger);
+int run(const opts::variables_map& args, log::Logger& logger, commands::Command& registry);
+
+/*
+ * We want to do the minimum amount of work required to get 
+ * logging facilities and crash handlers up and running in main.
+ *
+ * Exceptions that aren't derived from std::exception are
+ * left to the crash handler since we can't get useful information
+ * from them.
+ */
+int main(int argc, const char* argv[]) try {
+	print_banner(blaze::app_name);
+	utility::set_window_title(blaze::app_name);
+
+	const auto args = parse_arguments(argc, argv);
+
+	log::Logger logger;
+	utility::configure_logger(logger, args);
+	log::global_logger(logger);
+	SLOG_INFO(logger, "Logger configured successfully");
+
+	auto registry = init_commands(args, logger);
+	const auto ret = run(args, logger, *registry);
+	SLOG_INFO(logger, "{} terminated (returned '{}')", blaze::app_name, ret);
+	return ret;
+} catch(const std::exception& e) {
+	std::cerr << e.what();
+	return EXIT_FAILURE;
+}
+
+int run(const opts::variables_map& args, log::Logger& logger, commands::Command& /*registry*/) {
+	blaze::Blaze blaze(args, logger);
+	blaze.run();
+	return EXIT_SUCCESS;
+}
+
+std::shared_ptr<commands::Command> init_commands(const opts::variables_map& args, log::Logger& logger) {
+	auto registry = commands::create("root");
+	const auto suggestions = args["console_log.suggestions"].as<bool>();
+	utility::register_command_handlers(*registry, logger, suggestions);
+	utility::register_common_commands(*registry, logger);
+	return registry;
+}
+
+opts::variables_map parse_arguments(const int argc, const char* argv[]) {
+	//Command-line options
+	opts::options_description cmdline_opts("Generic options");
+	cmdline_opts.add_options()
+		("help,h", "Displays a list of available options")
+		("config,c", opts::value<std::string>()->default_value("blaze.conf"),
+			"Path to the configuration file");
+
+	opts::positional_options_description pos; 
+	pos.add("config", 1);
+
+	//Config file options
+	opts::options_description opts("Blaze configuration options");
+	opts.add_options()
+		("plugins.path", opts::value<std::string>()->required())
+		("misc.threads", opts::value<unsigned int>()->required())
+		("console_log.enable_input", opts::value<bool>()->required())
+		("console_log.verbosity", opts::value<log::Severity>()->required())
+		("console_log.filter-mask", opts::value<std::uint32_t>()->default_value(0))
+		("console_log.colours", opts::value<bool>()->required())
+		("console_log.suggestions", opts::value<bool>()->required())
+		("remote_log.verbosity", opts::value<log::Severity>()->required())
+		("remote_log.filter-mask", opts::value<std::uint32_t>()->default_value(0))
+		("remote_log.service_name", opts::value<std::string>()->required())
+		("remote_log.host", opts::value<std::string>()->required())
+		("remote_log.port", opts::value<std::uint16_t>()->required())
+		("file_log.verbosity", opts::value<log::Severity>()->required())
+		("file_log.filter-mask", opts::value<std::uint32_t>()->default_value(0))
+		("file_log.path", opts::value<std::string>()->default_value("realm.log"))
+		("file_log.timestamp_format", opts::value<std::string>())
+		("file_log.mode", opts::value<std::string>()->required())
+		("file_log.size_rotate", opts::value<std::uint32_t>()->required())
+		("file_log.midnight_rotate", opts::value<bool>()->required())
+		("file_log.log_timestamp", opts::value<bool>()->required())
+		("file_log.log_severity", opts::value<bool>()->required());
+
+	opts::variables_map options;
+	opts::store(opts::command_line_parser(argc, argv).positional(pos).options(cmdline_opts).run(), options);
+	opts::notify(options);
+
+	if(options.count("help")) {
+		std::cout << cmdline_opts;
+		std::exit(EXIT_SUCCESS);
+	}
+
+	const auto& config_path = options["config"].as<std::string>();
+	std::ifstream ifs(config_path);
+
+	if(!ifs) {
+		throw std::invalid_argument("Unable to open configuration file: " + config_path);
+	}
+
+	opts::store(opts::parse_config_file(ifs, opts), options);
+	opts::notify(options);
+
+	return options;
 }

@@ -8,7 +8,22 @@
 
 #pragma once
 
-namespace ember {
+#include <logger/Logger.h>
+#include <shared/utility/cstring_view.hpp>
+#include <boost/program_options/variables_map.hpp>
+#include <string_view>
 
+namespace ember::blaze {
 
-} // ember
+static inline constexpr cstring_view app_name { "Blaze" };
+
+class Blaze {
+	const boost::program_options::variables_map& opts_;
+	log::Logger& logger_;
+
+public:
+	Blaze(const boost::program_options::variables_map& opts, log::Logger& logger);
+	void run();
+};
+
+} // blaze, ember

@@ -16,7 +16,7 @@ set(LIBRARY_SRC
 )
 
 add_library(${LIBRARY_NAME} ${LIBRARY_HDR} ${LIBRARY_SRC})
-target_link_libraries(${LIBRARY_NAME} PRIVATE Angelscript::angelscript ${Boost_LIBRARIES})
+target_link_libraries(${LIBRARY_NAME} PRIVATE shared commands logger Angelscript::angelscript ${Boost_LIBRARIES})
 
 add_executable(${EXECUTABLE_NAME}
     main.cpp
@@ -27,6 +27,6 @@ if(WIN32)
     set(ICON_RESOURCE resources.rc)
 endif()
 
-target_link_libraries(${EXECUTABLE_NAME} PRIVATE ${Boost_LIBRARIES})
+target_link_libraries(${EXECUTABLE_NAME} PRIVATE ${LIBRARY_NAME} banner logger shared commands ${Boost_LIBRARIES})
 install(TARGETS ${EXECUTABLE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/tools)
 set_target_properties(blaze PROPERTIES FOLDER "Tools")
