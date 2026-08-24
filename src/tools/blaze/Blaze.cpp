@@ -7,8 +7,8 @@
  */
 
 #include "Blaze.h"
+#include <angelscript.h>
 
 namespace ember {
-
 
 } // ember

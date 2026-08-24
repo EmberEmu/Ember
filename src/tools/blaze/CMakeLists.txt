@@ -16,6 +16,7 @@ set(LIBRARY_SRC
 )
 
 add_library(${LIBRARY_NAME} ${LIBRARY_HDR} ${LIBRARY_SRC})
+target_link_libraries(${LIBRARY_NAME} PRIVATE Angelscript::angelscript ${Boost_LIBRARIES})
 
 add_executable(${EXECUTABLE_NAME}
     main.cpp
