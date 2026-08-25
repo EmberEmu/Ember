@@ -10,6 +10,7 @@
 
 #include <logger/Logger.h>
 #include <shared/utility/cstring_view.hpp>
+#include <boost/asio/io_context.hpp>
 #include <boost/program_options/variables_map.hpp>
 #include <string_view>
 
@@ -18,12 +19,14 @@ namespace ember::blaze {
 static inline constexpr cstring_view app_name { "Blaze" };
 
 class Blaze {
-	const boost::program_options::variables_map& opts_;
+	const boost::program_options::variables_map& args_;
 	log::Logger& logger_;
 
+	void start_services(boost::asio::io_context& ioc);
+
 public:
-	Blaze(const boost::program_options::variables_map& opts, log::Logger& logger);
-	void run();
+	Blaze(const boost::program_options::variables_map& args, log::Logger& logger);
+	int run();
 };
 
 } // blaze, ember

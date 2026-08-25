@@ -9,10 +9,14 @@ set(LIBRARY_NAME    libblaze)
 
 set(LIBRARY_HDR
     Blaze.h
+    Client.h
+    Connection.cpp
 )
 
 set(LIBRARY_SRC
     Blaze.cpp
+    Client.cpp
+    Connection.cpp
 )
 
 add_library(${LIBRARY_NAME} ${LIBRARY_HDR} ${LIBRARY_SRC})
@@ -30,3 +34,6 @@ add_executable(${EXECUTABLE_NAME}
 target_link_libraries(${EXECUTABLE_NAME} PRIVATE ${LIBRARY_NAME} banner logger shared commands ${Boost_LIBRARIES})
 install(TARGETS ${EXECUTABLE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/tools)
 set_target_properties(blaze PROPERTIES FOLDER "Tools")
+
+add_subdirectory(plugins)
+add_subdirectory(sdk)
