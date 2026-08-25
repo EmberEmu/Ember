@@ -7,10 +7,10 @@
  */
 
 #include "Blaze.h"
+#include "Extensions.h"
 #include <thread/Utility.h>
-#include <boost/asio/io_context.hpp>
+#include <filesystem>
 #include <thread>
-#include <vector>
 #include "Library.h"
 
 namespace ember::blaze {
@@ -18,25 +18,7 @@ namespace ember::blaze {
 Blaze::Blaze(const boost::program_options::variables_map& args, log::Logger& logger)
 	: args_(args)
 	, logger_(logger) {
-	auto plugin = library::open("plugins/blazeas.dll");
-	
-	if(plugin) {
-		SLOG_INFO(logger_, "Loaded test plugin");
-	} else {
-		throw std::runtime_error("Unable to load library");
-	}
-
-	auto result = library::find_symbol<const char**>(*plugin, "plugin_name");
-
-	if(!result) {
-		throw std::runtime_error("Symbol not found");
-	} else {
-		SLOG_INFO(logger_, "Plugin name: {}", **result);
-	}
-
-	if(plugin) {
-		library::close(*plugin);
-	}
+	load_plugins();
 }
 
 int Blaze::run() try {
@@ -68,6 +50,42 @@ int Blaze::run() try {
 
 void Blaze::start_services(boost::asio::io_context& ioc) {
 
+}
+
+void Blaze::load_plugins() {
+	const auto& plugins_path = args_["plugins.path"].as<std::string>();
+
+	if(!std::filesystem::is_directory(plugins_path)) {
+		throw std::runtime_error("Unable to open specified plugins path");
+	}
+
+	for(auto& file : std::filesystem::directory_iterator(plugins_path)) {
+		if(file.path().extension() == SHARED_LIBRARY_EXT) {
+			load_plugin(file);
+		}
+	}
+}
+
+void Blaze::load_plugin(const std::filesystem::path& path) {
+	auto handle = library::open(path.string());
+
+	if(!handle) {
+		LOG_ERROR(logger_, "Unable to load plugin, {}, error {}",
+			path.filename().string(), library::result_to_string(handle.error()));
+		return;
+	}
+
+	const auto symbol = library::find_symbol<const char**>(*handle, "plugin_name");
+
+	if(!symbol) {
+		LOG_ERROR(logger_, "Unable to load plugin, {}, error {}",
+			path.filename().string(), library::result_to_string(symbol.error()));
+		library::close(*handle);
+		return;
+	}
+
+	plugins_.emplace_back(*handle, **symbol);
+	LOG_INFO(logger_, "Loaded plugin, {}", **symbol);
 }
 
 } // blaze, ember

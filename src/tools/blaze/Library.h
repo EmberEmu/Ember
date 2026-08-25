@@ -21,6 +21,25 @@ enum class Result {
 	unknown
 };
 
+inline std::string_view result_to_string(const Result result) {
+	using enum Result;
+
+	switch(result) {
+		case success:
+			return "success";
+		case open_failed:
+			return "open_failed";
+		case close_failed:
+			return "close_failed";
+		case symbol_not_found:
+			return "symbol_not_found";
+		case unknown:
+			return "unknown_error";
+		default:
+			return "unhandled_error_case";
+	}
+}
+
 struct Handle__ { int unused; }; typedef struct Handle__ *Handle;
 
 namespace impl {

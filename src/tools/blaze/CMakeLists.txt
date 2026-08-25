@@ -12,6 +12,7 @@ set(LIBRARY_HDR
     Client.h
     Connection.h
     Library.h
+    Plugin.h
 )
 
 set(LIBRARY_SRC

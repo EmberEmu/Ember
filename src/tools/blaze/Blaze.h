@@ -8,11 +8,14 @@
 
 #pragma once
 
+#include "Plugin.h"
 #include <logger/Logger.h>
 #include <shared/utility/cstring_view.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/program_options/variables_map.hpp>
+#include <filesystem>
 #include <string_view>
+#include <vector>
 
 namespace ember::blaze {
 
@@ -21,8 +24,11 @@ static inline constexpr cstring_view app_name { "Blaze" };
 class Blaze {
 	const boost::program_options::variables_map& args_;
 	log::Logger& logger_;
+	std::vector<Plugin> plugins_;
 
 	void start_services(boost::asio::io_context& ioc);
+	void load_plugins();
+	void load_plugin(const std::filesystem::path& path);
 
 public:
 	Blaze(const boost::program_options::variables_map& args, log::Logger& logger);
