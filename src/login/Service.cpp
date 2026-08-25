@@ -87,7 +87,7 @@ int Service::run(const opts::variables_map& args) try {
 	std::vector<std::jthread> threads;
 	threads.reserve(concurrency);
 
-	for(unsigned int i = 0; i < concurrency; ++i) {
+	for(unsigned int i = 1; i < concurrency; ++i) {
 		threads.emplace_back(&boost::asio::io_context::run, &ioc);
 		thread::set_name(threads[i], "Asio Worker");
 	}
