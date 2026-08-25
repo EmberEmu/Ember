@@ -7,7 +7,7 @@
  */
 
 #include "Config.h"
-#include <ember/blaze/dummy.h>
+#include <ember/blaze/BlazeSDK.h>
 #include <angelscript.h>
 #include <iostream>
 

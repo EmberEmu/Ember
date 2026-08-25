@@ -6,4 +6,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include <ember/blaze/dummy.h>
+#ifndef BLAZE_SDK_BLAZE_H
+#define BLAZE_SDK_BLAZE_H
+
+#include <ember/blaze/ClientState.h>
+
+#endif // BLAZE_SDK_BLAZE_H

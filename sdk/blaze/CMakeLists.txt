@@ -8,11 +8,13 @@ set(SDK_NAME blaze)
 set(LIBRARY_NAME blazesdk)
 
 set(LIBRARY_SRC
-	src/dummy.c
+    src/Client.c
 )
 
 set(LIBRARY_HDR
-    include/ember/blaze/dummy.h
+    include/ember/blaze/BlazeSDK.h
+    include/ember/blaze/ClientState.h
+	include/ember/blaze/Client.h
 )
 
 add_library(${LIBRARY_NAME} STATIC ${LIBRARY_SRC} ${LIBRARY_HDR})

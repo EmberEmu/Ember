@@ -6,7 +6,15 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#ifndef DUMMY_H
-#define DUMMY_H
+#ifndef BLAZE_SDK_CLIENT_STATE_H
+#define BLAZE_SDK_CLIENT_STATE_H
 
-#endif // DUMMY_H
+enum ClientState {
+	cs_created,
+	cs_connected,
+	cs_logged_in,
+	cs_disconnected,
+	cs_destroyed
+};
+
+#endif // BLAZE_SDK_CLIENT_STATE_H
