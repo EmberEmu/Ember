@@ -8,14 +8,8 @@
 
 #pragma once
 
-#define EMBER_EXPORT_SERVICE
-
 #ifdef _WIN32
-	#ifdef BUILD_SHARED_SERVICES
-		#ifdef EXPORT_SERVICE
-			#define EMBER_EXPORT_SERVICE __declspec(dllexport)
-		#else
-			#define EMBER_EXPORT_SERVICE __declspec(dllimport)
-		#endif // EXPORT_SERVICE
-	#endif // BUILD_SHARED_SERVICES
+	#define EMBER_PLUGIN_EXPORT __declspec(dllexport) 
+#else
+	#define EMBER_PLUGIN_EXPORT
 #endif // _WIN32

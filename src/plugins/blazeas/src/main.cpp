@@ -6,9 +6,16 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+#include "Config.h"
 #include <ember/blaze/dummy.h>
 #include <angelscript.h>
 #include <iostream>
+
+extern "C" {
+
+EMBER_PLUGIN_EXPORT const char* plugin_name = "Blaze Angelscript Runner";
+
+}
 
 #ifdef _WIN32
 

@@ -22,9 +22,20 @@ Blaze::Blaze(const boost::program_options::variables_map& args, log::Logger& log
 	
 	if(plugin) {
 		SLOG_INFO(logger_, "Loaded test plugin");
-		library::close(*plugin);
 	} else {
 		throw std::runtime_error("Unable to load library");
+	}
+
+	auto result = library::find_symbol<const char**>(*plugin, "plugin_name");
+
+	if(!result) {
+		throw std::runtime_error("Symbol not found");
+	} else {
+		SLOG_INFO(logger_, "Plugin name: {}", **result);
+	}
+
+	if(plugin) {
+		library::close(*plugin);
 	}
 }
 

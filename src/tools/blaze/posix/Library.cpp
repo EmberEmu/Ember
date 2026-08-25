@@ -11,15 +11,7 @@
 
 namespace ember::blaze::library {
 
-std::expected<Handle, Result> open(const cstring_view name) {
-	auto lib = dlopen(name.c_str(), 0);
-
-	if(lib) {
-		return reinterpret_cast<Handle>(lib);
-	} else {
-		return std::unexpected(Result::open_failed);
-	}
-}
+namespace impl {
 
 std::expected<void*, Result> find_symbol_base(Handle handle, const cstring_view name) {
 	auto lib = reinterpret_cast<void*>(handle);
@@ -31,6 +23,19 @@ std::expected<void*, Result> find_symbol_base(Handle handle, const cstring_view 
 		return std::unexpected(Result::symbol_not_found);
 	}
 }
+
+} // impl
+
+std::expected<Handle, Result> open(const cstring_view name) {
+	auto lib = dlopen(name.c_str(), 0);
+
+	if(lib) {
+		return reinterpret_cast<Handle>(lib);
+	} else {
+		return std::unexpected(Result::open_failed);
+	}
+}
+
 
 Result close(Handle handle) {
 	auto fn_ptr = reinterpret_cast<void*>(handle);

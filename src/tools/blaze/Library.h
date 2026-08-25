@@ -23,11 +23,15 @@ enum class Result {
 
 struct Handle__ { int unused; }; typedef struct Handle__ *Handle;
 
+namespace impl {
+
 std::expected<void*, Result> find_symbol_base(Handle handle, const cstring_view name);
+
+}
 
 template<typename _fn>
 std::expected<_fn, Result> find_symbol(Handle handle, const cstring_view name) {
-	auto result = find_symbol_base(handle, name);
+	auto result = impl::find_symbol_base(handle, name);
 
 	if(result) {
 		return reinterpret_cast<_fn>(*result);
