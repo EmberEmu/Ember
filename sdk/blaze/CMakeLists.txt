@@ -48,7 +48,7 @@ write_basic_package_version_file(
 )
 
 configure_file(
-    ${SDK_NAME}Config.cmake.in
+    ${LIBRARY_NAME}Config.cmake.in
     "${CMAKE_CURRENT_BINARY_DIR}/${LIBRARY_NAME}Config.cmake"
     @ONLY
 )
