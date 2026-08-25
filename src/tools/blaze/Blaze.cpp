@@ -70,7 +70,7 @@ void Blaze::load_plugin(const std::filesystem::path& path) {
 	auto handle = library::open(path.string());
 
 	if(!handle) {
-		LOG_ERROR(logger_, "Unable to load plugin, {}, error {}",
+		LOG_ERROR(logger_, "Unable to load plugin, {}: {}",
 			path.filename().string(), library::result_to_string(handle.error()));
 		return;
 	}
@@ -78,7 +78,7 @@ void Blaze::load_plugin(const std::filesystem::path& path) {
 	const auto symbol = library::find_symbol<const char**>(*handle, "plugin_name");
 
 	if(!symbol) {
-		LOG_ERROR(logger_, "Unable to load plugin, {}, error {}",
+		LOG_ERROR(logger_, "Unable to load plugin, {}: {}",
 			path.filename().string(), library::result_to_string(symbol.error()));
 		library::close(*handle);
 		return;

@@ -28,15 +28,15 @@ inline std::string_view result_to_string(const Result result) {
 		case success:
 			return "success";
 		case open_failed:
-			return "open_failed";
+			return "open failed";
 		case close_failed:
-			return "close_failed";
+			return "close failed";
 		case symbol_not_found:
-			return "symbol_not_found";
+			return "symbol not found";
 		case unknown:
-			return "unknown_error";
+			return "unknown error";
 		default:
-			return "unhandled_error_case";
+			return "unhandled result";
 	}
 }
 
