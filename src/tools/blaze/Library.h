@@ -10,6 +10,7 @@
 
 #include <shared/utility/cstring_view.hpp>
 #include <expected>
+#include <string_view>
 
 namespace ember::blaze::library {
 
