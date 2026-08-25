@@ -14,7 +14,8 @@ enum ClientState {
 	cs_connected,
 	cs_logged_in,
 	cs_disconnected,
-	cs_destroyed
+	cs_closed,
+	cs_errored
 };
 
 #endif // BLAZE_SDK_CLIENT_STATE_H

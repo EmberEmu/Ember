@@ -7,3 +7,23 @@
  */
 
 #include <ember/blaze/Client.h>
+#include <stdlib.h>
+
+struct Client* client_create() {
+	struct Client* client = calloc(1, sizeof(struct Client));
+
+	if(!client) {
+		return NULL;
+	}
+
+	client->state = cs_created;
+	return client;
+}
+
+void client_close(struct Client* client) {
+	client->state = cs_closed;
+}
+
+void client_destroy(struct Client* client) {
+	free(client);
+}

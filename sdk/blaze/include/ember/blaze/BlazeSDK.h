@@ -9,6 +9,10 @@
 #ifndef BLAZE_SDK_BLAZE_H
 #define BLAZE_SDK_BLAZE_H
 
-#include <ember/blaze/ClientState.h>
+extern "C" {
+
+#include <ember/blaze/Client.h>
+
+}
 
 #endif // BLAZE_SDK_BLAZE_H

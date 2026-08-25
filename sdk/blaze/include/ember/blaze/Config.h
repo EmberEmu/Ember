@@ -9,11 +9,13 @@
 #pragma once
 
 #ifdef _WIN32
-	#define EMBER_PLUGIN_EXPORT __declspec(dllexport)
-#else
-	#define EMBER_PLUGIN_EXPORT
+	#ifdef EXPORT_SDK
+		#define EMBER_EXPORT_SDK __declspec(dllexport)
+	#else
+		#define EMBER_EXPORT_SDK __declspec(dllimport)
+	#endif // EXPORT_SERVICE
 #endif // _WIN32
 
-#ifndef EMBER_PLUGIN_EXPORT
-#define EMBER_PLUGIN_EXPORT
-#endif // 
+#ifndef EMBER_EXPORT_SDK
+#define EMBER_EXPORT_SDK
+#endif // EMBER_EXPORT_SDK

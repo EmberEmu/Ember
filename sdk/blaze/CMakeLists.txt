@@ -18,6 +18,8 @@ set(LIBRARY_HDR
 )
 
 add_library(${LIBRARY_NAME} STATIC ${LIBRARY_SRC} ${LIBRARY_HDR})
+target_compile_definitions(${LIBRARY_NAME} PUBLIC EXPORT_SDK)
+
 
 target_include_directories(${LIBRARY_NAME} PUBLIC  
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>  
