@@ -10,7 +10,8 @@ set(LIBRARY_NAME    libblaze)
 set(LIBRARY_HDR
     Blaze.h
     Client.h
-    Connection.cpp
+    Connection.h
+    Library.h
 )
 
 set(LIBRARY_SRC
@@ -18,6 +19,12 @@ set(LIBRARY_SRC
     Client.cpp
     Connection.cpp
 )
+
+if(WIN32)
+    set(LIBRARY_SRC ${LIBRARY_SRC} win32/Library.cpp)
+else()
+    set(LIBRARY_SRC ${LIBRARY_SRC} posix/Library.cpp)
+endif()
 
 add_library(${LIBRARY_NAME} ${LIBRARY_HDR} ${LIBRARY_SRC})
 target_link_libraries(${LIBRARY_NAME} PRIVATE shared commands logger ${Boost_LIBRARIES})

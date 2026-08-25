@@ -11,12 +11,22 @@
 #include <boost/asio/io_context.hpp>
 #include <thread>
 #include <vector>
+#include "Library.h"
 
 namespace ember::blaze {
 
 Blaze::Blaze(const boost::program_options::variables_map& args, log::Logger& logger)
 	: args_(args)
-	, logger_(logger) {}
+	, logger_(logger) {
+	auto plugin = library::open("plugins/blazeas.dll");
+	
+	if(plugin) {
+		SLOG_INFO(logger_, "Loaded test plugin");
+		library::close(*plugin);
+	} else {
+		throw std::runtime_error("Unable to load library");
+	}
+}
 
 int Blaze::run() try {
 	auto concurrency = args_["misc.threads"].as<unsigned int>();

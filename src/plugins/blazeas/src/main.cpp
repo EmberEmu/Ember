@@ -8,13 +8,22 @@
 
 #include <ember/blaze/dummy.h>
 #include <angelscript.h>
+#include <iostream>
 
 #ifdef _WIN32
 
 #include <Windows.h>
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ulReason, LPVOID lpReserved) {
+	if(ulReason == DLL_PROCESS_ATTACH) {
+		std::cout << "Hello, world!\n";
+	}
 
+	if(ulReason == DLL_PROCESS_DETACH) {
+		std::cout << "Farewell, world!\n";
+	}
+
+	return TRUE;
 }
 
 #endif
