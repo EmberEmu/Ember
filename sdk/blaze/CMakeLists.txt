@@ -42,19 +42,19 @@ install(EXPORT ${SDK_NAME}Targets
 include(CMakePackageConfigHelpers)
 
 write_basic_package_version_file(
-    "${CMAKE_CURRENT_BINARY_DIR}/sdk/${SDK_NAME}/lib/cmake/ConfigVersion.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/sdk/${LIBRARY_NAME}/lib/cmake/ConfigVersion.cmake"
     VERSION 1.0.0
     COMPATIBILITY AnyNewerVersion
 )
 
 configure_file(
     ${SDK_NAME}Config.cmake.in
-    "${CMAKE_CURRENT_BINARY_DIR}/${SDK_NAME}Config.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/${LIBRARY_NAME}Config.cmake"
     @ONLY
 )
 
 install(FILES 
-    "${CMAKE_CURRENT_BINARY_DIR}/${SDK_NAME}Config.cmake"
-    "${CMAKE_CURRENT_BINARY_DIR}/${SDK_NAME}ConfigVersion.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/${LIBRARY_NAME}Config.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/${LIBRARY_NAME}ConfigVersion.cmake"
     DESTINATION sdk/${SDK_NAME}/lib/cmake/${SDK_NAME}
 )
