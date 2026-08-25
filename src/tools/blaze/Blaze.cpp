@@ -9,7 +9,6 @@
 #include "Blaze.h"
 #include <thread/Utility.h>
 #include <boost/asio/io_context.hpp>
-#include <angelscript.h>
 #include <thread>
 #include <vector>
 

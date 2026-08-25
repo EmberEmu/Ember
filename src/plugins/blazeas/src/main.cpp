@@ -7,6 +7,7 @@
  */
 
 #include <blazesdk/dummy.h>
+#include <angelscript.h>
 
 #ifdef _WIN32
 
