@@ -8,8 +8,6 @@
 
 #pragma once
 
-#define EMBER_EXPORT_SERVICE
-
 #ifdef _WIN32
 	#ifdef BUILD_SHARED_SERVICES
 		#ifdef EXPORT_SERVICE
@@ -19,3 +17,7 @@
 		#endif // EXPORT_SERVICE
 	#endif // BUILD_SHARED_SERVICES
 #endif // _WIN32
+
+#ifndef EMBER_EXPORT_SERVICE
+#define EMBER_EXPORT_SERVICE
+#endif // EMBER_EXPORT_SERVICE
