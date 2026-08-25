@@ -140,6 +140,7 @@ add_dependencies(${LIBRARY_NAME}
 
 if(BUILD_SHARED)
     target_compile_definitions(${LIBRARY_NAME} PUBLIC EXPORT_SERVICE)
+	set(LIBRARY_INSTALL_TARGET ${LIBRARY_NAME})
 endif()
 
 if(DISABLE_FAST_CLIENT_DISPATCH_TABLE)
@@ -161,6 +162,6 @@ add_executable(${EXECUTABLE_NAME}
 
 target_link_libraries(${EXECUTABLE_NAME} PRIVATE ${LIBRARY_NAME} banner logger commands shared ${Boost_LIBRARIES} Threads::Threads)
 
-install(TARGETS ${EXECUTABLE_NAME} ${LIBRARY_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})
+install(TARGETS ${EXECUTABLE_NAME} ${LIBRARY_INSTALL_TARGET} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})
 set_target_properties(${EXECUTABLE_NAME} PROPERTIES FOLDER "Services/Applications")
 set_target_properties(${LIBRARY_NAME} PROPERTIES FOLDER "Services/Libraries")

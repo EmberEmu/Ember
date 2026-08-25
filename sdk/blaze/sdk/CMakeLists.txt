@@ -10,6 +10,7 @@ set(LIBRARY_SRC
 	src/dummy.c
 )
 
-add_library(${LIBRARY_NAME} ${LIBRARY_SRC})
+add_library(${LIBRARY_NAME} STATIC ${LIBRARY_SRC})
 target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set_target_properties(${EXECUTABLE_NAME} PROPERTIES FOLDER "SDKs")
+install(DIRECTORY include DESTINATION ${CMAKE_INSTALL_PREFIX}/sdk/blaze)
