@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include <blazesdk/dummy.h>
+#include <ember/blaze/dummy.h>
 #include <angelscript.h>
 
 #ifdef _WIN32

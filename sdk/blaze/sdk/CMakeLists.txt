@@ -7,7 +7,6 @@
 set(LIBRARY_NAME blazesdk)
 
 set(LIBRARY_SRC
-    src/dummy.h
 	src/dummy.c
 )
 
