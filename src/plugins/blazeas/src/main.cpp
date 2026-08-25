@@ -21,16 +21,17 @@ EMBER_PLUGIN_EXPORT const char* plugin_name = "Blaze Angelscript Runner";
 
 #include <Windows.h>
 
-Client* client = nullptr;
+blaze_client* client = nullptr;
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ulReason, LPVOID lpReserved) {
 	if(ulReason == DLL_PROCESS_ATTACH) {
-		client = client_create();
+		blaze_sdk_init();
+		client = blaze_client_create();
 		std::cout << "Client created\n";
 	}
 
 	if(ulReason == DLL_PROCESS_DETACH) {
-		client_destroy(client);
+		blaze_client_destroy(client);
 		std::cout << "Client destroyed\n";
 	}
 

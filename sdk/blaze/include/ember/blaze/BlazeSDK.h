@@ -9,10 +9,18 @@
 #ifndef BLAZE_SDK_BLAZE_H
 #define BLAZE_SDK_BLAZE_H
 
+#ifdef __cplusplus
 extern "C" {
+#endif
 
 #include <ember/blaze/Client.h>
 
-}
+extern void* handle;
+
+int blaze_sdk_init();
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
 
 #endif // BLAZE_SDK_BLAZE_H

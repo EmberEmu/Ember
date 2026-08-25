@@ -8,6 +8,7 @@ set(SDK_NAME blaze)
 set(LIBRARY_NAME blazesdk)
 
 set(LIBRARY_SRC
+    src/BlazeSDK.c
     src/Client.c
 )
 

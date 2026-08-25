@@ -12,11 +12,11 @@
 #include <ember/blaze/ClientState.h>
 #include <ember/blaze/Config.h>
 
-struct Client {
-	enum ClientState state;
+struct blaze_client {
+	enum blaze_client_state state;
 };
 
-EMBER_EXPORT_SDK struct Client* client_create();
-EMBER_EXPORT_SDK void client_destroy(struct Client* client);
+EMBER_EXPORT_SDK struct blaze_client* blaze_client_create();
+EMBER_EXPORT_SDK void blaze_client_destroy(struct blaze_client* client);
 
 #endif // BLAZE_SDK_CLIENT_H

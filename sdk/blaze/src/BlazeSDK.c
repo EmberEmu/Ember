@@ -6,16 +6,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#ifndef BLAZE_SDK_CLIENT_STATE_H
-#define BLAZE_SDK_CLIENT_STATE_H
+#include <ember/blaze/BlazeSDK.h>
+#include <stddef.h>
 
-enum blaze_client_state {
-	cs_created,
-	cs_connected,
-	cs_logged_in,
-	cs_disconnected,
-	cs_closed,
-	cs_errored
-};
+void* handle = NULL;
 
-#endif // BLAZE_SDK_CLIENT_STATE_H
+int blaze_sdk_init() {
+	return 0;
+}

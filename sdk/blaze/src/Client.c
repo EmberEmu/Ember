@@ -9,8 +9,8 @@
 #include <ember/blaze/Client.h>
 #include <stdlib.h>
 
-struct Client* client_create() {
-	struct Client* client = calloc(1, sizeof(struct Client));
+struct blaze_client* blaze_client_create() {
+	struct blaze_client* client = calloc(1, sizeof(struct blaze_client));
 
 	if(!client) {
 		return NULL;
@@ -20,10 +20,10 @@ struct Client* client_create() {
 	return client;
 }
 
-void client_close(struct Client* client) {
+void blaze_client_close(struct blaze_client* client) {
 	client->state = cs_closed;
 }
 
-void client_destroy(struct Client* client) {
+void blaze_client_destroy(struct blaze_client* client) {
 	free(client);
 }
