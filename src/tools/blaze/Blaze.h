@@ -9,6 +9,7 @@
 #pragma once
 
 #include "Plugin.h"
+#include <commands/Command.h>
 #include <logger/Logger.h>
 #include <shared/utility/cstring_view.hpp>
 #include <boost/asio/io_context.hpp>
@@ -23,6 +24,7 @@ static inline constexpr cstring_view app_name { "Blaze" };
 
 class Blaze {
 	const boost::program_options::variables_map& args_;
+	commands::Command& registry_;
 	log::Logger& logger_;
 	std::vector<Plugin> plugins_;
 
@@ -31,7 +33,7 @@ class Blaze {
 	void load_plugin(const std::filesystem::path& path);
 
 public:
-	Blaze(const boost::program_options::variables_map& args, log::Logger& logger);
+	Blaze(const boost::program_options::variables_map& args, commands::Command& registry, log::Logger& logger);
 	int run();
 };
 

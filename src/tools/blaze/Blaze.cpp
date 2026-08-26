@@ -8,6 +8,7 @@
 
 #include "Blaze.h"
 #include "Extensions.h"
+#include "InterfaceContainer.h"
 #include <thread/Utility.h>
 #include <filesystem>
 #include <thread>
@@ -15,9 +16,16 @@
 
 namespace ember::blaze {
 
-Blaze::Blaze(const boost::program_options::variables_map& args, log::Logger& logger)
+Blaze::Blaze(const boost::program_options::variables_map& args, commands::Command& registry, log::Logger& logger)
 	: args_(args)
+	, registry_(registry)
 	, logger_(logger) {
+	// todo, it's all temporary
+	auto interfaces = InterfaceContainer::get_instance();
+	interfaces.command_root(&registry);
+	interfaces.logger(&logger);
+	auto pcr = new PluginCommandRegistry(); // todo, temp!
+	interfaces.plugin_command_registry(pcr);
 	load_plugins();
 }
 

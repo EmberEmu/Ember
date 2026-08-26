@@ -8,9 +8,11 @@
 
 #pragma once
 
-// todo, improve compiler detection
-#ifdef _WIN32
-	#define EMBER_EXPORT __declspec(dllexport)
-#else
-	#define EMBER_EXPORT __attribute__((visibility("default")))
-#endif // _WIN32
+#include <ember/blaze/BlazeSDK.h>
+#include <memory>
+
+namespace blazeas {
+
+void launch(std::unique_ptr<ember::blaze::Client> client);
+
+} // blazeas

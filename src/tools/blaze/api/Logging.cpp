@@ -17,55 +17,51 @@ enum log_level {
 	ll_error = 4
 };
 
-logger log_get_logger() {
-	// todo, temporary!
-	auto glob = ember::log::global_logger();
-	return {
-		.impl = glob
-	};
-}
+void log_async(const char* message, std::uint8_t level) {
+	auto logger = ember::log::global_logger(); // todo, temp!
 
-void log_async(logger logger, const char* message, std::uint8_t level) {
 	switch(level) {
 		case ll_trace:
-			LOG_TRACE(logger.impl, message);
+			LOG_TRACE(logger, message);
 			break;
 		case ll_debug:
-			LOG_DEBUG(logger.impl, message);
+			LOG_DEBUG(logger, message);
 			break;
 		case ll_info:
-			LOG_INFO(logger.impl, message);
+			LOG_INFO(logger, message);
 			break;
 		case ll_warn:
-			LOG_WARN(logger.impl, message);
+			LOG_WARN(logger, message);
 			break;
 		case ll_error:
-			LOG_ERROR(logger.impl, message);
+			LOG_ERROR(logger, message);
 			break;
 		default:
-			LOG_ERROR(logger.impl, "Bad logging level, message: {}", message);
+			LOG_ERROR(logger, "Bad logging level, message: {}", message);
 	}
 }
 
-void log_sync(logger logger, const char* message, std::uint8_t level) {
+void log_sync(const char* message, std::uint8_t level) {
+	auto logger = ember::log::global_logger(); // todo, temp!
+
 	switch(level) {
 		case ll_trace:
-			SLOG_TRACE(logger.impl, message);
+			SLOG_TRACE(logger, message);
 			break;
 		case ll_debug:
-			SLOG_DEBUG(logger.impl, message);
+			SLOG_DEBUG(logger, message);
 			break;
 		case ll_info:
-			SLOG_INFO(logger.impl, message);
+			SLOG_INFO(logger, message);
 			break;
 		case ll_warn:
-			SLOG_WARN(logger.impl, message);
+			SLOG_WARN(logger, message);
 			break;
 		case ll_error:
-			SLOG_ERROR(logger.impl, message);
+			SLOG_ERROR(logger, message);
 			break;
 		default:
-			SLOG_ERROR(logger.impl, "Bad logging level, message: {}", message);
+			SLOG_ERROR(logger, "Bad logging level, message: {}", message);
 	}
 }
 

@@ -6,23 +6,28 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include <ember/blaze/BlazeSDK.h>
 #include <ember/blaze/impl/Client.h>
 
-namespace ember::blaze {
+namespace ember::blaze::impl {
 
-Client::Client() : impl_(std::make_unique<impl::Client>()) {}
+Client::Client() {
+	
+}
 
 Client::~Client() {
 
 }
 
-void Client::log(LogLevel level, std::string_view message) {
+void Client::resolve_symbols() {
 
+}
+
+void Client::log(LogLevel level, std::string_view message) {
+	//
 }
 
 void Client::slog(LogLevel level, std::string_view message) {
-
+	//
 }
 
-} // blaze, ember
+} // impl, blaze, ember

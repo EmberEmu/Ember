@@ -8,6 +8,9 @@
 
 #pragma once
 
+#include <ember/blaze/Shared.h>
+#include <string_view>
+
 namespace ember::blaze::impl {
 
 class Client final {
@@ -16,6 +19,9 @@ class Client final {
 public:
 	Client();
 	~Client();
+
+	void log(LogLevel level, std::string_view message);
+	void slog(LogLevel level, std::string_view message);
 };
 
 } // impl, blaze, ember

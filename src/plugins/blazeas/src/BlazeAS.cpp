@@ -6,14 +6,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#pragma once
+#include "BlazeAS.h"
 
-#include "Visibility.h"
-#include <cstdint>
+namespace blazeas {
 
-extern "C" {
+void launch(std::unique_ptr<ember::blaze::Client> client) {
+	
+}
 
-EMBER_EXPORT void log_async(const char* message, std::uint8_t level);
-EMBER_EXPORT void log_sync(const char* message, std::uint8_t level);
-
-} // extern "C"
+} // blazeas

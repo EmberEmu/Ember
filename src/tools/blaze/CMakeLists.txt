@@ -13,14 +13,19 @@ set(LIBRARY_HDR
     Connection.h
     Library.h
     Plugin.h
+    PluginCommandRegistry.h
+    InterfaceContainer.h
     api/Logging.h
+    api/Commands.h
 )
 
 set(LIBRARY_SRC
     Blaze.cpp
     Client.cpp
     Connection.cpp
+    PluginCommandRegistry.cpp
     api/Logging.cpp
+    api/Commands.cpp
 )
 
 if(WIN32)

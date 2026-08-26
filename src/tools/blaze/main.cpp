@@ -51,8 +51,8 @@ int main(int argc, const char* argv[]) try {
 	return EXIT_FAILURE;
 }
 
-int run(const opts::variables_map& args, log::Logger& logger, commands::Command& /*registry*/) {
-	blaze::Blaze blaze(args, logger);
+int run(const opts::variables_map& args, log::Logger& logger, commands::Command& registry) {
+	blaze::Blaze blaze(args, registry, logger);
 	blaze.run();
 	return EXIT_SUCCESS;
 }

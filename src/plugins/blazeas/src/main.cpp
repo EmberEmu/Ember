@@ -6,17 +6,30 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include "Config.h"
+#include "BlazeAS.h"
+#include "Visibility.h"
 #include <ember/blaze/BlazeSDK.h>
 #include <angelscript.h>
 #include <thread>
+#include <memory>
+#include <cstdint>
+
+std::unique_ptr<std::jthread> runner;
 
 extern "C" {
 
-EMBER_PLUGIN_EXPORT const char* plugin_name = "Blaze Angelscript Runner";
+EMBER_PLUGIN_EXPORT const char* plugin_name = "Blaze Angelscript Extension";
 
-EMBER_PLUGIN_EXPORT void plugin_on_load() {
+EMBER_PLUGIN_EXPORT std::int32_t plugin_on_load() try {
+	auto client = std::make_unique<ember::blaze::Client>();
 
+	runner = std::make_unique<std::jthread>([client = std::move(client)]() mutable {
+		blazeas::launch(std::move(client));
+	});
+
+	return 0;
+} catch(std::exception& e) {
+	return -1;
 }
 
 EMBER_PLUGIN_EXPORT void plugin_on_unload() {

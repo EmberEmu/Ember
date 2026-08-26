@@ -8,12 +8,16 @@
 
 #pragma once
 
-#include "Visibility.h"
 #include <cstdint>
 
-extern "C" {
+namespace ember::blaze {
 
-EMBER_EXPORT void log_async(const char* message, std::uint8_t level);
-EMBER_EXPORT void log_sync(const char* message, std::uint8_t level);
+enum class LogLevel : std::uint8_t {
+	trace,
+	debug,
+	info,
+	warn,
+	error
+};
 
-} // extern "C"
+} // blaze, ember
