@@ -9,6 +9,22 @@
 #pragma once
 
 #include <memory>
+#include <cstdint>
+
+ // todo, need to improve compiler detection
+#ifdef _WIN32
+#define EMBER_EXPORT __declspec(dllexport)
+#else
+#define EMBER_EXPORT __attribute__((visibility("default")))
+#endif // _WIN32
+
+extern "C" {
+
+EMBER_EXPORT std::uint32_t blaze_api_version_major = 1;
+EMBER_EXPORT std::uint32_t blaze_api_version_minor = 0;
+EMBER_EXPORT std::uint32_t blaze_api_version_patch = 0;
+
+} // extern "C"
 
 namespace ember::blaze {
 

@@ -9,12 +9,10 @@ set(LIBRARY_NAME blazesdk)
 
 set(LIBRARY_SRC
     src/BlazeSDK.cpp
-    src/Client.cpp
 )
 
 set(LIBRARY_HDR
     include/ember/blaze/BlazeSDK.h
-    include/ember/blaze/ClientState.h
 	include/ember/blaze/impl/Symbols.h
 	include/ember/blaze/impl/Client.h
 )
