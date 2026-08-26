@@ -6,21 +6,15 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include "Config.h"
 #include <ember/blaze/BlazeSDK.h>
-#include <angelscript.h>
-#include <thread>
+#include <ember/blaze/impl/Client.h>
 
-extern "C" {
+namespace ember::blaze {
 
-EMBER_PLUGIN_EXPORT const char* plugin_name = "Blaze Angelscript Runner";
+Client::Client() : impl_(std::make_unique<impl::Client>()) {}
 
-EMBER_PLUGIN_EXPORT void plugin_on_load() {
-
-}
-
-EMBER_PLUGIN_EXPORT void plugin_on_unload() {
+Client::~Client() {
 
 }
 
-} // extern "C"
+} // blaze, ember

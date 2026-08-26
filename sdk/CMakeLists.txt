@@ -5,4 +5,3 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 add_subdirectory(blaze)
-add_subdirectory(blazecxx)

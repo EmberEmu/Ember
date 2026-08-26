@@ -8,20 +8,9 @@
 
 #pragma once
 
-#include <memory>
-
-namespace ember::blaze {
-
-namespace impl {
-	class Client;
-}
-
-class Client {
-	std::unique_ptr<impl::Client> impl_;
-
-public:
-	Client();
-	~Client();
-};
-
-} // blaze, ember
+// todo, need to improve compiler detection
+#ifdef _WIN32
+	#define EMBER_EXPORT __declspec(dllexport)
+#else
+	#define EMBER_EXPORT __attribute__((visibility("default")))
+#endif // _WIN32

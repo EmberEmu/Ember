@@ -13,12 +13,14 @@ set(LIBRARY_HDR
     Connection.h
     Library.h
     Plugin.h
+    api/Logging.h
 )
 
 set(LIBRARY_SRC
     Blaze.cpp
     Client.cpp
     Connection.cpp
+    api/Logging.cpp
 )
 
 if(WIN32)

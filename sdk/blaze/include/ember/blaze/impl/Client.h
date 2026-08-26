@@ -8,20 +8,14 @@
 
 #pragma once
 
-#include <memory>
+namespace ember::blaze::impl {
 
-namespace ember::blaze {
-
-namespace impl {
-	class Client;
-}
-
-class Client {
-	std::unique_ptr<impl::Client> impl_;
+class Client final {
+	void resolve_symbols();
 
 public:
 	Client();
 	~Client();
 };
 
-} // blaze, ember
+} // impl, blaze, ember

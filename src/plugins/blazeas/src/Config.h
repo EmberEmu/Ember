@@ -8,6 +8,7 @@
 
 #pragma once
 
+// todo!
 #ifdef _WIN32
 	#define EMBER_PLUGIN_EXPORT __declspec(dllexport)
 #else

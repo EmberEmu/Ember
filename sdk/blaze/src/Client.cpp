@@ -6,11 +6,20 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include <ember/blaze/BlazeSDK.h>
-#include <stddef.h>
+#include <ember/blaze/impl/Client.h>
 
-void* handle = NULL;
+namespace ember::blaze::impl {
 
-int blaze_sdk_init() {
-	return 0;
+Client::Client() {
+	
 }
+
+Client::~Client() {
+
+}
+
+void Client::resolve_symbols() {
+
+}
+
+} // impl, blaze, ember

@@ -8,14 +8,15 @@ set(SDK_NAME blaze)
 set(LIBRARY_NAME blazesdk)
 
 set(LIBRARY_SRC
-    src/BlazeSDK.c
-    src/Client.c
+    src/BlazeSDK.cpp
+    src/Client.cpp
 )
 
 set(LIBRARY_HDR
     include/ember/blaze/BlazeSDK.h
     include/ember/blaze/ClientState.h
-	include/ember/blaze/Client.h
+	include/ember/blaze/impl/Symbols.h
+	include/ember/blaze/impl/Client.h
 )
 
 add_library(${LIBRARY_NAME} STATIC ${LIBRARY_SRC} ${LIBRARY_HDR})
@@ -29,7 +30,7 @@ target_include_directories(${LIBRARY_NAME} PUBLIC
 
 set_target_properties(${LIBRARY_NAME} PROPERTIES FOLDER "SDKs")
 
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include DESTINATION sdk/${SDK_NAME})
+install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/include/ember/blaze/BlazeSDK.h" DESTINATION sdk/${SDK_NAME}/include/ember/blaze)
 
 install(TARGETS ${LIBRARY_NAME}
     EXPORT ${LIBRARY_NAME}Targets 

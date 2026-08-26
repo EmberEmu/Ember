@@ -8,20 +8,10 @@
 
 #pragma once
 
-#include <memory>
+#include <cstdint>
 
-namespace ember::blaze {
+typedef struct logger* logger_t;
 
-namespace impl {
-	class Client;
-}
-
-class Client {
-	std::unique_ptr<impl::Client> impl_;
-
-public:
-	Client();
-	~Client();
-};
-
-} // blaze, ember
+using log_get_logger = logger(*)();
+using log_async = void(*)(logger logger, const char* message, std::uint8_t level);
+using log_sync = void(*)(logger logger, const char* message, std::uint8_t level);
