@@ -43,6 +43,7 @@ endif()
 
 add_executable(${EXECUTABLE_NAME}
     main.cpp
+    api/Logging.cpp
     ${ICON_RESOURCE}
 )
 

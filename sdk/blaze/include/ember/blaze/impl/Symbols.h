@@ -10,8 +10,5 @@
 
 #include <cstdint>
 
-typedef struct logger* logger_t;
-
-using log_get_logger = logger(*)();
-using log_async = void(*)(logger logger, const char* message, std::uint8_t level);
-using log_sync = void(*)(logger logger, const char* message, std::uint8_t level);
+using log_async = void(*)(const char* message, std::uint8_t level);
+using log_sync = void(*)(const char* message, std::uint8_t level);

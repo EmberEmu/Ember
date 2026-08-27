@@ -13,6 +13,7 @@
 #include <thread>
 #include <memory>
 #include <cstdint>
+#include <iostream>
 
 std::unique_ptr<std::jthread> runner;
 
@@ -23,12 +24,13 @@ EMBER_PLUGIN_EXPORT const char* plugin_name = "Blaze Angelscript Extension";
 EMBER_PLUGIN_EXPORT std::int32_t plugin_on_load() try {
 	auto client = std::make_unique<ember::blaze::Client>();
 
-	runner = std::make_unique<std::jthread>([client = std::move(client)]() mutable {
-		blazeas::launch(std::move(client));
-	});
+	//runner = std::make_unique<std::jthread>([client = std::move(client)]() mutable {
+	//	blazeas::launch(std::move(client));
+	//});
 
 	return 0;
 } catch(std::exception& e) {
+	std::cout << e.what() << std::endl;
 	return -1;
 }
 

@@ -7,11 +7,14 @@
  */
 
 #include <ember/blaze/impl/Client.h>
+#include <ember/blaze/impl/Library.h>
+#include <ember/blaze/impl/Symbols.h>
+#include <stdexcept>
 
 namespace ember::blaze::impl {
 
 Client::Client() {
-	
+	resolve_symbols();
 }
 
 Client::~Client() {
@@ -19,7 +22,20 @@ Client::~Client() {
 }
 
 void Client::resolve_symbols() {
+	auto result = library::current_module();
 
+	if(!result) {
+		throw std::runtime_error("Unable to retrieve process handle");
+	}
+
+	auto log_test = library::find_symbol<log_sync>(*result, "log_sync");
+
+	if(!log_test) {
+		throw std::runtime_error("Unable to locate symbol");
+	}
+
+	auto fn = *log_test;
+	fn("This is a test", 3);
 }
 
 void Client::log(LogLevel level, std::string_view message) {

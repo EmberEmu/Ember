@@ -12,9 +12,17 @@ set(LIBRARY_SRC
     src/Client.cpp
 )
 
+if(WIN32)
+    set(LIBRARY_SRC ${LIBRARY_SRC} src/win32/Library.cpp)
+else()
+    set(LIBRARY_SRC ${LIBRARY_SRC} src/posix/Library.cpp)
+endif()
+
+
 set(LIBRARY_HDR
 	include/ember/blaze/impl/Symbols.h
 	include/ember/blaze/impl/Client.h
+	include/ember/blaze/impl/Library.h
 )
 
 set(LIBRARY_HDR_SHIPPING

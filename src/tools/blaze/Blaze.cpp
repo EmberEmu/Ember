@@ -9,10 +9,10 @@
 #include "Blaze.h"
 #include "Extensions.h"
 #include "InterfaceContainer.h"
+#include "Library.h"
 #include <thread/Utility.h>
 #include <filesystem>
 #include <thread>
-#include "Library.h"
 
 namespace ember::blaze {
 
@@ -94,6 +94,21 @@ void Blaze::load_plugin(const std::filesystem::path& path) {
 
 	plugins_.emplace_back(*handle, **symbol);
 	LOG_INFO(logger_, "Loaded plugin, {}", **symbol);
+
+	// more test gubbins
+	using PluginLoadFn = int(*)();
+	const auto fn = library::find_symbol<PluginLoadFn>(*handle, "plugin_on_load");
+
+	if(!fn) {
+		LOG_ERROR(logger_, "Unable to locate symbol");
+		return;
+	}
+
+	auto result = (*fn)();
+
+	if(result != 0) {
+		LOG_ERROR(logger_, "Plugin init error");
+	}
 }
 
 } // blaze, ember

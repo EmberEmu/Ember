@@ -9,6 +9,7 @@
 #pragma once
 
 #include "Plugin.h"
+#include "api/Logging.h"
 #include <commands/Command.h>
 #include <logger/Logger.h>
 #include <shared/utility/cstring_view.hpp>

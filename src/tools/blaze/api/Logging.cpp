@@ -64,4 +64,3 @@ void log_sync(const char* message, std::uint8_t level) {
 			SLOG_ERROR(logger, "Bad logging level, message: {}", message);
 	}
 }
-
