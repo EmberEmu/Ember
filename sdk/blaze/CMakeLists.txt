@@ -12,12 +12,13 @@ set(LIBRARY_SRC
     src/Client.cpp
 )
 
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
 if(WIN32)
     set(LIBRARY_SRC ${LIBRARY_SRC} src/win32/Library.cpp)
 else()
     set(LIBRARY_SRC ${LIBRARY_SRC} src/posix/Library.cpp)
 endif()
-
 
 set(LIBRARY_HDR
 	include/ember/blaze/impl/Symbols.h

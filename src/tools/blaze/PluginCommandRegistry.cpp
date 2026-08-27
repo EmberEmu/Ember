@@ -15,23 +15,23 @@ void PluginCommandRegistry::insert(std::string_view plugin, std::shared_ptr<comm
 }
 
 bool PluginCommandRegistry::remove(commands::Command* command) {
-	//
+	return true;
 }
 
 int PluginCommandRegistry::remove(std::string_view plugin) {
-	//
+	return 0;
 }
 
 std::shared_ptr<commands::Command> PluginCommandRegistry::lookup(std::string_view plugin, commands::Command* command) {
-	//
+	return nullptr;
 }
 
 std::shared_ptr<commands::Command> PluginCommandRegistry::lookup(commands::Command* command) {
-	//
+	return nullptr;
 }
 
 std::span<std::shared_ptr<commands::Command>> PluginCommandRegistry::lookup(std::string_view plugin) {
-	//
+	return {};
 }
 
 } // blaze, ember
