@@ -8,7 +8,7 @@
 
 #include "BlazeAS.h"
 #include "Visibility.h"
-#include <ember/blaze/BlazeSDK.h>
+#include <ember/blaze/Blaze.h>
 #include <angelscript.h>
 #include <thread>
 #include <memory>

@@ -8,9 +8,6 @@
 
 #pragma once
 
-#include <ember/blaze/Shared.h>
-#include <memory>
-#include <string_view>
 #include <cstdint>
 
 inline std::uint32_t blaze_api_version_major = 1;
@@ -24,14 +21,22 @@ namespace impl {
 }
 
 class Client {
-	std::unique_ptr<impl::Client> impl_;
-
 public:
-	Client();
-	~Client();
+	Client() {
 
-	void log(LogLevel level, std::string_view message);
-	void slog(LogLevel level, std::string_view message);
+	}
+
+	~Client() {
+
+	}
+
+	void log(int level, const char* message) {
+
+	}
+
+	void slog(int level, const char* message) {
+
+	}
 };
 
 } // blaze, ember

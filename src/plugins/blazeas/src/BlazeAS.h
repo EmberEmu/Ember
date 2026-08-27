@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <ember/blaze/BlazeSDK.h>
+#include <ember/blaze/Blaze.h>
 #include <memory>
 
 namespace blazeas {

@@ -38,11 +38,11 @@ void Client::resolve_symbols() {
 	fn("This is a test", 3);
 }
 
-void Client::log(LogLevel level, std::string_view message) {
+void Client::log(int level, const char* message) {
 	//
 }
 
-void Client::slog(LogLevel level, std::string_view message) {
+void Client::slog(int level, const char* message) {
 	//
 }
 
