@@ -41,7 +41,7 @@ typedef void(*log_async_fn)(const char* message, uint8_t level);
 typedef void(*log_sync_fn)(const char* message, uint8_t level);
 
 // command API - todo, opaque struct once I've cleaned the other files up
-typedef void*(command_create_fn)(const char* name, const char* description);
+typedef void*(*command_create_fn)(const char* name, const char* description);
 typedef bool(*command_destroy_fn)(void* command);
 typedef bool(*command_add_argument_fn)(void* command, const char* name, uint8_t type, bool required);
 typedef bool(*command_callback_fn)(void* command);
