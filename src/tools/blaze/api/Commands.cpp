@@ -101,6 +101,7 @@ bool command_callback(Command command) {
 	}
 
 	// todo, this is going to take a whole lot of work to get working over a C boundary
+	return true;
 }
 
 } // blaze, ember
