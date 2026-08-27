@@ -30,11 +30,11 @@ set(LIBRARY_HDR_SHIPPING
     include/ember/blaze/Blaze.h
 )
 
-add_library(${LIBRARY_NAME} STATIC ${LIBRARY_SRC} ${LIBRARY_HDR}  ${LIBRARY_HDR_SHIPPING})
+add_library(${LIBRARY_NAME} STATIC ${LIBRARY_SRC} ${LIBRARY_HDR} ${LIBRARY_HDR_SHIPPING})
 target_compile_definitions(${LIBRARY_NAME} PUBLIC EXPORT_SDK)
 
-set(SHARED_ABI_HEADER "${CMAKE_SOURCE_DIR}/src/tools/blaze/api/SharedABI.h")
-configure_file(${SHARED_ABI_HEADER} "${CMAKE_CURRENT_BINARY_DIR}/include/ember/blaze" COPYONLY)
+set(SHARED_ABI_HEADER ${CMAKE_SOURCE_DIR}/src/tools/blaze/api/SharedABI.h)
+configure_file(${SHARED_ABI_HEADER} ${CMAKE_CURRENT_BINARY_DIR}/include/ember/blaze COPYONLY)
 
 target_include_directories(${LIBRARY_NAME} PUBLIC 
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
