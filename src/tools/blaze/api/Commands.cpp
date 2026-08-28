@@ -73,12 +73,12 @@ bool command_add_argument(Command command, const SizedString* name, std::uint8_t
 		return false;
 	}
 
-	std::string view(name->data, name->size);
+	std::string name_str(name->data, name->size);
 
 	if(required) {
-		return command_arg_register<commands::required_t>(*result, std::move(view), type);
+		return command_arg_register<commands::required_t>(*result, std::move(name_str), type);
 	} else {
-		return command_arg_register<commands::optional_t>(*result, std::move(view), type);
+		return command_arg_register<commands::optional_t>(*result, std::move(name_str), type);
 	}
 }
 
