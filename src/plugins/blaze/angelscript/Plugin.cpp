@@ -10,6 +10,8 @@
 #include <cstdint>
 #include <format>
 
+using namespace ember;
+
 namespace blazeas {
 
 extern "C" {
@@ -20,11 +22,11 @@ EMBER_EXPORT const char* plugin_name_short = "blazeas";
 } // extern "C"
 
 Plugin::Plugin() {
-	ember::blaze::log_test(std::format("{} ID: {}", plugin_name_short, get_plugin_id()));
+	blaze::log(std::format("{} ID: {}", plugin_name_short, blaze::plugin_id()), blaze::LogLevel::info);
 }
 
 Plugin::~Plugin() {
-	ember::blaze::log_test("Farewell!");
+	blaze::log("Farewell!", blaze::LogLevel::info);
 }
 
 } // blazeas

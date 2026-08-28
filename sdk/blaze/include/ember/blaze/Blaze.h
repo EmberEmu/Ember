@@ -18,8 +18,10 @@ extern "C" {
 EMBER_EXPORT SDKBuildMeta sdk_build();
 EMBER_EXPORT uint8_t sdk_initialise(BlazeHostAPI api, PluginID pid);
 
-void log_test_0(const char* message, uint32_t size, uint8_t log_level);
-PluginID get_plugin_id();
+void blaze_log(const char* message, uint32_t size, uint8_t log_level);
+void blaze_slog(const char* message, uint32_t size, uint8_t log_level);
+
+PluginID blaze_get_plugin_id();
 
 #ifdef __cplusplus
 } // extern "C"

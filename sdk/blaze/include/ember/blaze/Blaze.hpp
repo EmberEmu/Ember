@@ -13,6 +13,7 @@
 #include <memory>
 #include <string>
 #include <string_view>
+#include <utility>
 #include <cstdint>
 
 namespace ember::blaze {
@@ -57,8 +58,16 @@ enum class ArgumentType : std::uint8_t {
 	uint64  = CAT_UINT_64
 };
 
-inline void log_test(std::string_view message) {
-	log_test_0(message.data(), message.size(), LOG_LEVEL_INFO);
+inline void log(std::string_view message, LogLevel log_level) {
+	blaze_log(message.data(), message.size(), std::to_underlying(log_level));
+}
+
+inline void slog(std::string_view message, LogLevel log_level) {
+	blaze_slog(message.data(), message.size(), std::to_underlying(log_level));
+}
+
+inline PluginID plugin_id() {
+	return blaze_get_plugin_id();
 }
 
 } // blaze, ember

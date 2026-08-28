@@ -38,10 +38,14 @@ uint8_t sdk_initialise(const BlazeHostAPI api, const PluginID pid) {
 	return SDK_INIT_OK;
 }
 
-PluginID get_plugin_id() {
+PluginID blaze_get_plugin_id() {
 	return plugin_id;
 }
 
-void log_test_0(const char* message, const uint32_t size, uint8_t log_level) {
-	(*host_api.log_sync)(message, size, log_level, get_plugin_id());
+void blaze_log(const char* message, const uint32_t size, uint8_t log_level) {
+	(*host_api.log_async)(message, size, log_level, blaze_get_plugin_id());
+}
+
+void blaze_slog(const char* message, const uint32_t size, uint8_t log_level) {
+	(*host_api.log_sync)(message, size, log_level, blaze_get_plugin_id());
 }
