@@ -23,40 +23,40 @@ Command command_create(const SizedString* name, const SizedString* description) 
 }
 
 template<typename T>
-bool command_arg_register(commands::Command& command, const std::string& name, std::uint8_t type) {
+bool command_arg_register(commands::Command& command, std::string name, std::uint8_t type) {
 	switch(type) {
 		case cat_string:
-			command.argument<std::string>(name, T{});
+			command.argument<std::string>(std::move(name), T{});
 			break;
 		case cat_float:
-			command.argument<float>(name, T{});
+			command.argument<float>(std::move(name), T{});
 			break;
 		case cat_double:
-			command.argument<double>(name, T{});
+			command.argument<double>(std::move(name), T{});
 			break;
 		case cat_int_8:
-			command.argument<std::int8_t>(name, T{});
+			command.argument<std::int8_t>(std::move(name), T{});
 			break;
 		case cat_int_16:
-			command.argument<std::int16_t>(name, T{});
+			command.argument<std::int16_t>(std::move(name), T{});
 			break;
 		case cat_int_32:
-			command.argument<std::int32_t>(name, T{});
+			command.argument<std::int32_t>(std::move(name), T{});
 			break;
 		case cat_int_64:
-			command.argument<std::int64_t>(name, T{});
+			command.argument<std::int64_t>(std::move(name), T{});
 			break;
 		case cat_uint_8:
-			command.argument<std::uint8_t>(name, T{});
+			command.argument<std::uint8_t>(std::move(name), T{});
 			break;
 		case cat_uint_16:
-			command.argument<std::uint16_t>(name, T{});
+			command.argument<std::uint16_t>(std::move(name), T{});
 			break;
 		case cat_uint_32:
-			command.argument<std::uint32_t>(name, T{});
+			command.argument<std::uint32_t>(std::move(name), T{});
 			break;
 		case cat_uint_64:
-			command.argument<std::uint64_t>(name, T{});
+			command.argument<std::uint64_t>(std::move(name), T{});
 			break;
 		default:
 			return false;
