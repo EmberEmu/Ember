@@ -17,9 +17,9 @@ extern "C" {
 
 // todo, proper compiler/platform detection
 #ifdef _WIN32
-	#define EMBER_PLUGIN_EXPORT __declspec(dllexport)
+	#define EMBER_EXPORT __declspec(dllexport)
 #else
-	#define EMBER_PLUGIN_EXPORT
+	#define EMBER_EXPORT
 #endif // _WIN32
 
 #define SDK_MAGIC 0x424c5a45 // 'BLZE'

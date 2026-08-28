@@ -14,8 +14,8 @@ namespace blazeas {
 
 extern "C" {
 
-EMBER_PLUGIN_EXPORT const char* plugin_name = "Blaze Angelscript Extension";
-EMBER_PLUGIN_EXPORT const char* plugin_name_short = "blazeas";
+EMBER_EXPORT const char* plugin_name = "Blaze Angelscript Extension";
+EMBER_EXPORT const char* plugin_name_short = "blazeas";
 
 } // extern "C"
 

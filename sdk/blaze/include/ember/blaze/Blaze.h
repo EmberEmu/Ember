@@ -15,8 +15,8 @@
 extern "C" {
 #endif
 
-EMBER_PLUGIN_EXPORT SDKBuildMeta sdk_build();
-EMBER_PLUGIN_EXPORT uint8_t sdk_initialise(BlazeHostAPI api, uint64_t pid);
+EMBER_EXPORT SDKBuildMeta sdk_build();
+EMBER_EXPORT uint8_t sdk_initialise(BlazeHostAPI api, PluginID pid);
 
 void log_test_0(const char* message, uint32_t size, uint8_t log_level);
 PluginID get_plugin_id();

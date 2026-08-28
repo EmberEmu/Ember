@@ -24,7 +24,7 @@ SDKBuildMeta sdk_build() {
 	};
 }
 
-uint8_t sdk_initialise(const BlazeHostAPI api, const uint64_t pid) {
+uint8_t sdk_initialise(const BlazeHostAPI api, const PluginID pid) {
 	if(api.size != sizeof(BlazeHostAPI)) {
 		return SDK_INIT_BAD_SIZE;
 	}

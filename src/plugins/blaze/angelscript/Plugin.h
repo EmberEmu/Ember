@@ -18,6 +18,6 @@ public:
 	~Plugin();
 };
 
-SDK_REGISTER_PLUGIN(blazeas::Plugin)
+SDK_REGISTER_PLUGIN(Plugin)
 
 } // blazeas
