@@ -12,4 +12,17 @@ project(blazeas DESCRIPTION "AngelScript support for Blaze")
 ##############################
 find_package(Angelscript 2.38.0 REQUIRED)
 
-add_subdirectory(src)
+set(LIBRARY_NAME blazeas)
+
+set(LIBRARY_HDR
+    Plugin.h
+)
+
+set(LIBRARY_SRC
+    Plugin.cpp
+)
+
+add_library(${LIBRARY_NAME} SHARED ${LIBRARY_SRC})
+target_link_libraries(${LIBRARY_NAME} PRIVATE Threads::Threads Angelscript::angelscript blazesdk)
+install(TARGETS ${LIBRARY_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/tools/plugins)
+set_target_properties(${LIBRARY_NAME} PROPERTIES FOLDER "Plugins")
