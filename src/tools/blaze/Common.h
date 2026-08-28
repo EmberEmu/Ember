@@ -19,7 +19,7 @@ extern "C" {
 #ifdef _WIN32
 	#define EMBER_EXPORT __declspec(dllexport)
 #else
-	#define EMBER_EXPORT
+	#define EMBER_EXPORT __attribute__((visibility("default")))
 #endif // _WIN32
 
 #define SDK_MAGIC 0x424c5a45 // 'BLZE'

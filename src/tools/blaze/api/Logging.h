@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include "Visibility.h"
 #include "../Common.h"
 #include <cstdint>
 
