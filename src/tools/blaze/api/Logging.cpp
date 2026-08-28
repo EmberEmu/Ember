@@ -10,8 +10,8 @@
 #include "Logging.h"
 #include <logger/Logger.h>
 
-void log_async(const char* message, const std::uint32_t size, std::uint8_t level, PluginID pid) {
-	std::string_view view(message, size);
+void log_async(const SizedString* message, std::uint8_t level, PluginID pid) {
+	std::string_view view(message->data, message->size);
 	const auto fmt = std::format("[{}] {}", pid, view);
 
 	auto logger = ember::log::global_logger(); // todo, temp!
@@ -40,8 +40,8 @@ void log_async(const char* message, const std::uint32_t size, std::uint8_t level
 	}
 }
 
-void log_sync(const char* message, const std::uint32_t size, std::uint8_t level, PluginID pid) {
-	std::string_view view(message, size);
+void log_sync(const SizedString* message, std::uint8_t level, PluginID pid) {
+	std::string_view view(message->data, message->size);
 	const auto fmt = std::format("[{}] {}", pid, view);
 
 	auto logger = ember::log::global_logger(); // todo, temp!

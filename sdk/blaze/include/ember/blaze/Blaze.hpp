@@ -59,11 +59,11 @@ enum class ArgumentType : std::uint8_t {
 };
 
 inline void log(std::string_view message, LogLevel log_level) {
-	blaze_log(message.data(), message.size(), std::to_underlying(log_level));
+	blaze_log_sstr({ message.data(), message.size() }, std::to_underlying(log_level));
 }
 
 inline void slog(std::string_view message, LogLevel log_level) {
-	blaze_slog(message.data(), message.size(), std::to_underlying(log_level));
+	blaze_slog_sstr({ message.data(), message.size() }, std::to_underlying(log_level));
 }
 
 inline PluginID plugin_id() {

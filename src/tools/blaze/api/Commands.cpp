@@ -11,10 +11,10 @@
 
 namespace ember::blaze {
 
-Command command_create(const char* name, const char* description) {
+Command command_create(const SizedString* name, const SizedString* description) {
 	auto registry = InterfaceContainer::get_instance().command_root();
-	auto command = registry->create(name);
-	command->description(description);
+	auto command = registry->create({ name->data, name->size });
+	command->description({ description->data, description->size });
 	InterfaceContainer::get_instance().plugin_command_registry()->insert("test", command);
 
 	return {
@@ -23,7 +23,7 @@ Command command_create(const char* name, const char* description) {
 }
 
 template<typename T>
-bool command_arg_register(commands::Command& command, const char* name, std::uint8_t type) {
+bool command_arg_register(commands::Command& command, const std::string& name, std::uint8_t type) {
 	switch(type) {
 		case cat_string:
 			command.argument<std::string>(name, T{});
@@ -65,7 +65,7 @@ bool command_arg_register(commands::Command& command, const char* name, std::uin
 	return true;
 }
 
-bool command_add_argument(Command command, const char* name, std::uint8_t type, bool required) {
+bool command_add_argument(Command command, const SizedString* name, std::uint8_t type, bool required) {
 	auto pcr = InterfaceContainer::get_instance().plugin_command_registry();
 	auto result = pcr->lookup(command.impl);
 
@@ -73,10 +73,12 @@ bool command_add_argument(Command command, const char* name, std::uint8_t type, 
 		return false;
 	}
 
+	std::string view(name->data, name->size);
+
 	if(required) {
-		return command_arg_register<commands::required_t>(*result, name, type);
+		return command_arg_register<commands::required_t>(*result, std::move(view), type);
 	} else {
-		return command_arg_register<commands::optional_t>(*result, name, type);
+		return command_arg_register<commands::optional_t>(*result, std::move(view), type);
 	}
 }
 
