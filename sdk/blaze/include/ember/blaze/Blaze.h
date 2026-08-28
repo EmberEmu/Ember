@@ -16,9 +16,10 @@ extern "C" {
 #endif
 
 EMBER_PLUGIN_EXPORT SDKBuildMeta sdk_build();
-EMBER_PLUGIN_EXPORT uint8_t sdk_initialise(BlazeHostAPI api);
+EMBER_PLUGIN_EXPORT uint8_t sdk_initialise(BlazeHostAPI api, uint64_t pid);
 
 void log_test_0(const char* message, uint32_t size);
+uint64_t get_plugin_id();
 
 #ifdef __cplusplus
 } // extern "C"

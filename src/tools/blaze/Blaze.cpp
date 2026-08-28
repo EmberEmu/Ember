@@ -102,24 +102,24 @@ void Blaze::load_plugin(const std::filesystem::path& path) {
 	// more test gubbins
 	using PluginLoadFn = void(*)();
 	using PluginUnloadFn = void(*)();
-	const auto load_fn = library::find_symbol<PluginLoadFn>(*handle, "plugin_on_load");
-	const auto unload_fn = library::find_symbol<PluginUnloadFn>(*handle, "plugin_on_unload");
+	const auto plugin_load = library::find_symbol<PluginLoadFn>(*handle, "plugin_on_load");
+	const auto plugin_unload = library::find_symbol<PluginUnloadFn>(*handle, "plugin_on_unload");
 
-	if(!load_fn || !unload_fn) {
+	if(!plugin_load || !plugin_unload) {
 		LOG_ERROR(logger_, "Unable to load plugin {}: {}",
 			path.filename().string(), library::result_to_string(symbol.error()));
 		return;
 	}
 
-	const auto fn = library::find_symbol<sdk_build_fn>(*handle, "sdk_build");
+	const auto sdk_build = library::find_symbol<sdk_build_fn>(*handle, "sdk_build");
 
-	if(!fn) {
+	if(!sdk_build) {
 		LOG_ERROR(logger_, "Unable to load plugin {}: {}",
 			path.filename().string(), library::result_to_string(symbol.error()));
 		return;
 	}
 
-	const auto result = (*fn)();
+	const auto result = (*sdk_build)();
 
 	if(result.magic != SDK_MAGIC) {
 		LOG_ERROR(logger_, "Unable to load plugin {}: incorrect magic", plugin.name());
@@ -146,7 +146,7 @@ void Blaze::load_plugin(const std::filesystem::path& path) {
 		return;
 	}
 
-	const auto init_fn = library::find_symbol<sdk_initialise_fn>(*handle, "sdk_initialise");
+	const auto sdk_init = library::find_symbol<sdk_initialise_fn>(*handle, "sdk_initialise");
 
 	BlazeHostAPI api {
 		.size = sizeof(BlazeHostAPI),
@@ -157,14 +157,16 @@ void Blaze::load_plugin(const std::filesystem::path& path) {
 		.log_sync = log_sync
 	};
 
-	if(const auto result = (*init_fn)(api); result != SDK_INIT_OK) {
+	std::uint64_t plugin_id = 42; // todo, temp
+
+	if(const auto result = (*sdk_init)(api, plugin_id); result != SDK_INIT_OK) {
 		LOG_ERROR(logger_, "Unable to load plugin {}: plugin returned error code {}",
 			plugin.name(), result);
 		return;
 	}
 
 	LOG_INFO(logger_, "{} plugin loaded", plugin.name());
-	(*load_fn)();
+	(*plugin_load)();
 }
 
 } // blaze, ember

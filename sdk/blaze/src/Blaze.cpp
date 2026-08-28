@@ -9,9 +9,8 @@
 #pragma once
 
 #include <ember/blaze/Blaze.h>
-#include <iostream>
-
 static BlazeHostAPI host_api;
+static uint64_t plugin_id;
 
 SDKBuildMeta sdk_build() {
 	return {
@@ -24,7 +23,7 @@ SDKBuildMeta sdk_build() {
 	};
 }
 
-uint8_t sdk_initialise(BlazeHostAPI api) {
+uint8_t sdk_initialise(const BlazeHostAPI api, const uint64_t pid) {
 	if(api.size != sizeof(BlazeHostAPI)) {
 		return SDK_INIT_BAD_SIZE;
 	}
@@ -34,10 +33,14 @@ uint8_t sdk_initialise(BlazeHostAPI api) {
 	}
 
 	host_api = api;
-	(*api.log_sync)("Hello from the plugin", LOG_LEVEL_INFO);
+	plugin_id = pid;
 	return SDK_INIT_OK;
 }
 
 void log_test_0(const char* message, const uint32_t size) {
 	(*host_api.log_sync)(message, LOG_LEVEL_INFO);
+}
+
+uint64_t get_plugin_id() {
+	return plugin_id;
 }
