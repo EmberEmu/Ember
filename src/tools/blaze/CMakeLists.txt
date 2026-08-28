@@ -50,4 +50,5 @@ add_executable(${EXECUTABLE_NAME}
 
 target_link_libraries(${EXECUTABLE_NAME} PRIVATE ${LIBRARY_NAME} banner logger shared commands ${Boost_LIBRARIES})
 install(TARGETS ${EXECUTABLE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/tools)
-set_target_properties(blaze PROPERTIES FOLDER "Tools")
+set_target_properties(${EXECUTABLE_NAME} PROPERTIES FOLDER "Tools")
+set_target_properties(${LIBRARY_NAME} PROPERTIES FOLDER "Tools//Libraries")
