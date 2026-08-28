@@ -19,12 +19,12 @@ EMBER_PLUGIN_EXPORT const char* plugin_name_short = "blazeas";
 
 } // extern "C"
 
-void Plugin::on_load() {
+Plugin::Plugin() {
 	ember::blaze::log_test(std::format("{} ID: {}", plugin_name_short, get_plugin_id()));
 }
 
-void Plugin::on_unload() {
-
+Plugin::~Plugin() {
+	ember::blaze::log_test("Farewell!");
 }
 
 } // blazeas

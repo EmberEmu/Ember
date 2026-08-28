@@ -21,20 +21,16 @@ namespace ember::blaze {
 std::unique_ptr<PluginType> plugin_inst;                   \
                                                            \
 extern "C" {                                               \
-	inline EMBER_PLUGIN_EXPORT void plugin_on_load() {     \
-		plugin_inst->on_load();                            \
+	inline EMBER_PLUGIN_EXPORT void plugin_load() {     \
+		plugin_inst = std::make_unique<PluginType>();      \
 	}                                                      \
-	inline EMBER_PLUGIN_EXPORT void plugin_on_unload() {   \
-		if(plugin_inst) {                                  \
-			plugin_inst->on_unload();                      \
-		}                                                  \
+	inline EMBER_PLUGIN_EXPORT void plugin_unload() {   \
+		plugin_inst.reset();                               \
 	}                                                      \
 }
 
 class Plugin {
 public:
-	virtual void on_load() = 0;
-	virtual void on_unload() = 0;
 	virtual ~Plugin() = default;
 };
 

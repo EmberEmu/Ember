@@ -14,8 +14,8 @@ namespace blazeas {
 
 class Plugin final : ember::blaze::Plugin {
 public:
-	void on_load() override;
-	void on_unload() override;
+	Plugin();
+	~Plugin();
 };
 
 SDK_REGISTER_PLUGIN(blazeas::Plugin)

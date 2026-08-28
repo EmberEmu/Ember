@@ -100,10 +100,8 @@ void Blaze::load_plugin(const std::filesystem::path& path) {
 	LOG_TRACE(logger_, "Loading plugin {}", plugin.name());
 
 	// more test gubbins
-	using PluginLoadFn = void(*)();
-	using PluginUnloadFn = void(*)();
-	const auto plugin_load = library::find_symbol<PluginLoadFn>(*handle, "plugin_on_load");
-	const auto plugin_unload = library::find_symbol<PluginUnloadFn>(*handle, "plugin_on_unload");
+	const auto plugin_load = library::find_symbol<plugin_load_fn>(*handle, "plugin_load");
+	const auto plugin_unload = library::find_symbol<plugin_unload_fn>(*handle, "plugin_unload");
 
 	if(!plugin_load || !plugin_unload) {
 		LOG_ERROR(logger_, "Unable to load plugin {}: {}",

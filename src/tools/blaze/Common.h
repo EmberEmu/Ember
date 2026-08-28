@@ -54,6 +54,10 @@ typedef uint64_t PluginID;
 #define CAT_UINT_32 9
 #define CAT_UINT_64 10
 
+// plugin API
+typedef void(*plugin_load_fn)();
+typedef void(*plugin_unload_fn)();
+
 // logging API
 typedef void(*log_async_fn)(const char* message, uint32_t size, uint8_t level, PluginID pid);
 typedef void(*log_sync_fn)(const char* message, uint32_t size, uint8_t level, PluginID pid);
