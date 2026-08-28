@@ -11,6 +11,7 @@
 #include "Extensions.h"
 #include "InterfaceContainer.h"
 #include "Library.h"
+#include "api/Logging.h"
 #include <thread/Utility.h>
 #include <filesystem>
 #include <thread>
@@ -79,7 +80,7 @@ void Blaze::load_plugin(const std::filesystem::path& path) {
 	auto handle = library::open(path.string());
 
 	if(!handle) {
-		LOG_ERROR(logger_, "Unable to load plugin, {}: {}",
+		LOG_ERROR(logger_, "Unable to load plugin {}: {}",
 			path.filename().string(), library::result_to_string(handle.error()));
 		return;
 	}
@@ -87,52 +88,67 @@ void Blaze::load_plugin(const std::filesystem::path& path) {
 	const auto symbol = library::find_symbol<const char**>(*handle, "plugin_name");
 
 	if(!symbol) {
-		LOG_ERROR(logger_, "Unable to load plugin, {}: {}",
+		LOG_ERROR(logger_, "Unable to load plugin {}: {}",
 			path.filename().string(), library::result_to_string(symbol.error()));
 		library::close(*handle);
 		return;
 	}
 
+	Plugin plugin(*handle, **symbol);
+
 	plugins_.emplace_back(*handle, **symbol);
-	LOG_TRACE(logger_, "Loading plugin {}", **symbol);
+	LOG_TRACE(logger_, "Loading plugin {}", plugin.name());
 
 	// more test gubbins
 	using PluginLoadFn = int(*)();
 	const auto fn = library::find_symbol<sdk_build_fn>(*handle, "sdk_build");
 
 	if(!fn) {
-		LOG_ERROR(logger_, "Unable to locate symbol");
+		LOG_ERROR(logger_, "Unable to load plugin {}: {}",
+			path.filename().string(), library::result_to_string(symbol.error()));
 		return;
 	}
 
 	const auto result = (*fn)();
 
 	if(result.magic != SDK_MAGIC) {
-		LOG_ERROR(logger_, "Plugin '{}' load failed due to incorrect magic", **symbol);
+		LOG_ERROR(logger_, "Unable to load plugin {}: incorrect magic", plugin.name());
 		return;
 	}
 
 	if(result.sdk_init_meta_size != sizeof(SDKBuildMeta)) {
-		LOG_ERROR(logger_, "Plugin '{}' load failed due to mismatched metadata structure size", **symbol);
+		LOG_ERROR(logger_, "Unable to load plugin {}: incompatible metadata structures", plugin.name());
 		return;
 	}
 
 	if(result.blaze_host_api_size != sizeof(BlazeHostAPI)) {
-		LOG_ERROR(logger_, "Plugin '{}' load failed due to mismatched API structure size", **symbol);
+		LOG_ERROR(logger_, "Unable to load plugin {}: incompatible API structures", plugin.name());
 		return;
 	}
 
 	if(result.version_major < SDK_MAJOR_VERSION) {
-		LOG_ERROR(logger_, "Unable to load plugin '{}': plugin is out of date", **symbol);
+		LOG_ERROR(logger_, "Unable to load plugin {}: plugin is out of date", plugin.name());
 		return;
 	}
 
 	if(result.version_major > SDK_MAJOR_VERSION) {
-		LOG_ERROR(logger_, "Unable to load plugin '{}': plugin may be too new", **symbol);
+		LOG_ERROR(logger_, "Unable to load plugin {}: plugin may be too new", plugin.name());
 		return;
 	}
 
-	LOG_INFO(logger_, "Plugin '{}' loaded successfully", **symbol);
+	const auto init_fn = library::find_symbol<sdk_initialise_fn>(*handle, "sdk_initialise");
+
+	BlazeHostAPI api {
+		.size = sizeof(BlazeHostAPI),
+		.version_major = SDK_MAJOR_VERSION,
+		.version_minor = SDK_MINOR_VERSION,
+		.version_patch = SDK_PATCH_VERSION,
+		.log_async = log_async,
+		.log_sync = log_sync
+	};
+
+	(*init_fn)(api);
+	LOG_INFO(logger_, "{} plugin loaded", plugin.name());
 }
 
 } // blaze, ember

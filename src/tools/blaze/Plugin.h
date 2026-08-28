@@ -15,15 +15,19 @@ namespace ember::blaze {
 
 class Plugin final {
 	library::Handle handle_;
-	std::string_view name_;
+	std::string name_;
 
 public:
-	Plugin(library::Handle handle, std::string_view name)
+	Plugin(library::Handle handle, std::string name)
 		: handle_(handle)
 		, name_(name) {}
 
 	~Plugin() {
 		library::close(handle_);
+	}
+
+	std::string_view name() const {
+		return name_;
 	}
 
 	Plugin(Plugin&& rhs) noexcept

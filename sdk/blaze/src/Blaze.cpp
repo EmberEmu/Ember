@@ -14,7 +14,7 @@
 static BlazeHostAPI host_api;
 
 SDKBuildMeta sdk_build() {
-	return SDKBuildMeta {
+	return {
 		.magic = SDK_MAGIC,
 		.sdk_init_meta_size = sizeof(SDKBuildMeta),
 		.blaze_host_api_size = sizeof(BlazeHostAPI),
@@ -25,7 +25,16 @@ SDKBuildMeta sdk_build() {
 }
 
 void sdk_initialise(BlazeHostAPI api) {
+	if(api.size != sizeof(BlazeHostAPI)) {
+		// todo
+	}
+
+	if(api.version_major != SDK_MAJOR_VERSION) {
+		// todo
+	}
+
 	host_api = api;
+	(*api.log_sync)("Hello from the plugin", LOG_LEVEL_INFO);
 }
 
 void test() {
