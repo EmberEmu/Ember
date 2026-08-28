@@ -11,10 +11,10 @@
 
 namespace ember::blaze {
 
-Command command_create(const char* name, const char* description) {
+Command command_create(const SizedString* name, const SizedString* description) {
 	auto registry = InterfaceContainer::get_instance().command_root();
-	auto command = registry->create(name);
-	command->description(description);
+	auto command = registry->create(std::string(name->data, name->size));
+	command->description(std::string(description->data, description->size));
 	InterfaceContainer::get_instance().plugin_command_registry()->insert("test", command);
 
 	return {
@@ -23,40 +23,40 @@ Command command_create(const char* name, const char* description) {
 }
 
 template<typename T>
-bool command_arg_register(commands::Command& command, const char* name, std::uint8_t type) {
+bool command_arg_register(commands::Command& command, std::string name, std::uint8_t type) {
 	switch(type) {
 		case cat_string:
-			command.argument<std::string>(name, T{});
+			command.argument<std::string>(std::move(name), T{});
 			break;
 		case cat_float:
-			command.argument<float>(name, T{});
+			command.argument<float>(std::move(name), T{});
 			break;
 		case cat_double:
-			command.argument<double>(name, T{});
+			command.argument<double>(std::move(name), T{});
 			break;
 		case cat_int_8:
-			command.argument<std::int8_t>(name, T{});
+			command.argument<std::int8_t>(std::move(name), T{});
 			break;
 		case cat_int_16:
-			command.argument<std::int16_t>(name, T{});
+			command.argument<std::int16_t>(std::move(name), T{});
 			break;
 		case cat_int_32:
-			command.argument<std::int32_t>(name, T{});
+			command.argument<std::int32_t>(std::move(name), T{});
 			break;
 		case cat_int_64:
-			command.argument<std::int64_t>(name, T{});
+			command.argument<std::int64_t>(std::move(name), T{});
 			break;
 		case cat_uint_8:
-			command.argument<std::uint8_t>(name, T{});
+			command.argument<std::uint8_t>(std::move(name), T{});
 			break;
 		case cat_uint_16:
-			command.argument<std::uint16_t>(name, T{});
+			command.argument<std::uint16_t>(std::move(name), T{});
 			break;
 		case cat_uint_32:
-			command.argument<std::uint32_t>(name, T{});
+			command.argument<std::uint32_t>(std::move(name), T{});
 			break;
 		case cat_uint_64:
-			command.argument<std::uint64_t>(name, T{});
+			command.argument<std::uint64_t>(std::move(name), T{});
 			break;
 		default:
 			return false;
@@ -65,7 +65,7 @@ bool command_arg_register(commands::Command& command, const char* name, std::uin
 	return true;
 }
 
-bool command_add_argument(Command command, const char* name, std::uint8_t type, bool required) {
+bool command_add_argument(Command command, const SizedString* name, std::uint8_t type, bool required) {
 	auto pcr = InterfaceContainer::get_instance().plugin_command_registry();
 	auto result = pcr->lookup(command.impl);
 
@@ -73,10 +73,12 @@ bool command_add_argument(Command command, const char* name, std::uint8_t type, 
 		return false;
 	}
 
+	std::string name_str(name->data, name->size);
+
 	if(required) {
-		return command_arg_register<commands::required_t>(*result, name, type);
+		return command_arg_register<commands::required_t>(*result, std::move(name_str), type);
 	} else {
-		return command_arg_register<commands::optional_t>(*result, name, type);
+		return command_arg_register<commands::optional_t>(*result, std::move(name_str), type);
 	}
 }
 

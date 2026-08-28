@@ -9,6 +9,7 @@
 #pragma once
 
 #include "Visibility.h"
+#include "../Common.h"
 #include <commands/Commands.h>
 #include <cstdint>
 
@@ -34,9 +35,9 @@ enum CommandArgType {
 	cat_uint_64,
 };
 
-EMBER_EXPORT Command command_create(const char* name, const char* description);
+EMBER_EXPORT Command command_create(const SizedString* name, const SizedString* description);
 EMBER_EXPORT bool command_destroy(Command command);
-EMBER_EXPORT bool command_add_argument(Command command, const char* name, std::uint8_t type, bool required);
+EMBER_EXPORT bool command_add_argument(Command command, const SizedString* name, std::uint8_t type, bool required);
 EMBER_EXPORT bool command_callback(Command command);
 
 } // extern "C"
