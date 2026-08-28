@@ -43,7 +43,7 @@ uint8_t sdk_initialise(const BlazeHostAPI api, const PluginID pid) {
 SizedString cstring_to_sstr(const char* string) {
 	return {
 		.data = string,
-		.size = std::strlen(string)
+		.size = static_cast<uint64_t>(std::strlen(string))
 	};
 }
 

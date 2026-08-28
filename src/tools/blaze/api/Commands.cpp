@@ -13,8 +13,8 @@ namespace ember::blaze {
 
 Command command_create(const SizedString* name, const SizedString* description) {
 	auto registry = InterfaceContainer::get_instance().command_root();
-	auto command = registry->create({ name->data, name->size });
-	command->description({ description->data, description->size });
+	auto command = registry->create(std::string(name->data, name->size));
+	command->description(std::string(description->data, description->size));
 	InterfaceContainer::get_instance().plugin_command_registry()->insert("test", command);
 
 	return {

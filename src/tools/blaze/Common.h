@@ -56,7 +56,7 @@ typedef uint64_t PluginID;
 
 typedef struct {
 	const char* data;
-	uint32_t size;
+	uint64_t size;
 } SizedString;
 
 // plugin API
