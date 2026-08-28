@@ -62,7 +62,7 @@ enum class ArgumentType : std::uint8_t {
 };
 
 inline void log_test(std::string_view message) {
-	log_test_0(message.data(), message.size());
+	log_test_0(message.data(), message.size(), LOG_LEVEL_INFO);
 }
 
 } // blaze, ember

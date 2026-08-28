@@ -9,11 +9,12 @@
 #pragma once
 
 #include "Visibility.h"
+#include "../Common.h"
 #include <cstdint>
 
 extern "C" {
 
-EMBER_EXPORT void log_async(const char* message, std::uint8_t level);
-EMBER_EXPORT void log_sync(const char* message, std::uint8_t level);
+EMBER_EXPORT void log_async(const char* message, std::uint32_t size, std::uint8_t level, PluginID pid);
+EMBER_EXPORT void log_sync(const char* message, std::uint32_t size, std::uint8_t level, PluginID pid);
 
 } // extern "C"

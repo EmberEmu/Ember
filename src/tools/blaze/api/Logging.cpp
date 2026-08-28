@@ -10,56 +10,62 @@
 #include "Logging.h"
 #include <logger/Logger.h>
 
-void log_async(const char* message, std::uint8_t level) {
+void log_async(const char* message, const std::uint32_t size, std::uint8_t level, PluginID pid) {
+	std::string_view view(message, size);
+	const auto fmt = std::format("[{}] {}", pid, view);
+
 	auto logger = ember::log::global_logger(); // todo, temp!
 
 	switch(level) {
 		case LOG_LEVEL_TRACE:
-			LOG_TRACE(logger, message);
+			LOG_TRACE(logger, fmt);
 			break;
 		case LOG_LEVEL_DEBUG:
-			LOG_DEBUG(logger, message);
+			LOG_DEBUG(logger, fmt);
 			break;
 		case LOG_LEVEL_INFO:
-			LOG_INFO(logger, message);
+			LOG_INFO(logger, fmt);
 			break;
 		case LOG_LEVEL_WARN:
-			LOG_WARN(logger, message);
+			LOG_WARN(logger, fmt);
 			break;
 		case LOG_LEVEL_ERROR:
-			LOG_ERROR(logger, message);
+			LOG_ERROR(logger, fmt);
 			break;
 		case LOG_LEVEL_FATAL:
-			LOG_FATAL(logger, message);
+			LOG_FATAL(logger, fmt);
 			break;
 		default:
-			LOG_ERROR(logger, "Bad logging level, message: {}", message);
+			LOG_ERROR(logger, "Bad logging level, message: {}", fmt);
 	}
 }
 
-void log_sync(const char* message, std::uint8_t level) {
+void log_sync(const char* message, const std::uint32_t size, std::uint8_t level, PluginID pid) {
+	std::string_view view(message, size);
+	const auto fmt = std::format("[{}] {}", pid, view);
+
 	auto logger = ember::log::global_logger(); // todo, temp!
 
 	switch(level) {
 		case LOG_LEVEL_TRACE:
-			SLOG_TRACE(logger, message);
+			SLOG_TRACE(logger, fmt);
 			break;
 		case LOG_LEVEL_DEBUG:
-			SLOG_DEBUG(logger, message);
+			SLOG_DEBUG(logger, fmt);
 			break;
 		case LOG_LEVEL_INFO:
-			SLOG_INFO(logger, message);
+			SLOG_INFO(logger, fmt);
 			break;
 		case LOG_LEVEL_WARN:
-			SLOG_WARN(logger, message);
+			SLOG_WARN(logger, fmt);
 			break;
 		case LOG_LEVEL_ERROR:
-			SLOG_ERROR(logger, message);
+			SLOG_ERROR(logger, fmt);
 			break;
 		case LOG_LEVEL_FATAL:
-			SLOG_FATAL(logger, message);
+			SLOG_FATAL(logger, fmt);
 			break;
 		default:
-			SLOG_ERROR(logger, "Bad logging level, message: {}", message);
+			SLOG_ERROR(logger, "Bad logging level, message: {}", fmt);
 	}
 }

@@ -31,6 +31,8 @@ extern "C" {
 #define SDK_MINOR_VERSION 0
 #define SDK_PATCH_VERSION 0
 
+typedef uint64_t PluginID;
+
 // logging severity levels
 #define LOG_LEVEL_TRACE 0
 #define LOG_LEVEL_DEBUG 1
@@ -53,8 +55,8 @@ extern "C" {
 #define CAT_UINT_64 10
 
 // logging API
-typedef void(*log_async_fn)(const char* message, uint8_t level);
-typedef void(*log_sync_fn)(const char* message, uint8_t level);
+typedef void(*log_async_fn)(const char* message, uint32_t size, uint8_t level, PluginID pid);
+typedef void(*log_sync_fn)(const char* message, uint32_t size, uint8_t level, PluginID pid);
 
 // command API - todo, opaque struct once I've cleaned the other files up
 typedef void*(*command_create_fn)(const char* name, const char* description);
@@ -87,7 +89,6 @@ typedef struct {
 } SDKBuildMeta;
 
 // SDK internals
-typedef uint64_t PluginID;
 typedef SDKBuildMeta(*sdk_build_fn)();
 typedef uint8_t(*sdk_initialise_fn)(BlazeHostAPI api, PluginID plugin_id);
 
