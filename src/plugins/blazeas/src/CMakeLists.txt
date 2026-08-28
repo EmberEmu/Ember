@@ -7,11 +7,11 @@
 set(LIBRARY_NAME blazeas)
 
 set(LIBRARY_HDR
-    BlazeAS.h
+    Plugin.h
 )
 
 set(LIBRARY_SRC
-    BlazeAS.cpp
+    Plugin.cpp
 )
 
 add_library(${LIBRARY_NAME} SHARED ${LIBRARY_SRC})

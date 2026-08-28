@@ -6,8 +6,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include "BlazeAS.h"
+#include "Plugin.h"
 #include <cstdint>
+
+namespace blazeas {
 
 extern "C" {
 
@@ -15,8 +17,6 @@ EMBER_PLUGIN_EXPORT const char* plugin_name = "Blaze Angelscript Extension";
 EMBER_PLUGIN_EXPORT const char* plugin_name_short = "blazeas";
 
 } // extern "C"
-
-namespace blazeas {
 
 void Plugin::on_load() {
 	ember::blaze::log_test("This is just an ABI test, disregard");
