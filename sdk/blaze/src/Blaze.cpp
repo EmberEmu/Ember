@@ -9,8 +9,9 @@
 #pragma once
 
 #include <ember/blaze/Blaze.h>
+
 static BlazeHostAPI host_api;
-static uint64_t plugin_id;
+static PluginID plugin_id;
 
 SDKBuildMeta sdk_build() {
 	return {
@@ -41,6 +42,6 @@ void log_test_0(const char* message, const uint32_t size) {
 	(*host_api.log_sync)(message, LOG_LEVEL_INFO);
 }
 
-uint64_t get_plugin_id() {
+PluginID get_plugin_id() {
 	return plugin_id;
 }

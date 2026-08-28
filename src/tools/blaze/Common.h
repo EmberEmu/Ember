@@ -87,8 +87,9 @@ typedef struct {
 } SDKBuildMeta;
 
 // SDK internals
+typedef uint64_t PluginID;
 typedef SDKBuildMeta(*sdk_build_fn)();
-typedef uint8_t(*sdk_initialise_fn)(BlazeHostAPI api, uint64_t plugin_id);
+typedef uint8_t(*sdk_initialise_fn)(BlazeHostAPI api, PluginID plugin_id);
 
 #ifdef __cplusplus
 } // extern "C"
