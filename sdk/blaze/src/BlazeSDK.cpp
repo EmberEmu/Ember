@@ -8,7 +8,7 @@
 
 #include <ember/blaze/Blaze.h>
 #include <ember/blaze/impl/Client.h>
-#include <ember/blaze/SharedABI.h>
+#include <ember/blaze/Common.h>
 
 namespace ember::blaze {
 
