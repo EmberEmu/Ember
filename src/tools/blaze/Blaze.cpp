@@ -147,7 +147,12 @@ void Blaze::load_plugin(const std::filesystem::path& path) {
 		.log_sync = log_sync
 	};
 
-	(*init_fn)(api);
+	if(const auto result = (*init_fn)(api); result != SDK_INIT_OK) {
+		LOG_ERROR(logger_, "Unable to load plugin {}: plugin returned error code {}",
+			plugin.name(), result);
+		return;
+	}
+
 	LOG_INFO(logger_, "{} plugin loaded", plugin.name());
 }
 

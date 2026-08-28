@@ -24,17 +24,18 @@ SDKBuildMeta sdk_build() {
 	};
 }
 
-void sdk_initialise(BlazeHostAPI api) {
+uint8_t sdk_initialise(BlazeHostAPI api) {
 	if(api.size != sizeof(BlazeHostAPI)) {
-		// todo
+		return SDK_INIT_BAD_SIZE;
 	}
 
 	if(api.version_major != SDK_MAJOR_VERSION) {
-		// todo
+		return SDK_INIT_BAD_VERS;
 	}
 
 	host_api = api;
 	(*api.log_sync)("Hello from the plugin", LOG_LEVEL_INFO);
+	return SDK_INIT_OK;
 }
 
 void test() {

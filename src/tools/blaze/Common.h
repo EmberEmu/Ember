@@ -23,6 +23,9 @@ extern "C" {
 #endif // _WIN32
 
 #define SDK_MAGIC 0x424c5a45 // 'BLZE'
+#define SDK_INIT_OK        0
+#define SDK_INIT_BAD_SIZE  1
+#define SDK_INIT_BAD_VERS  2
 
 #define SDK_MAJOR_VERSION 1
 #define SDK_MINOR_VERSION 0
@@ -85,7 +88,7 @@ typedef struct {
 
 // SDK internals
 typedef SDKBuildMeta(*sdk_build_fn)();
-typedef void(*sdk_initialise_fn)(BlazeHostAPI api);
+typedef uint8_t(*sdk_initialise_fn)(BlazeHostAPI api);
 
 #ifdef __cplusplus
 } // extern "C"
