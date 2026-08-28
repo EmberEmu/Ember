@@ -100,7 +100,17 @@ void Blaze::load_plugin(const std::filesystem::path& path) {
 	LOG_TRACE(logger_, "Loading plugin {}", plugin.name());
 
 	// more test gubbins
-	using PluginLoadFn = int(*)();
+	using PluginLoadFn = void(*)();
+	using PluginUnloadFn = void(*)();
+	const auto load_fn = library::find_symbol<PluginLoadFn>(*handle, "plugin_on_load");
+	const auto unload_fn = library::find_symbol<PluginUnloadFn>(*handle, "plugin_on_unload");
+
+	if(!load_fn || !unload_fn) {
+		LOG_ERROR(logger_, "Unable to load plugin {}: {}",
+			path.filename().string(), library::result_to_string(symbol.error()));
+		return;
+	}
+
 	const auto fn = library::find_symbol<sdk_build_fn>(*handle, "sdk_build");
 
 	if(!fn) {
@@ -154,6 +164,7 @@ void Blaze::load_plugin(const std::filesystem::path& path) {
 	}
 
 	LOG_INFO(logger_, "{} plugin loaded", plugin.name());
+	(*load_fn)();
 }
 
 } // blaze, ember

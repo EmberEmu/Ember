@@ -38,6 +38,6 @@ uint8_t sdk_initialise(BlazeHostAPI api) {
 	return SDK_INIT_OK;
 }
 
-void test() {
-	std::cout << "Hello, world!";
+void log_test_0(const char* message, const uint32_t size) {
+	(*host_api.log_sync)(message, LOG_LEVEL_INFO);
 }

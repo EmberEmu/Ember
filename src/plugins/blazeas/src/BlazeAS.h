@@ -8,6 +8,16 @@
 
 #pragma once
 
+#include <ember/blaze/Blaze.hpp>
+
 namespace blazeas {
+
+class Plugin final : ember::blaze::Plugin {
+public:
+	void on_load() override;
+	void on_unload() override;
+};
+
+SDK_REGISTER_PLUGIN(blazeas::Plugin)
 
 } // blazeas

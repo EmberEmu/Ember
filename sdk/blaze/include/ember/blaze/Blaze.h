@@ -18,7 +18,7 @@ extern "C" {
 EMBER_PLUGIN_EXPORT SDKBuildMeta sdk_build();
 EMBER_PLUGIN_EXPORT uint8_t sdk_initialise(BlazeHostAPI api);
 
-void test();
+void log_test_0(const char* message, uint32_t size);
 
 #ifdef __cplusplus
 } // extern "C"

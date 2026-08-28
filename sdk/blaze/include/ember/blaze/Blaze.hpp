@@ -10,9 +10,33 @@
 
 #include <ember/blaze/Common.h>
 #include <ember/blaze/Blaze.h>
+#include <memory>
+#include <string>
+#include <string_view>
 #include <cstdint>
 
 namespace ember::blaze {
+
+#define SDK_REGISTER_PLUGIN(PluginType)                    \
+std::unique_ptr<PluginType> plugin_inst;                   \
+                                                           \
+extern "C" {                                               \
+	inline EMBER_PLUGIN_EXPORT void plugin_on_load() {     \
+		plugin_inst->on_load();                            \
+	}                                                      \
+	inline EMBER_PLUGIN_EXPORT void plugin_on_unload() {   \
+		if(plugin_inst) {                                  \
+			plugin_inst->on_unload();                      \
+		}                                                  \
+	}                                                      \
+}
+
+class Plugin {
+public:
+	virtual void on_load() = 0;
+	virtual void on_unload() = 0;
+	virtual ~Plugin() = default;
+};
 
 enum class LogLevel : std::uint8_t {
 	trace = LOG_LEVEL_TRACE,
@@ -36,5 +60,9 @@ enum class ArgumentType : std::uint8_t {
 	uint32  = CAT_UINT_32,
 	uint64  = CAT_UINT_64
 };
+
+inline void log_test(std::string_view message) {
+	log_test_0(message.data(), message.size());
+}
 
 } // blaze, ember
