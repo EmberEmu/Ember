@@ -9,6 +9,7 @@
 #pragma once
 
 #include <ember/blaze/Common.h>
+#include <ember/blaze/Blaze.h>
 #include <cstdint>
 
 namespace ember::blaze {

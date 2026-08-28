@@ -7,6 +7,7 @@
  */
 
 #include "Blaze.h"
+#include "Common.h"
 #include "Extensions.h"
 #include "InterfaceContainer.h"
 #include "Library.h"
@@ -93,22 +94,45 @@ void Blaze::load_plugin(const std::filesystem::path& path) {
 	}
 
 	plugins_.emplace_back(*handle, **symbol);
-	LOG_INFO(logger_, "Loaded plugin, {}", **symbol);
+	LOG_TRACE(logger_, "Loading plugin {}", **symbol);
 
 	// more test gubbins
 	using PluginLoadFn = int(*)();
-	const auto fn = library::find_symbol<PluginLoadFn>(*handle, "plugin_on_load");
+	const auto fn = library::find_symbol<sdk_build_fn>(*handle, "sdk_build");
 
 	if(!fn) {
 		LOG_ERROR(logger_, "Unable to locate symbol");
 		return;
 	}
 
-	auto result = (*fn)();
+	const auto result = (*fn)();
 
-	if(result != 0) {
-		LOG_ERROR(logger_, "Plugin init error");
+	if(result.magic != SDK_MAGIC) {
+		LOG_ERROR(logger_, "Plugin '{}' load failed due to incorrect magic", **symbol);
+		return;
 	}
+
+	if(result.sdk_init_meta_size != sizeof(SDKBuildMeta)) {
+		LOG_ERROR(logger_, "Plugin '{}' load failed due to mismatched metadata structure size", **symbol);
+		return;
+	}
+
+	if(result.blaze_host_api_size != sizeof(BlazeHostAPI)) {
+		LOG_ERROR(logger_, "Plugin '{}' load failed due to mismatched API structure size", **symbol);
+		return;
+	}
+
+	if(result.version_major < SDK_MAJOR_VERSION) {
+		LOG_ERROR(logger_, "Unable to load plugin '{}': plugin is out of date", **symbol);
+		return;
+	}
+
+	if(result.version_major > SDK_MAJOR_VERSION) {
+		LOG_ERROR(logger_, "Unable to load plugin '{}': plugin may be too new", **symbol);
+		return;
+	}
+
+	LOG_INFO(logger_, "Plugin '{}' loaded successfully", **symbol);
 }
 
 } // blaze, ember

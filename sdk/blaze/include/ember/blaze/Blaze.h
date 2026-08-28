@@ -8,11 +8,16 @@
 
 #pragma once
 
+#include <ember/blaze/Common.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+EMBER_PLUGIN_EXPORT SDKBuildMeta sdk_build();
+EMBER_PLUGIN_EXPORT void sdk_initialise(BlazeHostAPI api);
 
+void test();
 
 #ifdef __cplusplus
 } // extern "C"

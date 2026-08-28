@@ -15,6 +15,7 @@ EMBER_PLUGIN_EXPORT const char* plugin_name = "Blaze Angelscript Extension";
 EMBER_PLUGIN_EXPORT const char* plugin_name_short = "blazeas";
 
 EMBER_PLUGIN_EXPORT std::int32_t plugin_on_load() {
+	test();
 	return 0;
 }
 
