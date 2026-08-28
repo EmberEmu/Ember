@@ -6,35 +6,28 @@
 
 set(SDK_NAME blaze)
 set(LIBRARY_NAME blazesdk)
-
-set(LIBRARY_SRC
-    src/BlazeSDK.cpp
-    src/Client.cpp
-)
-
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-if(WIN32)
-    set(LIBRARY_SRC ${LIBRARY_SRC} src/win32/Library.cpp)
-else()
-    set(LIBRARY_SRC ${LIBRARY_SRC} src/posix/Library.cpp)
-endif()
+set(LIBRARY_SRC
+    src/Blaze.cpp   
+)
 
 set(LIBRARY_HDR
-	include/ember/blaze/impl/Symbols.h
-	include/ember/blaze/impl/Client.h
-	include/ember/blaze/impl/Library.h
+
 )
 
 set(SHARED_HEADER ${CMAKE_SOURCE_DIR}/src/tools/blaze/Common.h)
 
 set(LIBRARY_HDR_SHIPPING
     include/ember/blaze/Blaze.h
+    include/ember/blaze/Blaze.hpp
 	${SHARED_HEADER}
 )
 
 add_library(${LIBRARY_NAME} STATIC ${LIBRARY_SRC} ${LIBRARY_HDR} ${LIBRARY_HDR_SHIPPING})
 target_compile_definitions(${LIBRARY_NAME} PUBLIC EXPORT_SDK)
+set_target_properties(${LIBRARY_NAME} PROPERTIES LINKER_LANGUAGE CXX)
+
 configure_file(${SHARED_HEADER} ${CMAKE_CURRENT_BINARY_DIR}/include/ember/blaze/Common.h COPYONLY)
 
 target_include_directories(${LIBRARY_NAME} PUBLIC 

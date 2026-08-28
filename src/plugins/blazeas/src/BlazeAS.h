@@ -8,11 +8,8 @@
 
 #pragma once
 
-#include <ember/blaze/Blaze.h>
 #include <memory>
 
 namespace blazeas {
-
-void launch(std::unique_ptr<ember::blaze::Client> client);
 
 } // blazeas

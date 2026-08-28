@@ -8,11 +8,9 @@ set(LIBRARY_NAME blazeas)
 
 set(LIBRARY_HDR
     BlazeAS.h
-    Visibility.h
 )
 
 set(LIBRARY_SRC
-    main.cpp
     BlazeAS.cpp
 )
 

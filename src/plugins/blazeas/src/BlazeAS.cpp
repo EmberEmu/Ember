@@ -6,12 +6,20 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include "BlazeAS.h"
+#include <ember/blaze/Blaze.hpp>
+#include <cstdint>
 
-namespace blazeas {
+extern "C" {
 
-void launch(std::unique_ptr<ember::blaze::Client> client) {
-	
+EMBER_PLUGIN_EXPORT const char* plugin_name = "Blaze Angelscript Extension";
+EMBER_PLUGIN_EXPORT const char* plugin_name_short = "blazeas";
+
+EMBER_PLUGIN_EXPORT std::int32_t plugin_on_load() {
+	return 0;
 }
 
-} // blazeas
+EMBER_PLUGIN_EXPORT void plugin_on_unload() {
+
+}
+
+} // extern "C"

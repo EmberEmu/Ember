@@ -8,35 +8,12 @@
 
 #pragma once
 
-#include <cstdint>
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-inline std::uint32_t blaze_api_version_major = 1;
-inline std::uint32_t blaze_api_version_minor = 0;
-inline std::uint32_t blaze_api_version_patch = 0;
 
-namespace ember::blaze {
 
-namespace impl {
-	class Client;
-}
-
-class Client {
-public:
-	Client() {
-
-	}
-
-	~Client() {
-
-	}
-
-	void log(int level, const char* message) {
-
-	}
-
-	void slog(int level, const char* message) {
-
-	}
-};
-
-} // blaze, ember
+#ifdef __cplusplus
+} // extern "C"
+#endif

@@ -15,26 +15,33 @@
 extern "C" {
 #endif
 
+// todo, proper compiler/platform detection
+#ifdef _WIN32
+	#define EMBER_PLUGIN_EXPORT __declspec(dllexport)
+#else
+	#define EMBER_PLUGIN_EXPORT
+#endif // _WIN32
+
 // logging severity levels
-#define LOG_LEVEL_TRACE = 0;
-#define LOG_LEVEL_DEBUG = 1;
-#define LOG_LEVEL_INFO  = 2;
-#define LOG_LEVEL_WARN  = 3;
-#define LOG_LEVEL_ERROR = 4;
-#define LOG_LEVEL_FATAL = 5;
+#define LOG_LEVEL_TRACE 0
+#define LOG_LEVEL_DEBUG 1
+#define LOG_LEVEL_INFO  2
+#define LOG_LEVEL_WARN  3
+#define LOG_LEVEL_ERROR 4
+#define LOG_LEVEL_FATAL 5
 
 // command argument types
-#define CAT_STRING  = 0;
-#define CAT_FLOAT   = 1;
-#define CAT_DOUBLE  = 2;
-#define CAT_INT_8   = 3;
-#define CAT_INT_16  = 4;
-#define CAT_INT_32  = 5;
-#define CAT_INT_64  = 6;
-#define CAT_UINT_8  = 7;
-#define CAT_UINT_16 = 8;
-#define CAT_UINT_32 = 9;
-#define CAT_UINT_64 = 10;
+#define CAT_STRING  0
+#define CAT_FLOAT   1
+#define CAT_DOUBLE  2
+#define CAT_INT_8   3
+#define CAT_INT_16  4
+#define CAT_INT_32  5
+#define CAT_INT_64  6
+#define CAT_UINT_8  7
+#define CAT_UINT_16 8
+#define CAT_UINT_32 9
+#define CAT_UINT_64 10
 
 // logging API
 typedef void(*log_async_fn)(const char* message, uint8_t level);
