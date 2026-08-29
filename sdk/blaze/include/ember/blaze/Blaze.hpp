@@ -10,6 +10,7 @@
 
 #include <ember/blaze/Common.h>
 #include <ember/blaze/Blaze.h>
+#include <format>
 #include <memory>
 #include <string>
 #include <string_view>
@@ -69,12 +70,30 @@ SizedString to_sstr(std::string_view string) {
 
 } // unnamed
 
-inline void log(LogLevel log_level, std::string_view message) {
-	blaze_log_sstr(std::to_underlying(log_level), to_sstr(message));
+template<typename... FmtArgs>
+inline void log(LogLevel log_level, std::string_view message, FmtArgs... args) {
+	if constexpr(sizeof...(args)) {
+		const auto formatted = std::vformat(
+			message, std::make_format_args(std::forward<FmtArgs>(args)...)
+		);
+
+		blaze_log_sstr(std::to_underlying(log_level), to_sstr(formatted));
+	} else {
+		blaze_log_sstr(std::to_underlying(log_level), to_sstr(message));
+	}
 }
 
-inline void slog(LogLevel log_level, std::string_view message) {
-	blaze_slog_sstr(std::to_underlying(log_level), to_sstr(message));
+template<typename... FmtArgs>
+inline void slog(LogLevel log_level, std::string_view message, FmtArgs... args) {
+	if constexpr(sizeof...(args)) {
+		const auto formatted = std::vformat(
+			message, std::make_format_args(std::forward<FmtArgs>(args)...)
+		);
+
+		blaze_slog_sstr(std::to_underlying(log_level), to_sstr(formatted));
+	} else {
+		blaze_slog_sstr(std::to_underlying(log_level), to_sstr(message));
+	}
 }
 
 inline PluginID plugin_id() {

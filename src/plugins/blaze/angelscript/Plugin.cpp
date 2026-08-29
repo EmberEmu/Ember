@@ -8,7 +8,6 @@
 
 #include "Plugin.h"
 #include <cstdint>
-#include <format>
 
 using namespace ember;
 
@@ -22,7 +21,7 @@ EMBER_EXPORT const char* plugin_name_short = "blazeas";
 } // extern "C"
 
 Plugin::Plugin() {
-	blaze::log(blaze::LogLevel::info, std::format("{} ID: {}", plugin_name_short, blaze::plugin_id()));
+	blaze::log(blaze::LogLevel::info, "Hello from plugin {}", blaze::plugin_id());
 }
 
 Plugin::~Plugin() {
