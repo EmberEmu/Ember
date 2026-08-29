@@ -20,6 +20,12 @@ class Plugin final {
 	std::string name_;
 	PluginID pid_;
 
+	void reset() {
+		name_ = "";
+		handle_ = nullptr;
+		pid_ = 0;
+	}
+
 public:
 	Plugin(library::Handle handle, std::string name, PluginID pid)
 		: handle_(handle)
@@ -42,17 +48,14 @@ public:
 		: handle_(rhs.handle_)
 		, name_(rhs.name_)
 		, pid_(rhs.pid_) {
-		rhs.name_ = "";
-		rhs.handle_ = nullptr;
-		rhs.pid_ = 0;
+		rhs.reset();
 	}
 
 	Plugin& operator=(Plugin&& rhs) noexcept {
 		handle_ = rhs.handle_;
 		name_ = rhs.name_;
-		rhs.name_ = "";
-		rhs.handle_ = nullptr;
-		rhs.pid_ = 0;
+		pid_ = rhs.pid_;
+		rhs.reset();
 		return *this;
 	}
 
