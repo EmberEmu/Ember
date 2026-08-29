@@ -21,7 +21,7 @@ namespace ember::realm {
  * thread local copy of the active config.
  * 
  * The base config is purely a mechanism for ensuring that even threads
- * that have not updates their configs can still make use of the
+ * that have not updated their configs can still make use of the
  * store. That case will require a lock, otherwise it wouldn't be possible
  * to update the base config after initial creation. Could use some
  * atomic swapping to make it work without the mutex but it's not worth it.
