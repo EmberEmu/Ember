@@ -10,6 +10,7 @@
 
 #include "Common.h"
 #include "Library.h"
+#include <string>
 #include <string_view>
 
 namespace ember::blaze {
