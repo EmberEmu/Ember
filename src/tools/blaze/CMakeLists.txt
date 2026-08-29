@@ -17,6 +17,7 @@ set(LIBRARY_HDR
     InterfaceContainer.h
     Common.h
     PluginRegistry.h
+    PluginState.h
     api/Logging.h
     api/Commands.h
 )
