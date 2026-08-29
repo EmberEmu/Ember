@@ -71,28 +71,32 @@ SizedString to_sstr(std::string_view string) {
 } // unnamed
 
 template<typename... FmtArgs>
-inline void log(LogLevel log_level, std::string_view message, FmtArgs... args) {
+inline void log(LogLevel log_level, std::string_view message, const FmtArgs... args) {
+	const auto ul_level = std::to_underlying(log_level);
+
 	if constexpr(sizeof...(args)) {
 		const auto formatted = std::vformat(
-			message, std::make_format_args(std::forward<FmtArgs>(args)...)
+			message, std::make_format_args(std::forward<const FmtArgs>(args)...)
 		);
 
-		blaze_log_sstr(std::to_underlying(log_level), to_sstr(formatted));
-	} else {
-		blaze_log_sstr(std::to_underlying(log_level), to_sstr(message));
+		blaze_log_sstr(ul_level, to_sstr(formatted));
+	} else { // skip formatting call for empty parameter packs
+		blaze_log_sstr(ul_level, to_sstr(message));
 	}
 }
 
 template<typename... FmtArgs>
-inline void slog(LogLevel log_level, std::string_view message, FmtArgs... args) {
+inline void slog(LogLevel log_level, std::string_view message, const FmtArgs... args) {
+	const auto ul_level = std::to_underlying(log_level);
+
 	if constexpr(sizeof...(args)) {
 		const auto formatted = std::vformat(
-			message, std::make_format_args(std::forward<FmtArgs>(args)...)
+			message, std::make_format_args(std::forward<const FmtArgs>(args)...)
 		);
 
-		blaze_slog_sstr(std::to_underlying(log_level), to_sstr(formatted));
-	} else {
-		blaze_slog_sstr(std::to_underlying(log_level), to_sstr(message));
+		blaze_slog_sstr(ul_level, to_sstr(formatted));
+	} else { // skip formatting call for empty parameter packs
+		blaze_slog_sstr(ul_level, to_sstr(message));
 	}
 }
 
