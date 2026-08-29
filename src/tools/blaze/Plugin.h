@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include "Common.h"
 #include "Library.h"
 #include <string_view>
 
@@ -16,11 +17,13 @@ namespace ember::blaze {
 class Plugin final {
 	library::Handle handle_;
 	std::string name_;
+	PluginID pid_;
 
 public:
-	Plugin(library::Handle handle, std::string name)
+	Plugin(library::Handle handle, std::string name, PluginID pid)
 		: handle_(handle)
-		, name_(name) {}
+		, name_(name)
+		, pid_(pid) {}
 
 	~Plugin() {
 		library::close(handle_);
@@ -30,11 +33,17 @@ public:
 		return name_;
 	}
 
+	PluginID pid() const {
+		return pid_;
+	}
+
 	Plugin(Plugin&& rhs) noexcept
 		: handle_(rhs.handle_)
-		, name_(rhs.name_) {
+		, name_(rhs.name_)
+		, pid_(rhs.pid_) {
 		rhs.name_ = "";
 		rhs.handle_ = nullptr;
+		rhs.pid_ = 0;
 	}
 
 	Plugin& operator=(Plugin&& rhs) noexcept {
@@ -42,6 +51,7 @@ public:
 		name_ = rhs.name_;
 		rhs.name_ = "";
 		rhs.handle_ = nullptr;
+		rhs.pid_ = 0;
 		return *this;
 	}
 

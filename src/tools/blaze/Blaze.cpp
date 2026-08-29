@@ -94,9 +94,7 @@ void Blaze::load_plugin(const std::filesystem::path& path) {
 		return;
 	}
 
-	Plugin plugin(*handle, **symbol);
-
-	plugins_.emplace_back(*handle, **symbol);
+	const auto& plugin = plugins_.emplace_back(*handle, **symbol, 0); // todo, generate ID
 	LOG_TRACE(logger_, "Loading plugin {}", plugin.name());
 
 	// more test gubbins

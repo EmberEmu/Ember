@@ -16,6 +16,7 @@ set(LIBRARY_HDR
     PluginCommandRegistry.h
     InterfaceContainer.h
     Common.h
+    PluginRegistry.h
     api/Logging.h
     api/Commands.h
 )
@@ -25,6 +26,7 @@ set(LIBRARY_SRC
     Client.cpp
     Connection.cpp
     PluginCommandRegistry.cpp
+    PluginRegistry.cpp
     api/Logging.cpp
     api/Commands.cpp
 )
