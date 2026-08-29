@@ -39,7 +39,6 @@ uint8_t sdk_initialise(const BlazeHostAPI api, const PluginID pid) {
 	return SDK_INIT_OK;
 }
 
-// todo, move
 SizedString cstring_to_sstr(const char* string) {
 	return {
 		.data = string,

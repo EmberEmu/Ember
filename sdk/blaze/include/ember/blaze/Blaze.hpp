@@ -58,12 +58,23 @@ enum class ArgumentType : std::uint8_t {
 	uint64  = CAT_UINT_64
 };
 
+namespace {
+
+SizedString to_sstr(std::string_view string) {
+	return {
+		.data = string.data(),
+		.size = string.size()
+	};
+}
+
+} // unnamed
+
 inline void log(std::string_view message, LogLevel log_level) {
-	blaze_log_sstr({ message.data(), message.size() }, std::to_underlying(log_level));
+	blaze_log_sstr(to_sstr(message), std::to_underlying(log_level));
 }
 
 inline void slog(std::string_view message, LogLevel log_level) {
-	blaze_slog_sstr({ message.data(), message.size() }, std::to_underlying(log_level));
+	blaze_slog_sstr(to_sstr(message), std::to_underlying(log_level));
 }
 
 inline PluginID plugin_id() {
