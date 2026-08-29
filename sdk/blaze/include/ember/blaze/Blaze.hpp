@@ -69,12 +69,12 @@ SizedString to_sstr(std::string_view string) {
 
 } // unnamed
 
-inline void log(std::string_view message, LogLevel log_level) {
-	blaze_log_sstr(to_sstr(message), std::to_underlying(log_level));
+inline void log(LogLevel log_level, std::string_view message) {
+	blaze_log_sstr(std::to_underlying(log_level), to_sstr(message));
 }
 
-inline void slog(std::string_view message, LogLevel log_level) {
-	blaze_slog_sstr(to_sstr(message), std::to_underlying(log_level));
+inline void slog(LogLevel log_level, std::string_view message) {
+	blaze_slog_sstr(std::to_underlying(log_level), to_sstr(message));
 }
 
 inline PluginID plugin_id() {

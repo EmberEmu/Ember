@@ -10,7 +10,7 @@
 #include "Logging.h"
 #include <logger/Logger.h>
 
-void log_async(const SizedString* message, std::uint8_t level, PluginID pid) {
+void log_async(std::uint8_t level, const SizedString* message, PluginID pid) {
 	std::string_view view(message->data, message->size);
 	const auto fmt = std::format("[{}] {}", pid, view);
 
@@ -40,7 +40,7 @@ void log_async(const SizedString* message, std::uint8_t level, PluginID pid) {
 	}
 }
 
-void log_sync(const SizedString* message, std::uint8_t level, PluginID pid) {
+void log_sync(std::uint8_t level, const SizedString* message, PluginID pid) {
 	std::string_view view(message->data, message->size);
 	const auto fmt = std::format("[{}] {}", pid, view);
 

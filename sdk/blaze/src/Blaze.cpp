@@ -50,22 +50,22 @@ PluginID blaze_get_plugin_id() {
 	return plugin_id;
 }
 
-void blaze_log(const char* message, const uint8_t log_level) {
+void blaze_log(const uint8_t log_level, const char* message) {
 	const auto sstr = cstring_to_sstr(message);
-	(*host_api.log_async)(&sstr, log_level, blaze_get_plugin_id());
+	(*host_api.log_async)(log_level, &sstr, blaze_get_plugin_id());
 }
 
-void blaze_slog(const char* message, const uint8_t log_level) {
+void blaze_slog(const uint8_t log_level, const char* message) {
 	const auto sstr = cstring_to_sstr(message);
-	(*host_api.log_sync)(&sstr, log_level, blaze_get_plugin_id());
+	(*host_api.log_sync)(log_level, &sstr, blaze_get_plugin_id());
 }
 
-void blaze_log_sstr(const SizedString message, const uint8_t log_level) {
-	(*host_api.log_async)(&message, log_level, blaze_get_plugin_id());
+void blaze_log_sstr(const uint8_t log_level, const SizedString message) {
+	(*host_api.log_async)(log_level, &message, blaze_get_plugin_id());
 }
 
-void blaze_slog_sstr(const SizedString message, const uint8_t log_level) {
-	(*host_api.log_sync)(&message, log_level, blaze_get_plugin_id());
+void blaze_slog_sstr(const uint8_t log_level, const SizedString message) {
+	(*host_api.log_sync)(log_level, &message, blaze_get_plugin_id());
 }
 
 void blaze_command_create(const char* name, const char* description) {

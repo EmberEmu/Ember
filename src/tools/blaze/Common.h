@@ -64,8 +64,8 @@ typedef void(*plugin_load_fn)();
 typedef void(*plugin_unload_fn)();
 
 // logging API
-typedef void(*log_async_fn)(const SizedString* message, uint8_t level, PluginID pid);
-typedef void(*log_sync_fn)(const SizedString* message, uint8_t level, PluginID pid);
+typedef void(*log_async_fn)(uint8_t level, const SizedString* message, PluginID pid);
+typedef void(*log_sync_fn)(uint8_t level, const SizedString* message, PluginID pid);
 
 // command API - todo, opaque struct once I've cleaned the other files up
 typedef void*(*command_create_fn)(const SizedString* name, const SizedString* description);

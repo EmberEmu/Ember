@@ -22,11 +22,11 @@ EMBER_EXPORT const char* plugin_name_short = "blazeas";
 } // extern "C"
 
 Plugin::Plugin() {
-	blaze::log(std::format("{} ID: {}", plugin_name_short, blaze::plugin_id()), blaze::LogLevel::info);
+	blaze::log(blaze::LogLevel::info, std::format("{} ID: {}", plugin_name_short, blaze::plugin_id()));
 }
 
 Plugin::~Plugin() {
-	blaze::log("Farewell!", blaze::LogLevel::info);
+	blaze::log(blaze::LogLevel::info, "Farewell!");
 }
 
 } // blazeas
