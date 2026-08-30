@@ -19,7 +19,6 @@
 #include <commands/Suggestions.h>
 #include <memory>
 #include <mutex>
-#include <optional>
 #include <span>
 #include <string>
 #include <typeinfo>
@@ -85,7 +84,7 @@ public:
 
 	bool erase_argument(const std::string& argument);
 	void clear_arguments();
-	std::optional<std::shared_ptr<Command>> erase(const std::string_view name);
+	std::shared_ptr<Command> erase(const std::string_view name);
 	bool erase(const std::shared_ptr<const Command>& command);
 	void clear_commands();
 
