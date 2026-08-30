@@ -191,6 +191,7 @@ std::string suggest_command(const commands::Command& root, const std::string_vie
 
 #ifdef _WIN32
 void handle_cls_command(log::Logger& logger) {
+	// todo, why is any of this stuff here?
 	auto sinks = logger.fetch_sink(log::CommandSink::sink_name);
 
 	if(sinks.empty()) {
@@ -199,21 +200,23 @@ void handle_cls_command(log::Logger& logger) {
 
 	assert(sinks.size() == 1 && "multiple command sinks?");
 
-	auto command_sink = static_cast<log::CommandSink*>(sinks.front().get());
-	assert(command_sink->name() == log::CommandSink::sink_name && "unexpected sink name");
-	command_sink->clear_console();
+	auto& command_sink = static_cast<log::CommandSink&>(*sinks.front());
+	assert(command_sink.name() == log::CommandSink::sink_name && "unexpected sink name");
+	command_sink.clear_console();
 }
 #endif
 
-void register_common_commands(commands::Command& root, log::Logger& logger) {
-	root.insert("help")
+// command handler keeps 'root' alive so shared_ptr is not strictly necessary
+// but it also doesn't hurt since this not performance sensitive
+void register_common_commands(std::shared_ptr<commands::Command> root, log::Logger& logger) {
+	root->insert("help")
 		->description("Display console command usage information")
 		->argument<std::string>("command", commands::optional)
-		->handler([&](const auto& arguments) {
-			handle_help_command(arguments, root, logger);
+		->handler([&, root](const auto& arguments) {
+			handle_help_command(arguments, *root, logger);
 		});
 
-	root.insert("version")
+	root->insert("version")
 		->description("Display version and build information")
 		->handler([&](const auto&) {
 			LOG_CONSOLE(
@@ -222,7 +225,7 @@ void register_common_commands(commands::Command& root, log::Logger& logger) {
 		});
 
 #ifdef _WIN32
-	root.insert("cls")
+	root->insert("cls")
 		->description("Clears the console")
 		->handler([&](const auto&) {
 			handle_cls_command(logger);
@@ -230,7 +233,7 @@ void register_common_commands(commands::Command& root, log::Logger& logger) {
 #endif
 }
 
-void register_command_handlers(commands::Command& root, log::Logger& logger, const bool allow_suggest) {
+void register_command_handlers(std::shared_ptr<commands::Command> root, log::Logger& logger, const bool allow_suggest) {
 #ifdef _WIN32
 	auto sinks = logger.fetch_sink(log::CommandSink::sink_name);
 
@@ -239,19 +242,19 @@ void register_command_handlers(commands::Command& root, log::Logger& logger, con
 		return;
 	}
 
-	auto sink = static_cast<log::CommandSink*>(sinks.front().get());
+	auto& sink = static_cast<log::CommandSink&>(*sinks.front());
 
-	sink->register_autocomplete([&](auto cmd) {
-		return root.autocomplete(cmd);
+	sink.register_autocomplete([&, root](auto cmd) {
+		return root->autocomplete(cmd);
 	});
 
-	sink->register_handler([&](auto input) {
-		execute_command(input, root, logger);
+	sink.register_handler([&, root](auto input) {
+		execute_command(input, *root, logger);
 	});
 
 	if(allow_suggest) {
-		sink->register_suggestion([&](auto cmd) {
-			return suggest_command(root, cmd);
+		sink.register_suggestion([&, root](auto cmd) {
+			return suggest_command(*root, cmd);
 		});
 	}
 #endif

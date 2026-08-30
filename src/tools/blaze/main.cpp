@@ -60,8 +60,8 @@ int run(const opts::variables_map& args, log::Logger& logger, commands::Command&
 std::shared_ptr<commands::Command> init_commands(const opts::variables_map& args, log::Logger& logger) {
 	auto registry = commands::create("root");
 	const auto suggestions = args["console_log.suggestions"].as<bool>();
-	utility::register_command_handlers(*registry, logger, suggestions);
-	utility::register_common_commands(*registry, logger);
+	utility::register_command_handlers(registry, logger, suggestions);
+	utility::register_common_commands(registry, logger);
 	return registry;
 }
 
