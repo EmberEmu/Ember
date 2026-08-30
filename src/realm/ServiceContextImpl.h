@@ -18,7 +18,6 @@
 #include "RealmService.h"
 #include "RealmQueue.h"
 #include "ShutdownAnnouncer.h"
-#include "ServiceContext.h"
 #include "SessionManager.h"
 #include "WorldRPCClient.h"
 #include <commands/ScopedCommand.h>
