@@ -61,7 +61,7 @@ enum class ArgumentType : std::uint8_t {
 
 namespace {
 
-SizedString to_sstr(std::string_view string) {
+CountedString to_sstr(std::string_view string) {
 	return {
 		.data = string.data(),
 		.size = string.size()

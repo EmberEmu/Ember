@@ -39,7 +39,7 @@ uint8_t sdk_initialise(const BlazeHostAPI api, const PluginID pid) {
 	return SDK_INIT_OK;
 }
 
-SizedString cstring_to_sstr(const char* string) {
+CountedString to_counted_string(const char* string) {
 	return {
 		.data = string,
 		.size = static_cast<uint64_t>(std::strlen(string))
@@ -51,30 +51,30 @@ PluginID blaze_get_plugin_id() {
 }
 
 void blaze_log(const uint8_t log_level, const char* message) {
-	const auto sstr = cstring_to_sstr(message);
+	const auto sstr = to_counted_string(message);
 	(*host_api.log_async)(log_level, &sstr, blaze_get_plugin_id());
 }
 
 void blaze_slog(const uint8_t log_level, const char* message) {
-	const auto sstr = cstring_to_sstr(message);
+	const auto sstr = to_counted_string(message);
 	(*host_api.log_sync)(log_level, &sstr, blaze_get_plugin_id());
 }
 
-void blaze_log_sstr(const uint8_t log_level, const SizedString message) {
+void blaze_log_sstr(const uint8_t log_level, const CountedString message) {
 	(*host_api.log_async)(log_level, &message, blaze_get_plugin_id());
 }
 
-void blaze_slog_sstr(const uint8_t log_level, const SizedString message) {
+void blaze_slog_sstr(const uint8_t log_level, const CountedString message) {
 	(*host_api.log_sync)(log_level, &message, blaze_get_plugin_id());
 }
 
 void blaze_command_create(const char* name, const char* description) {
-	const auto name_sstr = cstring_to_sstr(name);
-	const auto desc_sstr = cstring_to_sstr(description);
+	const auto name_sstr = to_counted_string(name);
+	const auto desc_sstr = to_counted_string(description);
 	(*host_api.command_create)(&name_sstr, &desc_sstr);
 }
 
-void blaze_command_create_sstr(const SizedString name, const SizedString description) {
+void blaze_command_create_sstr(const CountedString name, const CountedString description) {
 	(*host_api.command_create)(&name, &description);
 }
 
@@ -84,11 +84,11 @@ bool blaze_command_destroy(void* command) {
 
 bool blaze_command_add_argument(void* command, const char* name,
                                 const uint8_t type, const bool required) {
-	const auto sstr = cstring_to_sstr(name);
+	const auto sstr = to_counted_string(name);
 	(*host_api.command_add_argument)(command, &sstr, type, required);
 }
 
-bool blaze_command_add_argument_sstr(void* command, const SizedString name,
+bool blaze_command_add_argument_sstr(void* command, const CountedString name,
                                 const uint8_t type, const bool required) {
 	(*host_api.command_add_argument)(command, &name, type, required);
 }

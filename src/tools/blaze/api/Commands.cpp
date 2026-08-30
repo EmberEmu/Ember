@@ -11,7 +11,7 @@
 
 namespace ember::blaze {
 
-Command command_create(const SizedString* name, const SizedString* description) {
+Command command_create(const CountedString* name, const CountedString* description) {
 	auto registry = InterfaceContainer::get_instance().command_root();
 	auto command = registry->create(std::string(name->data, name->size));
 	command->description(std::string(description->data, description->size));
@@ -65,7 +65,7 @@ bool command_arg_register(commands::Command& command, std::string name, std::uin
 	return true;
 }
 
-bool command_add_argument(Command command, const SizedString* name, std::uint8_t type, bool required) {
+bool command_add_argument(Command command, const CountedString* name, std::uint8_t type, bool required) {
 	auto pcr = InterfaceContainer::get_instance().plugin_command_registry();
 	auto result = pcr->lookup(command.impl);
 

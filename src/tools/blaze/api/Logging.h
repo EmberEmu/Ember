@@ -13,7 +13,7 @@
 
 extern "C" {
 
-EMBER_EXPORT void log_async(std::uint8_t level, const SizedString* message, PluginID pid);
-EMBER_EXPORT void log_sync(std::uint8_t level, const SizedString* message, PluginID pid);
+EMBER_EXPORT void log_async(std::uint8_t level, const CountedString* message, PluginID pid);
+EMBER_EXPORT void log_sync(std::uint8_t level, const CountedString* message, PluginID pid);
 
 } // extern "C"
