@@ -11,10 +11,12 @@
 namespace ember::blaze {
 
 enum class PluginState {
+	loading,
 	loaded,
 	running,
 	stopping,
 	stopped,
+	unloading,
 	unloaded
 };
 

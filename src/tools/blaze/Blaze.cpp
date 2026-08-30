@@ -10,6 +10,7 @@
 #include "Common.h"
 #include "Extensions.h"
 #include "InterfaceContainer.h"
+#include "PluginRegistry.h"
 #include "Library.h"
 #include "api/Logging.h"
 #include <thread/Utility.h>
@@ -23,11 +24,13 @@ Blaze::Blaze(const boost::program_options::variables_map& args, commands::Comman
 	, registry_(registry)
 	, logger_(logger) {
 	// todo, it's all temporary
-	auto interfaces = InterfaceContainer::get_instance();
+	auto& interfaces = InterfaceContainer::get_instance();
 	interfaces.command_root(&registry);
 	interfaces.logger(&logger);
 	auto pcr = new PluginCommandRegistry(); // todo, temp!
+	auto plugin_registry = new PluginRegistry(); // todo, also temp!
 	interfaces.plugin_command_registry(pcr);
+	interfaces.plugin_registry(plugin_registry);
 	load_plugins();
 }
 
@@ -85,66 +88,63 @@ void Blaze::load_plugin(const std::filesystem::path& path) {
 		return;
 	}
 
-	const auto symbol = library::find_symbol<const char**>(*handle, "plugin_name");
+	const auto plugin_name = library::find_symbol<const char**>(*handle, "plugin_name");
+	const auto plugin_name_short = library::find_symbol<const char**>(*handle, "plugin_name_short");
 
-	if(!symbol) {
-		LOG_ERROR(logger_, "Unable to load plugin {}: {}",
-			path.filename().string(), library::result_to_string(symbol.error()));
+	if(!plugin_name || !plugin_name_short) {
+		LOG_ERROR(logger_, "Unable to load plugin {}: name symbols not found", path.filename().string());
 		library::close(*handle);
 		return;
 	}
 
-	const auto& plugin = plugins_.emplace_back(*handle, **symbol, 0); // todo, generate ID
-	LOG_TRACE(logger_, "Loading plugin {}", plugin.name());
+	Plugin plugin(*handle, **plugin_name, **plugin_name_short, 42); // todo, generate ID
+	LOG_TRACE(logger_, "Loading plugin {} ({})", plugin.name(), plugin.name_short());
 
 	// more test gubbins
 	const auto plugin_load = library::find_symbol<plugin_load_fn>(*handle, "plugin_load");
 	const auto plugin_unload = library::find_symbol<plugin_unload_fn>(*handle, "plugin_unload");
 
 	if(!plugin_load || !plugin_unload) {
-		LOG_ERROR(logger_, "Unable to load plugin {}: {}",
-			path.filename().string(), library::result_to_string(symbol.error()));
+		LOG_ERROR(logger_, "Unable to load plugin {}: entry symbols not found", path.filename().string());
 		return;
 	}
 
 	const auto sdk_build = library::find_symbol<sdk_build_fn>(*handle, "sdk_build");
+	const auto sdk_init = library::find_symbol<sdk_initialise_fn>(*handle, "sdk_initialise");
 
-	if(!sdk_build) {
-		LOG_ERROR(logger_, "Unable to load plugin {}: {}",
-			path.filename().string(), library::result_to_string(symbol.error()));
+	if(!sdk_build || !sdk_init) {
+		LOG_ERROR(logger_, "Unable to load plugin {}: SDK symbols not found", path.filename().string());
 		return;
 	}
 
 	const auto result = (*sdk_build)();
 
-	if(result.magic != SDK_MAGIC) {
-		LOG_ERROR(logger_, "Unable to load plugin {}: incorrect magic", plugin.name());
-		return;
-	}
-
 	if(result.sdk_init_meta_size != sizeof(SDKBuildMeta)) {
-		LOG_ERROR(logger_, "Unable to load plugin {}: incompatible metadata structures", plugin.name());
+		LOG_ERROR(logger_, "Unable to load plugin {}: incompatible ABI", plugin.name_short());
 		return;
 	}
 
 	if(result.blaze_host_api_size != sizeof(BlazeHostAPI)) {
-		LOG_ERROR(logger_, "Unable to load plugin {}: incompatible API structures", plugin.name());
+		LOG_ERROR(logger_, "Unable to load plugin {}: incompatible ABI", plugin.name_short());
+		return;
+	}
+
+	if(result.magic != SDK_MAGIC) {
+		LOG_ERROR(logger_, "Unable to load plugin {}: incorrect magic", plugin.name_short());
 		return;
 	}
 
 	if(result.version_major < SDK_MAJOR_VERSION) {
-		LOG_ERROR(logger_, "Unable to load plugin {}: plugin is out of date", plugin.name());
+		LOG_ERROR(logger_, "Unable to load plugin {}: plugin is using an old SDK", plugin.name_short());
 		return;
 	}
 
 	if(result.version_major > SDK_MAJOR_VERSION) {
-		LOG_ERROR(logger_, "Unable to load plugin {}: plugin may be too new", plugin.name());
+		LOG_ERROR(logger_, "Unable to load plugin {}: plugin may be too new", plugin.name_short());
 		return;
 	}
 
-	const auto sdk_init = library::find_symbol<sdk_initialise_fn>(*handle, "sdk_initialise");
-
-	BlazeHostAPI api {
+	const BlazeHostAPI api {
 		.size = sizeof(BlazeHostAPI),
 		.version_major = SDK_MAJOR_VERSION,
 		.version_minor = SDK_MINOR_VERSION,
@@ -153,15 +153,13 @@ void Blaze::load_plugin(const std::filesystem::path& path) {
 		.log_sync = log_sync
 	};
 
-	std::uint64_t plugin_id = 42; // todo, temp
-
-	if(const auto result = (*sdk_init)(api, plugin_id); result != SDK_INIT_OK) {
-		LOG_ERROR(logger_, "Unable to load plugin {}: plugin returned error code {}",
-			plugin.name(), result);
+	if(const auto result = (*sdk_init)(api, plugin.pid()); result != SDK_INIT_OK) {
+		LOG_ERROR(logger_, "Unable to load plugin {}: returned error code {}", plugin.name_short(), result);
 		return;
 	}
 
 	LOG_INFO(logger_, "{} plugin loaded", plugin.name());
+	InterfaceContainer::get_instance().plugin_registry()->add(std::move(plugin));
 	(*plugin_load)();
 }
 

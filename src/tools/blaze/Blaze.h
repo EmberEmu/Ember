@@ -26,7 +26,6 @@ class Blaze {
 	const boost::program_options::variables_map& args_;
 	commands::Command& registry_;
 	log::Logger& logger_;
-	std::vector<Plugin> plugins_;
 
 	void start_services(boost::asio::io_context& ioc);
 	void load_plugins();

@@ -7,65 +7,82 @@
  */
 
 #include "../Common.h"
+#include "../InterfaceContainer.h"
 #include "Logging.h"
 #include <logger/Logger.h>
+#include <format>
+#include <string_view>
+#include <cassert>
 
-void log_async(std::uint8_t level, const CountedString* message, PluginID pid) {
+namespace ember::blaze {
+
+namespace {
+
+std::string format_message(const CountedString* message, const PluginID pid) {
+	auto registry = InterfaceContainer::get_instance().plugin_registry();
+	assert(registry);
+	const auto plugin = registry->locate(pid);
 	std::string_view view(message->data, message->size);
-	const auto fmt = std::format("[{}] {}", pid, view);
+	return std::format("[{}] {}", plugin? plugin->name_short() : "unknown", view);
+}
 
-	auto logger = ember::log::global_logger(); // todo, temp!
+} // unnamed
+
+
+void log_async(std::uint8_t level, const CountedString* message, const PluginID pid) {
+	auto logger = InterfaceContainer::get_instance().logger();
+	const auto formatted = format_message(message, pid);
 
 	switch(level) {
 		case LOG_LEVEL_TRACE:
-			LOG_TRACE(logger, fmt);
+			LOG_TRACE(logger, formatted);
 			break;
 		case LOG_LEVEL_DEBUG:
-			LOG_DEBUG(logger, fmt);
+			LOG_DEBUG(logger, formatted);
 			break;
 		case LOG_LEVEL_INFO:
-			LOG_INFO(logger, fmt);
+			LOG_INFO(logger, formatted);
 			break;
 		case LOG_LEVEL_WARN:
-			LOG_WARN(logger, fmt);
+			LOG_WARN(logger, formatted);
 			break;
 		case LOG_LEVEL_ERROR:
-			LOG_ERROR(logger, fmt);
+			LOG_ERROR(logger, formatted);
 			break;
 		case LOG_LEVEL_FATAL:
-			LOG_FATAL(logger, fmt);
+			LOG_FATAL(logger, formatted);
 			break;
 		default:
-			LOG_ERROR(logger, "Bad logging level, message: {}", fmt);
+			LOG_ERROR(logger, "Bad logging level, message: {}", formatted);
 	}
 }
 
-void log_sync(std::uint8_t level, const CountedString* message, PluginID pid) {
-	std::string_view view(message->data, message->size);
-	const auto fmt = std::format("[{}] {}", pid, view);
-
-	auto logger = ember::log::global_logger(); // todo, temp!
+void log_sync(std::uint8_t level, const CountedString* message, const PluginID pid) {
+	auto logger = InterfaceContainer::get_instance().logger();
+	const auto formatted = format_message(message, pid);
 
 	switch(level) {
 		case LOG_LEVEL_TRACE:
-			SLOG_TRACE(logger, fmt);
+			SLOG_TRACE(logger, formatted);
 			break;
 		case LOG_LEVEL_DEBUG:
-			SLOG_DEBUG(logger, fmt);
+			SLOG_DEBUG(logger, formatted);
 			break;
 		case LOG_LEVEL_INFO:
-			SLOG_INFO(logger, fmt);
+			SLOG_INFO(logger, formatted);
 			break;
 		case LOG_LEVEL_WARN:
-			SLOG_WARN(logger, fmt);
+			SLOG_WARN(logger, formatted);
 			break;
 		case LOG_LEVEL_ERROR:
-			SLOG_ERROR(logger, fmt);
+			SLOG_ERROR(logger, formatted);
 			break;
 		case LOG_LEVEL_FATAL:
-			SLOG_FATAL(logger, fmt);
+			SLOG_FATAL(logger, formatted);
 			break;
 		default:
-			SLOG_ERROR(logger, "Bad logging level, message: {}", fmt);
+			SLOG_ERROR(logger, "Bad logging level, message: {}", formatted);
 	}
 }
+
+} // blaze, ember

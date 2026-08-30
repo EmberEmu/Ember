@@ -17,7 +17,7 @@ bool PluginRegistry::add(Plugin plugin) {
 
 	const auto pid = plugin.pid();
 	auto ptr = std::make_shared<Plugin>(std::move(plugin));
-	plugins_.try_emplace(pid, std::move(ptr));
+	return plugins_.try_emplace(pid, std::move(ptr)).second;
 }
 
 bool PluginRegistry::remove(PluginID pid) {
@@ -25,7 +25,7 @@ bool PluginRegistry::remove(PluginID pid) {
 	return !!plugins_.erase(pid);
 }
 
-std::shared_ptr<Plugin> PluginRegistry::locate(PluginID pid) {
+std::shared_ptr<Plugin> PluginRegistry::locate(PluginID pid) const {
 	std::lock_guard lg(lock_);
 
 	if(auto plugin = plugins_.find(pid); plugin != plugins_.end()) {
@@ -33,6 +33,11 @@ std::shared_ptr<Plugin> PluginRegistry::locate(PluginID pid) {
 	}
 
 	return nullptr;
+}
+
+std::size_t PluginRegistry::size() const {
+	std::lock_guard lg(lock_);
+	return plugins_.size();
 }
 
 } // blaze, ember

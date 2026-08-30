@@ -13,17 +13,19 @@
 #include <boost/unordered/unordered_flat_map.hpp>
 #include <memory>
 #include <mutex>
+#include <cstddef>
 
 namespace ember::blaze {
 
 class PluginRegistry final {
 	boost::unordered_flat_map<PluginID, std::shared_ptr<Plugin>> plugins_;
-	std::mutex lock_;
+	mutable std::mutex lock_;
 
 public:
 	bool add(Plugin plugin);
 	bool remove(PluginID pid);
-	std::shared_ptr<Plugin> locate(PluginID pid);
+	std::shared_ptr<Plugin> locate(PluginID pid) const;
+	std::size_t size() const;
 };
 
 } // blaze, ember
