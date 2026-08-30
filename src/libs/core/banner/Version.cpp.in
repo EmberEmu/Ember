@@ -8,7 +8,6 @@
 
 #include <banner/Version.h>
 
-
 namespace ember::build {
 
 std::string_view git_hash = "@GIT_SHA1@";
