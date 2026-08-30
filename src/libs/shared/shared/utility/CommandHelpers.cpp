@@ -180,29 +180,24 @@ void handle_help_command(const commands::Arguments& arguments, const commands::C
 }
 
 std::string suggest_command(const commands::Command& root, const std::string_view cmd) {
-	auto results = root.autocomplete(cmd);
-
-	if(!results.substring.empty()) {
-		return results.substring;
-	} else {
-		return {};
-	}
+	const auto results = root.autocomplete(cmd);
+	return !results.substring.empty()?
+		results.substring : std::string{};
 }
 
 #ifdef _WIN32
 void handle_cls_command(log::Logger& logger) {
-	// todo, why is any of this stuff here?
-	auto sinks = logger.fetch_sink(log::CommandSink::sink_name);
+	const auto sinks = logger.fetch_sink(log::CommandSink::sink_name);
 
 	if(sinks.empty()) {
-		SLOG_ERROR(logger, "Could not locate a command sink, cannot execute command");
+		SLOG_ERROR(logger, "Could not locate a command sink, cannot execute cls");
+		return;
 	}
 
 	assert(sinks.size() == 1 && "multiple command sinks?");
 
-	auto& command_sink = static_cast<log::CommandSink&>(*sinks.front());
-	assert(command_sink.name() == log::CommandSink::sink_name && "unexpected sink name");
-	command_sink.clear_console();
+	auto& sink = static_cast<log::CommandSink&>(*sinks.front());
+	sink.clear_console();
 }
 #endif
 
@@ -233,7 +228,7 @@ void register_common_commands(std::shared_ptr<commands::Command> root, log::Logg
 #endif
 }
 
-void register_command_handlers(std::shared_ptr<commands::Command> root, log::Logger& logger, const bool allow_suggest) {
+void register_command_handlers(std::shared_ptr<commands::Command> root, log::Logger& logger, const bool suggestions) {
 #ifdef _WIN32
 	auto sinks = logger.fetch_sink(log::CommandSink::sink_name);
 
@@ -252,7 +247,7 @@ void register_command_handlers(std::shared_ptr<commands::Command> root, log::Log
 		execute_command(input, *root, logger);
 	});
 
-	if(allow_suggest) {
+	if(suggestions) {
 		sink.register_suggestion([&, root](auto cmd) {
 			return suggest_command(*root, cmd);
 		});
