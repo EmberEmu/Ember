@@ -113,7 +113,7 @@ std::expected<MapRequest, Error> Client::parse_mapping_pcp(std::span<const std::
 	}
 
 	try {
-		std::span<const std::uint8_t> body_buff = {
+		std::span<const std::uint8_t> body_buff {
 			buffer.begin() + pcp::HEADER_SIZE, buffer.end()
 		};
 

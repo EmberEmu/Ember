@@ -125,7 +125,7 @@ TEST(GruntProtocol, ClientReconnectProof) {
 	packet.read_from_stream(in_stream);
 
 	// verify the deserialisation results
-	std::array<std::uint8_t, 16> r1_expected = {
+	std::array<std::uint8_t, 16> r1_expected {
 		0x39, 0xb1, 0xd1, 0xe4, 0x49, 0x13, 0x80, 0x9d,
 	    0x92, 0x17, 0x56, 0x8e, 0xa5, 0x7b, 0x24, 0x3d 
 	};

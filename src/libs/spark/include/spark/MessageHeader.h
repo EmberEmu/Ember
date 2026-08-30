@@ -28,7 +28,7 @@ public:
 		ok
 	} state = State::initial;
 
-	boost::uuids::uuid uuid = {};
+	boost::uuids::uuid uuid{};
 	std::uint32_t size = 0;
 	std::uint8_t channel = 0;
 	std::uint8_t response = 0;

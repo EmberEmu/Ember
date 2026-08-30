@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 - 2025 Ember
+ * Copyright (c) 2024 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -35,7 +35,7 @@ asio::awaitable<void> Connection::process_queue() try {
 		const auto msg = std::move(queue_.front());
 		queue_.pop();
 
-		std::array<asio::const_buffer, 2> buffers {
+		std::array buffers {
 			asio::const_buffer { msg.header.data(), msg.header.size() },
 			asio::const_buffer { msg.fbb.GetBufferPointer(), msg.fbb.GetSize() }
 		};
@@ -144,7 +144,7 @@ asio::awaitable<std::span<std::uint8_t>> Connection::receive_msg() {
 }
 
 asio::awaitable<void> Connection::send(Message& msg) {
-	std::array<asio::const_buffer, 2> buffers {
+	std::array buffers {
 		asio::const_buffer { msg.header.data(), msg.header.size() },
 		asio::const_buffer { msg.fbb.GetBufferPointer(), msg.fbb.GetSize() }
 	};

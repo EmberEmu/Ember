@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2024 - 2025 Ember
+* Copyright (c) 2024 - 2026 Ember
 *
 * This Source Code Form is subject to the terms of the Mozilla Public
 * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -50,8 +50,8 @@ TEST(StaticBuffer, ReadOne) {
 
 TEST(StaticBuffer, ReadAll) {
 	spark::io::StaticBuffer<char, 3> buffer { '1', '2', '3' };
-	std::array<char, 3> expected{ '1', '2', '3' };
-	std::array<char, 3> values{};
+	std::array expected { '1', '2', '3' };
+	std::array<char, expected.size()> values{};
 	buffer.read(values.data(), values.size());
 	ASSERT_TRUE(std::ranges::equal(values, expected));
 }

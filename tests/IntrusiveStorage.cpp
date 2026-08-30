@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2025 Ember
+ * Copyright (c) 2015 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -77,11 +77,11 @@ TEST(IntrusiveStorage, ReadWriteStringview) {
 
 TEST(IntrusiveStorage, ReadWriteInts) {
 	spark::io::detail::IntrusiveStorage<128, char> buffer;
-	std::array<int, 4> in { 42, 1657, 1558, -1563 };
+	std::array in { 42, 1657, 1558, -1563 };
 	buffer.write(in.data(), sizeof(in));
 	ASSERT_EQ(sizeof(in), buffer.size());
 
-	std::array<int, 4> out {};
+	std::array<int, in.size()> out {};
 	buffer.read(out.data(), sizeof(out));
 	ASSERT_EQ(in, out);
 	ASSERT_TRUE(buffer.size() == 0);

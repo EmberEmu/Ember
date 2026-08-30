@@ -214,7 +214,7 @@ void CommandSink::clear_line() {
 
 	const SHORT window_width = info.srWindow.Right - info.srWindow.Left + 1;
 	const SHORT bottom_row = info.srWindow.Bottom;
-	const COORD startPos = {
+	const COORD startPos {
 		.X = 0, .Y = bottom_row 
 	};
 

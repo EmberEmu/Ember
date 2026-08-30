@@ -322,7 +322,7 @@ TEST(BinaryStream, Array) {
 	std::vector<char> buffer;
 	spark::io::BufferAdaptor adaptor(buffer);
 	spark::io::BinaryStream stream(adaptor);
-	const int arr[] = { 1, 2, 3 };
+	const int arr[] { 1, 2, 3 };
 	stream << arr;
 	int val = 0;
 	stream >> val;
@@ -337,7 +337,7 @@ TEST(BinaryStream, Span) {
 	std::vector<char> buffer;
 	spark::io::BufferAdaptor adaptor(buffer);
 	spark::io::BinaryStream stream(adaptor);
-	const int arr[] = { 4, 9, 2, 1 }; // chosen by fair dice roll
+	const int arr[] { 4, 9, 2, 1 }; // chosen by fair dice roll
 	stream << arr;
 	auto span = stream.span<int>(4);
 	ASSERT_TRUE(stream.empty());

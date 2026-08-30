@@ -255,7 +255,7 @@ TEST_F(Ports, PCP_TestRequestVector) {
 		0x00, 0x00, 0x00 
 	};
 
-	std::span<const std::uint8_t> body_buff = {
+	std::span<const std::uint8_t> body_buff {
 		pcp_mapping_request.begin() + pcp::HEADER_SIZE, pcp_mapping_request.end()
 	};
 
@@ -288,7 +288,7 @@ TEST_F(Ports, PCP_TestResponseVector) {
 
 	const std::array<std::uint8_t, 3> reserved {};
 
-	std::span<const std::uint8_t> body_buff = {
+	std::span<const std::uint8_t> body_buff {
 		pcp_mapping_response.begin() + pcp::HEADER_SIZE, pcp_mapping_response.end()
 	};
 

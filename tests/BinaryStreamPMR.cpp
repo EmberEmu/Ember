@@ -231,7 +231,7 @@ TEST(BinaryStreamPMR, Array) {
 	std::vector<char> buffer;
 	spark::io::pmr::BufferAdaptor adaptor(buffer);
 	spark::io::pmr::BinaryStream stream(adaptor);
-	const int arr[] = { 1, 2, 3 };
+	const int arr[] { 1, 2, 3 };
 	stream << arr;
 	int val = 0;
 	stream >> val;

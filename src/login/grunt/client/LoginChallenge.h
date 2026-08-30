@@ -76,7 +76,7 @@ public:
 	std::uint8_t protocol_ver = 0;
 	std::uint16_t body_size = 0;
 	Game game;
-	GameVersion version = {};
+	GameVersion version{};
 	Platform platform;
 	System os;
 	Locale locale;

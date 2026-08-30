@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Ember
+ * Copyright (c) 2024 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,23 +11,32 @@
 #include <array>
 #include <string_view>
 
+using namespace std::string_view_literals;
+
 namespace ember {
 
-inline const std::array<std::string_view, 5> winx86 {
-	"WoW.exe", "fmod.dll", "ijl15.dll",
-    "dbghelp.dll", "unicows.dll"
+inline const std::array winx86 {
+	"WoW.exe"sv,
+	"fmod.dll"sv,
+	"ijl15.dll"sv,
+    "dbghelp.dll"sv,
+	"unicows.dll"sv
 };
 
-inline const std::array<std::string_view, 5> macx86 {
-	"MacOS/World of Warcraft", "Info.plist",
-    "Resources/Main.nib/objects.xib",
-	"Resources/wow.icns", "PkgInfo"
+inline const std::array macx86 {
+	"MacOS/World of Warcraft"sv,
+	"Info.plist"sv,
+    "Resources/Main.nib/objects.xib"sv,
+	"Resources/wow.icns"sv,
+	"PkgInfo"sv
 };
 
-inline const std::array<std::string_view, 5> macppc {
-	"MacOS/World of Warcraft", "Info.plist",
-    "Resources/Main.nib/objects.xib",
-    "Resources/wow.icns", "PkgInfo" 
+inline const std::array macppc {
+	"MacOS/World of Warcraft"sv,
+	"Info.plist"sv,
+    "Resources/Main.nib/objects.xib"sv,
+    "Resources/wow.icns"sv,
+	"PkgInfo"sv 
 };
 
 } // ember
