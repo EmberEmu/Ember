@@ -12,7 +12,6 @@
 #include <commands/Suggestions.h>
 #include <logger/ConsoleColour.h>
 #include <boost/container/small_vector.hpp>
-#include <atomic>
 #include <deque>
 #include <functional>
 #include <mutex>
@@ -62,10 +61,10 @@ class CommandSink final : public Sink {
 	std::string suggested_;
 	std::string prompt_;
 	std::string prefix_;
-	std::jthread event_handler_;
-	std::atomic_bool stopped_;
+	std::jthread input_reader_;
 	bool colour_;
 	unsigned int max_cols_;
+	void* semaphore_;
 
 	std::deque<std::string> cmd_history_;
 	std::size_t history_idx_;
@@ -85,7 +84,7 @@ class CommandSink final : public Sink {
 	void cursor_reposition(CursorPosition position);
 	void insert_history(const std::string& command);
 	void update_suggestion();
-	void read_console_input();
+	void read_console_input(const std::stop_token stop);
 	void dispatch_command();
 	void write_buffer(std::span<const char> buffer, bool redraw = true);
 	void do_batch_write(const std::span<std::pair<RecordDetail, std::vector<char>>>& records);

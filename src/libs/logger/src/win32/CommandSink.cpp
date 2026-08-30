@@ -36,7 +36,6 @@ CommandSink::CommandSink(Severity severity, Filter filter, std::string prompt)
 	: Sink(severity, filter, sink_name)
 	, prompt_(std::move(prompt))
 	, colour_(false)
-	, stopped_(false)
 	, history_idx_(0)
 	, max_cols_(table_max_cols) {
 	bool expected = false;
@@ -45,19 +44,32 @@ CommandSink::CommandSink(Severity severity, Filter filter, std::string prompt)
 		throw std::runtime_error("A process cannot have multiple CommandSinks!");
 	}
 
-	event_handler_ = std::jthread([&]() {
+	semaphore_ = CreateSemaphore(NULL, 0, 1, NULL);
+
+	if(!semaphore_) {
+		throw std::runtime_error("Unable to initialise command sink, semaphore create failed");
+	}
+
+	input_reader_ = std::jthread([&](std::stop_token stop) {
 		redraw_prompt();
-		read_console_input();
+		read_console_input(stop);
 	});
 }
 
 CommandSink::~CommandSink() {
 	stop();
 	exists_ = false;
+
+	if(input_reader_.joinable()) {
+		input_reader_.join();
+	}
+
+	CloseHandle(semaphore_);
 }
 
 void CommandSink::stop() {
-	stopped_ = true;
+	input_reader_.request_stop();
+	ReleaseSemaphore(semaphore_, 1, NULL);
 }
 
 void CommandSink::batch_write(const std::span<std::pair<RecordDetail, std::vector<char>>>& records) {
@@ -426,11 +438,18 @@ void CommandSink::insert_character(char ch) {
 	SetConsoleCursorPosition(handle, info.dwCursorPosition);
 }
 
-void CommandSink::read_console_input() {
+void CommandSink::read_console_input(const std::stop_token stop) {
 	auto handle = GetStdHandle(STD_INPUT_HANDLE);
 
-	while(!stopped_) {
-		if(WaitForSingleObject(handle, 1000) != WAIT_OBJECT_0) {
+	std::array handles {
+		handle, semaphore_
+	};
+
+	while(!stop.stop_requested()) {
+		const auto result = WaitForMultipleObjects(handles.size(), handles.data(), false, INFINITE);
+		const auto wait_obj_idx = result - WAIT_OBJECT_0;
+
+		if(wait_obj_idx == 1) { // stop should be signalled
 			continue;
 		}
 
