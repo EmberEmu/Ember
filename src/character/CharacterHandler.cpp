@@ -330,6 +330,13 @@ void CharacterHandler::do_restore(std::uint64_t id, const ResultCB& callback) co
 	LOG_TRACE(logger_, log_func);
 
 	auto character = dao_.character(id);
+
+	if(!character) {
+		LOG_WARN(logger_, "Cannot restore character - character not found");
+		callback(protocol::Result::response_failure);
+		return;
+	}
+
 	auto characters = dao_.characters(character->account_id);
 
 	if(characters.size() >= config_.max_chars_slots_account) {
