@@ -112,25 +112,31 @@ Suggestions autocomplete_recurse(const CommandMap& commands, std::span<const std
 
 	result.substring = longest_prefix(result.records);
 
-	if(auto it = commands.find(result.substring); it != commands.end()) {
-		const auto& [_, command] = *it;
-
-		if(!command->commands().empty()) {
-			// We'll only update the suggestions if we already had an exact match in the query.
-			// This means that this autocomplete will display info on the current command,
-			// not subcommands that match the new query string that we're about to return.
-			const bool exact_match = commands.contains(tokens.front());
-
-			if(exact_match) {
-				auto recurse_res = autocomplete_recurse(command->commands(), tokens.subspan<1>());
-				result.substring.push_back(' ');
-				result.substring += recurse_res.substring;
-				result.records = std::move(recurse_res.records);
-			} else {
-				result.substring.push_back(' ');
-			}
+	if(!commands.contains(tokens.front())) {
+		if(auto it = commands.find(result.substring); it != commands.end() &&
+		   !it->second->commands().empty()) {
+			result.substring += ' ';
 		}
+
+		return result;
 	}
+
+	const auto& command = commands.at(tokens.front());
+
+	if(command->commands().empty()) {
+		return tokens.size() == 1? result : Suggestions{};
+	}
+
+	const auto remaining = tokens.subspan<1>();
+	auto recurse_res = autocomplete_recurse(command->commands(), remaining);
+
+	if(!remaining.empty() && recurse_res.records.empty()) {
+		return {};
+	}
+
+	result.substring += ' ';
+	result.substring += recurse_res.substring;
+	result.records = std::move(recurse_res.records);
 
 	return result;
 }
