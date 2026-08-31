@@ -8,7 +8,7 @@
 
 #pragma once
 
-#ifdef _WIN32
+#ifdef _WIN32 || defined(__CYGWIN__)
 	#ifdef BUILD_SHARED_SERVICES
 		#ifdef EXPORT_SERVICE
 			#define EMBER_EXPORT_SERVICE __declspec(dllexport)
@@ -16,8 +16,8 @@
 			#define EMBER_EXPORT_SERVICE __declspec(dllimport)
 		#endif // EXPORT_SERVICE
 	#endif // BUILD_SHARED_SERVICES
-#endif // _WIN32
-
-#ifndef EMBER_EXPORT_SERVICE
-#define EMBER_EXPORT_SERVICE
-#endif // EMBER_EXPORT_SERVICE
+#elif defined(__GNUC__) || defined(__clang__)
+	#define EMBER_EXPORT_SERVICE __attribute__((visibility("default")))
+#else
+	#define EMBER_EXPORT_SERVICE
+#endif
