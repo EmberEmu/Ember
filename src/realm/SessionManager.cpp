@@ -142,7 +142,8 @@ Client* SessionManager::client(const SessionID id) const {
 void SessionManager::collect() {
 	std::size_t collected = 0;
 	
-	{ std::lock_guard guard(sessions_lock_);
+	{ 
+		std::lock_guard guard(sessions_lock_);
 
 		for(auto it = sessions_.begin(); it != sessions_.end();) {
 			if(it->second->stopped()) {
