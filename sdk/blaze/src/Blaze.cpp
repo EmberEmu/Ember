@@ -6,8 +6,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#pragma once
-
 #include <ember/blaze/Blaze.h>
 #include <cstring>
 
@@ -79,20 +77,20 @@ void blaze_command_create_sstr(const CountedString name, const CountedString des
 }
 
 bool blaze_command_destroy(void* command) {
-	(*host_api.command_destroy)(command);
+	return (*host_api.command_destroy)(command);
 }
 
 bool blaze_command_add_argument(void* command, const char* name,
                                 const uint8_t type, const bool required) {
 	const auto sstr = to_counted_string(name);
-	(*host_api.command_add_argument)(command, &sstr, type, required);
+	return (*host_api.command_add_argument)(command, &sstr, type, required);
 }
 
 bool blaze_command_add_argument_sstr(void* command, const CountedString name,
                                 const uint8_t type, const bool required) {
-	(*host_api.command_add_argument)(command, &name, type, required);
+	return (*host_api.command_add_argument)(command, &name, type, required);
 }
 
 bool blaze_command_callback(void* command) {
-	(*host_api.command_callback)(command);
+	return (*host_api.command_callback)(command);
 }
