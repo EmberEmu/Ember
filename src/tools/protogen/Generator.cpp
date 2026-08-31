@@ -726,13 +726,8 @@ void walk(const jsoncons::json& fields, const TypeRegistry& reg, WalkState& stat
 				--state.read_tab;
 				--state.write_tab;
 
-				const bool last_in_chain = (idx + 1 == branch_count) && !field.contains("else");
-				state.read_ops .emplace_back(std::format(
-					"{}{}", indent(state.read_tab), last_in_chain ? "}" : "}"
-				));
-				state.write_ops.emplace_back(std::format(
-					"{}{}", indent(state.write_tab), last_in_chain ? "}" : "}"
-				));
+				state.read_ops .emplace_back(std::format("{}}}", indent(state.read_tab)));
+				state.write_ops.emplace_back(std::format("{}}}", indent(state.write_tab)));
 				++idx;
 			}
 
