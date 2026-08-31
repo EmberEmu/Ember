@@ -28,12 +28,12 @@ std::string path_fragment(std::span<const std::string> tokens, std::size_t depth
 	std::string fragment;
 	fragment.reserve(depth * approx_cmd_len);
 
-	for(auto i = 0; i < depth; ++i) {
-		fragment += tokens[i];
-
-		if(i != depth - 1) {
-			fragment += " ";
+	for(std::size_t i = 0; i < depth; ++i) {
+		if(i != 0) {
+			fragment += ' ';
 		}
+
+		fragment += tokens[i];
 	}
 
 	return fragment;
@@ -50,10 +50,10 @@ std::vector<std::string> parse_input(const std::string_view input, bool escape) 
 			tokens.assign_range(tok);
 		} else {
 			boost::char_separator<char> sep(" ");
-			boost::tokenizer tok(str, sep);;
+			boost::tokenizer tok(str, sep);
 			tokens.assign_range(tok);
 		}
-	} catch(boost::escaped_list_error& e) {
+	} catch(const boost::escaped_list_error& e) {
 		throw parse_error(e.what());
 	}
 
@@ -72,7 +72,7 @@ std::string longest_prefix(std::span<const Suggestions::Record> matches) {
 
 	std::string prefix = matches.front().name;
 
-	for(const auto& match : matches) {
+	for(const auto& match : matches.subspan<1>()) {
 		std::size_t i = 0;
 
 		while(i < prefix.size() && i < match.name.size() && prefix[i] == match.name[i]) {
