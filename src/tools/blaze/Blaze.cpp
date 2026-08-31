@@ -34,7 +34,12 @@ Blaze::Blaze(const boost::program_options::variables_map& args, commands::Comman
 	context->commands = &registry;
 	context->plugins = std::make_unique<PluginRegistry>(); // todo, also temp!
 	context->plugin_commands = std::make_unique<PluginCommands>(); // todo, temp!
-	load_plugins();
+
+	if(args["plugins.enable"].as<bool>()) {
+		load_plugins();
+	} else {
+		LOG_WARN(logger, "Plugins disabled by configuration");
+	}
 }
 
 int Blaze::run() try {

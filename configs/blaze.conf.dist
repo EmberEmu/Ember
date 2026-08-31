@@ -1,7 +1,8 @@
 # Blaze configuration
 
 [plugins]
-path = plugins/blaze
+enable = 1
+path = plugins/
 
 [misc]
 threads = 0 # leave as 0 to automatically determine

@@ -79,6 +79,7 @@ opts::variables_map parse_arguments(const int argc, const char* argv[]) {
 	//Config file options
 	opts::options_description opts("Blaze configuration options");
 	opts.add_options()
+		("plugins.enable", opts::value<bool>()->required())
 		("plugins.path", opts::value<std::string>()->required())
 		("misc.threads", opts::value<unsigned int>()->required())
 		("console_log.enable_input", opts::value<bool>()->required())
