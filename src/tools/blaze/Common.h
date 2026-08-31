@@ -22,7 +22,7 @@ extern "C" {
 	#define EMBER_EXPORT __attribute__((visibility("default")))
 #endif // _WIN32
 
-#define SDK_MAGIC 0x424c5a45 // 'BLZE'
+#define SDK_MAGIC          0x424c5a45 // 'BLZE', endian test
 #define SDK_INIT_OK        0
 #define SDK_INIT_BAD_SIZE  1
 #define SDK_INIT_BAD_VERS  2

@@ -26,6 +26,7 @@ public:
 	bool remove(PluginID pid);
 	std::shared_ptr<Plugin> locate(PluginID pid) const;
 	std::size_t size() const;
+	std::vector<std::shared_ptr<Plugin>> all() const; // todo
 };
 
 } // blaze, ember

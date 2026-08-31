@@ -9,12 +9,14 @@
 #include "Blaze.h"
 #include "Common.h"
 #include "Extensions.h"
-#include "InterfaceContainer.h"
 #include "PluginRegistry.h"
 #include "Library.h"
 #include "api/Logging.h"
+#include "api/State.h"
+#include "commands/Commands.h"
+#include "ServiceContextImpl.h"
 #include <thread/Utility.h>
-#include <filesystem>
+#include <memory>
 #include <thread>
 
 namespace ember::blaze {
@@ -24,13 +26,14 @@ Blaze::Blaze(const boost::program_options::variables_map& args, commands::Comman
 	, registry_(registry)
 	, logger_(logger) {
 	// todo, it's all temporary
-	auto& interfaces = InterfaceContainer::get_instance();
-	interfaces.command_root(&registry);
-	interfaces.logger(&logger);
-	auto pcr = new PluginCommandRegistry(); // todo, temp!
-	auto plugin_registry = new PluginRegistry(); // todo, also temp!
-	interfaces.plugin_command_registry(pcr);
-	interfaces.plugin_registry(plugin_registry);
+	install_commands(context_, registry, logger);
+
+	auto context = context_.get();
+	ctx = &context_;
+	context->logger = &logger;
+	context->commands = &registry;
+	context->plugins = std::make_unique<PluginRegistry>(); // todo, also temp!
+	context->plugin_commands = std::make_unique<PluginCommands>(); // todo, temp!
 	load_plugins();
 }
 
@@ -53,6 +56,8 @@ int Blaze::run() try {
 		threads.emplace_back(&boost::asio::io_context::run, &ioc);
 		thread::set_name(threads[i], "Asio Worker");
 	}
+
+	std::this_thread::sleep_for(std::chrono::minutes(1)); // goes without saying... temp.
 
 	ioc.run();
 	return EXIT_SUCCESS;
@@ -159,7 +164,7 @@ void Blaze::load_plugin(const std::filesystem::path& path) {
 	}
 
 	LOG_INFO(logger_, "{} plugin loaded", plugin.name());
-	InterfaceContainer::get_instance().plugin_registry()->add(std::move(plugin));
+	context_.get()->plugins->add(std::move(plugin));
 	(*plugin_load)();
 }
 

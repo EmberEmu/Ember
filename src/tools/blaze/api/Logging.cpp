@@ -7,7 +7,8 @@
  */
 
 #include "../Common.h"
-#include "../InterfaceContainer.h"
+#include "../ServiceContextImpl.h"
+#include "State.h"
 #include "Logging.h"
 #include <logger/Logger.h>
 #include <format>
@@ -18,10 +19,8 @@ namespace ember::blaze {
 
 namespace {
 
-std::string format_message(const CountedString* message, const PluginID pid) {
-	auto registry = InterfaceContainer::get_instance().plugin_registry();
-	assert(registry);
-	const auto plugin = registry->locate(pid);
+std::string format_message(const CountedString* message, const PluginID pid) {	
+	const auto plugin = ctx->get()->plugins->locate(pid);
 	std::string_view view(message->data, message->size);
 	return std::format("[{}] {}", plugin? plugin->name_short() : "unknown", view);
 }
@@ -30,7 +29,7 @@ std::string format_message(const CountedString* message, const PluginID pid) {
 
 
 void log_async(std::uint8_t level, const CountedString* message, const PluginID pid) {
-	auto logger = InterfaceContainer::get_instance().logger();
+	auto logger = ctx->get()->logger;
 	const auto formatted = format_message(message, pid);
 
 	switch(level) {
@@ -58,7 +57,7 @@ void log_async(std::uint8_t level, const CountedString* message, const PluginID 
 }
 
 void log_sync(std::uint8_t level, const CountedString* message, const PluginID pid) {
-	auto logger = InterfaceContainer::get_instance().logger();
+	auto logger = ctx->get()->logger;
 	const auto formatted = format_message(message, pid);
 
 	switch(level) {

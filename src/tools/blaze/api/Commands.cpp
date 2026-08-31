@@ -7,15 +7,18 @@
  */
 
 #include "Commands.h"
-#include "../InterfaceContainer.h"
+#include "State.h"
+#include "../ServiceContextImpl.h"
 
 namespace ember::blaze {
 
 Command command_create(const CountedString* name, const CountedString* description) {
-	auto registry = InterfaceContainer::get_instance().command_root();
-	auto command = registry->create(std::string(name->data, name->size));
+	auto registry = ctx->get()->plugin_commands.get();
+	assert(registry);
+
+	auto command = commands::create(std::string(name->data, name->size));
 	command->description(std::string(description->data, description->size));
-	InterfaceContainer::get_instance().plugin_command_registry()->insert("test", command);
+	registry->insert("test", command);
 
 	return {
 		.impl = command.get()
@@ -66,8 +69,10 @@ bool command_arg_register(commands::Command& command, std::string name, std::uin
 }
 
 bool command_add_argument(Command command, const CountedString* name, std::uint8_t type, bool required) {
-	auto pcr = InterfaceContainer::get_instance().plugin_command_registry();
-	auto result = pcr->lookup(command.impl);
+	auto registry = ctx->get()->plugin_commands.get();
+	assert(registry);
+
+	auto result = registry->lookup(command.impl);
 
 	if(!result) {
 		return false;
@@ -83,20 +88,23 @@ bool command_add_argument(Command command, const CountedString* name, std::uint8
 }
 
 bool command_destroy(Command command) {
-	auto pcr = InterfaceContainer::get_instance().plugin_command_registry();
-	auto result = pcr->lookup(command.impl);
+	auto registry = ctx->get()->plugin_commands.get();
+	assert(registry);
+
+	auto result = registry->lookup(command.impl);
 
 	if(!result) {
 		return false;
 	}
 
-	auto registry = InterfaceContainer::get_instance().command_root();
-	return registry->erase(result);
+	return true; // temp, like everything in this file
 }
 
 bool command_callback(Command command) {
-	auto pcr = InterfaceContainer::get_instance().plugin_command_registry();
-	auto result = pcr->lookup(command.impl);
+	auto registry = ctx->get()->plugin_commands.get();
+	assert(registry);
+
+	auto result = registry->lookup(command.impl);
 
 	if(!result) {
 		return false;

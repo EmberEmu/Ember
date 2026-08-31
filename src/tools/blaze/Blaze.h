@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "Plugin.h"
+#include "ServiceContext.h"
 #include <commands/Command.h>
 #include <logger/Logger.h>
 #include <shared/utility/cstring_view.hpp>
@@ -24,6 +24,7 @@ static inline constexpr cstring_view app_name { "Blaze" };
 
 class Blaze {
 	const boost::program_options::variables_map& args_;
+	ServiceContext context_;
 	commands::Command& registry_;
 	log::Logger& logger_;
 

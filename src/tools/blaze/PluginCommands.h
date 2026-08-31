@@ -9,6 +9,7 @@
 #pragma once
 
 #include <commands/Command.h>
+#include <memory>
 #include <string>
 #include <span>
 #include <unordered_map>
@@ -16,7 +17,7 @@
 
 namespace ember::blaze {
 
-class PluginCommandRegistry final {
+class PluginCommands final {
 	std::unordered_map<std::string, std::vector<std::shared_ptr<commands::Command>>> mapping_;
 
 public:

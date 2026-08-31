@@ -6,8 +6,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#pragma once
-
 #include "PluginRegistry.h"
 
 namespace ember::blaze {
@@ -38,6 +36,18 @@ std::shared_ptr<Plugin> PluginRegistry::locate(PluginID pid) const {
 std::size_t PluginRegistry::size() const {
 	std::lock_guard lg(lock_);
 	return plugins_.size();
+}
+
+// todo, temporary, hopefully
+std::vector<std::shared_ptr<Plugin>> PluginRegistry::all() const {
+	std::lock_guard lg(lock_);
+	std::vector<std::shared_ptr<Plugin>> plugins;
+
+	for(auto& plugin : plugins_ | std::views::values) {
+		plugins.emplace_back(plugin);
+	}
+
+	return plugins;
 }
 
 } // blaze, ember
