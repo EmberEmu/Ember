@@ -150,9 +150,9 @@ void ClientConnection::read() {
 	 */
 	const auto required_space = minimum_transfer();
 
-	// If there's partially processed data in the buffer, we may be
-	// able to free space by defragmenting it.
-	if(inbound_buffer_.free() < required_space && !inbound_buffer_.defragment()) [[unlikely]] {
+	// ensure we have enough buffer space for the next read, allowing the buffer
+	// to internally defragment itself if required
+	if(!inbound_buffer_.ensure_write_space(required_space)) [[unlikely]] {
 		LOG_DEBUG(logger_, "Inbound buffer full, closing {}", remote_address());
 		close_session();
 		return;

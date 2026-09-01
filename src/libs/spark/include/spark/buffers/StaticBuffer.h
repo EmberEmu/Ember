@@ -123,6 +123,18 @@ public:
 		return true;
 	}
 
+	bool ensure_write_space(const size_type size) {
+		if(size <= free()) [[likely]] {
+			return true;
+		}
+
+		if(!defragment()) [[unlikely]] {
+			return false;
+		}
+
+		return size <= free();
+	}
+
 	value_type& operator[](const size_type index) {
 		return read_ptr()[index];
 	}
