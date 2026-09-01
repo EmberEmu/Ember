@@ -11,7 +11,6 @@
 #include "unique_client_ptr.h"
 #include "SessionIterator.h"
 #include <logger/LoggerFwd.h>
-#include <thread/ServicePool.h>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/steady_timer.hpp>
 #include <boost/unordered/unordered_flat_map.hpp>
@@ -38,7 +37,6 @@ private:
 	SessionID next_id_ = 0;
 	std::size_t peak_count_ = 0;
 	boost::asio::steady_timer timer_;
-	thread::ServicePool& pool_;
 	log::Logger& logger_;
 	moodycamel::ConcurrentQueue<unique_client_ptr> queue_;
 	moodycamel::ConsumerToken token_;
@@ -55,7 +53,7 @@ public:
 	using locked_iterator = SessionIterator<SessionsMap::iterator>;
 	using locked_const_iterator = SessionIterator<SessionsMap::const_iterator>;
 
-	SessionManager(boost::asio::io_context& ioc, thread::ServicePool& pool, log::Logger& logger);
+	SessionManager(boost::asio::io_context& ioc, log::Logger& logger);
 
 	void enqueue(unique_client_ptr client);
 	void stop();

@@ -14,9 +14,8 @@
 
 namespace ember::realm {
 
-SessionManager::SessionManager(boost::asio::io_context& ioc, thread::ServicePool& pool, log::Logger& logger)
+SessionManager::SessionManager(boost::asio::io_context& ioc, log::Logger& logger)
 	: timer_(ioc)
-	, pool_(pool)
 	, logger_(logger)
 	, token_(queue_) {
 	start_timer();
