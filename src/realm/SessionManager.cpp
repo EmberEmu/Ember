@@ -15,10 +15,11 @@
 
 namespace ember::realm {
 
-SessionManager::SessionManager(boost::asio::io_context& ioc, log::Logger& logger)
+SessionManager::SessionManager(boost::asio::io_context& ioc, std::size_t buckets, log::Logger& logger)
 	: timer_(ioc)
 	, logger_(logger)
-	, token_(queue_) {
+	, token_(queue_)
+	, sessions_(buckets) {
 	start_timer();
 }
 

@@ -240,7 +240,8 @@ void Service::initialise(const opts::variables_map& args) try {
 	SLOG_INFO(logger, "Max allowed sockets: {}", max_socks);
 
 	// Start session manager
-	ctx->sessions = std::make_unique<SessionManager>(service, logger);
+	const auto buckets = args["realm.max_slots"].as<std::size_t>();
+	ctx->sessions = std::make_unique<SessionManager>(service, buckets, logger);
 
 	ClientContextBuilder ctx_builder(
 		*ctx->config_store, *ctx->dispatcher, *ctx->queue, *ctx->rpc_account,

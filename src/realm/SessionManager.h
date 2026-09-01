@@ -53,7 +53,7 @@ public:
 	using locked_iterator = SessionIterator<SessionsMap::iterator>;
 	using locked_const_iterator = SessionIterator<SessionsMap::const_iterator>;
 
-	SessionManager(boost::asio::io_context& ioc, log::Logger& logger);
+	SessionManager(boost::asio::io_context& ioc, std::size_t buckets, log::Logger& logger);
 
 	void enqueue(unique_client_ptr client);
 	void stop();
