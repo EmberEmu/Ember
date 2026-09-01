@@ -54,10 +54,9 @@ std::size_t SessionManager::bulk_insert(std::span<unique_client_ptr> clients) {
 
 void SessionManager::process_queue() {
 	std::size_t count = 0;
+	std::inplace_vector<unique_client_ptr, max_bulk_dequeue> dequeued;
 
 	while(true) {
-		std::inplace_vector<unique_client_ptr, max_bulk_dequeue> dequeued;
-
 #if __has_include(<inplace_vector>) // todo, temporary until supported compiler versions are bumped
 		queue_.try_dequeue_bulk(token_, unchecked_back_inserter(dequeued), max_bulk_dequeue);
 #else
@@ -69,6 +68,7 @@ void SessionManager::process_queue() {
 		}
 
 		count += bulk_insert(dequeued);
+		dequeued.clear();
 	}
 
 	if(count) {
