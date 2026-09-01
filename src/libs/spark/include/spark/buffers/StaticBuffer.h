@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 - 2025 Ember
+ * Copyright (c) 2024 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -22,7 +22,7 @@ namespace ember::spark::io {
 
 template<byte_type storage_type, std::size_t buf_size>
 class StaticBuffer final {
-	std::array<storage_type, buf_size> buffer_{};
+	std::array<storage_type, buf_size> buffer_;
 	std::size_t read_ = 0;
 	std::size_t write_ = 0;
 
