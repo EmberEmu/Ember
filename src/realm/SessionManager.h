@@ -15,6 +15,7 @@
 #include <boost/asio/steady_timer.hpp>
 #include <boost/unordered/unordered_flat_map.hpp>
 #include <moodycamel/concurrentqueue.h>
+#include <bitset>
 #include <mutex>
 #include <optional>
 #include <span>
@@ -28,7 +29,7 @@ public:
 	using SessionID = std::uint32_t;
 
 private:
-	constexpr static auto session_id_wrap  = 100'000;
+	constexpr static auto session_id_wrap  = 32'768;
 	constexpr static auto max_bulk_dequeue = 1024;
 
 	using SessionsMap = boost::unordered_flat_map<SessionID, unique_client_ptr>;
@@ -40,6 +41,7 @@ private:
 	log::Logger& logger_;
 	moodycamel::ConcurrentQueue<unique_client_ptr> queue_;
 	moodycamel::ConsumerToken token_;
+	std::bitset<session_id_wrap> slots_;
 
 	mutable std::mutex sessions_lock_;
 
@@ -47,7 +49,8 @@ private:
 	void start_timer();
 	void process_queue();
 	std::size_t bulk_insert(std::span<unique_client_ptr> clients);
-	SessionID generate_id();
+	SessionID reserve_slot_id();
+	void release_slot_id(SessionID id);
 
 public:
 	using locked_iterator = SessionIterator<SessionsMap::iterator>;

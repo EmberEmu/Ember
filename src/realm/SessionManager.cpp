@@ -12,6 +12,7 @@
 #include <shared/utility/polyfill/inplace_vector>
 #include <shared/utility/UncheckedBackInserter.h>
 #include <utility>
+#include <cassert>
 
 namespace ember::realm {
 
@@ -42,7 +43,7 @@ std::size_t SessionManager::bulk_insert(std::span<unique_client_ptr> clients) {
 
 	for(auto& client : clients) {
 		if(!client->stopped()) { // let stopped clients destruct
-			sessions_.emplace(generate_id(), std::move(client));
+			sessions_.emplace(reserve_slot_id(), std::move(client));
 		} else {
 			--count;
 		}
@@ -72,7 +73,7 @@ void SessionManager::process_queue() {
 	}
 
 	if(count) {
-		LOG_TRACE(logger_, "Inserted {} queued sessions", count);
+		LOG_TRACE(logger_, "Inserted {} queued session{}", count, count > 1? "s" : "");
 	}
 }
 
@@ -84,10 +85,11 @@ void SessionManager::stop() {
 	std::lock_guard guard(sessions_lock_);
 	timer_.cancel();
 	sessions_.clear();
+	slots_.reset();
 }
 
 /*
- * Generates a new session ID, attempting to keep it below the defined wrap value.
+ * Reserves a new session ID, attempting to keep it below the defined wrap value.
  * IDs larger than the wrap threshold can be generated, but it'd be very impressive
  * if that happens in reality.
 
@@ -96,16 +98,40 @@ void SessionManager::stop() {
  * recycled between an ID being displayed and a command input acting on that ID
  * (use UUID for full protection against that).
  */
-auto SessionManager::generate_id() -> SessionID {
-	if(next_id_ > session_id_wrap) {
-		next_id_ = 0;
+auto SessionManager::reserve_slot_id() -> SessionID {
+	auto id = next_id_;
+
+	// iterate over all slots to try to claim a free ID
+	for(std::size_t scanned = 0; scanned < slots_.size(); ++scanned) {
+		if(!slots_.test(id)) {
+			slots_.set(id);
+
+			auto next = id + 1;
+
+			if(next == slots_.size()) {
+				next = 0;
+			}
+
+			next_id_ = next;
+			return id;
+		}
+
+		// wraparound
+		if(++id == slots_.size()) {
+			id = 0;
+		}
 	}
 
-	while(sessions_.contains(next_id_)) {
-		++next_id_;
+	// if all slots are taken, go outside of the bitset's range
+	// until we find an unused ID - should never really happen
+	// but we can handle it if the server is *that* busy
+	id = slots_.size();
+
+	while(sessions_.contains(id)) {
+		++id;
 	}
 
-	return next_id_++;
+	return id;
 }
 
 std::size_t SessionManager::count() const {
@@ -154,6 +180,7 @@ void SessionManager::collect() {
 
 		for(auto it = sessions_.begin(); it != sessions_.end();) {
 			if(it->second->stopped()) {
+				release_slot_id(it->first);
 				it = sessions_.erase(it);
 				++collected;
 			} else {
@@ -163,7 +190,14 @@ void SessionManager::collect() {
 	}
 
 	if(collected) {
-		LOG_TRACE(logger_, "Collected {} sessions", collected);
+		LOG_TRACE(logger_, "Collected {} session{}", collected, collected > 1? "s": "");
+	}
+}
+
+void SessionManager::release_slot_id(const SessionID id) {
+	if(id < slots_.size()) {
+		assert(slots_.test(id));
+		slots_.reset(id);
 	}
 }
 
