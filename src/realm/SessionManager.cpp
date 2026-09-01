@@ -10,6 +10,7 @@
 #include "ConfigConsts.h"
 #include <logger/Logger.h>
 #include <shared/utility/polyfill/inplace_vector>
+#include <shared/utility/UncheckedBackInserter.h>
 #include <utility>
 
 namespace ember::realm {
@@ -55,7 +56,12 @@ void SessionManager::process_queue() {
 
 	while(true) {
 		std::inplace_vector<unique_client_ptr, max_bulk_dequeue> dequeued;
+
+#if __has_include(<inplace_vector>) // todo, temporary until supported compiler versions are bumped
+		queue_.try_dequeue_bulk(token_, unchecked_back_inserter(dequeued), max_bulk_dequeue);
+#else
 		queue_.try_dequeue_bulk(token_, std::back_inserter(dequeued), max_bulk_dequeue);
+#endif
 
 		if(dequeued.empty()) {
 			break;
