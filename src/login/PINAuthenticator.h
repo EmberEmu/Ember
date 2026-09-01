@@ -9,6 +9,7 @@
 #pragma once
 
 #include <shared/utility/Clock.h>
+#include <shared/utility/HashDefines.h>
 #include <shared/utility/polyfill/inplace_vector>
 #include <array>
 #include <span>
@@ -24,10 +25,9 @@ public:
 	static constexpr int GRID_SIZE      = 10;
 	static constexpr int KEY_LENGTH     = 10;
 	static constexpr int SALT_LENGTH    = 16;
-	static constexpr int HASH_LENGTH    = 20;
 	
 	using SaltBytes = std::array<std::uint8_t, SALT_LENGTH>;
-	using HashBytes = std::array<std::uint8_t, HASH_LENGTH>;
+	using HashBytes = std::array<std::uint8_t, hash_sizes::sha160>;
 
 private:
 	std::array<std::uint8_t, GRID_SIZE> remapped_grid;
