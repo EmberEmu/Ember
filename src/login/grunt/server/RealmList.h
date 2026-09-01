@@ -42,6 +42,7 @@ class RealmList final : public Packet {
 
 		stream >> unknown;
 		stream >> realm_count;
+		realms.resize(realm_count, boost::container::default_init);
 
 		while(realm_count) {
 			Realm realm;

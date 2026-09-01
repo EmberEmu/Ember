@@ -43,7 +43,7 @@ class CommandSink final : public Sink {
 	inline static std::atomic_bool exists_ = false;
 	static constexpr auto sv_reserve = 256u;
 	static constexpr auto max_buf_size = 4096u;
-	static constexpr auto reserve_buf_size = 1024u;
+	static constexpr auto reserve_buf_size = 512u;
 	static constexpr auto history_size = 10u;
 	static constexpr auto table_name_min_cols = 20u;
 	static constexpr auto table_desc_min_cols = 10u;

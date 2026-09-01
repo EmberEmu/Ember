@@ -96,7 +96,10 @@ void DatagramTransport::receive() {
 				return;
 			}
 
-			boost::container::small_vector<std::uint8_t, initial_recv_buffer_size> buffer(socket_.available());
+			boost::container::small_vector<std::uint8_t, initial_recv_buffer_size> buffer(
+				socket_.available(), boost::container::default_init
+			);
+
 			asio::socket_base::message_flags flags(0);
 			const std::size_t recv = socket_.receive_from(asio::buffer(buffer), ep_, flags, ec);
 			buffer.resize(recv);

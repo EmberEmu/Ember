@@ -40,7 +40,7 @@ private:
 	log::Logger& logger_;
 	boost::asio::ip::tcp::socket socket_;
 	boost::asio::strand<boost::asio::any_io_executor> strand_;
-	boost::container::small_vector<std::uint8_t, INITIAL_BUFFER_SIZE> buffer_{};
+	boost::container::small_vector<std::uint8_t, INITIAL_BUFFER_SIZE> buffer_;
 	std::queue<Message> queue_;
 	CloseHandler on_close_;
 

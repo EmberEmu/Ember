@@ -27,7 +27,7 @@ Connection::Connection(asio::ip::tcp::socket socket, log::Logger& logger, CloseH
 	  socket_(std::move(socket)),
       strand_(socket_.get_executor()),
 	  on_close_(handler) {
-	buffer_.resize(4); // todo
+	buffer_.resize(4, boost::container::default_init); // todo
 }
 
 asio::awaitable<void> Connection::process_queue() try {
@@ -90,7 +90,7 @@ void Connection::buffer_resize(const std::uint32_t size) {
 	}
 
 	LOG_TRACE(logger_, "Resizing RPC buffer to {}b", size);
-	buffer_.resize(size);
+	buffer_.resize(size, boost::container::default_init);
 }
 
 asio::awaitable<std::uint32_t>  Connection::do_receive() {

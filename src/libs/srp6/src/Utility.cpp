@@ -40,12 +40,13 @@ SmallVector encode_flip_1363(const Botan::BigInt& val, std::size_t padding) {
 }
 
 KeyType interleaved_hash(SmallVector key) {
-	//implemented as described in RFC2945
+	// implemented as described in RFC2945
 	auto begin = std::ranges::find_if(key, [](std::uint8_t b) { return b; });
 	begin = std::distance(begin, key.end()) % 2 == 0? begin : begin + 1;
 
 	auto bound = std::stable_partition(begin, key.end(),
-	    [&begin](const auto& x) { return (&x - begin.get_ptr()) % 2 == 0; });
+	    [&begin](const auto& x) { return (&x - begin.get_ptr()) % 2 == 0; }
+	);
 
 	auto hasher = Botan::HashFunction::create_or_throw("SHA-1");
 	BOOST_ASSERT_MSG(sha1_len == hasher->output_length(), "Bad hash length");
@@ -66,8 +67,7 @@ KeyType interleaved_hash(SmallVector key) {
 	return final;
 }
 
-Botan::BigInt scrambler(const Botan::BigInt& A, const Botan::BigInt& B, std::size_t padding,
-                        Compliance mode) {
+Botan::BigInt scrambler(const Botan::BigInt& A, const Botan::BigInt& B, std::size_t padding, Compliance mode) {
 	auto hasher = Botan::HashFunction::create_or_throw("SHA-1");
 
 	std::array<std::uint8_t, sha1_len> hash_out;
