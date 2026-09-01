@@ -41,12 +41,13 @@ private:
 	thread::ServicePool& pool_;
 	log::Logger& logger_;
 	moodycamel::ConcurrentQueue<unique_client_ptr> queue_;
+	moodycamel::ConsumerToken token_;
 
 	mutable std::mutex sessions_lock_;
 
-	void process_queue();
 	void collect();
 	void start_timer();
+	void process_queue();
 	std::size_t bulk_insert(std::span<unique_client_ptr> clients);
 	SessionID generate_id();
 

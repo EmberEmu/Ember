@@ -17,7 +17,8 @@ namespace ember::realm {
 SessionManager::SessionManager(boost::asio::io_context& ioc, thread::ServicePool& pool, log::Logger& logger)
 	: timer_(ioc)
 	, pool_(pool)
-	, logger_(logger) {
+	, logger_(logger)
+	, token_(queue_) {
 	start_timer();
 }
 
@@ -55,7 +56,7 @@ void SessionManager::process_queue() {
 
 	while(true) {
 		std::inplace_vector<unique_client_ptr, max_bulk_dequeue> dequeued;
-		queue_.try_dequeue_bulk(std::back_inserter(dequeued), max_bulk_dequeue);
+		queue_.try_dequeue_bulk(token_, std::back_inserter(dequeued), max_bulk_dequeue);
 
 		if(dequeued.empty()) {
 			break;
