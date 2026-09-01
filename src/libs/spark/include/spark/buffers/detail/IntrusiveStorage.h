@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2025 Ember
+ * Copyright (c) 2015 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -14,6 +14,7 @@
 
 #include <spark/buffers/Shared.h>
 #include <spark/buffers/Concepts.h>
+#include <algorithm>
 #include <array>
 #include <concepts>
 #include <span>
@@ -46,12 +47,7 @@ struct IntrusiveStorage final {
 
 	std::size_t write(const auto source, std::size_t length) {
 		assert(!detail::region_overlap(source, length, storage.data(), storage.size()));
-		std::size_t write_len = block_size - write_offset;
-
-		if(write_len > length) {
-			write_len = length;
-		}
-
+		const auto write_len = std::min<std::size_t>(block_size - write_offset, length);
 		std::memcpy(storage.data() + write_offset, source, write_len);
 		write_offset += static_cast<offset_type>(write_len);
 		return write_len;
@@ -59,12 +55,7 @@ struct IntrusiveStorage final {
 
 	std::size_t copy(auto destination, const std::size_t length) const {
 		assert(!detail::region_overlap(storage.data(), storage.size(), destination, length));
-		std::size_t read_len = block_size - read_offset;
-
-		if(read_len > length) {
-			read_len = length;
-		}
-
+		const auto read_len = std::min<std::size_t>(block_size - read_offset, length);
 		std::memcpy(destination, storage.data() + read_offset, read_len);
 		return read_len;
 	}
@@ -81,12 +72,7 @@ struct IntrusiveStorage final {
 	}
 
 	std::size_t skip(const std::size_t length, const bool allow_optimise = false) {
-		std::size_t skip_len = block_size - read_offset;
-
-		if(skip_len > length) {
-			skip_len = length;
-		}
-
+		const auto skip_len = std::min<std::size_t>(block_size - read_offset, length);
 		read_offset += static_cast<offset_type>(skip_len);
 
 		if(allow_optimise && read_offset == write_offset) {
