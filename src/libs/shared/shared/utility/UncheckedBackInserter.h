@@ -26,12 +26,12 @@ public:
 		: container_(container) {}
 
     constexpr unchecked_back_insert_iterator& operator=(const typename Container::value_type& value) {
-		container_.push_back(std::move(value));
+		container_.unchecked_push_back(std::move(value));
         return *this;
     }
 
 	constexpr unchecked_back_insert_iterator& operator=(typename Container::value_type&& value) {
-		container_.push_back(std::move(value));
+		container_.unchecked_push_back(std::move(value));
         return *this;
     }
 
