@@ -17,6 +17,13 @@ using namespace std::chrono_literals;
 
 namespace ember::log {
 
+Worker::Worker(std::vector<std::shared_ptr<Sink>>& sinks, std::mutex& sink_lock)
+	: squeue_tok_(queue_sync_)
+	, queue_tok_(queue_)
+	, sinks_(sinks)
+	, sink_lock_(sink_lock)
+	, sem_(0) {}
+
 Worker::~Worker() {
 	if(!stop_) {
 		stop();
@@ -49,7 +56,7 @@ void Worker::apply_hard_backpressure(const std::size_t size_approx) {
 
 	std::vector<std::pair<RecordDetail, std::vector<char>>> item;
 	item.resize(discard_count);
-	discarded_ += queue_.try_dequeue_bulk(std::back_inserter(item), discard_count);
+	discarded_ += queue_.try_dequeue_bulk(queue_tok_, std::back_inserter(item), discard_count);
 
 #ifdef LOG_PRODUCER_BACKPRESSURE
 	discard_.store(true, std::memory_order_relaxed);
@@ -90,7 +97,7 @@ void Worker::process_outstanding_sync() {
 
 	std::lock_guard lock(sink_lock_);
 
-	while(queue_sync_.try_dequeue(item)) {
+	while(queue_sync_.try_dequeue(squeue_tok_, item)) {
 		for(auto& s : sinks_) {
 			s->write(std::get<0>(item).severity, std::get<0>(item).type, std::get<1>(item), true);
 		}

@@ -28,6 +28,8 @@ class Worker final {
 
 	moodycamel::ConcurrentQueue<std::pair<RecordDetail, std::vector<char>>> queue_;
 	moodycamel::ConcurrentQueue<std::tuple<RecordDetail, std::vector<char>, std::binary_semaphore*>> queue_sync_;
+	moodycamel::ConsumerToken queue_tok_;
+	moodycamel::ConsumerToken squeue_tok_;
 	std::vector<std::pair<RecordDetail, std::vector<char>>> dequeued_;
 	std::vector<std::shared_ptr<Sink>>& sinks_;
 	std::mutex& sink_lock_;
@@ -52,10 +54,7 @@ class Worker final {
 	friend class Logger;
 
 public:
-	Worker(std::vector<std::shared_ptr<Sink>>& sinks, std::mutex& sink_lock)
-		: sinks_(sinks),
-		  sink_lock_(sink_lock),
-		  sem_(0) {}
+	Worker(std::vector<std::shared_ptr<Sink>>& sinks, std::mutex& sink_lock);
 	~Worker();
 
 	void start();
