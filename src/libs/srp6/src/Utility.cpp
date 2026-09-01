@@ -39,7 +39,7 @@ SmallVector encode_flip_1363(const Botan::BigInt& val, std::size_t padding) {
 	return res;
 }
 
-KeyType interleaved_hash(SmallVector key) {
+KeyType interleaved_hash(SmallVector&& key) {
 	// implemented as described in RFC2945
 	auto begin = std::ranges::find_if(key, [](std::uint8_t b) { return b; });
 	begin = std::distance(begin, key.end()) % 2 == 0? begin : begin + 1;

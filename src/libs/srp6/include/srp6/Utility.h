@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 - 2024 Ember
+ * Copyright (c) 2014 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -35,7 +35,7 @@ enum class Compliance {
 
 namespace detail {
 
-KeyType interleaved_hash(SmallVector key);
+KeyType interleaved_hash(SmallVector&& key);
 SmallVector encode_flip(const Botan::BigInt& val);
 SmallVector encode_flip_1363(const Botan::BigInt& val, std::size_t padding);
 Botan::BigInt decode_flip(std::span<std::uint8_t> val);
