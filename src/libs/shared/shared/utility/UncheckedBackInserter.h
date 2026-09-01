@@ -25,12 +25,12 @@ public:
 	constexpr explicit unchecked_back_insert_iterator(Container& container) noexcept
 		: container_(container) {}
 
-    constexpr unchecked_back_insert_iterator& operator=(const typename Container::value_type& value) {
+    constexpr unchecked_back_insert_iterator& operator=(const typename Container::value_type& value) noexcept {
 		container_.unchecked_push_back(std::move(value));
         return *this;
     }
 
-	constexpr unchecked_back_insert_iterator& operator=(typename Container::value_type&& value) {
+	constexpr unchecked_back_insert_iterator& operator=(typename Container::value_type&& value) noexcept {
 		container_.unchecked_push_back(std::move(value));
         return *this;
     }
