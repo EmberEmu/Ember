@@ -11,7 +11,7 @@
 
 namespace ember {
 
-void SessionManager::start(std::shared_ptr<LoginNetSession>&& session) {
+void SessionManager::start(std::shared_ptr<LoginNetSession> session) {
 	std::lock_guard guard(sessions_lock_);
 	auto ptr = session.get();
 	sessions_.insert(std::move(session));
