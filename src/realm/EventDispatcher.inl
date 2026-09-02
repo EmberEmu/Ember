@@ -47,7 +47,7 @@ inline Client* EventDispatcher::locate_handler(const ClientIdent& client) const 
 	}
 }
 
-void EventDispatcher::exec(const ClientIdent& client, auto work) const {
+void EventDispatcher::execute(const ClientIdent& client, auto work) const {
 	auto service = pool_.get_if(client.service());
 
 	// bad service index encoded in the UUID

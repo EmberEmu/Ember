@@ -56,7 +56,7 @@ public:
 		, logger_(logger) {}
 
 	// execute a task, only if the specified client still exists
-	void exec(const ClientIdent& client, auto work) const;
+	void execute(const ClientIdent& client, auto work) const;
 
 	// post an event to a specific client, if it's still connected
 	void post(const ClientIdent& client, is_event auto event) const;
