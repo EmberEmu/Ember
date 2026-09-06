@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "../Common.h"
+#include <ember/blaze/Common.h>
 #include <commands/Commands.h>
 #include <cstdint>
 

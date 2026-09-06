@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include "Common.h"
 #include "Plugin.h"
+#include <ember/blaze/Common.h>
 #include <boost/unordered/unordered_flat_map.hpp>
 #include <memory>
 #include <mutex>

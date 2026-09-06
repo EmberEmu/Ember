@@ -7,7 +7,6 @@
  */
 
 #include "Blaze.h"
-#include "Common.h"
 #include "Extensions.h"
 #include "PluginRegistry.h"
 #include "Library.h"
@@ -15,6 +14,7 @@
 #include "api/State.h"
 #include "commands/Commands.h"
 #include "ServiceContextImpl.h"
+#include <ember/blaze/Common.h>
 #include <thread/Utility.h>
 #include <memory>
 #include <thread>

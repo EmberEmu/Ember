@@ -14,7 +14,6 @@ set(LIBRARY_HDR
     Library.h
     Plugin.h
     PluginCommands.h
-    Common.h
     PluginRegistry.h
     PluginState.h
     ServiceContext.h
@@ -47,7 +46,7 @@ else()
 endif()
 
 add_library(${LIBRARY_NAME} ${LIBRARY_HDR} ${LIBRARY_SRC})
-target_link_libraries(${LIBRARY_NAME} PRIVATE shared commands logger ${Boost_LIBRARIES})
+target_link_libraries(${LIBRARY_NAME} PUBLIC blazesdk PRIVATE shared commands logger ${Boost_LIBRARIES})
 
 if(WIN32)
     set(ICON_RESOURCE resources.rc)

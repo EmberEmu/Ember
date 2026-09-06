@@ -12,23 +12,13 @@ set(LIBRARY_SRC
     src/Blaze.cpp   
 )
 
-set(LIBRARY_HDR
-
-)
-
-set(SHARED_HEADER ${CMAKE_SOURCE_DIR}/src/tools/blaze/Common.h)
-
 set(LIBRARY_HDR_SHIPPING
+    include/ember/blaze/Common.h
     include/ember/blaze/Blaze.h
     include/ember/blaze/Blaze.hpp
-	${SHARED_HEADER}
 )
 
-add_library(${LIBRARY_NAME} STATIC ${LIBRARY_SRC} ${LIBRARY_HDR} ${LIBRARY_HDR_SHIPPING})
-target_compile_definitions(${LIBRARY_NAME} PUBLIC EXPORT_SDK)
-set_target_properties(${LIBRARY_NAME} PROPERTIES LINKER_LANGUAGE CXX)
-
-configure_file(${SHARED_HEADER} ${CMAKE_CURRENT_BINARY_DIR}/include/ember/blaze/Common.h COPYONLY)
+add_library(${LIBRARY_NAME} STATIC ${LIBRARY_SRC} ${LIBRARY_HDR_SHIPPING})
 
 target_include_directories(${LIBRARY_NAME} PUBLIC 
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>

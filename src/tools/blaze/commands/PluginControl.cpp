@@ -7,9 +7,9 @@
  */
 
 #include "PluginControl.h"
-#include "../Common.h"
 #include "../ServiceContextImpl.h"
 #include <commands/Commands.h>
+#include <ember/blaze/Common.h>
 #include <logger/Logger.h>
 #include <string>
 #include <string_view>

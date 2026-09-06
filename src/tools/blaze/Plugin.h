@@ -8,9 +8,9 @@
 
 #pragma once
 
-#include "Common.h"
 #include "Library.h"
 #include "PluginState.h"
+#include <ember/blaze/Common.h>
 #include <string>
 #include <string_view>
 #include <thread>
