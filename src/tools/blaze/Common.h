@@ -46,14 +46,14 @@ typedef uint64_t PluginID;
 #define CAT_STRING  1
 #define CAT_FLOAT   2
 #define CAT_DOUBLE  3
-#define CAT_INT_8   4
-#define CAT_INT_16  5
-#define CAT_INT_32  6
-#define CAT_INT_64  7
-#define CAT_UINT_8  8
-#define CAT_UINT_16 9
-#define CAT_UINT_32 10
-#define CAT_UINT_64 11
+#define CAT_INT8   4
+#define CAT_INT16  5
+#define CAT_INT32  6
+#define CAT_INT64  7
+#define CAT_UINT8  8
+#define CAT_UINT16 9
+#define CAT_UINT32 10
+#define CAT_UINT64 11
 
 typedef struct {
 	const char* data;
