@@ -23,7 +23,7 @@ namespace ember::ports {
 using namespace std::chrono_literals;
 
 class DatagramTransport final {
-	static const std::size_t initial_recv_buffer_size = 2048;
+	static const std::size_t initial_recv_buf_size = 2048;
 
 	using OnReceive = std::function<void(std::span<std::uint8_t>, const boost::asio::ip::udp::endpoint&)>;
 	using OnConnectionError = std::function<void(const boost::system::error_code&)>;
