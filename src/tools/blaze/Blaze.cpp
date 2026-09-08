@@ -129,7 +129,7 @@ void Blaze::load_plugin(const std::filesystem::path& path) {
 
 	const auto result = (*sdk_build)();
 
-	if(result.sdk_init_meta_size != sizeof(SDKBuildMeta)) {
+	if(result.size != sizeof(SDKBuildMeta)) {
 		LOG_ERROR(logger_, "Unable to load plugin {}: incompatible ABI", plugin.name_short());
 		return;
 	}

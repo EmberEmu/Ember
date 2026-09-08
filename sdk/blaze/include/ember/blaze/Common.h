@@ -94,7 +94,7 @@ typedef struct {
 
 typedef struct {
 	uint32_t magic;
-	uint16_t sdk_init_meta_size;
+	uint16_t size;
 	uint16_t blaze_host_api_size;
 	uint16_t version_major;
 	uint16_t version_minor;

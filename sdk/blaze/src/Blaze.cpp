@@ -15,7 +15,7 @@ static PluginID plugin_id;
 SDKBuildMeta sdk_build() {
 	return {
 		.magic = SDK_MAGIC,
-		.sdk_init_meta_size = sizeof(SDKBuildMeta),
+		.size = sizeof(SDKBuildMeta),
 		.blaze_host_api_size = sizeof(HostAPI),
 		.version_major = SDK_MAJOR_VERSION,
 		.version_minor = SDK_MINOR_VERSION,
