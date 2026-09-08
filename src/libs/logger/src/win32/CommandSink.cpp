@@ -248,7 +248,9 @@ void CommandSink::redraw_prompt(bool update_cursor) {
 	const auto user_input = std::format("{}{}", command_, suggested);
     const std::string full_input = std::format("{}{}", prompt_, user_input);
 
-	boost::container::small_vector<CHAR_INFO, reserve_buf_size> buffer(width, boost::container::default_init);
+	[[indeterminate]] boost::container::small_vector<CHAR_INFO, reserve_buf_size> buffer(
+		width, boost::container::default_init
+	);
 
     for(SHORT i = 0; i < width; ++i) {
         buffer[i].Char.AsciiChar = ' ';
@@ -624,7 +626,9 @@ void CommandSink::write_buffer(std::span<const char> buffer, bool redraw) {
 		return;
 	}
 
-	boost::container::small_vector<wchar_t, reserve_buf_size> wbuf(wlen, boost::container::default_init);
+	[[indeterminate]] boost::container::small_vector<wchar_t, reserve_buf_size> wbuf(
+		wlen, boost::container::default_init
+	);
 
 	MultiByteToWideChar(
 		CP_UTF8, 0,
@@ -662,7 +666,9 @@ void CommandSink::write_buffer(std::span<const char> buffer, bool redraw) {
 			ScrollConsoleScreenBuffer(handle, &scroll_rect, nullptr, dest_origin, &fill);
 		}
 
-		boost::container::small_vector<CHAR_INFO, reserve_buf_size> row(width, boost::container::default_init);
+		[[indeterminate]] boost::container::small_vector<CHAR_INFO, reserve_buf_size> row(
+			width, boost::container::default_init
+		);
 
 		for(SHORT i = 0; i < width; ++i) {
 			row[i].Char.UnicodeChar = i < row_len? wbuf[row_start + i] : L' ';

@@ -167,7 +167,7 @@ void MemoryArchive::extract_compressed(BlockTableEntry& entry,
 	const auto sectors_end = sectors.end() - ignore_count;
 	auto remaining = entry.uncompressed_size;
 
-	boost::container::small_vector<std::byte, sector_size_hint> buffer(
+	[[indeterminate]] boost::container::small_vector<std::byte, sector_size_hint> buffer(
 		max_sector_size, boost::container::default_init
 	);
 
@@ -263,7 +263,7 @@ void MemoryArchive::extract_single_unit(BlockTableEntry& entry, const std::uint3
 		return;
 	}
 
-	boost::container::small_vector<std::byte, sector_size_hint> buffer(
+	[[indeterminate]] boost::container::small_vector<std::byte, sector_size_hint> buffer(
 		entry.uncompressed_size, boost::container::default_init
 	);
 

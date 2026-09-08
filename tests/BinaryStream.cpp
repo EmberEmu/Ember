@@ -815,7 +815,7 @@ TEST(BinaryStream, StdArray) {
 }
 
 TEST(BinaryStream, TotalWriteConsistency) {
-	std::array<char, 256> buffer;
+	[[indeterminate]] std::array<char, 256> buffer;
 	spark::io::BufferAdaptor adaptor(buffer, spark::io::init_empty);
 	spark::io::BinaryStream stream(adaptor);
 
@@ -1118,7 +1118,7 @@ TEST(BinaryStream, PrefixedContainers) {
 }
 
 TEST(BinaryStream, StdArrayTest) {
-	std::array<char, 16> buffer;
+	[[indeterminate]] std::array<char, 16> buffer;
 	spark::io::BufferAdaptor adaptor(buffer, spark::io::init_empty);
 	spark::io::BinaryStream stream(adaptor);
 	ASSERT_TRUE(adaptor.empty());

@@ -173,7 +173,7 @@ void FileSink::batch_write(const std::span<std::pair<RecordDetail, std::vector<c
 
 	out_buf_.clear();
 	out_buf_.reserve(size + (20 * records.size()));
-	std::array<std::string, std::to_underlying(Severity::severity_max) + 1> cache;
+	[[indeterminate]] std::array<std::string, std::to_underlying(Severity::severity_max) + 1> cache;
 
 	for(auto&& [detail, data] : records) {
 		if(severity <= detail.severity && !(filter & detail.type)) {
@@ -202,7 +202,7 @@ void FileSink::batch_write(const std::span<std::pair<RecordDetail, std::vector<c
 
 	current_size_ += buffer_size;
 
-	if(out_buf_.capacity() > MAX_BUF_SIZE) [[unlikely]] {
+	if(out_buf_.capacity() > max_buf_size) [[unlikely]] {
 		out_buf_.clear();
 		out_buf_.shrink_to_fit();
 	}

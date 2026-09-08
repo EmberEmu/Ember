@@ -65,7 +65,7 @@ ReconnectAuthenticator::ReconnectAuthenticator(utf8_string username,
 
 bool ReconnectAuthenticator::proof_check(std::span<const std::uint8_t> salt,
                                          std::span<const std::uint8_t> proof) const {
-	std::array<std::uint8_t, 20> res;
+	[[indeterminate]] std::array<std::uint8_t, 20> res;
 	auto hasher = Botan::HashFunction::create_or_throw("SHA-1");
 	BOOST_ASSERT_MSG(hasher->output_length() == res.size(), "Bad hash size");
 	hasher->update(username_);

@@ -162,7 +162,7 @@ void prove_session(ClientContext& ctx, const Botan::BigInt& key) {
 	LOG_TRACE(ctx.logger, log_func);
 
 	// Packet encryption is slightly faster if we fix the key size at compile-time
-	std::array<std::uint8_t, ClientConnection::key_size> k_bytes;
+	[[indeterminate]] std::array<std::uint8_t, ClientConnection::key_size> k_bytes;
 
 	if(key.bytes() != k_bytes.size()) {
 		auth_state(ctx, State::failed);

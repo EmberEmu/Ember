@@ -90,7 +90,7 @@ constexpr auto varint_encode(stream_type& stream, size_type value) -> size_type 
 
 template<decltype(auto) size>
 static constexpr auto generate_filled(const std::uint8_t value) {
-	std::array<std::uint8_t, size> target{};
+	[[indeterminate]] std::array<std::uint8_t, size> target;
 	std::ranges::fill(target, value);
 	return target;
 }

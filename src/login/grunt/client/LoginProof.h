@@ -43,12 +43,12 @@ class LoginProof final : public Packet {
 	void read_body(PacketStream& stream) {
 		stream >> opcode;
 
-		std::array<std::uint8_t, a_length> a_buff;
+		[[indeterminate]] std::array<std::uint8_t, a_length> a_buff;
 		stream >> a_buff;
 		std::ranges::reverse(a_buff);
 		A = Botan::BigInt(a_buff);
 
-		std::array<std::uint8_t, m1_length> m1_buff;
+		[[indeterminate]] std::array<std::uint8_t, m1_length> m1_buff;
 		stream >> m1_buff;
 		std::ranges::reverse(m1_buff);
 		M1 = Botan::BigInt(m1_buff);
@@ -160,11 +160,11 @@ public:
 	State write_to_stream(PacketStream& stream) const override {
 		stream << opcode;
 
-		std::array<std::uint8_t, a_length> a_bytes;
+		[[indeterminate]] std::array<std::uint8_t, a_length> a_bytes;
 		A.serialize_to(a_bytes);
 		stream.put(a_bytes.rbegin(), a_bytes.rend());
 
-		std::array<std::uint8_t, m1_length> m1_bytes;
+		[[indeterminate]] std::array<std::uint8_t, m1_length> m1_bytes;
 		M1.serialize_to(m1_bytes);
 		stream.put(m1_bytes.rbegin(), m1_bytes.rend());
 

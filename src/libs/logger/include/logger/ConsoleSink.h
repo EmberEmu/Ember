@@ -19,13 +19,13 @@
 namespace ember::log {
 
 class ConsoleSink final : public Sink {
-	static constexpr auto SV_RESERVE = 256u;
-	static constexpr auto MAX_BUF_SIZE = 4096u;
+	static constexpr auto sv_reserve = 256u;
+	static constexpr auto max_buf_size = 4096u;
 	static inline std::mutex colour_lock;
 
 	bool colour_;
 	std::string prefix_;
-	boost::container::small_vector<char, SV_RESERVE> out_buf_;
+	[[indeterminate]] boost::container::small_vector<char, sv_reserve> out_buf_;
 
 	Colour severity_colour(Severity severity);
 	void do_batch_write(const std::span<std::pair<RecordDetail, std::vector<char>>>& records);

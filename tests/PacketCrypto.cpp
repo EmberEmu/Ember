@@ -46,37 +46,37 @@ struct PacketCryptoTest : public testing::Test {
 };
 
 TEST_F(PacketCryptoTest, KeySizeTooBig) {
-	std::array<std::uint8_t, 257> _key;
+	[[indeterminate]] std::array<std::uint8_t, 257> _key;
 	ASSERT_THROW(realm::PacketCrypto pc(_key), std::runtime_error);
 }
 
 TEST_F(PacketCryptoTest, KeyEmpty) {
-	std::array<std::uint8_t, 0> _key;
+	[[indeterminate]] std::array<std::uint8_t, 0> _key;
 	ASSERT_THROW(realm::PacketCrypto pc(_key), std::runtime_error);
 }
 
 TEST_F(PacketCryptoTest, KeySizeMismatchAbove) {
-	std::array<std::uint8_t, 65> _key;
+	[[indeterminate]] std::array<std::uint8_t, 65> _key;
 	ASSERT_THROW(realm::PacketCrypto<64> pc(_key), std::runtime_error);
 }
 
 TEST_F(PacketCryptoTest, KeySizeMismatchBelow) {
-	std::array<std::uint8_t, 63> _key;
+	[[indeterminate]] std::array<std::uint8_t, 63> _key;
 	ASSERT_THROW(realm::PacketCrypto<64> pc(_key), std::runtime_error);
 }
 
 TEST_F(PacketCryptoTest, KeySizeMax) {
-	std::array<std::uint8_t, 255> _key;
+	[[indeterminate]] std::array<std::uint8_t, 255> _key;
 	ASSERT_NO_THROW(realm::PacketCrypto pc(_key));
 }
 
 TEST_F(PacketCryptoTest, KeySizeMin) {
-	std::array<std::uint8_t, 1> _key;
+	[[indeterminate]] std::array<std::uint8_t, 1> _key;
 	ASSERT_NO_THROW(realm::PacketCrypto pc(_key));
 }
 
 TEST_F(PacketCryptoTest, KeySizeExpected) {
-	std::array<std::uint8_t, 64> _key;
+	[[indeterminate]] std::array<std::uint8_t, 64> _key;
 	ASSERT_NO_THROW(realm::PacketCrypto<64> pc(_key));
 }
 

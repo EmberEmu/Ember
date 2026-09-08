@@ -44,7 +44,7 @@ class LoginProof final : public Packet {
 			return;
 		}
 		
-		std::array<std::uint8_t, proof_length> m2_buff;
+		[[indeterminate]] std::array<std::uint8_t, proof_length> m2_buff;
 		stream >> m2_buff;
 		std::ranges::reverse(m2_buff);
 		M2 = Botan::BigInt(m2_buff);
