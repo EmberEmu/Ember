@@ -69,6 +69,7 @@ typedef void(*plugin_unload_fn)();
 // logging API
 typedef void(*log_async_fn)(LogLevel level, const CountedString* message, PluginID pid);
 typedef void(*log_sync_fn)(LogLevel level, const CountedString* message, PluginID pid);
+typedef log_async_fn log_fn;
 
 // command API - todo, opaque struct once I've cleaned the other files up
 typedef void*(*command_create_fn)(const CountedString* name, const CountedString* description);

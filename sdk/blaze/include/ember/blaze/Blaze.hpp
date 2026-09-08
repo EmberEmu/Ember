@@ -69,36 +69,31 @@ CountedString to_sstr(std::string_view string) {
 	};
 }
 
+template<typename LogFn, typename... FmtArgs>
+inline void log_do(LogLevel log_level, std::string_view message, LogFn fn, const FmtArgs... args) {
+	const auto ul_level = std::to_underlying(log_level);
+
+	if constexpr(sizeof...(args)) {
+		const auto formatted = std::vformat(
+			message, std::make_format_args(std::forward<const FmtArgs>(args)...)
+		);
+
+		fn(ul_level, to_sstr(formatted));
+	} else { // skip formatting call for empty parameter packs
+		fn(ul_level, to_sstr(message));
+	}
+}
+
 } // unnamed
 
 template<typename... FmtArgs>
 inline void log(LogLevel log_level, std::string_view message, const FmtArgs... args) {
-	const auto ul_level = std::to_underlying(log_level);
-
-	if constexpr(sizeof...(args)) {
-		const auto formatted = std::vformat(
-			message, std::make_format_args(std::forward<const FmtArgs>(args)...)
-		);
-
-		blaze_log_sstr(ul_level, to_sstr(formatted));
-	} else { // skip formatting call for empty parameter packs
-		blaze_log_sstr(ul_level, to_sstr(message));
-	}
+	log_do(log_level, message, blaze_log_sstr, std::forward<const FmtArgs>(args)...);
 }
 
 template<typename... FmtArgs>
 inline void slog(LogLevel log_level, std::string_view message, const FmtArgs... args) {
-	const auto ul_level = std::to_underlying(log_level);
-
-	if constexpr(sizeof...(args)) {
-		const auto formatted = std::vformat(
-			message, std::make_format_args(std::forward<const FmtArgs>(args)...)
-		);
-
-		blaze_slog_sstr(ul_level, to_sstr(formatted));
-	} else { // skip formatting call for empty parameter packs
-		blaze_slog_sstr(ul_level, to_sstr(message));
-	}
+	log_do(log_level, message, blaze_slog_sstr, std::forward<const FmtArgs>(args)...);
 }
 
 inline PluginID plugin_id() {

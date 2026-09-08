@@ -87,7 +87,7 @@ bool blaze_command_add_argument(void* command, const char* name,
 }
 
 bool blaze_command_add_argument_sstr(void* command, const CountedString name,
-                                const ArgumentType type, const bool required) {
+                                     const ArgumentType type, const bool required) {
 	return (*host_api.command_add_argument)(command, &name, type, required);
 }
 
