@@ -375,8 +375,8 @@ std::uint32_t Parser::fingerprint() const {
 }
 
 std::array<std::uint8_t, hash_sizes::sha160> Parser::msg_integrity(std::span<const std::uint8_t> username,
-                                                                 std::string_view realm,
-                                                                 std::string_view password) const {
+                                                                   std::string_view realm,
+                                                                   std::string_view password) const {
 	return detail::msg_integrity(buffer_, username, realm, password, true);
 }
 

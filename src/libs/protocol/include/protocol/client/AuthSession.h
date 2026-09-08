@@ -69,11 +69,11 @@ struct AuthSession final {
 			return StreamResult::bad_field_size;
 		}
 		
-		boost::container::small_vector<std::uint8_t, 512> source(
+		[[indeterminate]] boost::container::small_vector<std::uint8_t, 512> source(
 			remaining, boost::container::default_init
 		);
 
-		boost::container::small_vector<std::uint8_t, 4096> dest(
+		[[indeterminate]] boost::container::small_vector<std::uint8_t, 4096> dest(
 			decompressed_size, boost::container::default_init
 		);
 

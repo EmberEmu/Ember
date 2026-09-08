@@ -87,7 +87,7 @@ std::uint32_t fingerprint(std::span<const std::uint8_t> buffer, bool complete) {
 		offset = attribute_offset(buffer, Attributes::fingerprint);
 	}
 
-	std::array<std::uint8_t, hash_sizes::crc32> res;
+	[[indeterminate]] std::array<std::uint8_t, hash_sizes::crc32> res;
 	auto crc_func = Botan::HashFunction::create_or_throw("CRC32");
 	BOOST_ASSERT_MSG(crc_func->output_length() == res.size(), "Bad checksum size");
 	crc_func->update(buffer.data(), offset);
@@ -98,10 +98,10 @@ std::uint32_t fingerprint(std::span<const std::uint8_t> buffer, bool complete) {
 
 // not entirely compliant with the RFC because it's missing a salsprep impl
 std::array<std::uint8_t, hash_sizes::sha160> msg_integrity(std::span<const std::uint8_t> buffer,
-                                                         std::span<const std::uint8_t> username,
-                                                         std::string_view realm,
-                                                         std::string_view password,
-                                                         bool complete) {
+                                                           std::span<const std::uint8_t> username,
+                                                           std::string_view realm,
+                                                           std::string_view password,
+                                                           bool complete) {
 	auto msgi_offset = buffer.size_bytes();
 	std::size_t fp_offset = 0;
 
@@ -116,14 +116,14 @@ std::array<std::uint8_t, hash_sizes::sha160> msg_integrity(std::span<const std::
 	}
 
 	const std::string concat = std::format(":{}:{}", realm, password);
-	std::array<std::uint8_t, hash_sizes::md5> md5_res;
+	[[indeterminate]] std::array<std::uint8_t, hash_sizes::md5> md5_res;
 	auto hasher = Botan::HashFunction::create_or_throw("MD5");
 	BOOST_ASSERT_MSG(hasher->output_length() == md5_res.size(), "Bad hash size");
 	hasher->update(username);
 	hasher->update(concat);
 	hasher->final(md5_res);
 
-	std::array<std::uint8_t, hash_sizes::sha160> sha1_res;
+	[[indeterminate]] std::array<std::uint8_t, hash_sizes::sha160> sha1_res;
 	auto hmac = Botan::MessageAuthenticationCode::create_or_throw("HMAC(SHA-1)");
 	BOOST_ASSERT_MSG(hmac->output_length() == sha1_res.size(), "Bad hash size");
 	hmac->set_key(md5_res);
@@ -140,8 +140,8 @@ std::array<std::uint8_t, hash_sizes::sha160> msg_integrity(std::span<const std::
 
 // not entirely compliant with the RFC because it's missing a salsprep impl
 std::array<std::uint8_t, hash_sizes::sha160> msg_integrity(std::span<const std::uint8_t> buffer,
-                                                         std::string_view password,
-                                                         bool complete) {
+                                                           std::string_view password,
+                                                           bool complete) {
 	auto msgi_offset = buffer.size_bytes();
 	std::size_t fp_offset = 0;
 
@@ -155,7 +155,7 @@ std::array<std::uint8_t, hash_sizes::sha160> msg_integrity(std::span<const std::
 		}
 	}
 
-	std::array<std::uint8_t, hash_sizes::sha160> res;
+	[[indeterminate]] std::array<std::uint8_t, hash_sizes::sha160> res;
 	auto hmac = Botan::MessageAuthenticationCode::create_or_throw("HMAC(SHA-1)");
 	BOOST_ASSERT_MSG(hmac->output_length() == res.size(), "Bad hash size");
 	hmac->set_key(reinterpret_cast<const std::uint8_t*>(password.data()), password.size());

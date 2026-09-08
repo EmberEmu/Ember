@@ -204,7 +204,7 @@ std::expected<std::size_t, DecompressionError> decompress(std::span<const std::b
 		if(!prev) {
 			result = do_decompression(input, output, comp);
 		} else {
-			boost::container::small_vector<std::byte, sector_size_hint> buffer(
+			[[indeterminate]] boost::container::small_vector<std::byte, sector_size_hint> buffer(
 				prev_size, boost::container::default_init
 			);
 

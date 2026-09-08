@@ -499,7 +499,7 @@ TEST(BinaryStreamPMR, StdArray) {
 }
 
 TEST(BinaryStreamPMR, TotalWriteConsistency) {
-	std::array<char, 1024> buffer;
+	[[indeterminate]] std::array<char, 1024> buffer;
 	spark::io::pmr::BufferAdaptor adaptor(buffer, spark::io::init_empty);
 	spark::io::pmr::BinaryStream stream(adaptor);
 
@@ -532,7 +532,7 @@ TEST(BinaryStreamPMR, TotalWriteConsistency) {
 	stream.put<std::uint64_t>(0);
 	ASSERT_EQ(stream.total_write(), 88);
 
-	std::array<std::uint32_t, 4> data {};
+	std::array<std::uint32_t, 4> data{};
 	stream.put(data);
 	ASSERT_EQ(stream.total_write(), 104);
 	stream.put(data);
@@ -720,7 +720,7 @@ TEST(BinaryStreamPMR, PrefixedContainers) {
 }
 
 TEST(BinaryStreamPMR, StdArraySize) {
-	std::array<char, 16> buffer;
+	[[indeterminate]] std::array<char, 16> buffer;
 	spark::io::pmr::BufferAdaptor adaptor(buffer, spark::io::init_empty);
 	spark::io::pmr::BinaryStream stream(adaptor);
 	EXPECT_TRUE(adaptor.empty());

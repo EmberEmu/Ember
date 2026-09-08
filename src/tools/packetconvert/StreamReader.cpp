@@ -33,7 +33,7 @@ void StreamReader::add_sink(std::unique_ptr<Sink> sink) {
 void StreamReader::process() {
 	auto state = ReadState::size;
 	std::optional<fblog::Type> type;
-	boost::container::small_vector<std::uint8_t, 256> buffer;
+	[[indeterminate]] boost::container::small_vector<std::uint8_t, 256> buffer;
 
 	while(stream_ || stream_size_ != in_.tellg()) {
 		if(state == ReadState::size) {

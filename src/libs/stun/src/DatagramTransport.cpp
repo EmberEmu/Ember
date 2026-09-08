@@ -96,7 +96,7 @@ void DatagramTransport::receive() {
 				return;
 			}
 
-			boost::container::small_vector<std::uint8_t, initial_recv_buffer_size> buffer(
+			[[indeterminate]] boost::container::small_vector<std::uint8_t, initial_recv_buffer_size> buffer(
 				socket_.available(), boost::container::default_init
 			);
 

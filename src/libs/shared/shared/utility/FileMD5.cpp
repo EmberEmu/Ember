@@ -15,7 +15,7 @@
 namespace ember::utility {
 
 std::array<std::uint8_t, hash_sizes::md5> generate_md5(std::span<const std::byte> buffer) {
-	std::array<std::uint8_t, hash_sizes::md5> res;
+	[[indeterminate]] std::array<std::uint8_t, hash_sizes::md5> res;
 	auto hasher = Botan::HashFunction::create_or_throw("MD5");
 	BOOST_ASSERT_MSG(hasher->output_length() == res.size(), "Bad hash size");
 	hasher->update(reinterpret_cast<const std::uint8_t*>(buffer.data()), buffer.size_bytes());
@@ -31,10 +31,10 @@ std::array<std::uint8_t, hash_sizes::md5> generate_md5(const std::filesystem::pa
 	}
 
 	auto remaining = std::filesystem::file_size(file);
-	std::array<std::uint8_t, hash_sizes::md5> res;
+	[[indeterminate]] std::array<std::uint8_t, hash_sizes::md5> res;
 	auto hasher = Botan::HashFunction::create_or_throw("MD5");
 	BOOST_ASSERT_MSG(hasher->output_length() == res.size(), "Bad hash size");
-	std::array<char, 64> buffer; // Botan's block size is 64B
+	[[indeterminate]] std::array<char, 64> buffer; // Botan's block size is 64B
 
 	while(remaining) {
 		std::size_t read_size = remaining >= buffer.size()? buffer.size(): remaining;

@@ -19,7 +19,7 @@ using namespace ember;
 using namespace std::literals;
 
 TEST(BufferAdaptor, SizeEmptyInitial) {
-	std::array<std::uint8_t, 0> buffer;
+	[[indeterminate]] std::array<std::uint8_t, 0> buffer;
 	spark::io::BufferAdaptor adaptor(buffer);
 	ASSERT_EQ(adaptor.size(), 0);
 }

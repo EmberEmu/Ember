@@ -35,7 +35,7 @@ class LoginChallenge final : public Packet {
 			return; // rest of the fields won't be sent
 		}
 
-		std::array<std::uint8_t, pub_key_length> b_buff;
+		[[indeterminate]] std::array<std::uint8_t, pub_key_length> b_buff;
 		stream >> b_buff;
 		std::ranges::reverse(b_buff);
 		B = Botan::BigInt(b_buff);
@@ -50,12 +50,12 @@ class LoginChallenge final : public Packet {
 		stream >> g;
 		stream >> n_len;
 
-		std::array<std::uint8_t, prime_length> n_buff;
+		[[indeterminate]] std::array<std::uint8_t, prime_length> n_buff;
 		stream >> n_buff;
 		std::ranges::reverse(n_buff);
 		N = Botan::BigInt(n_buff);
 
-		std::array<std::uint8_t, salt_length> s_buff;
+		[[indeterminate]] std::array<std::uint8_t, salt_length> s_buff;
 		stream >> s_buff;
 		std::ranges::reverse(s_buff);
 		s = Botan::BigInt(s_buff);

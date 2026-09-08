@@ -198,7 +198,7 @@ TEST(srp6Regressions, NPad_GenerateClientProof) {
 	const Botan::BigInt a("0x52DFA6644066547BD7360AD2A23AE91DB544FADB8F4DCA86B4184481102E4089");
 	const Botan::BigInt b("0x809C1BC78BDB3873D286FDADF38D1524348C9CA5AB63E7793EF6A7944C5A8D");
 	Botan::BigInt session_val("0x42C6518D6F338C050717427B18F7C6B6131C968B0CFC20C43AAAD61625F286DA55E24BF6A2CBDC79");
-	srp6::KeyType kt(session_val.bytes(), boost::container::default_init);
+	[[indeterminate]] srp6::KeyType kt(session_val.bytes(), boost::container::default_init);
 	session_val.serialize_to(kt);
 	const srp6::SessionKey key(std::move(kt));
 

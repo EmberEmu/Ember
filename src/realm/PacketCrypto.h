@@ -41,7 +41,7 @@ requires(_key_size < 256)
 class PacketCrypto final {
 	static constexpr auto key_size_hint = _key_size > 0? _key_size * 2 : 128;
 
-	boost::container::small_vector<std::uint8_t, key_size_hint> key_;
+	[[indeterminate]] boost::container::small_vector<std::uint8_t, key_size_hint> key_;
 	std::uint8_t halved_key_size = 0;
 	std::uint8_t send_i_ = 0;
 	std::uint8_t send_j_ = 0;

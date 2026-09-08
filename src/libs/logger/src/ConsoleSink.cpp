@@ -73,7 +73,7 @@ void ConsoleSink::do_batch_write(const std::span<std::pair<RecordDetail, std::ve
 
 	out_buf_.clear();
 
-	if(out_buf_.capacity() > MAX_BUF_SIZE) [[unlikely]] {
+	if(out_buf_.capacity() > max_buf_size) [[unlikely]] {
 		out_buf_.shrink_to_fit();
 	}
 }
@@ -114,7 +114,7 @@ void ConsoleSink::write(Severity severity, Filter type, std::span<const char> re
 
 	out_buf_.clear();
 
-	if(out_buf_.capacity() > MAX_BUF_SIZE) [[unlikely]] {
+	if(out_buf_.capacity() > max_buf_size) [[unlikely]] {
 		out_buf_.shrink_to_fit();
 	}
 }

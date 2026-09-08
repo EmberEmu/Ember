@@ -51,7 +51,7 @@ void launch(const opts::variables_map& args) {
 	std::ranges::transform(username, username.begin(), upper);
 	std::ranges::transform(password, password.begin(), upper);
 
-	std::array<std::uint8_t, 32> salt;
+	[[indeterminate]] std::array<std::uint8_t, 32> salt;
 	srp6::generate_salt(salt);
 	auto gen = srp6::Generator(srp6::Generator::Group::g_256_bit);
 

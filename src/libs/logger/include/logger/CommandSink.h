@@ -71,7 +71,7 @@ class CommandSink final : public Sink {
 
 	std::string_view suggestion_substring();
 	Colour severity_colour(Severity severity);
-	boost::container::small_vector<char, sv_reserve> out_buf_;
+	[[indeterminate]] boost::container::small_vector<char, sv_reserve> out_buf_;
 	void print_command_table(std::span<const commands::Suggestions::Record> matches);
 	std::string truncate_description(int cols, const std::string_view description);
 
