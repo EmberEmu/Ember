@@ -44,10 +44,10 @@ typedef uint64_t PluginID;
 #define LOG_LEVEL_FATAL 5
 
 // command argument types
-#define CAT_CHAR    0
-#define CAT_STRING  1
-#define CAT_FLOAT   2
-#define CAT_DOUBLE  3
+#define CAT_CHAR   0
+#define CAT_STRING 1
+#define CAT_FLOAT  2
+#define CAT_DOUBLE 3
 #define CAT_INT8   4
 #define CAT_INT16  5
 #define CAT_INT32  6

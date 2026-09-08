@@ -26,43 +26,43 @@ Command command_create(const CountedString* name, const CountedString* descripti
 }
 
 template<typename T>
-bool command_arg_register(commands::Command& command, std::string name, ArgumentType type) {
+bool command_arg_register(commands::Command& command, std::string name, ArgumentType type, T is_required) {
 	switch(type) {
 		case CAT_CHAR:
-			command.argument<char>(std::move(name), T{});
+			command.argument<char>(std::move(name), is_required);
 			break;
 		case CAT_STRING:
-			command.argument<std::string>(std::move(name), T{});
+			command.argument<std::string>(std::move(name), is_required);
 			break;
 		case CAT_FLOAT:
-			command.argument<float>(std::move(name), T{});
+			command.argument<float>(std::move(name), is_required);
 			break;
 		case CAT_DOUBLE:
-			command.argument<double>(std::move(name), T{});
+			command.argument<double>(std::move(name), is_required);
 			break;
 		case CAT_INT8:
-			command.argument<std::int8_t>(std::move(name), T{});
+			command.argument<std::int8_t>(std::move(name), is_required);
 			break;
 		case CAT_INT16:
-			command.argument<std::int16_t>(std::move(name), T{});
+			command.argument<std::int16_t>(std::move(name), is_required);
 			break;
 		case CAT_INT32:
-			command.argument<std::int32_t>(std::move(name), T{});
+			command.argument<std::int32_t>(std::move(name), is_required);
 			break;
 		case CAT_INT64:
-			command.argument<std::int64_t>(std::move(name), T{});
+			command.argument<std::int64_t>(std::move(name), is_required);
 			break;
 		case CAT_UINT8:
-			command.argument<std::uint8_t>(std::move(name), T{});
+			command.argument<std::uint8_t>(std::move(name), is_required);
 			break;
 		case CAT_UINT16:
-			command.argument<std::uint16_t>(std::move(name), T{});
+			command.argument<std::uint16_t>(std::move(name), is_required);
 			break;
 		case CAT_UINT32:
-			command.argument<std::uint32_t>(std::move(name), T{});
+			command.argument<std::uint32_t>(std::move(name), is_required);
 			break;
 		case CAT_UINT64:
-			command.argument<std::uint64_t>(std::move(name), T{});
+			command.argument<std::uint64_t>(std::move(name), is_required);
 			break;
 		default:
 			return false;
@@ -84,9 +84,9 @@ bool command_add_argument(Command command, const CountedString* name, ArgumentTy
 	std::string name_str(name->data, name->size);
 
 	if(required) {
-		return command_arg_register<commands::required_t>(*result, std::move(name_str), type);
+		return command_arg_register(*result, std::move(name_str), type, commands::required);
 	} else {
-		return command_arg_register<commands::optional_t>(*result, std::move(name_str), type);
+		return command_arg_register(*result, std::move(name_str), type, commands::optional);
 	}
 }
 
