@@ -20,23 +20,9 @@ struct Command {
 	ember::commands::Command* impl;
 };
 
-enum CommandArgType {
-	cat_string,
-	cat_float,
-	cat_double,
-	cat_int_8,
-	cat_int_16,
-	cat_int_32,
-	cat_int_64,
-	cat_uint_8,
-	cat_uint_16,
-	cat_uint_32,
-	cat_uint_64,
-};
-
 EMBER_EXPORT Command command_create(const CountedString* name, const CountedString* description);
 EMBER_EXPORT bool command_destroy(Command command);
-EMBER_EXPORT bool command_add_argument(Command command, const CountedString* name, std::uint8_t type, bool required);
+EMBER_EXPORT bool command_add_argument(Command command, const CountedString* name, ArgumentType type, bool required);
 EMBER_EXPORT bool command_callback(Command command);
 
 } // extern "C"

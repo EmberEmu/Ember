@@ -31,6 +31,8 @@ extern "C" {
 #define SDK_MINOR_VERSION 0
 #define SDK_PATCH_VERSION 0
 
+typedef uint8_t  LogLevel;
+typedef uint8_t  ArgumentType;
 typedef uint64_t PluginID;
 
 // logging severity levels
@@ -65,13 +67,13 @@ typedef void(*plugin_load_fn)();
 typedef void(*plugin_unload_fn)();
 
 // logging API
-typedef void(*log_async_fn)(uint8_t level, const CountedString* message, PluginID pid);
-typedef void(*log_sync_fn)(uint8_t level, const CountedString* message, PluginID pid);
+typedef void(*log_async_fn)(LogLevel level, const CountedString* message, PluginID pid);
+typedef void(*log_sync_fn)(LogLevel level, const CountedString* message, PluginID pid);
 
 // command API - todo, opaque struct once I've cleaned the other files up
 typedef void*(*command_create_fn)(const CountedString* name, const CountedString* description);
 typedef bool(*command_destroy_fn)(void* command);
-typedef bool(*command_add_argument_fn)(void* command, const CountedString* name, uint8_t type, bool required);
+typedef bool(*command_add_argument_fn)(void* command, const CountedString* name, ArgumentType type, bool required);
 typedef bool(*command_callback_fn)(void* command);
 
 typedef struct {
@@ -87,7 +89,7 @@ typedef struct {
 	command_destroy_fn command_destroy;
 	command_add_argument_fn command_add_argument;
 	command_callback_fn command_callback;
-} BlazeHostAPI;
+} HostAPI;
 
 typedef struct {
 	uint32_t magic;
@@ -100,7 +102,7 @@ typedef struct {
 
 // SDK internals
 typedef SDKBuildMeta(*sdk_build_fn)();
-typedef uint8_t(*sdk_initialise_fn)(BlazeHostAPI api, PluginID plugin_id);
+typedef uint8_t(*sdk_initialise_fn)(HostAPI api, PluginID plugin_id);
 
 #ifdef __cplusplus
 } // extern "C"

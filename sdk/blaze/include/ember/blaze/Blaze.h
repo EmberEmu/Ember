@@ -16,18 +16,18 @@ extern "C" {
 #endif
 
 EMBER_EXPORT SDKBuildMeta sdk_build();
-EMBER_EXPORT uint8_t sdk_initialise(BlazeHostAPI api, PluginID pid);
+EMBER_EXPORT uint8_t sdk_initialise(HostAPI api, PluginID pid);
 
-void blaze_log(uint8_t log_level, const char* message);
-void blaze_slog(uint8_t log_level, const char* message);
-void blaze_log_sstr(uint8_t log_level, const CountedString name);
-void blaze_slog_sstr(uint8_t log_level, const CountedString name);
+void blaze_log(LogLevel log_level, const char* message);
+void blaze_slog(LogLevel log_level, const char* message);
+void blaze_log_sstr(LogLevel log_level, const CountedString name);
+void blaze_slog_sstr(LogLevel log_level, const CountedString name);
 
 void blaze_command_create(const char* name, const char* description);
 void blaze_command_create_sstr(const CountedString name, const CountedString description);
 bool blaze_command_destroy(void* command);
-bool blaze_command_add_argument(void* command, const char* name, uint8_t type, bool required);
-bool blaze_command_add_argument_sstr(void* command, const CountedString name, uint8_t type, bool required);
+bool blaze_command_add_argument(void* command, const char* name, ArgumentType type, bool required);
+bool blaze_command_add_argument_sstr(void* command, const CountedString name, ArgumentType type, bool required);
 bool blaze_command_callback(void* command);
 
 PluginID blaze_get_plugin_id();

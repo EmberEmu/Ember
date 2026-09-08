@@ -7,9 +7,8 @@
  */
 
 #include "../ServiceContextImpl.h"
-#include "State.h"
 #include "Logging.h"
-#include <ember/blaze/Common.h>
+#include "State.h"
 #include <logger/Logger.h>
 #include <format>
 #include <string_view>
@@ -28,7 +27,7 @@ std::string format_message(const CountedString* message, const PluginID pid) {
 } // unnamed
 
 
-void log_async(std::uint8_t level, const CountedString* message, const PluginID pid) {
+void log_async(LogLevel level, const CountedString* message, const PluginID pid) {
 	auto logger = ctx->get()->logger;
 	const auto formatted = format_message(message, pid);
 
@@ -56,7 +55,7 @@ void log_async(std::uint8_t level, const CountedString* message, const PluginID 
 	}
 }
 
-void log_sync(std::uint8_t level, const CountedString* message, const PluginID pid) {
+void log_sync(LogLevel level, const CountedString* message, const PluginID pid) {
 	auto logger = ctx->get()->logger;
 	const auto formatted = format_message(message, pid);
 

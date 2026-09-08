@@ -23,10 +23,10 @@ namespace ember::blaze {
 std::unique_ptr<PluginType> plugin_inst;                   \
                                                            \
 extern "C" {                                               \
-	inline EMBER_EXPORT void plugin_load() {     \
+	inline EMBER_EXPORT void plugin_load() {               \
 		plugin_inst = std::make_unique<PluginType>();      \
 	}                                                      \
-	inline EMBER_EXPORT void plugin_unload() {   \
+	inline EMBER_EXPORT void plugin_unload() {             \
 		plugin_inst.reset();                               \
 	}                                                      \
 }
@@ -36,7 +36,7 @@ public:
 	virtual ~Plugin() = default;
 };
 
-enum class LogLevel : std::uint8_t {
+enum class LogLevel : ::LogLevel {
 	trace = LOG_LEVEL_TRACE,
 	debug = LOG_LEVEL_DEBUG,
 	info  = LOG_LEVEL_INFO,
@@ -45,7 +45,7 @@ enum class LogLevel : std::uint8_t {
 	fatal = LOG_LEVEL_FATAL
 };
 
-enum class ArgumentType : std::uint8_t {
+enum class ArgumentType : ::ArgumentType {
 	character  = CAT_CHAR,
 	string     = CAT_STRING,
 	float32    = CAT_FLOAT,

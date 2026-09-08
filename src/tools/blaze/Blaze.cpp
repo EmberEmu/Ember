@@ -134,7 +134,7 @@ void Blaze::load_plugin(const std::filesystem::path& path) {
 		return;
 	}
 
-	if(result.blaze_host_api_size != sizeof(BlazeHostAPI)) {
+	if(result.blaze_host_api_size != sizeof(HostAPI)) {
 		LOG_ERROR(logger_, "Unable to load plugin {}: incompatible ABI", plugin.name_short());
 		return;
 	}
@@ -154,8 +154,8 @@ void Blaze::load_plugin(const std::filesystem::path& path) {
 		return;
 	}
 
-	const BlazeHostAPI api {
-		.size = sizeof(BlazeHostAPI),
+	const HostAPI api {
+		.size = sizeof(HostAPI),
 		.version_major = SDK_MAJOR_VERSION,
 		.version_minor = SDK_MINOR_VERSION,
 		.version_patch = SDK_PATCH_VERSION,

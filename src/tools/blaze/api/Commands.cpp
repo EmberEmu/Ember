@@ -26,39 +26,42 @@ Command command_create(const CountedString* name, const CountedString* descripti
 }
 
 template<typename T>
-bool command_arg_register(commands::Command& command, std::string name, std::uint8_t type) {
+bool command_arg_register(commands::Command& command, std::string name, ArgumentType type) {
 	switch(type) {
-		case cat_string:
+		case CAT_CHAR:
+			command.argument<char>(std::move(name), T{});
+			break;
+		case CAT_STRING:
 			command.argument<std::string>(std::move(name), T{});
 			break;
-		case cat_float:
+		case CAT_FLOAT:
 			command.argument<float>(std::move(name), T{});
 			break;
-		case cat_double:
+		case CAT_DOUBLE:
 			command.argument<double>(std::move(name), T{});
 			break;
-		case cat_int_8:
+		case CAT_INT8:
 			command.argument<std::int8_t>(std::move(name), T{});
 			break;
-		case cat_int_16:
+		case CAT_INT16:
 			command.argument<std::int16_t>(std::move(name), T{});
 			break;
-		case cat_int_32:
+		case CAT_INT32:
 			command.argument<std::int32_t>(std::move(name), T{});
 			break;
-		case cat_int_64:
+		case CAT_INT64:
 			command.argument<std::int64_t>(std::move(name), T{});
 			break;
-		case cat_uint_8:
+		case CAT_UINT8:
 			command.argument<std::uint8_t>(std::move(name), T{});
 			break;
-		case cat_uint_16:
+		case CAT_UINT16:
 			command.argument<std::uint16_t>(std::move(name), T{});
 			break;
-		case cat_uint_32:
+		case CAT_UINT32:
 			command.argument<std::uint32_t>(std::move(name), T{});
 			break;
-		case cat_uint_64:
+		case CAT_UINT64:
 			command.argument<std::uint64_t>(std::move(name), T{});
 			break;
 		default:
@@ -68,7 +71,7 @@ bool command_arg_register(commands::Command& command, std::string name, std::uin
 	return true;
 }
 
-bool command_add_argument(Command command, const CountedString* name, std::uint8_t type, bool required) {
+bool command_add_argument(Command command, const CountedString* name, ArgumentType type, bool required) {
 	auto registry = ctx->get()->plugin_commands.get();
 	assert(registry);
 
