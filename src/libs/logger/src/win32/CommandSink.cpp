@@ -29,8 +29,8 @@ namespace ember::log {
 
 using namespace detail;
 
-static constexpr auto text_white = FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE; 
-static constexpr auto text_grey = FOREGROUND_INTENSITY; 
+static constexpr auto text_white = FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
+static constexpr auto text_grey = FOREGROUND_INTENSITY;
 
 CommandSink::CommandSink(Severity severity, Filter filter, std::string prompt)
 	: Sink(severity, filter, sink_name)

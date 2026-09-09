@@ -60,7 +60,7 @@ enum class ArgumentType : ::ArgumentType {
 	uint64     = CAT_UINT64
 };
 
-namespace {
+namespace impl {
 
 CountedString to_sstr(std::string_view string) {
 	return {
@@ -84,16 +84,16 @@ inline void log_do(LogLevel log_level, std::string_view message, LogFn fn, const
 	}
 }
 
-} // unnamed
+} // impl
 
 template<typename... FmtArgs>
 inline void log(LogLevel log_level, std::string_view message, const FmtArgs... args) {
-	log_do(log_level, message, blaze_log_sstr, std::forward<const FmtArgs>(args)...);
+	impl::log_do(log_level, message, blaze_log_sstr, std::forward<const FmtArgs>(args)...);
 }
 
 template<typename... FmtArgs>
 inline void slog(LogLevel log_level, std::string_view message, const FmtArgs... args) {
-	log_do(log_level, message, blaze_slog_sstr, std::forward<const FmtArgs>(args)...);
+	impl::log_do(log_level, message, blaze_slog_sstr, std::forward<const FmtArgs>(args)...);
 }
 
 inline PluginID plugin_id() {
