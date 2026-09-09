@@ -224,14 +224,13 @@ public:
 		size_type remaining = length;
 
 		while(true) {
-			auto buffer = buffer_from_node(root_.next);
+			auto node = root_.next;
+			auto buffer = buffer_from_node(node);
 			remaining -= buffer->read(
-				static_cast<value_type*>(destination) + length - remaining, remaining,
-				                         root_.next == root_.prev
-			);
+				static_cast<value_type*>(destination) + length - remaining, remaining, node == root_.prev);
 
 			if(remaining) [[unlikely]] {
-				unlink_node(root_.next);
+				unlink_node(node);
 				deallocate(buffer);
 			} else {
 				break;
@@ -299,11 +298,12 @@ public:
 		size_type remaining = length;
 
 		while(true) {
-			auto buffer = buffer_from_node(root_.next);
-			remaining -= buffer->skip(remaining, root_.next == root_.prev);
+			auto node = root_.next;
+			auto buffer = buffer_from_node(node);
+			remaining -= buffer->skip(remaining, node == root_.prev);
 
 			if(remaining) [[unlikely]] {
-				unlink_node(root_.next);
+				unlink_node(node);
 				deallocate(buffer);
 			} else {
 				break;
@@ -385,9 +385,10 @@ public:
 	}
 
 	auto pop_front() {
-		auto buffer = buffer_from_node(root_.next);
+		auto node = root_.next;
+		auto buffer = buffer_from_node(node);
 		size_ -= buffer->size();
-		unlink_node(root_.next);
+		unlink_node(node);
 		return unique_storage(buffer, Deleter(*this));
 	}
 
