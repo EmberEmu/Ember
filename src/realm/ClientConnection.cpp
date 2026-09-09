@@ -48,7 +48,7 @@ void ClientConnection::parse_header() {
 	}
 
 	if(crypt_) [[likely]] {
-		crypt_->decrypt(inbound_buffer_.read_ptr(), protocol::ClientHeader::wire_size);
+		crypt_->decrypt<protocol::ClientHeader::wire_size>(inbound_buffer_.read_ptr());
 	}
 
 	inbound_buffer_.read(&msg_size_);

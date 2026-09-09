@@ -125,6 +125,23 @@ public:
 		}
 	}
 
+	template<std::size_t length>
+	inline void decrypt(auto* data) requires (_key_size > 0 && length <= _key_size) {
+		auto data_bytes = reinterpret_cast<std::uint8_t*>(data);
+
+		for(std::size_t t = 0; t < length; ++t) {
+			auto& byte = data_bytes[t];
+			const std::uint8_t x = (byte - recv_j_) ^ key_[recv_i_];
+			recv_j_ = byte;
+			byte = x;
+			++recv_i_;
+		}
+
+		if(recv_i_ > _key_size) {
+			recv_i_ -= _key_size;
+		}
+	}
+
 	inline void decrypt(auto& data) {
 		auto data_bytes = reinterpret_cast<std::uint8_t*>(&data);
 
