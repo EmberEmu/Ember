@@ -12,7 +12,8 @@
     "pcre",
     "zlib",
     "angelscript",
-	"jsoncons",
+    "jsoncons",
+	"jemalloc",
     {
       "name": "mysql-connector-cpp",
       "features": [
