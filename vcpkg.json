@@ -1,6 +1,6 @@
 {
   "dependencies": [
-  	"boost-assert",
+    "boost-assert",
     "boost-asio",
     "boost-headers",
     "boost-interprocess",
@@ -13,12 +13,13 @@
     "zlib",
     "angelscript",
     "jsoncons",
-	"jemalloc",
-    {
-      "name": "mysql-connector-cpp",
-      "features": [
-        "jdbc"
-      ]
-    }
+    "jemalloc",
+    "mysql-connector-cpp"
+  ],
+  "overrides": [
+  {
+    "name": "mysql-connector-cpp",
+    "version": "1.1.13"
+  }
   ]
 }
