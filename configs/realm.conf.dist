@@ -40,7 +40,7 @@ port = 6010
 [stun]
 enabled = true
 server = stun.l.google.com
-port = 3479
+port = 3478
 protocol = udp
 
 # Auto port forwarding configuration
