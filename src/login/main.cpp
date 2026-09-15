@@ -15,6 +15,7 @@
 #include <shared/utility/CommandHelpers.h>
 #include <shared/utility/LogConfig.h>
 #include <shared/utility/Utility.h>
+#include <shared/utility/polyfill/print>
 #include <shared/utility/shutdown/Install.h>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/signal_set.hpp>
@@ -27,6 +28,7 @@
 #include <string>
 #include <thread>
 #include <csignal>
+#include <cstdio>
 #include <cstdlib>
 
 using namespace ember;
@@ -60,7 +62,7 @@ int main(int argc, const char* argv[]) try {
 	SLOG_INFO(logger, "{} terminated (returned '{}')", login::app_name, ret);
 	return ret;
 } catch(const std::exception& e) {
-	std::cerr << e.what();
+	std::println(stderr, "{}", e.what());
 }
 
 int run(const opts::variables_map& args, log::Logger& logger, commands::Command& registry) try {

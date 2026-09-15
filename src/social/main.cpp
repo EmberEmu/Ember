@@ -15,6 +15,7 @@
 #include <shared/utility/polyfill/print>
 #include <shared/metrics/MetricsImpl.h>
 #include <shared/metrics/Monitor.h>
+#include <shared/utility/polyfill/print>
 #include <boost/asio/dispatch.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/version.hpp>
@@ -31,6 +32,7 @@
 #include <vector>
 #include <cstddef>
 #include <cstdint>
+#include <cstdio>
 #include <cstdlib>
 
 using namespace ember;
@@ -63,7 +65,7 @@ int main(int argc, const char* argv[]) try {
 	SLOG_INFO(logger, "Social daemon terminated");
 	return ret;
 } catch(const std::exception& e) {
-	std::cerr << e.what();
+	std::println(stderr, "{}", e.what());
 	return EXIT_FAILURE;
 }
 

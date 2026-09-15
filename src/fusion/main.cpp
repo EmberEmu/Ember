@@ -19,12 +19,14 @@
 #include <shared/utility/CommandHelpers.h>
 #include <shared/utility/LogConfig.h>
 #include <shared/utility/Utility.h>
+#include <shared/utility/polyfill/print>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/signal_set.hpp>
 #include <boost/program_options.hpp>
 #include <fstream>
 #include <iostream>
 #include <utility>
+#include <cstdio>
 
 using namespace ember;
 using namespace ember::fusion;
@@ -75,7 +77,7 @@ int main(int argc, const char* argv[]) try {
 	SLOG_INFO(logger, "{} terminated", app_name);
 	return ret;
 } catch(const std::exception& e) {
-	std::cerr << e.what();
+	std::println(stderr, "{}", e.what());
 	return EXIT_FAILURE;
 }
 

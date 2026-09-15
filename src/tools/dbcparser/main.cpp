@@ -16,6 +16,7 @@
 #include <logger/Logger.h>
 #include <logger/ConsoleSink.h>
 #include <logger/FileSink.h>
+#include <shared/utility/polyfill/print>
 #include <boost/program_options.hpp>
 #include <filesystem>
 #include <format>
@@ -28,6 +29,7 @@
 #include <vector>
 #include <stdexcept>
 #include <unordered_map>
+#include <cstdio>
 #include <cstdlib>
 
 using namespace ember;
@@ -52,7 +54,7 @@ int main(int argc, const char* argv[]) try {
 
 	return launch(args);
 } catch(const std::exception& e) {
-	std::cerr << e.what();
+	std::println(stderr, "{}", e.what());
 	return EXIT_FAILURE;
 }
 

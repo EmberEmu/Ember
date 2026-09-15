@@ -18,6 +18,7 @@
 #include <string>
 #include <string_view>
 #include <cctype>
+#include <cstdio>
 #include <cstdlib>
 
 using namespace nlohmann;
@@ -33,7 +34,7 @@ int main(int argc, const char* argv[]) try {
 	launch(args);
 	return EXIT_SUCCESS;
 } catch(const std::exception& e) {
-	std::cerr << e.what();
+	std::cerr << e.what() << '\n'; // todo, std::print when not polyfilling (avoiding shared dep)
 	return EXIT_FAILURE;
 }
 

@@ -18,6 +18,7 @@
 #include <string>
 #include <utility>
 #include <cstdint>
+#include <cstdio>
 #include <cstdlib>
 
 namespace opts = boost::program_options;
@@ -34,7 +35,7 @@ int main(int argc, const char* argv[]) try {
 	launch(args);
 	return EXIT_SUCCESS;
 } catch(const std::exception& e) {
-	std::cerr << e.what();
+	std::println(stderr, "{}", e.what());
 	return EXIT_FAILURE;
 }
 
