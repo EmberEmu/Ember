@@ -82,7 +82,7 @@ int max_sockets() {
 	rlimit limit{};
 	const int res = getrlimit(RLIMIT_NOFILE, &limit);
 	
-	if(res == 0) {
+	if(res == -1) {
 		return -1;
 	}
 
@@ -92,18 +92,17 @@ int max_sockets() {
 }
 
 std::string max_sockets_desc() {
-	int max = max_sockets();
-	std::string value;
+#if defined __linux__ || defined __unix__ || defined TARGET_OS_MAC
+	const auto max = max_sockets();
 
 	if(max == -1) {
-		value = "unable to retrieve value";
-	} else if(max == 0) {
-		value = "no known limits";
+		return  "unable to retrieve value";
 	} else {
-		value = std::to_string(max);
+		return  std::to_string(max);
 	}
-
-	return value;
+#else
+	return "no known limits";
+#endif
 }
 
 #define STRINGIZE_CASE(x) \
