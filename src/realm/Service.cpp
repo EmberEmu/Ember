@@ -460,7 +460,7 @@ opts::options_description Service::options() {
 		("misc.concurrency", opts::value<unsigned int>()->required())
 		("realm.builds", opts::value<std::vector<GameVersion>>()->composing()->required())
 		("realm.id", opts::value<unsigned int>()->required())
-		("realm.max_slots", opts::value<unsigned int>()->required())
+		("realm.max_slots", opts::value<std::size_t>()->required())
 		("realm.max_sockets", opts::value<unsigned int>()->required())
 		("realm.reserved_slots", opts::value<unsigned int>()->required())
 		("realm.auth_timeout", opts::value<unsigned int>()->required())
