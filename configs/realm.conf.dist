@@ -13,10 +13,6 @@ builds = 1, 12, 2, 6005
 [dbc]
 path = dbcs/
 
-# quirks is for emulating potentially undesirable behaviour of a real server
-[quirks]
-list_zone_hide = true # hide zone info for characters that have not been logged into
-
 [misc]
 concurrency = 0 # zero will allow the server to decide
 
