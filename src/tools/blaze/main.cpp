@@ -13,7 +13,9 @@
 #include <shared/utility/Utility.h>
 #include <shared/utility/LogConfig.h>
 #include <shared/utility/CommandHelpers.h>
+#include <shared/utility/polyfill/print>
 #include <boost/program_options.hpp>
+#include <cstdio>
 #include <fstream>
 
 using namespace ember;
@@ -47,7 +49,7 @@ int main(int argc, const char* argv[]) try {
 	SLOG_INFO(logger, "{} terminated (returned '{}')", blaze::app_name, ret);
 	return ret;
 } catch(const std::exception& e) {
-	std::cerr << e.what();
+	std::println(stderr, "{}", e.what());
 	return EXIT_FAILURE;
 }
 

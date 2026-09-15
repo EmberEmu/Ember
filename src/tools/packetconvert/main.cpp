@@ -9,6 +9,7 @@
 #include "ConsoleSink.h"
 #include "StreamReader.h"
 #include "OutputOption.h"
+#include <shared/utility/polyfill/print>
 #include <boost/program_options.hpp>
 #include <algorithm>
 #include <filesystem>
@@ -17,6 +18,7 @@
 #include <iostream>
 #include <memory>
 #include <ranges>
+#include <cstdio>
 #include <cstdlib>
 
 namespace opts = boost::program_options;
@@ -33,7 +35,7 @@ int main(int argc, const char* argv[]) try {
 	ember::launch(args);
 	return EXIT_SUCCESS;
 } catch(const std::exception& e) {
-	std::cerr << e.what();
+	std::println(stderr, "{}", e.what());
 	return EXIT_FAILURE;
 }
 
