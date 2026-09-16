@@ -18,7 +18,7 @@ namespace ember::realm {
 
 struct Config {
 	Realm realm;
-	unsigned int max_slots;
+	std::size_t max_slots;
 	std::chrono::seconds auth_timeout;
 	std::chrono::seconds char_list_timeout;
 	std::vector<GameVersion> allowed_builds;
