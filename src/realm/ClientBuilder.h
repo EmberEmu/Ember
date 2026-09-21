@@ -29,7 +29,7 @@ class ClientBuilder {
 	log::Logger& logger_;
 
 	unique_client_ptr make_unique_client(tcp_socket socket, std::size_t index) const {
-		auto tls_alloc = allocator();
+		auto& tls_alloc = allocator();
 		tls_alloc.thread_enter();
 
 		return unique_client_ptr(tls_alloc .allocate(
