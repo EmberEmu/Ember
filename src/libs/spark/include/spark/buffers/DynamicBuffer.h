@@ -41,12 +41,13 @@ class DynamicBuffer final : public pmr::Buffer {
 	constexpr static std::string_view allocator_tag { "dynamic_buffer" };
 
 public:
-	using storage_type = detail::IntrusiveStorage<block_sz, storage_value_type>;
-	using value_type   = storage_value_type;
-	using node_type    = detail::IntrusiveNode;
-	using size_type    = std::size_t;
-	using offset_type  = std::size_t;
-	using contiguous   = is_non_contiguous;
+	using storage_type   = detail::IntrusiveStorage<block_sz, storage_value_type>;
+	using value_type     = storage_value_type;
+	using node_type      = detail::IntrusiveNode;
+	using size_type      = std::size_t;
+	using offset_type    = std::size_t;
+	using contiguous     = is_non_contiguous;
+	using allocator_type = allocator;
 
 	static constexpr auto npos { static_cast<size_type>(-1) };
 
@@ -177,6 +178,11 @@ private:
 public:
 	DynamicBuffer()
 		: allocator_(allocator_tag)
+		, root_{ .next = &root_, .prev = &root_ }
+		, size_(0) {}
+
+	explicit DynamicBuffer(allocator allocator)
+		: allocator_(std::move(allocator))
 		, root_{ .next = &root_, .prev = &root_ }
 		, size_(0) {}
 

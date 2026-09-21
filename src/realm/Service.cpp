@@ -223,8 +223,8 @@ void Service::initialise(const opts::variables_map& args) try {
 	update_config(config, true);
 
 	// Load allocation config
-	const auto alloc_cfg = generate_allocation_config(args);
-	allocation_config(alloc_cfg);
+	const auto alloc_config = generate_allocation_config(args);
+	alloc_cfg(alloc_config);
 
 	SLOG_INFO(logger, "Starting RPC services...");
 	ctx->rpc = std::make_unique<spark::Server>(service, app_name, s_address, s_port, logger);
@@ -365,7 +365,8 @@ Config Service::generate_config(const opts::variables_map& args) {
 
 AllocationConfig Service::generate_allocation_config(const opts::variables_map& args) {
 	return AllocationConfig {
-		.clients = args["memory.clients"].as<std::size_t>()
+		.clients = args["memory.clients"].as<std::size_t>(),
+		.nodes = args["memory.nodes"].as<std::size_t>()
 	};
 }
 
@@ -497,7 +498,8 @@ opts::options_description Service::options() {
 		("monitor.enabled", opts::value<bool>()->required())
 		("monitor.interface", opts::value<std::string>()->required())
 		("monitor.port", opts::value<std::uint16_t>()->required())
-		("memory.clients", opts::value<std::size_t>()->required());
+		("memory.clients", opts::value<std::size_t>()->required())
+		("memory.nodes", opts::value<std::size_t>()->required());
 
 	return opts;
 }

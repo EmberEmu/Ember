@@ -35,13 +35,11 @@ using page_lock_policy = allocators::NoPageLock;
 #endif
 
 template<decltype(auto) block_size,
-	std::size_t count,
 	typename ref_count_policy = allocators::NoRefCounting,
 	typename entrant_policy = allocators::SafeEntrant,
 	typename storage_type = std::byte>
 using DynamicTLSBuffer = DynamicBuffer<block_size, storage_type,
 	allocators::TLSBlockAllocator<typename DynamicBuffer<block_size>::storage_type,
-		count,
 		ref_count_policy,
 		entrant_policy,
 		page_lock_policy

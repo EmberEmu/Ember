@@ -8,22 +8,17 @@
 
 #pragma once
 
- // number of buffer nodes to preallocate, per thread
-#ifndef PREALLOCATED_NODES_PER_THREAD
-#define PREALLOCATED_NODES_PER_THREAD 0
-#endif 
-
- // size of the inbound client buffer
+// size of the inbound client buffer
 #ifndef CLIENT_BUFFER_IN_SIZE
 #define CLIENT_BUFFER_IN_SIZE 8192
 #endif
 
- // size of the outbound client buffers
+// size of the outbound client buffers
 #ifndef CLIENT_BUFFER_OUT_SIZE
 #define CLIENT_BUFFER_OUT_SIZE 8192
 #endif
 
- // maximum size of the outbound client buffers
+// maximum size of the outbound client buffers
 #ifndef CLIENT_BUFFER_OUT_MAX_SIZE
 #define CLIENT_BUFFER_OUT_MAX_SIZE 65536
 #endif

@@ -8,12 +8,13 @@
 
 #pragma once
 
-#include <cstdint>
+#include <cstddef>
 
 namespace ember::realm {
 
 struct AllocationConfig {
 	std::size_t clients;
+	std::size_t nodes;
 };
 
 namespace detail {

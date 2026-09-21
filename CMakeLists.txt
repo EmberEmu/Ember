@@ -94,7 +94,6 @@ endif()
 
 set(BUILD_SHARED_MSG "Builds the services as shared libraries - generated code may be slower but Fusion service reloading is enabled")
 set(CMAKE_POSITION_INDEPENDENT_CODE ${BUILD_SHARED})
-set(PREALLOC_NODES_THREAD   4) # Preallocate memory for the specified number of buffer nodes per thread
 
 option(BUILD_SHARED ${BUILD_SHARED_MSG} OFF)
 option(DISABLE_FAST_CLIENT_DISPATCH_TABLE "Fast client event dispatch cache at the cost extra per-thread memory consumption" OFF)

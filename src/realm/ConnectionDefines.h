@@ -22,7 +22,6 @@ namespace ember::realm {
 static constexpr auto inbound_size      { CLIENT_BUFFER_IN_SIZE         };
 static constexpr auto outbound_size     { CLIENT_BUFFER_OUT_SIZE        };
 static constexpr auto max_outbound_size { CLIENT_BUFFER_OUT_MAX_SIZE    };
-static constexpr auto prealloc_nodes    { PREALLOCATED_NODES_PER_THREAD };
 static constexpr auto asio_chunk_size   { PREALLOCATED_ASIO_CHUNK_SIZE  };
 static constexpr auto asio_chunks       { PREALLOCATED_ASIO_CHUNKS      };
 
@@ -35,7 +34,7 @@ using BinaryStream = spark::io::BinaryStream<
 >;
 
 using DynamicTLSBuffer = spark::io::DynamicTLSBuffer<
-	outbound_size, prealloc_nodes, allocators::NoRefCounting, allocators::UnsafeEntrant
+	outbound_size, allocators::NoRefCounting, allocators::UnsafeEntrant
 >;
 
 using InplaceAllocator = allocators::InplaceAllocator<asio_chunk_size, asio_chunks>;
