@@ -35,16 +35,20 @@ ClientConnection::ClientConnection(tcp_socket socket, const ClientIdent& ident,
 	, write_in_progress_(false)
 	, handler_(nullptr)
 	, compression_level_(0)
-	, buffers_ {
-		.front = DynamicTLSBuffer(
-			DynamicTLSBuffer::allocator_type(alloc_cfg().nodes, buf_allocator_tag)
-		),
-		.back = DynamicTLSBuffer(
-			DynamicTLSBuffer::allocator_type(alloc_cfg().nodes, buf_allocator_tag)
-		)
-	 }
-	, outbound_front_(&buffers_.front)
-	, outbound_back_(&buffers_.back)
+	, outbound_buffers_ {
+        DynamicTLSBuffer {
+            DynamicTLSBuffer::allocator_type(
+                alloc_cfg().nodes, buf_allocator_tag
+            )
+        },
+        DynamicTLSBuffer {
+            DynamicTLSBuffer::allocator_type(
+                alloc_cfg().nodes, buf_allocator_tag
+            )
+        }
+    }
+	, outbound_front_(&outbound_buffers_.front())
+	, outbound_back_(&outbound_buffers_.back())
 	, allocator_(allocator_tag)
 	, dispatcher_(dispatcher)
 	, ident_(ident) {}

@@ -34,7 +34,7 @@ concept int_gt_zero = std::integral<decltype(block_sz)> && block_sz > 0;
 
 template<decltype(auto) block_sz,
 	byte_type storage_value_type = std::byte,
-	typename allocator = allocators::DefaultAllocator<detail::IntrusiveStorage<block_sz, storage_value_type>>
+	typename AllocatorType = allocators::DefaultAllocator<detail::IntrusiveStorage<block_sz, storage_value_type>>
 >
 requires int_gt_zero<block_sz>
 class DynamicBuffer final : public pmr::Buffer {
@@ -47,7 +47,7 @@ public:
 	using size_type      = std::size_t;
 	using offset_type    = std::size_t;
 	using contiguous     = is_non_contiguous;
-	using allocator_type = allocator;
+	using allocator_type = AllocatorType;
 
 	static constexpr auto npos { static_cast<size_type>(-1) };
 
@@ -67,7 +67,7 @@ public:
 private:
 	node_type root_;
 	size_type size_;
-	[[no_unique_address]] allocator allocator_;
+	[[no_unique_address]] AllocatorType allocator_;
 
 	void push_back(node_type* node) {
 		node->next = &root_;
@@ -181,7 +181,7 @@ public:
 		, root_{ .next = &root_, .prev = &root_ }
 		, size_(0) {}
 
-	explicit DynamicBuffer(allocator allocator)
+	explicit DynamicBuffer(AllocatorType allocator)
 		: allocator_(std::move(allocator))
 		, root_{ .next = &root_, .prev = &root_ }
 		, size_(0) {}

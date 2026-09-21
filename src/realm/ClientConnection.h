@@ -32,11 +32,6 @@ namespace ember::realm {
 
 class ClientHandler;
 
-struct Buffers {
-	DynamicTLSBuffer front;
-	DynamicTLSBuffer back;
-};
-
 class ClientConnection final {
 	static constexpr std::string_view allocator_tag     { "realm_client_connection" };
 	constexpr static std::string_view buf_allocator_tag { "realm_client_buffers" };
@@ -55,7 +50,7 @@ private:
 	boost::asio::ip::tcp::endpoint remote_ep_;
 
 	StaticBuffer inbound_buffer_;
-	Buffers buffers_;
+	std::array<DynamicTLSBuffer, 2> outbound_buffers_;
 	DynamicTLSBuffer* outbound_front_;
 	DynamicTLSBuffer* outbound_back_;
 	InplaceAllocator allocator_;
