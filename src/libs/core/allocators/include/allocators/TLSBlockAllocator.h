@@ -30,7 +30,6 @@ struct RefCounting   : NoRefCounting {};
 struct ExplicitInit  : ImplicitInit {};
 
 template<typename _ty,
-	std::size_t _elements,
 	std::derived_from<NoRefCounting> RefCountPolicy = NoRefCounting,
 	std::derived_from<SafeEntrant> EntrantPolicy = SafeEntrant,
 	std::derived_from<NoPageLock> PageLockPolicy = NoPageLock,
@@ -50,6 +49,7 @@ class TLSBlockAllocator final {
 	static inline thread_local std::unique_ptr<AllocatorType> allocator_;
 	static inline thread_local RefCount ref_count_{};
 	const std::string_view tag_;
+	const std::size_t elements_;
 
 	[[no_unique_address]] TLSHandleCache tls_handle_{};
 
@@ -57,7 +57,7 @@ class TLSBlockAllocator final {
 	inline void initialise() {
 		if constexpr(std::is_same_v<EntrantPolicy, SafeEntrant>) {
 			if(!allocator_) {
-				allocator_ = std::make_unique<AllocatorType>(_elements, tag_);
+				allocator_ = std::make_unique<AllocatorType>(elements_, tag_);
 			}
 		}
 	}
@@ -77,7 +77,9 @@ public:
 	std::size_t active_allocs = 0;
 #endif
 
-	TLSBlockAllocator(std::string_view tag = {}) : tag_(tag) {
+	explicit TLSBlockAllocator(std::size_t elements, std::string_view tag = {})
+		: elements_(elements)
+		, tag_(tag) {
 		if constexpr(std::is_same_v<InitPolicy, ImplicitInit>) {
 			thread_enter();
 		}
@@ -90,7 +92,7 @@ public:
 	 */
 	inline void thread_enter() {
 		if(!allocator_) {
-			allocator_ = std::make_unique<AllocatorType>(_elements, tag_);
+			allocator_ = std::make_unique<AllocatorType>(elements_, tag_);
 		}
 
 		if constexpr(std::is_same_v<EntrantPolicy, UnsafeEntrant>) {

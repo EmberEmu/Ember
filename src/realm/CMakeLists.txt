@@ -83,6 +83,7 @@ set(LIBRARY_HDR
     ConfigConsts.h
     ShutdownAnnouncer.h
     BuildDefines.h
+    AllocationConfig.h
 )
 
 set(LIBRARY_SRC
@@ -147,8 +148,6 @@ if(DISABLE_FAST_CLIENT_DISPATCH_TABLE)
     target_compile_definitions(${LIBRARY_NAME} PUBLIC DISABLE_FAST_CLIENT_DISPATCH_TABLE)
 endif()
 
-target_compile_definitions(${LIBRARY_NAME} PRIVATE PREALLOCATED_CLIENTS_PER_THREAD=${PREALLOC_CLIENTS_THREAD})
-target_compile_definitions(${LIBRARY_NAME} PRIVATE PREALLOCATED_NODES_PER_THREAD=${PREALLOC_NODES_THREAD})
 target_compile_definitions(${LIBRARY_NAME} PUBLIC EXPORT_SERVICE)
 
 if(WIN32)

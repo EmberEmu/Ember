@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include "AllocationConfig.h"
 #include "ClientHandlerBuilder.h"
 #include "ClientConnectionBuilder.h"
 #include "Forwards.h"
@@ -20,7 +21,6 @@ namespace ember::realm {
 
 class ClientBuilder {
 	constexpr static std::string_view allocator_tag { "realm_client_create" };
-	static inline thread_local ClientAllocator allocator_ { allocator_tag };
 
 	ClientHandlerBuilder ch_builder_;
 	ClientConnectionBuilder cc_builder_;
@@ -29,11 +29,20 @@ class ClientBuilder {
 	log::Logger& logger_;
 
 	unique_client_ptr make_unique_client(tcp_socket socket, std::size_t index) const {
-		allocator_.thread_enter();
+		auto& tls_alloc = allocator();
+		tls_alloc.thread_enter();
 
-		return unique_client_ptr(allocator_.allocate(
+		return unique_client_ptr(tls_alloc .allocate(
 			std::move(socket), index, dispatcher_, logger_, ch_builder_, cc_builder_
-		), ClientDeleter(allocator_, pool_.get(index)));
+		), ClientDeleter(tls_alloc, pool_.get(index)));
+	}
+
+	static ClientAllocator& allocator() {
+		thread_local ClientAllocator instance {
+			alloc_cfg().clients, allocator_tag
+		};
+
+		return instance;
 	}
 
 public:

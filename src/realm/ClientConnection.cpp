@@ -7,6 +7,7 @@
  */
 
 #include "ClientConnection.h"
+#include "AllocationConfig.h"
 #include "ClientHandler.h"
 #include "EventDispatcher.h"
 #include "Events.h"
@@ -34,6 +35,18 @@ ClientConnection::ClientConnection(tcp_socket socket, const ClientIdent& ident,
 	, write_in_progress_(false)
 	, handler_(nullptr)
 	, compression_level_(0)
+	, outbound_buffers_ {
+        DynamicTLSBuffer {
+            DynamicTLSBuffer::allocator_type(
+                alloc_cfg().nodes, buf_allocator_tag
+            )
+        },
+        DynamicTLSBuffer {
+            DynamicTLSBuffer::allocator_type(
+                alloc_cfg().nodes, buf_allocator_tag
+            )
+        }
+    }
 	, outbound_front_(&outbound_buffers_.front())
 	, outbound_back_(&outbound_buffers_.back())
 	, allocator_(allocator_tag)

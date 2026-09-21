@@ -22,7 +22,6 @@ using PageLockPolicy = allocators::NoPageLock;
 
 using ClientAllocator = allocators::TLSBlockAllocator<
 	Client,
-	PREALLOCATED_CLIENTS_PER_THREAD,
 	allocators::NoRefCounting,
 	allocators::UnsafeEntrant,
 	PageLockPolicy,

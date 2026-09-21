@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 - 2025 Ember
+ * Copyright (c) 2024 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -20,7 +20,7 @@
 using namespace ember;
 
 TEST(TLSBlockAllocator, SingleAlloc) {
-	allocators::TLSBlockAllocator<std::uint64_t, 1> tlsalloc;
+	allocators::TLSBlockAllocator<std::uint64_t> tlsalloc(1);
 	auto mem = tlsalloc.allocate();
 	ASSERT_EQ(tlsalloc.allocator()->storage_active_count, 1);
 	ASSERT_EQ(tlsalloc.allocator()->new_active_count, 0);
@@ -34,13 +34,13 @@ TEST(TLSBlockAllocator, SingleAlloc) {
 }
 
 TEST(TLSBlockAllocator, RandomAllocs) {
-	const auto MAX_ALLOCS = 100u;
-	allocators::TLSBlockAllocator<std::uint64_t, MAX_ALLOCS> tlsalloc;
-	std::array<std::uint64_t*, MAX_ALLOCS> chunks{};
+	const auto max_allocs = 100u;
+	allocators::TLSBlockAllocator<std::uint64_t> tlsalloc(max_allocs);
+	std::array<std::uint64_t*, max_allocs> chunks{};
 	const auto time = std::chrono::system_clock::now().time_since_epoch();
 	const unsigned int seed = gsl::narrow_cast<unsigned int>(time.count());
 	std::srand(seed);
-	const auto allocs = std::rand() % MAX_ALLOCS;
+	const auto allocs = std::rand() % max_allocs;
 	const auto tls_total_alloc = tlsalloc.allocator()->total_allocs;
 	const auto tls_total_dealloc = tlsalloc.allocator()->total_deallocs;
 
@@ -67,7 +67,7 @@ TEST(TLSBlockAllocator, RandomAllocs) {
 }
 
 TEST(TLSBlockAllocator, OverCapacity) {
-	allocators::TLSBlockAllocator<std::uint64_t, 1> tlsalloc;
+	allocators::TLSBlockAllocator<std::uint64_t> tlsalloc(1);
 	std::array<std::uint64_t*, 2> mem{};
 	mem[0] = tlsalloc.allocate();
 	mem[1] = tlsalloc.allocate();
@@ -88,7 +88,7 @@ TEST(TLSBlockAllocator, OverCapacity) {
 }
 
 TEST(TLSBlockAllocator, NoSharing) {
-	allocators::TLSBlockAllocator<std::uint64_t, 2> tlsalloc;
+	allocators::TLSBlockAllocator<std::uint64_t> tlsalloc(2);
 	const auto tls_total_alloc = tlsalloc.allocator()->total_allocs;
 	const auto tls_total_dealloc = tlsalloc.allocator()->total_deallocs;
 	auto chunk = tlsalloc.allocate();
@@ -96,7 +96,7 @@ TEST(TLSBlockAllocator, NoSharing) {
 	ASSERT_EQ(tlsalloc.allocator()->total_allocs, tls_total_alloc + 1);
 
 	std::thread thread([&] {
-		allocators::TLSBlockAllocator<std::uint64_t, 2> _tlsalloc;
+		allocators::TLSBlockAllocator<std::uint64_t> _tlsalloc(2);
 		ASSERT_EQ(_tlsalloc.allocator()->total_allocs, 0);
 		ASSERT_EQ(_tlsalloc.allocator()->storage_active_count, 0);
 		auto _chunk = _tlsalloc.allocate();
@@ -114,7 +114,7 @@ TEST(TLSBlockAllocator, NoSharing) {
 }
 
 TEST(TLSBlockAllocator, ThreadMismatch) {
-	allocators::TLSBlockAllocator<std::uint64_t, 1> tlsalloc;
+	allocators::TLSBlockAllocator<std::uint64_t> tlsalloc(1);
 	auto chunk = tlsalloc.allocate();
 
 	std::jthread thread([&] {

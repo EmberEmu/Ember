@@ -33,7 +33,8 @@ namespace ember::realm {
 class ClientHandler;
 
 class ClientConnection final {
-	static constexpr std::string_view allocator_tag { "realm_client_connection" };
+	static constexpr std::string_view allocator_tag     { "realm_client_connection" };
+	constexpr static std::string_view buf_allocator_tag { "realm_client_buffers" };
 
 public:
 	static constexpr auto key_size = 40;
