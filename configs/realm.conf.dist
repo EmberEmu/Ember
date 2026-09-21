@@ -12,7 +12,7 @@ builds = 1, 12, 2, 6005
 
 [memory]
 clients = 0 # Number of clients per thread to preallocate
-nodes = 0   # Size of buffer node pool per thread to preallocate
+nodes = 0   # Size of buffer node pool per thread to preallocate (recommended: clients * 2)
 
 [dbc]
 path = dbcs/
