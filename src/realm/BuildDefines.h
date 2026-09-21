@@ -13,11 +13,6 @@
 #define PREALLOCATED_NODES_PER_THREAD 0
 #endif 
 
- // number of clients to preallocate, per thread
-#ifndef PREALLOCATED_CLIENTS_PER_THREAD
-#define PREALLOCATED_CLIENTS_PER_THREAD 0
-#endif
-
  // size of the inbound client buffer
 #ifndef CLIENT_BUFFER_IN_SIZE
 #define CLIENT_BUFFER_IN_SIZE 8192

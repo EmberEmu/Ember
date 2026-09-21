@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include "AllocationConfig.h"
 #include "Config.h"
 #include "ServiceContext.h"
 #include <commands/Commands.h>
@@ -33,10 +34,12 @@ class EMBER_EXPORT_SERVICE Service final : public IService {
 	std::binary_semaphore stop_flag;
 	std::atomic_bool stopped;
 
+	// todo, a bunch of this stuff can be moved out of here
 	void seed_xorshift_rng();
 	void register_commands(boost::asio::io_context& ioc);
 	void update_config(const Config& config, bool post_only = false);
 	boost::program_options::variables_map reload_options(const std::string& filename);
+	AllocationConfig generate_allocation_config(const boost::program_options::variables_map& args);
 	Config generate_config(const boost::program_options::variables_map& args);
 	void initialise(const boost::program_options::variables_map& args);
 

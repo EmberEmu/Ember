@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include "AllocationConfig.h"
 #include "ClientHandlerBuilder.h"
 #include "ClientConnectionBuilder.h"
 #include "Forwards.h"
@@ -20,7 +21,7 @@ namespace ember::realm {
 
 class ClientBuilder {
 	constexpr static std::string_view allocator_tag { "realm_client_create" };
-	static inline thread_local ClientAllocator allocator_ { allocator_tag };
+	static inline thread_local ClientAllocator allocator_ { alloc_cfg().clients, allocator_tag };
 
 	ClientHandlerBuilder ch_builder_;
 	ClientConnectionBuilder cc_builder_;

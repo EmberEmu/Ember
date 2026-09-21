@@ -222,6 +222,10 @@ void Service::initialise(const opts::variables_map& args) try {
 	ctx->config_store = std::make_unique<ConfigStore>(config);
 	update_config(config, true);
 
+	// Load allocation config
+	const auto alloc_cfg = generate_allocation_config(args);
+	allocation_config(alloc_cfg);
+
 	SLOG_INFO(logger, "Starting RPC services...");
 	ctx->rpc = std::make_unique<spark::Server>(service, app_name, s_address, s_port, logger);
 	ctx->rpc_realm = std::make_unique<RealmService>(*ctx->rpc, ctx->realm, logger);
@@ -359,6 +363,12 @@ Config Service::generate_config(const opts::variables_map& args) {
 	};
 }
 
+AllocationConfig Service::generate_allocation_config(const opts::variables_map& args) {
+	return AllocationConfig {
+		.clients = args["memory.clients"].as<std::size_t>()
+	};
+}
+
 /*
  * Split from launch() as the DB connection is only needed for
  * loading the initial realm information. If the realm requires
@@ -486,7 +496,8 @@ opts::options_description Service::options() {
 		("metrics.statsd_port", opts::value<std::uint16_t>()->required())
 		("monitor.enabled", opts::value<bool>()->required())
 		("monitor.interface", opts::value<std::string>()->required())
-		("monitor.port", opts::value<std::uint16_t>()->required());
+		("monitor.port", opts::value<std::uint16_t>()->required())
+		("memory.clients", opts::value<std::size_t>()->required());
 
 	return opts;
 }
