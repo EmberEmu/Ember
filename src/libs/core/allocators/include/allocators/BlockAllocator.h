@@ -12,6 +12,7 @@
 #include <allocators/HugePages.h>
 #include <shared/utility/Utility.h>
 #include <array>
+#include <concepts>
 #include <memory>
 #include <new>
 #include <string_view>
