@@ -24,7 +24,7 @@ namespace ember::dns {
 
 static constexpr cstring_view app_name { "MDNS-SD" };
 
-class EMBER_EXPORT_SERVICE Service final : public IService {
+class EMBER_EXPORT_SERVICE Service final : public ember::Service {
 	log::Logger& logger;
 	commands::Command& registry;
 	std::chrono::steady_clock::time_point start_time;

@@ -16,7 +16,7 @@
 namespace ember::fusion {
 
 struct ServiceContext {
-	IService* service;
+	Service* service;
 	library::Handle lib_handle;
 	std::unique_ptr<log::Logger> logger;
 	ServiceIndex index;

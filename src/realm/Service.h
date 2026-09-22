@@ -26,7 +26,7 @@ namespace ember::realm {
 
 static inline constexpr cstring_view app_name { "Realm Gateway" };
 
-class EMBER_EXPORT_SERVICE Service final : public IService {
+class EMBER_EXPORT_SERVICE Service final : public ember::Service {
 	log::Logger& logger;
 	commands::Command& registry;
 	ServiceContext context;
