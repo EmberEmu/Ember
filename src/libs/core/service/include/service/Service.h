@@ -13,10 +13,10 @@
 
 namespace ember {
 
-class EMBER_EXPORT_SERVICE IService {
+class Service {
 public:
-	IService() = default;
-	virtual ~IService() = default;
+	Service() = default;
+	virtual ~Service() = default;
 
 	virtual int run(const boost::program_options::variables_map&) = 0;
 	virtual void stop() = 0;

@@ -72,7 +72,7 @@ auto locate_symbol(const cstring_view lib_name, const cstring_view func_name) {
 template<auto fn>
 auto create_service(ServiceIndex idx, log::Logger& logger, commands::Command& registry) {
 	library::Handle handle = nullptr;
-	IService* service = nullptr;
+	Service* service = nullptr;
 
 #ifdef BUILD_SHARED_SERVICES
 	auto [library, create_func] = locate_symbol<decltype(fn)>(
