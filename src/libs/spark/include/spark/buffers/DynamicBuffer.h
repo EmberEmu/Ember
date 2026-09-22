@@ -101,7 +101,7 @@ private:
 		root_.next->prev = &root_;
 
 		// make sure we have the allocator state
-		rhs.allocator_ = std::move(allocator_);
+		allocator_ = std::move(rhs.allocator_);
 
 		// reset rhs - can't use clear() as it'd deallocate the nodes
 		rhs.size_ = 0;
@@ -191,12 +191,25 @@ public:
 	}
 
 	DynamicBuffer& operator=(DynamicBuffer&& rhs) noexcept {
-		if(this == &rhs) { // self-assignment
+		if(this == &rhs) {
 			return *this;
 		}
 
-		clear(); // deallocate our current nodes
-		move(rhs);
+		clear();
+		allocator_ = std::move(rhs.allocator_);
+		size_ = rhs.size_;
+
+		if(!rhs.empty()) {
+			root_.next = rhs.root_.next;
+			root_.prev = rhs.root_.prev;
+
+			root_.prev->next = &root_;
+			root_.next->prev = &root_;
+		}
+
+		rhs.size_ = 0;
+		rhs.root_.next = &rhs.root_;
+		rhs.root_.prev = &rhs.root_;
 		return *this;
 	}
 
@@ -211,8 +224,21 @@ public:
 	}
 
 	DynamicBuffer(DynamicBuffer&& rhs) noexcept
-		: DynamicBuffer() {
-		move(rhs);
+		: root_{ .next = &root_, .prev = &root_ }
+		, size_(0)
+		, allocator_(std::move(rhs.allocator_)) {
+		if(!rhs.empty()) {
+			size_ = rhs.size_;
+			root_.next = rhs.root_.next;
+			root_.prev = rhs.root_.prev;
+
+			root_.prev->next = &root_;
+			root_.next->prev = &root_;
+
+			rhs.size_ = 0;
+			rhs.root_.next = &rhs.root_;
+			rhs.root_.prev = &rhs.root_;
+		}
 	}
 
 	DynamicBuffer(const DynamicBuffer& rhs) 
