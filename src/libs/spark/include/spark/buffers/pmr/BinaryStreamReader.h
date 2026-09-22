@@ -16,6 +16,7 @@
 #include <spark/buffers/Shared.h>
 #include <spark/buffers/StreamAdaptors.h>
 #include <spark/buffers/StringAdaptors.h>
+#include <concepts>
 #include <ranges>
 #include <string>
 #include <cassert>
@@ -25,14 +26,14 @@
 namespace ember::spark::io::pmr {
 
 #define STREAM_READ_BOUNDS_ENFORCE(read_size, ret_var)            \
-	if(state() != StreamState::ok) [[unlikely]] {                \
+	if(state() != StreamState::ok) [[unlikely]] {                 \
 		return ret_var;                                           \
 	}                                                             \
                                                                   \
 	enforce_read_bounds(read_size);                               \
 	                                                              \
 	if(!allow_throw()) {                                          \
-		if(state() != StreamState::ok) [[unlikely]] {            \
+		if(state() != StreamState::ok) [[unlikely]] {             \
 			return ret_var;                                       \
 		}                                                         \
 	}

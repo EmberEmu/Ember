@@ -11,6 +11,7 @@
 #include "Packets.h"
 #include "StreamTypes.h"
 #include <logger/LoggerFwd.h>
+#include <concepts>
 #include <expected>
 #include <functional>
 #include <optional>

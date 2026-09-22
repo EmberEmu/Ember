@@ -16,6 +16,7 @@
 #include <spark/buffers/StreamAdaptors.h>
 #include <spark/buffers/StringAdaptors.h>
 #include <algorithm>
+#include <concepts>
 #include <string>
 #include <string_view>
 #include <type_traits>

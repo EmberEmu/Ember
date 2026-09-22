@@ -9,6 +9,7 @@
 #pragma once
 
 #include <allocators/BlockAllocator.h>
+#include <concepts>
 #include <type_traits>
 #include <utility>
 #include <cassert>
