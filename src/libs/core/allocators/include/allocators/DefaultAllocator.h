@@ -19,9 +19,9 @@ struct DefaultAllocator final {
 	std::string_view tag;
 
 #ifdef EMBER_DEBUG_ALLOCATORS
-	std::size_t active_count = 0;
-	std::size_t total_allocs = 0;
-	std::size_t total_deallocs = 0;
+	mutable std::size_t active_count = 0;
+	mutable std::size_t total_allocs = 0;
+	mutable std::size_t total_deallocs = 0;
 #endif
 
 	template<typename ...Args>
