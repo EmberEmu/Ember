@@ -7,7 +7,7 @@
  */
 
 #include "ClientConnection.h"
-#include "AllocationConfig.h"
+#include "AllocationProvider.h"
 #include "ClientHandler.h"
 #include "EventDispatcher.h"
 #include "Events.h"
@@ -24,7 +24,9 @@
 namespace ember::realm {
 
 ClientConnection::ClientConnection(tcp_socket socket, const ClientIdent& ident,
-                                   EventDispatcher& dispatcher, log::Logger& logger)
+                                   std::pair<DynamicTLSBuffer, DynamicTLSBuffer> buffers,
+								   EventDispatcher& dispatcher,
+                                   log::Logger& logger)
 	: socket_(std::move(socket))
 	, remote_ep_(socket_.remote_endpoint())
 	, stats_{}
@@ -35,20 +37,9 @@ ClientConnection::ClientConnection(tcp_socket socket, const ClientIdent& ident,
 	, write_in_progress_(false)
 	, handler_(nullptr)
 	, compression_level_(0)
-	, outbound_buffers_ {
-        DynamicTLSBuffer {
-            DynamicTLSBuffer::allocator_type(
-                alloc_cfg().nodes, buf_allocator_tag
-            )
-        },
-        DynamicTLSBuffer {
-            DynamicTLSBuffer::allocator_type(
-                alloc_cfg().nodes, buf_allocator_tag
-            )
-        }
-    }
-	, outbound_front_(&outbound_buffers_.front())
-	, outbound_back_(&outbound_buffers_.back())
+	, outbound_buffers_ { std::move(buffers) }
+	, outbound_front_(&outbound_buffers_.first)
+	, outbound_back_(&outbound_buffers_.second)
 	, allocator_(allocator_tag)
 	, dispatcher_(dispatcher)
 	, ident_(ident) {}

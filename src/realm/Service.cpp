@@ -7,6 +7,7 @@
  */
 
 #include "Service.h"
+#include "AllocationProvider.h"
 #include "ClientBuilder.h"
 #include "ClientContextBuilder.h"
 #include "DBCRequired.h"
@@ -222,9 +223,11 @@ void Service::initialise(const opts::variables_map& args) try {
 	ctx->config_store = std::make_unique<ConfigStore>(config);
 	update_config(config, true);
 
-	// Load allocation config
-	const auto alloc_config = generate_allocation_config(args);
-	alloc_cfg(alloc_config);
+	// Load allocations config
+	ctx->alloc_provider = std::make_unique<AllocationProvider>(
+		args["memory.clients"].as<std::size_t>(),
+		args["memory.nodes"].as<std::size_t>()
+	);
 
 	SLOG_INFO(logger, "Starting RPC services...");
 	ctx->rpc = std::make_unique<spark::Server>(service, app_name, s_address, s_port, logger);
@@ -252,9 +255,9 @@ void Service::initialise(const opts::variables_map& args) try {
 		*ctx->rpc_character, *ctx->rpc_realm, logger
 	);
 
-	ClientConnectionBuilder cc_builder(*ctx->dispatcher, logger);
+	ClientConnectionBuilder cc_builder(*ctx->alloc_provider, *ctx->dispatcher, logger);
 	ClientHandlerBuilder ch_builder(ctx_builder, logger);
-	ClientBuilder builder(ch_builder, cc_builder, *ctx->dispatcher, *ctx->service_pool, logger);
+	ClientBuilder builder(ch_builder, cc_builder, *ctx->alloc_provider, *ctx->dispatcher, *ctx->service_pool, logger);
 
 	// Start shutdown scheduling system
 	ctx->shutdown_pa = std::make_unique<ShutdownAnnouncer>(
@@ -360,13 +363,6 @@ Config Service::generate_config(const opts::variables_map& args) {
 		.char_list_timeout = std::chrono::seconds(args["realm.char_list_timeout"].as<unsigned int>()),
 		.allowed_builds = args["realm.builds"].as<std::vector<GameVersion>>(),
 		.max_sockets = args["realm.max_sockets"].as<unsigned int>()
-	};
-}
-
-AllocationConfig Service::generate_allocation_config(const opts::variables_map& args) {
-	return AllocationConfig {
-		.clients = args["memory.clients"].as<std::size_t>(),
-		.nodes = args["memory.nodes"].as<std::size_t>()
 	};
 }
 

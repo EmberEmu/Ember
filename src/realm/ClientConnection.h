@@ -25,16 +25,17 @@
 #include <optional>
 #include <span>
 #include <string>
+#include <utility>
 #include <cstdint>
 #include <cstddef>
 
 namespace ember::realm {
 
+class AllocationProvider;
 class ClientHandler;
 
 class ClientConnection final {
-	static constexpr std::string_view allocator_tag     { "realm_client_connection" };
-	constexpr static std::string_view buf_allocator_tag { "realm_client_buffers" };
+	static constexpr std::string_view allocator_tag { "realm_client_connection" };
 
 public:
 	static constexpr auto key_size = 40;
@@ -50,7 +51,7 @@ private:
 	boost::asio::ip::tcp::endpoint remote_ep_;
 
 	StaticBuffer inbound_buffer_;
-	std::array<DynamicTLSBuffer, 2> outbound_buffers_;
+	std::pair<DynamicTLSBuffer, DynamicTLSBuffer> outbound_buffers_;
 	DynamicTLSBuffer* outbound_front_;
 	DynamicTLSBuffer* outbound_back_;
 	InplaceAllocator allocator_;
@@ -84,7 +85,10 @@ private:
 	void set_handler(ClientHandler& handler);
 
 public:
-	ClientConnection(tcp_socket socket, const ClientIdent& ident, EventDispatcher& dispatcher, log::Logger& logger);
+	ClientConnection(tcp_socket socket, const ClientIdent& ident,
+	                 std::pair<DynamicTLSBuffer, DynamicTLSBuffer> buffers,
+	                 EventDispatcher& dispatcher,
+	                 log::Logger& logger);
 	~ClientConnection();
 
 	// session management
