@@ -83,7 +83,7 @@ set(LIBRARY_HDR
     ConfigConsts.h
     ShutdownAnnouncer.h
     BuildDefines.h
-    AllocationConfig.h
+    AllocationProvider.h
 )
 
 set(LIBRARY_SRC
@@ -124,6 +124,7 @@ set(LIBRARY_SRC
     ClientContext.cpp
     Client.cpp
     ShutdownAnnouncer.cpp
+    AllocationProvider.cpp
 )
 
 add_library(${LIBRARY_NAME} ${SERVICE_LIB_LINKAGE} 

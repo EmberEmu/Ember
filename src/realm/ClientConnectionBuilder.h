@@ -8,22 +8,29 @@
 
 #pragma once
 
+#include "AllocationProvider.h"
 #include "ClientConnection.h"
 #include "Forwards.h"
 
 namespace ember::realm {
 
 class ClientConnectionBuilder final {
+	const AllocationProvider& alloc_provider_;
 	log::Logger& logger_;
 	EventDispatcher& dispatcher_;
 
 public:
-	ClientConnectionBuilder(EventDispatcher& dispatcher, log::Logger& logger)
-		: dispatcher_(dispatcher)
+	ClientConnectionBuilder(const AllocationProvider& alloc_provider,
+	                        EventDispatcher& dispatcher,
+	                        log::Logger& logger)
+		: alloc_provider_(alloc_provider)
+		, dispatcher_(dispatcher)
 		, logger_(logger) {}
 
 	ClientConnection create(tcp_socket socket, const ClientIdent& ident) const {
-		return ClientConnection(std::move(socket), ident, dispatcher_, logger_);
+		return ClientConnection(
+			std::move(socket), ident, alloc_provider_.make_buffer_pair(), dispatcher_, logger_
+		);
 	}
 };
 

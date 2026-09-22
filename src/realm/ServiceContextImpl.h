@@ -9,6 +9,7 @@
 #pragma once
 
 #include "AccountClient.h"
+#include "AllocationProvider.h"
 #include "CharacterClient.h"
 #include "BroadcastTimer.h"
 #include "Config.h"
@@ -55,6 +56,7 @@ struct ServiceContext::Impl {
 	std::unique_ptr<NetworkListener> server;
 	std::unique_ptr<BroadcastTimer> timer;
 	std::vector<commands::ScopedCommand> commands;
+	std::unique_ptr<AllocationProvider> alloc_provider;
 };
 
 } // realm, ember

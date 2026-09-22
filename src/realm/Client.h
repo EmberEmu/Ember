@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include "ClientConnectionBuilder.h"
-#include "ClientHandlerBuilder.h"
+#include "ClientConnection.h"
+#include "ClientHandler.h"
 #include "Forwards.h"
 #include "SocketType.h"
 #include <logger/LoggerFwd.h>
@@ -17,6 +17,9 @@
 #include <atomic>
 
 namespace ember::realm {
+
+class ClientHandlerBuilder;
+class ClientConnectionBuilder;
 
 class Client {
 	inline static std::atomic_size_t curr_clients_;

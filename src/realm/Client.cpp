@@ -7,6 +7,8 @@
  */
 
 #include "Client.h"
+#include "ClientConnectionBuilder.h"
+#include "ClientHandlerBuilder.h"
 #include "EventDispatcher.h"
 #include "packet_log/Helper.h"
 #include <logger/Logger.h>
