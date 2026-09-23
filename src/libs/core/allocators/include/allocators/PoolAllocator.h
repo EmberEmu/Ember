@@ -86,6 +86,12 @@ public:
 		ALLOC_TRACK(tag, mem_rep_create);
 	}
 
+	PoolAllocator(PoolAllocator&& other) = delete;
+	PoolAllocator& operator=(PoolAllocator&& other) = delete;
+
+	PoolAllocator(PoolAllocator&) = delete;
+	PoolAllocator& operator=(PoolAllocator&) = delete;
+
 	~PoolAllocator() {
 		ALLOC_TRACK(tag, mem_rep_destroy);
 	}
