@@ -30,7 +30,7 @@ ClientContext::ClientContext(executor& executor, const ConfigStore& cfg_store, E
 void ClientContext::start_timer(const std::chrono::milliseconds& time) {
 	timer_.expires_after(time);
 
-	timer_.async_wait([dispatcher = dispatcher, uuid = handler().uuid()](const boost::system::error_code& ec) {
+	timer_.async_wait([&, uuid = handler().uuid()](const boost::system::error_code& ec) {
 		if(!ec) {
 			dispatcher.post(uuid, TimerExpired{});
 		}
