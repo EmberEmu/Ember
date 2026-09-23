@@ -98,8 +98,8 @@ class BlockAllocator {
 
 	Block* head_ = nullptr;
 	Block* storage_ = nullptr;
-	std::string_view tag_;
 	std::size_t elements_ = 0;
+	std::string_view tag_;
 	UseAllocator allocator_;
 	[[no_unique_address]] tid_type thread_id_;
 	std::size_t alloc_size_ = 0;
@@ -138,9 +138,9 @@ class BlockAllocator {
 		return block;
 	}
 
-	void allocate_storage(const std::size_t elements) {
+	void allocate_storage() {
 		constexpr auto block_size = sizeof(Block);
-		const auto storage_size = block_size * elements;
+		const auto storage_size = block_size * elements_;
 
 #if (defined __linux__ || defined __unix__) && defined ENABLE_HUGE_PAGES
 		constexpr std::size_t align_to = HUGE_PAGE_MINIMUM;
@@ -153,7 +153,6 @@ class BlockAllocator {
 		alloc_size_ = alloc_size;
 #else
 		storage_ = static_cast<Block*>(allocator_.allocate(storage_size));
-		elements_ = elements;
 		alloc_size_ = storage_size;
 #endif
 	}
@@ -166,9 +165,9 @@ class BlockAllocator {
 #endif
 	}
 	
-	void initialise(std::size_t elements) {
+	void initialise() {
 		ALLOC_TRACK(tag_, mem_rep_create);
-		allocate_storage(elements);
+		allocate_storage();
 		page_lock_conditional();
 		initialise_free_list();
 	}
@@ -184,15 +183,18 @@ public:
 	std::size_t total_deallocs = 0;
 #endif
 
-	BlockAllocator(std::size_t elements, std::string_view tag = default_tag) requires std::same_as<ValidatePolicy, ValidateDealloc>
-		: tag_(tag)
+	BlockAllocator(std::size_t elements, std::string_view tag = default_tag)
+		requires std::same_as<ValidatePolicy, ValidateDealloc>
+		: elements_(elements)
+		, tag_(tag)
 		, thread_id_(std::this_thread::get_id()) {
-		initialise(elements);
+		initialise();
 	}
 
 	BlockAllocator(std::size_t elements, std::string_view tag = default_tag)
-		: tag_(tag) {
-		initialise(elements);
+		: elements_(elements)
+		, tag_(tag) {
+		initialise();
 	}
 
 	template<typename ...Args>
