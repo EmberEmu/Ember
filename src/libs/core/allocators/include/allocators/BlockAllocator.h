@@ -202,6 +202,12 @@ public:
 		initialise();
 	}
 
+	BlockAllocator(BlockAllocator&& other) = delete;
+	BlockAllocator& operator=(BlockAllocator&& other) = delete;
+
+	BlockAllocator(BlockAllocator&) = delete;
+	BlockAllocator& operator=(BlockAllocator&) = delete;
+
 	template<typename ...Args>
 	[[nodiscard]] inline _ty* allocate(Args&&... args) {
 		Block* block = pop();

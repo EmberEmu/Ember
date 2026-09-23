@@ -86,6 +86,12 @@ public:
 		}
 	}
 
+	TLSBlockAllocator(TLSBlockAllocator&& other) noexcept = default;
+	TLSBlockAllocator& operator=(TLSBlockAllocator&& other) noexcept = default;
+
+	TLSBlockAllocator(TLSBlockAllocator&) = delete;
+	TLSBlockAllocator& operator=(TLSBlockAllocator&) = delete;
+
 	/*
 	 * When used in conjunction with UnsafeEntrant, allows the owning object
 	 * to be executed on another thread without paying for checks on every

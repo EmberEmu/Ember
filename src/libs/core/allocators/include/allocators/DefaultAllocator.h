@@ -43,6 +43,36 @@ struct DefaultAllocator final {
 
 	DefaultAllocator(std::string_view tag = {}) : tag(tag) {}
 
+	DefaultAllocator(DefaultAllocator&& rhs) noexcept
+		: tag(rhs.tag)
+#ifdef EMBER_DEBUG_ALLOCATORS
+		, active_count(rhs.active_count)
+		, total_allocs(rhs.total_allocs)
+		, total_deallocs(rhs.total_deallocs) 
+#endif
+	{
+		rhs.tag = "";
+#ifdef EMBER_DEBUG_ALLOCATORS
+		rhs.active_count = 0;
+		rhs.total_allocs = 0;
+		rhs.total_deallocs = 0;
+#endif
+	}
+	
+	DefaultAllocator& operator=(DefaultAllocator&& rhs) noexcept {
+		tag = rhs.tag;
+#ifdef EMBER_DEBUG_ALLOCATORS
+		active_count = rhs.active_count;
+		total_allocs = rhs.total_allocs;
+		total_deallocs = rhs.total_deallocs;
+#endif
+		return *this;
+	}
+
+
+	DefaultAllocator(DefaultAllocator&) = delete;
+	DefaultAllocator& operator=(DefaultAllocator&) = delete;
+
 	~DefaultAllocator() {
 #ifdef EMBER_DEBUG_ALLOCATORS
 		assert(active_count == 0);
