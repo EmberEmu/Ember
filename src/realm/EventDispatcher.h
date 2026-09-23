@@ -82,8 +82,8 @@ public:
 	// broadcasts an event to a vector of clients - the vector is sorted to minimise the number of messages
 	void broadcast(std::vector<ClientIdent> clients, std::shared_ptr<const Event> event) const;
 
-	ClientIdent register_client(Client* client, std::size_t service_index);
-	void remove_client(const Client* client);
+	ClientIdent register_client(ClientType* client, std::size_t service_index);
+	void remove_client(const ClientType* client);
 };
 
 } // realm, ember
