@@ -43,7 +43,7 @@ private:
 	bool midnight_rotate_ = false;
 	int last_mday_ = detail::current_time().tm_mday;
 	cstring_view time_format_ = "[%d/%m/%Y %H:%M:%S] ";
-	[[indeterminate]] boost::container::small_vector<char, sv_reserve> out_buf_;
+	boost::container::small_vector<char, sv_reserve> out_buf_;
 
 	void open(Mode mode = Mode::truncate);
 	void rotate();
