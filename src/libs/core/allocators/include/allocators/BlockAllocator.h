@@ -147,7 +147,12 @@ class BlockAllocator {
 		const auto rem = storage_size % align_to;
 		const auto alloc_size = rem == 0? storage_size : storage_size + (align_to - rem);
 
-		storage_ = static_cast<Block*>(std::aligned_alloc(alloc_size, HUGE_PAGE_MINIMUM));
+		storage_ = static_cast<Block*>(std::aligned_alloc(HUGE_PAGE_MINIMUM, alloc_size));
+
+		if(!storage_) {
+			throw std::bad_alloc{};
+		}
+
 		madvise(storage_, alloc_size, MADV_HUGEPAGE);
 		elements_ = alloc_size / block_size;
 		alloc_size_ = alloc_size;
