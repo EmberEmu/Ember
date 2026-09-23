@@ -72,8 +72,8 @@ struct DefaultAllocator final {
 		return *this;
 	}
 
-	DefaultAllocator(DefaultAllocator& rhs) noexcept = default;
-	DefaultAllocator& operator=(DefaultAllocator& rhs) noexcept = default;
+	DefaultAllocator(DefaultAllocator& rhs) = default;
+	DefaultAllocator& operator=(DefaultAllocator& rhs) = default;
 
 	~DefaultAllocator() {
 #ifdef EMBER_DEBUG_ALLOCATORS
