@@ -16,7 +16,6 @@
 
 namespace ember::utility::utf8 {
 
-
 utf8_string name_format(const utf8_string& string) {
 	if(string.empty()) {
 		return {};

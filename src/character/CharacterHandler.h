@@ -44,7 +44,6 @@ class CharacterHandler final {
 	const dbc::Storage& dbc_;
 	const dal::CharacterDAO& dao_;
 	const Config config_;
-	const std::locale locale_;
 
 	thread::ThreadPool& pool_;
 	log::Logger& logger_;
