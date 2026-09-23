@@ -50,7 +50,7 @@ RUN wget -q https://github.com/anjo76/angelscript/archive/refs/tags/v2.38.0.tar.
 RUN wget -q https://archives.boost.io/release/1.90.0/source/boost_1_90_0.tar.gz \
  && tar -zxf boost_1_90_0.tar.gz \
  && cd boost_1_90_0 \
- && ./bootstrap.sh --with-libraries=system,program_options,headers \
+ && ./bootstrap.sh --with-libraries=locale,system,program_options,headers \
  && ./b2 link=shared,static install -d0 -j $(nproc) cxxflags="-std=c++23"
 
 # Copy source
