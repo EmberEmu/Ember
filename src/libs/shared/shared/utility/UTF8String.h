@@ -17,7 +17,7 @@
 
 namespace ember {
 
-using utf8_string = std::string;
-using utf8_string_view = std::string_view;
+using utf8_string = std::u8string;
+using utf8_string_view = std::u8string_view;
 
 } // ember

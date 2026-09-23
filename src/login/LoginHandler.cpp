@@ -250,7 +250,7 @@ void LoginHandler::build_login_challenge_decoy(grunt::server::LoginChallenge& pa
 		"0x399CF53C149F220F4AA88F7F2F6CA9CB6E4C44EA5240AC0F65601F392F32A16A"
 	};
 
-	state_data_.emplace<LoginAuthenticator>("dummy", verifier, salt);
+	state_data_.emplace<LoginAuthenticator>(u8"dummy", verifier, salt);
 	build_login_challenge(packet);
 }
 

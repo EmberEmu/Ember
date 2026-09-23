@@ -21,23 +21,14 @@ utf8_string name_format(const utf8_string& string) {
 		return {};
 	}
 
-	const auto wide = boost::locale::conv::utf_to_utf<wchar_t>(string);
-
-	std::wstring formatted;
-	formatted.reserve(wide.size());
-	formatted += boost::locale::to_upper(std::wstring(1, wide.front()));
-
-	if(wide.size() > 1) {
-		formatted += boost::locale::to_lower(wide.substr(1));
-	}
-
-	return boost::locale::conv::utf_to_utf<char>(formatted);
+	utf8_string result = boost::locale::to_lower(result);
+	return boost::locale::to_upper(result.data(), result.data() + 1);
 }
 
 bool is_alpha(const utf8_string& string) {
 	const auto wide = boost::locale::conv::utf_to_utf<wchar_t>(string);
 
-	for(const wchar_t codepoint : wide) {
+	for(const auto codepoint : wide) {
 		if(!std::isalpha(codepoint)) {
 			return false;
 		}
