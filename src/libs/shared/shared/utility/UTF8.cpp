@@ -16,29 +16,39 @@
 
 namespace ember::utility::utf8 {
 
-utf8_string name_format(const utf8_string& string) {
+// Boost.Locale provides to_title but it relies on the ICU backend
+utf8_string name_format(const utf8_string& string, const std::locale& locale) {
 	if(string.empty()) {
 		return {};
 	}
 
-	const auto wide = boost::locale::conv::utf_to_utf<wchar_t>(string);
+	auto first_end = string.begin();
+	::utf8::next(first_end, string.end());
 
-	std::wstring formatted;
-	formatted.reserve(wide.size());
-	formatted += boost::locale::to_upper(std::wstring(1, wide.front()));
+	const utf8_string first(string.begin(), first_end);
+	const utf8_string rest(first_end, string.end());
 
-	if(wide.size() > 1) {
-		formatted += boost::locale::to_lower(wide.substr(1));
-	}
+	const auto upper = boost::locale::to_upper(first, locale);
+	const auto lower = boost::locale::to_lower(rest, locale);
 
-	return boost::locale::conv::utf_to_utf<char>(formatted);
+	/*
+     * We don't do a direct character replacement so as to avoid a potential mismatch
+     * in the number of codepoints required to represent an equivalent upper/lower case
+     * character
+	 */
+	utf8_string result;
+	result.reserve(upper.size() + lower.size());
+	result += upper;
+	result += lower;
+
+	return result;
 }
 
-bool is_alpha(const utf8_string& string) {
+bool is_alpha(const utf8_string& string, const std::locale& locale) {
 	const auto wide = boost::locale::conv::utf_to_utf<wchar_t>(string);
 
-	for(const wchar_t codepoint : wide) {
-		if(!std::isalpha(codepoint)) {
+	for(const auto codepoint : wide) {
+		if(!std::isalpha(codepoint, locale)) {
 			return false;
 		}
 	}
@@ -47,8 +57,8 @@ bool is_alpha(const utf8_string& string) {
 }
 
 // Operates on codepoints
-std::size_t max_consecutive(const utf8_string& string, const bool case_insensitive) {
-	const auto folded = case_insensitive? boost::locale::to_lower(string) : string;
+std::size_t max_consecutive(const utf8_string& string, const bool case_insensitive, const std::locale& locale) {
+	const auto folded = case_insensitive? boost::locale::to_lower(string, locale) : string;
 
 	const auto data_beg = folded.data();
 	const auto data_end = data_beg + folded.size();

@@ -19,6 +19,7 @@
 #include <thread/ThreadPool.h>
 #include <pcre.h>
 #include <functional>
+#include <locale>
 #include <string>
 #include <optional>
 #include <vector>
@@ -47,6 +48,7 @@ class CharacterHandler final {
 
 	thread::ThreadPool& pool_;
 	log::Logger& logger_;
+	std::locale locale_;
 
 	protocol::Result validate_name(const utf8_string& name) const;
 	bool validate_options(const ember::Character& character, std::uint32_t account_id) const;
@@ -90,7 +92,8 @@ public:
 	                 const dal::CharacterDAO& dao,
 	                 const Config config,
                      thread::ThreadPool& pool,
-                     log::Logger& logger)
+                     log::Logger& logger,
+	                 std::locale locale = {})
 		: profane_names_(std::move(profane_names))
 		, reserved_names_(std::move(reserved_names))
 		, spam_names_(std::move(spam_names))
@@ -98,7 +101,8 @@ public:
 		, dao_(dao)
 	    , config_(std::move(config))
 		, pool_(pool)
-		, logger_(logger) {}
+		, logger_(logger)
+		, locale_(locale) {}
 
 	void create(std::uint32_t account_id,
 	            std::uint32_t realm_id,
