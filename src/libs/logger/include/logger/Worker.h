@@ -33,7 +33,7 @@ class Worker final {
 	std::vector<std::pair<RecordDetail, std::vector<char>>> dequeued_;
 	std::vector<std::shared_ptr<Sink>>& sinks_;
 	std::mutex& sink_lock_;
-	std::binary_semaphore sem_;
+	std::counting_semaphore<> sem_;
 	std::thread thread_;
 	std::atomic_bool stop_ { false };
 #ifdef LOG_PRODUCER_BACKPRESSURE

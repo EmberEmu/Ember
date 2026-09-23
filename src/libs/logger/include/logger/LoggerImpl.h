@@ -61,8 +61,11 @@ class Logger::impl final {
 
 	void finalise_sync() {
 		buffer_.second.push_back('\n');
-		auto r = std::make_tuple<RecordDetail, std::vector<char>, std::binary_semaphore*>
-					(std::move(buffer_.first), std::move(buffer_.second), &sem_);
+
+		auto r = std::make_tuple<RecordDetail, std::vector<char>, std::binary_semaphore*>(
+			std::move(buffer_.first), std::move(buffer_.second), &sem_
+		);
+
 		worker_.queue_sync_.enqueue(std::move(r));
 		worker_.signal();
 		buffer_ = {};
