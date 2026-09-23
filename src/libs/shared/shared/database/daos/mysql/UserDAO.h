@@ -35,7 +35,7 @@ public:
 		: pool_(pool)
 		, driver_(pool.get_driver()) { }
 
-	std::optional<User> user(const std::string& username) const override try {
+	std::optional<User> user(const std::u8string& username) const override try {
 		std::string_view query = "SELECT u.username, u.id, u.s, u.v, u.pin_method, u.pin, "
 		                         "u.totp_key, b.user_id as banned, u.survey_request, u.subscriber, u.verified, "
 		                         "s.user_id as suspended FROM users u "
@@ -50,8 +50,10 @@ public:
 
 		if(res->next()) {
 			auto salt_it = res->getBlob("s");
-			std::vector<std::uint8_t> salt((std::istreambuf_iterator<char>(*salt_it)),
-				std::istreambuf_iterator<char>());
+			std::vector<std::uint8_t> salt(
+				std::istreambuf_iterator<char>(*salt_it),
+				std::istreambuf_iterator<char>()
+			);
 
 			User user(res->getUInt("id"), res->getString("username"), std::move(salt),
 			          res->getString("v"), static_cast<PINMethod>(res->getUInt("pin_method")),

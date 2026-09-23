@@ -140,7 +140,7 @@ public:
 		return user_;
 	}
 
-	const std::string& username() const {
+	const std::u8string& username() const {
 		return username_;
 	}
 };
