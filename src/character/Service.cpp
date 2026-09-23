@@ -25,6 +25,7 @@
 #include <thread/ThreadPool.h>
 #include <boost/asio/dispatch.hpp>
 #include <boost/asio/executor_work_guard.hpp>
+#include <boost/locale/generator.hpp>
 #include <chrono>
 #include <ranges>
 #include <cstddef>
@@ -115,9 +116,13 @@ void Service::initialise(const opts::variables_map& args) {
 	ctx->thread_pool = std::make_unique<thread::ThreadPool>(concurrency);
 
 	SLOG_INFO(logger, "Starting character handler...");
+	boost::locale::generator generator;
+	const auto locale = generator(args["locale"].as<std::string>());
+
 	ctx->character_handler = std::make_unique<CharacterHandler>(
 		std::move(profanity), std::move(reserved), std::move(spam),
-	    *ctx->dbcs, *ctx->character_dao, config, *ctx->thread_pool, logger
+	    *ctx->dbcs, *ctx->character_dao, config, *ctx->thread_pool,
+		logger, locale
 	);
 
 	const auto&  s_address = args["spark.address"].as<std::string>();
@@ -169,6 +174,7 @@ opts::options_description Service::options() {
 		("defer_zone_placement", opts::value<bool>()->required())
 		("max_chars_slots_account", opts::value<unsigned int>()->required())
 		("max_chars_slots_server", opts::value<unsigned int>()->required())
+		("locale", opts::value<std::string>()->required())
 		("dbc.path", opts::value<std::string>()->required())
 		("spark.address", opts::value<std::string>()->required())
 		("spark.port", opts::value<std::uint16_t>()->required())

@@ -9,6 +9,9 @@ max_chars_slots_account = 100
 # Maximum number of characters an account is allowed on a single realm
 max_chars_slots_server = 10
 
+# Used for validating character names
+locale = en_GB.UTF8
+
 [dbc]
 path = dbcs/
 
