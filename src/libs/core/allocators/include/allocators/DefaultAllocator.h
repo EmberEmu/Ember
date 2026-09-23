@@ -65,13 +65,15 @@ struct DefaultAllocator final {
 		active_count = rhs.active_count;
 		total_allocs = rhs.total_allocs;
 		total_deallocs = rhs.total_deallocs;
+		rhs.active_count = 0;
+		rhs.total_allocs = 0;
+		rhs.total_deallocs = 0;
 #endif
 		return *this;
 	}
 
-
-	DefaultAllocator(DefaultAllocator&) = delete;
-	DefaultAllocator& operator=(DefaultAllocator&) = delete;
+	DefaultAllocator(DefaultAllocator& rhs) noexcept = default;
+	DefaultAllocator& operator=(DefaultAllocator& rhs) noexcept = default;
 
 	~DefaultAllocator() {
 #ifdef EMBER_DEBUG_ALLOCATORS
