@@ -13,6 +13,8 @@
 #include <bit>
 #include <concepts>
 #include <ranges>
+#include <string>
+#include <string_view>
 #include <type_traits>
 
 namespace ember::spark::io {
@@ -49,7 +51,7 @@ concept pod = std::is_standard_layout_v<T>
 template<typename T>
 concept has_resize_overwrite =
 	requires(T t) {
-		{ t.resize_and_overwrite(typename T::size_type(), [](char*, T::size_type) {}) } -> std::same_as<void>;
+		{ t.resize_and_overwrite(typename T::size_type(), [](T::value_type*, T::size_type) {}) } -> std::same_as<void>;
 };
 
 template<typename T>
@@ -111,5 +113,44 @@ concept memcpy_write =
 	pod<typename T::value_type> && std::ranges::contiguous_range<T>
 		&& !has_shl_override<typename T::value_type, U>
 		&& !has_serialise<typename T::value_type, U>;
+
+template<typename T>
+using remove_cvref_t = std::remove_cvref_t<T>;
+
+template<typename T>
+concept basic_string =
+	requires {
+	typename remove_cvref_t<T>::value_type;
+	typename remove_cvref_t<T>::traits_type;
+	typename remove_cvref_t<T>::allocator_type;
+
+		requires std::same_as<
+			remove_cvref_t<T>,
+				std::basic_string<
+				typename remove_cvref_t<T>::value_type,
+				typename remove_cvref_t<T>::traits_type,
+				typename remove_cvref_t<T>::allocator_type
+				>
+		>;
+};
+
+template<typename T>
+concept basic_string_view =
+	requires {
+	typename remove_cvref_t<T>::value_type;
+	typename remove_cvref_t<T>::traits_type;
+
+		requires std::same_as<
+			remove_cvref_t<T>,
+				std::basic_string_view<
+				typename remove_cvref_t<T>::value_type,
+				typename remove_cvref_t<T>::traits_type
+				>
+		>;
+};
+
+template<typename T>
+concept non_string_iterable =
+	is_iterable<T> && !basic_string<T> && !basic_string_view<T>;
 
 } // io, spark, ember

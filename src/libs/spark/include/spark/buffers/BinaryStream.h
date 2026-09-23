@@ -239,23 +239,21 @@ public:
 		return *this;
 	}
 
-	template<typename T>
-	requires std::is_same_v<std::decay_t<T>, std::string_view>
+	template<basic_string_view T>
 	BinaryStream& operator<<(null_terminated<T> adaptor) requires writeable<buf_type> {
 		write(adaptor->data(), adaptor->size());
 		write('\0');
 		return *this;
 	}
 
-	template<typename T>
-	requires std::is_same_v<std::decay_t<T>, std::string>
+	template<basic_string T>
 	BinaryStream& operator<<(null_terminated<T> adaptor) requires writeable<buf_type> {
 		write(adaptor->data(), adaptor->size() + 1); // yes, the standard allows this
 		return *this;
 	}
 
 	template<is_iterable type, std::integral prefix_type, typename endian_tag>
-	requires std::is_same_v<std::decay_t<type>, std::string_view>
+	requires basic_string_view<type>
 	BinaryStream& operator<<(prefixed_null_terminated<type, prefix_type, endian_tag> adaptor) requires writeable<buf_type> {
 		const auto count = endian::storage_in(
 			static_cast<prefix_type>(adaptor->size() + 1), adaptor.byte_order
@@ -268,7 +266,7 @@ public:
 	}
 
 	template<is_iterable type, std::integral prefix_type, typename endian_tag>
-	requires std::is_same_v<std::decay_t<type>, std::string>
+	requires basic_string<type>
 	BinaryStream& operator<<(prefixed_null_terminated<type, prefix_type, endian_tag> adaptor) requires writeable<buf_type> {
 		const auto count = endian::storage_in(
 			static_cast<prefix_type>(adaptor->size() + 1), adaptor.byte_order
@@ -285,11 +283,13 @@ public:
 		return *this;
 	}
 
-	BinaryStream& operator<<(const std::string_view string) requires writeable<buf_type> {
-		return (*this << prefixed(string));
+	template<basic_string_view string_view>
+	BinaryStream& operator<<(const string_view view) requires writeable<buf_type> {
+		return (*this << prefixed(view));
 	}
 
-	BinaryStream& operator<<(const std::string& string) requires writeable<buf_type> {
+	template<basic_string string_type>
+	BinaryStream& operator<<(const string_type& string) requires writeable<buf_type> {
 		return (*this << prefixed(string));
 	}
 
@@ -300,7 +300,8 @@ public:
 		return *this;
 	}
 
-	BinaryStream& operator<<(const is_iterable auto& data) requires writeable<buf_type> {
+	BinaryStream& operator<<(const non_string_iterable auto& data)
+		requires writeable<buf_type> {
 		write_container(data);
 		return *this;
 	}
@@ -369,8 +370,8 @@ public:
 		return *this;
 	}
 
-	template<std::integral prefix_type, typename endian_tag>
-	BinaryStream& operator>>(prefixed<std::string, prefix_type, endian_tag> adaptor) {
+	template<basic_string string_type, std::integral prefix_type, typename endian_tag>
+	BinaryStream& operator>>(prefixed<string_type, prefix_type, endian_tag> adaptor) {
 		prefix_type size = 0;
 		*this >> size;
 		endian::storage_out(size, adaptor.byte_order);
@@ -389,8 +390,8 @@ public:
 		return *this;
 	}
 
-	template<std::integral prefix_type, typename endian_tag>
-	BinaryStream& operator>>(prefixed<std::string_view, prefix_type, endian_tag> adaptor) {
+	template<basic_string_view string_view_type, std::integral prefix_type, typename endian_tag>
+	BinaryStream& operator>>(prefixed<string_view_type, prefix_type, endian_tag> adaptor) {
 		prefix_type size = 0;
 		*this >> size;
 		endian::storage_out(size, adaptor.byte_order);
@@ -399,11 +400,12 @@ public:
 			return *this;
 		}
 
-		adaptor.str = std::string_view { span<char>(size) };
+		adaptor.str = string_view_type { span<char>(size) };
 		return *this;
 	}
 	
-	BinaryStream& operator>>(prefixed_varint<std::string> adaptor) {
+	template<basic_string string_type>
+	BinaryStream& operator>>(prefixed_varint<string_type> adaptor) {
 		const auto size = detail::varint_decode<size_type>(*this);
 
 		// if an error was triggered during decode
@@ -421,7 +423,8 @@ public:
 		return *this;
 	}
 
-	BinaryStream& operator>>(prefixed_varint<std::string_view> adaptor) {
+	template<basic_string_view string_view_type>
+	BinaryStream& operator>>(prefixed_varint<string_view_type> adaptor) {
 		const auto size = detail::varint_decode<size_type>(*this);
 
 		// if an error was triggered during decode
@@ -429,11 +432,12 @@ public:
 			return *this;
 		}
 		
-		adaptor.str = std::string_view { span<char>(size) };
+		adaptor.str = string_view_type { span<char>(size) };
 		return *this;
 	}
 
-	BinaryStream& operator>>(null_terminated<std::string> adaptor) {
+	template<basic_string string_type>
+	BinaryStream& operator>>(null_terminated<string_type> adaptor) {
 		auto pos = buffer_.find_first_of(value_type(0));
 
 		if(pos == buf_type::npos) {
@@ -452,8 +456,8 @@ public:
 		return *this;
 	}
 
-	template<std::integral prefix_type, typename endian_tag>
-	BinaryStream& operator>>(prefixed_null_terminated<std::string, prefix_type, endian_tag> adaptor) {
+	template<basic_string string_type, std::integral prefix_type, typename endian_tag>
+	BinaryStream& operator>>(prefixed_null_terminated<string_type, prefix_type, endian_tag> adaptor) {
 		prefix_type size = 0;
 		*this >> size;
 		endian::storage_out(size, adaptor.byte_order);
@@ -475,8 +479,8 @@ public:
 		return *this;
 	}
 
-	template<std::integral prefix_type, typename endian_tag>
-	BinaryStream& operator>>(prefixed_null_terminated<std::string_view, prefix_type, endian_tag> adaptor) {
+	template<basic_string_view string_view_type, std::integral prefix_type, typename endian_tag>
+	BinaryStream& operator>>(prefixed_null_terminated<string_view_type, prefix_type, endian_tag> adaptor) {
 		prefix_type size = 0;
 		*this >> size;
 		endian::storage_out(size, adaptor.byte_order);
@@ -486,21 +490,23 @@ public:
 		}
 
 		++size; // add the null terminator to the view
-		adaptor.str = std::string_view { span<char>(size) };
+		adaptor.str = string_view_type { span<char>(size) };
 		return *this;
 	}
 
-	BinaryStream& operator>>(null_terminated<std::string_view> adaptor) {
+	template<basic_string_view string_view_type>
+	BinaryStream& operator>>(null_terminated<string_view_type> adaptor) {
 		adaptor.str = view();
 		return *this;
 	}
 
-
-	BinaryStream& operator>>(std::string_view& data) {
+	template<basic_string_view string_view_type>
+	BinaryStream& operator>>(string_view_type& data) {
 		return (*this >> prefixed(data));
 	}
 
-	BinaryStream& operator>>(std::string& data) {
+	template<basic_string string_type>
+	BinaryStream& operator>>(string_type& data) {
 		return (*this >> prefixed(data));
 	}
 
@@ -528,7 +534,7 @@ public:
 		return *this;
 	}
 
-	template<is_iterable type, std::integral prefix_type, typename endian_tag>
+	template<non_string_iterable type, std::integral prefix_type, typename endian_tag>
 	BinaryStream& operator>>(prefixed<type, prefix_type, endian_tag> adaptor) {
 		prefix_type count = 0;
 		*this >> count;
@@ -537,7 +543,7 @@ public:
 		return *this;
 	}
 
-	template<is_iterable type>
+	template<non_string_iterable type>
 	BinaryStream& operator>>(prefixed_varint<type> adaptor) {
 		const auto count = detail::varint_decode<size_type>(*this);
 		read_container(adaptor.str, count);
@@ -568,11 +574,13 @@ public:
 		return endian::convert<conversion>(t);
 	}
 
-	void get(std::string& dest) {
+	template<basic_string string_type>
+	void get(string_type& dest) {
 		*this >> dest;
 	}
 
-	void get(std::string& dest, size_type size) {
+	template<basic_string string_type>
+	void get(string_type& dest, size_type size) {
 		STREAM_READ_BOUNDS_ENFORCE(size, void());
 
 		dest.resize_and_overwrite(size, [&](char* strbuf, size_type len) {
@@ -606,14 +614,15 @@ public:
 		buffer_.skip(count);
 	}
 
-	std::string_view view(value_type terminator = value_type(0)) requires contiguous<buf_type> {
+	template<basic_string_view string_view_type = std::string_view>
+	string_view_type view(value_type terminator = value_type(0)) requires contiguous<buf_type> {
 		const auto pos = buffer_.find_first_of(terminator);
 
 		if(pos == buf_type::npos) {
 			return {};
 		}
 
-		std::string_view view { reinterpret_cast<char*>(buffer_.read_ptr()), pos };
+		string_view_type view { reinterpret_cast<char*>(buffer_.read_ptr()), pos };
 
 		// no need to enforce bounds, we know there's enough data
 		buffer_.skip(pos + 1);
