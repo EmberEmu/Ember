@@ -190,7 +190,7 @@ bool page_unlock(void* address, std::size_t length) {
 }
 
 std::uint32_t to_u32bit(const Botan::BigInt& value) {
-	if(value.is_negative()) {
+	if(value.signum() < 0) {
 		throw std::runtime_error("BigInt::to_u32bit: Number is negative");
 	}
 
