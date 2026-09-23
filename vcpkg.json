@@ -4,6 +4,7 @@
     "boost-asio",
     "boost-headers",
     "boost-interprocess",
+	"boost-locale",
     "boost-program-options",
     "boost-system",
     "boost-uuid",

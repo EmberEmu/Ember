@@ -53,17 +53,17 @@ TEST(TextUtilities, StringLength_UTF8) {
 TEST(TextUtilities, DISABLED_NameFormat_ASCII) {
 	// Lower
 	std::string str = "bankalt";
-	auto formatted = utility::utf8::name_format(str, std::locale());
+	auto formatted = utility::utf8::name_format(str);
 	EXPECT_EQ("Bankalt", formatted);
 
 	// Upper
 	str = "CHAOSVEX";
-	formatted = utility::utf8::name_format(str, std::locale());
+	formatted = utility::utf8::name_format(str);
 	EXPECT_EQ("Chaosvex", formatted);
 
 	// Mixed
 	str = "cHaoSvEx";
-	formatted = utility::utf8::name_format(str, std::locale());
+	formatted = utility::utf8::name_format(str);
 	EXPECT_EQ("Chaosvex", formatted);
 }
 

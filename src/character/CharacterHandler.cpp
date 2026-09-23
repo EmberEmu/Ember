@@ -98,7 +98,7 @@ void CharacterHandler::do_create(std::uint32_t account_id, std::uint32_t realm_i
 		return;
 	}
 
-	character.name = utility::utf8::name_format(character.name, std::locale());
+	character.name = utility::utf8::name_format(character.name);
 
 	const auto res = dao_.character(character.name, realm_id);
 
@@ -305,7 +305,7 @@ void CharacterHandler::do_rename(std::uint32_t account_id, std::uint64_t charact
 		return;
 	}
 
-	character->name = utility::utf8::name_format(name, std::locale());
+	character->name = utility::utf8::name_format(name);
 
 	const std::optional<Character>& match = dao_.character(character->name, character->realm_id);
 
@@ -477,11 +477,11 @@ protocol::Result CharacterHandler::validate_name(const utf8_string& name) const 
 		return protocol::Result::char_name_three_consecutive;
 	}
 
-	if(!utility::utf8::is_alpha(name, std::locale())) {
+	if(!utility::utf8::is_alpha(name)) {
 		return protocol::Result::char_name_only_letters;
 	}
 
-	const auto& formatted_name = utility::utf8::name_format(name, std::locale());
+	const auto& formatted_name = utility::utf8::name_format(name);
 
 	for(auto& regex : reserved_names_) {
 		int ret = utility::pcre::match(formatted_name, regex);

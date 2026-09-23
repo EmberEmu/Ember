@@ -36,6 +36,7 @@
 #include <thread/Utility.h>
 #include <boost/asio/dispatch.hpp>
 #include <boost/asio/io_context.hpp>
+#include <boost/locale/generator.hpp>
 #include <boost/program_options.hpp>
 #include <boost/version.hpp>
 #include <botan/version.h>
@@ -103,6 +104,9 @@ int Service::run(const opts::variables_map& args) try {
 }
 
 void Service::initialise(const opts::variables_map& args) try {
+	boost::locale::generator generator;
+	std::locale::global(generator("en_US.UTF-8"));
+
 	auto ctx = context.get();
 	ctx->start_time = std::chrono::steady_clock::now();
 
