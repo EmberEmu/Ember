@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2025 Ember
+ * Copyright (c) 2016 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,6 +8,7 @@
 
 #include "UTF8.h"
 #include <utf8cpp/utf8.h>
+#include <boost/locale.hpp>
 #include <cctype>
 #include <locale>
 #include <cstdint>
@@ -15,48 +16,44 @@
 
 namespace ember::utility::utf8 {
 
-utf8_string name_format(const utf8_string& string, const std::locale& locale) {
-	utf8_string formatted = string;
-	const auto data_beg = formatted.data();
-	const auto data_end = formatted.data() + formatted.size();
-	auto it = ::utf8::iterator(data_beg, data_beg, data_end);
-	auto beg = it;
-	auto end = ::utf8::iterator(data_end, data_beg, data_end);
 
-	while(it != end) {
-		if(it == beg) {
-			*it.base() = std::toupper(static_cast<char32_t>(*it), locale);
-		} else {
-			*it.base() = std::tolower(static_cast<char32_t>(*it), locale);
-		}
-
-		++it;
+utf8_string name_format(const utf8_string& string) {
+	if(string.empty()) {
+		return {};
 	}
-	
-	return formatted;
+
+	const auto wide = boost::locale::conv::utf_to_utf<wchar_t>(string);
+
+	std::wstring formatted;
+	formatted.reserve(wide.size());
+	formatted += boost::locale::to_upper(std::wstring(1, wide.front()));
+
+	if(wide.size() > 1) {
+		formatted += boost::locale::to_lower(wide.substr(1));
+	}
+
+	return boost::locale::conv::utf_to_utf<char>(formatted);
 }
 
-bool is_alpha(const utf8_string& string, const std::locale& locale) {
-	const auto data_beg = string.data();
-	const auto data_end = string.data() + string.size();
-	auto it = ::utf8::iterator(data_beg, data_beg, data_end);
-	auto end = ::utf8::iterator(data_end, data_beg, data_end);
+bool is_alpha(const utf8_string& string) {
+	const auto wide = boost::locale::conv::utf_to_utf<wchar_t>(string);
 
-	while(it != end) {
-		if(!std::isalpha(static_cast<char32_t>(*it), locale)) {
+	for(const wchar_t codepoint : wide) {
+		if(!std::isalpha(codepoint)) {
 			return false;
 		}
-
-		++it;
 	}
 
 	return true;
 }
 
 // Operates on codepoints
-std::size_t max_consecutive(const utf8_string& string, const bool case_insensitive, const std::locale& locale) {
-	const auto data_beg = string.data();
-	const auto data_end = string.data() + string.size();
+std::size_t max_consecutive(const utf8_string& string, const bool case_insensitive) {
+	const auto folded = case_insensitive? boost::locale::to_lower(string) : string;
+
+	const auto data_beg = folded.data();
+	const auto data_end = data_beg + folded.size();
+
 	auto it = ::utf8::iterator(data_beg, data_beg, data_end);
 	auto end = ::utf8::iterator(data_end, data_beg, data_end);
 
@@ -64,19 +61,16 @@ std::size_t max_consecutive(const utf8_string& string, const bool case_insensiti
 	std::size_t longest_run = 0;
 	char32_t last = 0;
 
-	while (it != end) {
-		const char32_t current = case_insensitive? std::tolower(static_cast<char32_t>(*it), locale) : *it;
-		
+	while(it != end) {
+		const char32_t current = static_cast<char32_t>(*it);
+
 		if(current == last) {
 			++current_run;
 		} else {
 			current_run = 1;
 		}
 
-		if(current_run > longest_run) {
-			longest_run = current_run;
-		}
-
+		longest_run = std::max(longest_run, current_run);
 		last = current;
 		++it;
 	}
