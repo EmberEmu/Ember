@@ -43,7 +43,7 @@ public:
 
 		if(buffer_.size() < min_req_size) [[likely]] {
 			if constexpr(has_resize_overwrite<buf_type>) {
-				buffer_.resize_and_overwrite(min_req_size, [](buf_type::value_type*, std::size_t size) {
+				buffer_.resize_and_overwrite(min_req_size, [](buf_type::value_type*, buf_type::size_type size) {
 					return size;
 				});
 			} else if constexpr(has_resize<buf_type>) {

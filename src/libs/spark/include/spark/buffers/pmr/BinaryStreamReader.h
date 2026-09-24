@@ -151,7 +151,7 @@ public:
 
 		STREAM_READ_BOUNDS_ENFORCE(size, *this);
 
-		adaptor->resize_and_overwrite(size, [&](string_type::value_type* strbuf, std::size_t size) {
+		adaptor->resize_and_overwrite(size, [&](string_type::value_type* strbuf, string_type::size_type size) {
 			buffer_.read(strbuf, size);
 			return size;
 		});

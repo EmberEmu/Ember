@@ -382,7 +382,7 @@ public:
 
 		STREAM_READ_BOUNDS_ENFORCE(size, *this);
 
-		adaptor->resize_and_overwrite(size, [&](string_type::value_type* strbuf, std::size_t size) {
+		adaptor->resize_and_overwrite(size, [&](string_type::value_type* strbuf, string_type::size_type size) {
 			buffer_.read(strbuf, size);
 			return size;
 		});
@@ -415,7 +415,7 @@ public:
 
 		STREAM_READ_BOUNDS_ENFORCE(size, *this);
 
-		adaptor->resize_and_overwrite(size, [&](string_type::value_type* strbuf, std::size_t size) {
+		adaptor->resize_and_overwrite(size, [&](string_type::value_type* strbuf, string_type::size_type size) {
 			buffer_.read(strbuf, size);
 			return size;
 		});
@@ -447,7 +447,7 @@ public:
 
 		STREAM_READ_BOUNDS_ENFORCE(pos + 1, *this); // include null terminator
 
-		adaptor->resize_and_overwrite(pos, [&](string_type::value_type* strbuf, std::size_t size) {
+		adaptor->resize_and_overwrite(pos, [&](string_type::value_type* strbuf, string_type::size_type size) {
 			buffer_.read(strbuf, pos);
 			return size;
 		});
@@ -468,7 +468,7 @@ public:
 
 		STREAM_READ_BOUNDS_ENFORCE(size, *this);
 
-		adaptor->resize_and_overwrite(size, [&](string_type::value_type* strbuf, std::size_t size) {
+		adaptor->resize_and_overwrite(size, [&](string_type::value_type* strbuf, string_type::size_type size) {
 			// std::*string is guaranteed to be null terminated, so we don't want to read the
 			// null terminator from the buffer (double null bytes)
 			buffer_.read(strbuf, size - 1);
