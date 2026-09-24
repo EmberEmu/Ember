@@ -79,6 +79,20 @@ class BinaryStreamReader : virtual public StreamBase {
 	void read_container(container_type& container, const count_type count) {
 		using c_value_type = typename container_type::value_type;
 
+		// guard against large reserve/resize requests that could occur before
+		// the actual read size is validated
+		const auto bytes = count * sizeof(c_value_type);
+
+		if(bytes > read_max()) {
+			set_state(StreamState::malformed_read);
+
+			if(allow_throw()) {
+				throw malformed_read(bytes, total_read_, buffer_.size());
+			}
+
+			return;
+		}
+
 		if constexpr(!memcpy_read<container_type, BinaryStreamReader>) {
 			container.clear();
 		}
@@ -90,7 +104,6 @@ class BinaryStreamReader : virtual public StreamBase {
 		if constexpr(memcpy_read<container_type, BinaryStreamReader>) {
 			container.resize(count);
 
-			const auto bytes = count * sizeof(c_value_type);
 			SAFE_READ(container.data(), bytes, void());
 		} else {
 			for(count_type i = 0; i < count; ++i) {
@@ -149,6 +162,18 @@ public:
 			return *this;
 		}
 
+		if constexpr(std::signed_integral<prefix_type>) {
+			if(size < 0) {
+				set_state(StreamState::malformed_read);
+
+				if(allow_throw()) {
+					throw malformed_read(size, total_read_, buffer_.size());
+				}
+
+				return *this;
+			}
+		}
+
 		STREAM_READ_BOUNDS_ENFORCE(size, *this);
 
 		adaptor->resize_and_overwrite(size, [&](string_type::value_type* strbuf, string_type::size_type size) {
@@ -167,6 +192,18 @@ public:
 
 		if(state() != StreamState::ok) {
 			return *this;
+		}
+
+		if constexpr(std::signed_integral<prefix_type>) {
+			if(size < 0) {
+				set_state(StreamState::malformed_read);
+
+				if(allow_throw()) {
+					throw malformed_read(size, total_read_, buffer_.size());
+				}
+
+				return *this;
+			}
 		}
 
 		if(size == 0) { // prefixed_null_terminated must always be at least one byte
@@ -267,6 +304,18 @@ public:
 		prefix_type count = 0;
 		*this >> count;
 		endian::storage_out(count, adaptor.byte_order);
+
+		if constexpr(std::signed_integral<prefix_type>) {
+			if(count < 0) {
+				set_state(StreamState::malformed_read);
+
+				if(allow_throw()) {
+					throw malformed_read(count * sizeof(type::value_type), total_read_, buffer_.size());
+				}
+
+				return *this;
+			}
+		}
 
 		read_container(adaptor.str, count);
 		return *this;

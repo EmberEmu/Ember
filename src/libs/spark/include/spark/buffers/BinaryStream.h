@@ -140,6 +140,20 @@ private:
 	void read_container(container_type& container, const count_type count) {
 		using c_value_type = typename container_type::value_type;
 
+		// guard against large reserve/resize requests that could occur before
+		// the actual read size is validated
+		const auto bytes = static_cast<size_type>(count * sizeof(c_value_type));
+
+		if(bytes > read_max()) {
+			state_ = StreamState::malformed_read;
+
+			if constexpr(std::is_same_v<exceptions, allow_throw_t>) {
+				throw malformed_read(bytes, total_read_, buffer_.size());
+			}
+
+			return;
+		}
+
 		if constexpr(!memcpy_read<container_type, BinaryStream>) {
 			container.clear();
 		}
@@ -150,8 +164,6 @@ private:
 
 		if constexpr(memcpy_read<container_type, BinaryStream>) {
 			container.resize(count);
-
-			const auto bytes = static_cast<size_type>(count * sizeof(c_value_type));
 			SAFE_READ(container.data(), bytes, void());
 		} else {
 			for(count_type i = 0; i < count; ++i) {
@@ -379,6 +391,18 @@ public:
 			return *this;
 		}
 
+		if constexpr(std::signed_integral<prefix_type>) {
+			if(size < 0) {
+				state_ = StreamState::malformed_read;
+
+				if constexpr(std::is_same_v<exceptions, allow_throw_t>) {
+					throw malformed_read(size, total_read_, buffer_.size());
+				}
+
+				return *this;
+			}
+		}
+
 		STREAM_READ_BOUNDS_ENFORCE(size, *this);
 
 		adaptor->resize_and_overwrite(size, [&](string_type::value_type* strbuf, string_type::size_type size) {
@@ -399,6 +423,18 @@ public:
 			return *this;
 		}
 
+		if constexpr(std::signed_integral<prefix_type>) {
+			if(size < 0) {
+				state_ = StreamState::malformed_read;
+
+				if constexpr(std::is_same_v<exceptions, allow_throw_t>) {
+					throw malformed_read(size, total_read_, buffer_.size());
+				}
+
+				return *this;
+			}
+		}
+
 		adaptor.str = string_view_type { span<char>(size) };
 		return *this;
 	}
@@ -410,6 +446,18 @@ public:
 		// if an error was triggered during decode
 		if(state_ != StreamState::ok) {
 			return *this;
+		}
+
+		if constexpr(std::signed_integral<size_type>) {
+			if(size < 0) {
+				state_ = StreamState::malformed_read;
+
+				if constexpr(std::is_same_v<exceptions, allow_throw_t>) {
+					throw malformed_read(size, total_read_, buffer_.size());
+				}
+
+				return *this;
+			}
 		}
 
 		STREAM_READ_BOUNDS_ENFORCE(size, *this);
@@ -429,6 +477,18 @@ public:
 		// if an error was triggered during decode
 		if(state_ != StreamState::ok) {
 			return *this;
+		}
+		
+		if constexpr(std::signed_integral<size_type>) {
+			if(size < 0) {
+				state_ = StreamState::malformed_read;
+
+				if constexpr(std::is_same_v<exceptions, allow_throw_t>) {
+					throw malformed_read(size, total_read_, buffer_.size());
+				}
+
+				return *this;
+			}
 		}
 		
 		adaptor.str = string_view_type { span<char>(size) };
@@ -468,6 +528,18 @@ public:
 
 		if(state_ != StreamState::ok) {
 			return *this;
+		}
+
+		if constexpr(std::signed_integral<prefix_type>) {
+			if(size < 0) {
+				state_ = StreamState::malformed_read;
+
+				if constexpr(std::is_same_v<exceptions, allow_throw_t>) {
+					throw malformed_read(size, total_read_, buffer_.size());
+				}
+
+				return *this;
+			}
 		}
 
 		if(size == 0) { // prefixed_null_terminated must always be at least one byte
@@ -563,6 +635,19 @@ public:
 		prefix_type count = 0;
 		*this >> count;
 		endian::storage_out(count, adaptor.byte_order);
+
+		if constexpr(std::signed_integral<prefix_type>) {
+			if(count < 0) {
+				state_ = StreamState::malformed_read;
+
+				if constexpr(std::is_same_v<exceptions, allow_throw_t>) {
+					throw malformed_read(count * sizeof(type::value_type), total_read_, buffer_.size());
+				}
+
+				return *this;
+			}
+		}
+
 		read_container(adaptor.str, count);
 		return *this;
 	}
@@ -570,6 +655,19 @@ public:
 	template<non_std_string_iterable type>
 	BinaryStream& operator>>(prefixed_varint<type> adaptor) {
 		const auto count = detail::varint_decode<size_type>(*this);
+
+		if constexpr(std::signed_integral<size_type>) {
+			if(count < 0) {
+				state_ = StreamState::malformed_read;
+
+				if constexpr(std::is_same_v<exceptions, allow_throw_t>) {
+					throw malformed_read(count * sizeof(type::value_type), total_read_, buffer_.size());
+				}
+
+				return *this;
+			}
+		}
+
 		read_container(adaptor.str, count);
 		return *this;
 	}
@@ -658,6 +756,7 @@ public:
 			reinterpret_cast<string_view_type::value_type*>(buffer_.read_ptr()), pos
 		};
 
+		buffer_.skip(pos + 1);
 		return view;
 	}
 
