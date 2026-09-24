@@ -66,7 +66,7 @@ public:
 
 	object_limit(std::size_t count, std::size_t max)
 		: exception(std::format(
-			"Object limit: Requested read of {} objects, max allowed is currently {}",
+			"Object limit: requested read of {} objects, max allowed is currently {}",
 			count, max)),
 		count(count), max(max) {}
 };
@@ -76,7 +76,7 @@ public:
 	const std::size_t alignment;
 
 	misaligned_read(std::size_t alignment)
-		: exception(std::format("Misaligned read: Expected {} byte alignment", alignment)),
+		: exception(std::format("Misaligned read: expected {} byte alignment", alignment)),
 		alignment(alignment) {}
 };
 
