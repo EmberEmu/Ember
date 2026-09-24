@@ -24,6 +24,10 @@
 
 namespace ember::spark::io::pmr {
 
+#ifndef MAX_OBJECTS_DESERIALISE
+#define MAX_OBJECTS_DESERIALISE 1024
+#endif // MAX_OBJECTS_DESERIALISE
+
 #define STREAM_READ_BOUNDS_ENFORCE(read_size, ret_var)            \
 	if(state() != StreamState::ok) [[unlikely]] {                 \
 		return ret_var;                                           \
@@ -48,28 +52,22 @@ class BinaryStreamReader : virtual public StreamBase {
 	const std::size_t read_limit_;
 
 	inline void enforce_read_bounds(const std::size_t read_size) {
-		if(read_size > buffer_.size()) [[unlikely]] {
-			set_state(StreamState::buffer_limit_error);
-
-			if(allow_throw()) {
-				throw buffer_underrun(read_size, total_read_, buffer_.size());
-			}
-
-			return;
-		}
-
-		if(read_limit_) {
-			const auto max_read_remaining = read_limit_ - total_read_;
-
-			if(read_size > max_read_remaining) [[unlikely]] {
+		if(const auto max = read_max(); read_size > max) [[unlikely]] {
+			if(read_limit_) {
 				set_state(StreamState::read_limit_error);
 
 				if(allow_throw()) {
 					throw stream_read_limit(read_size, total_read_, read_limit_);
 				}
+			} else {
+				set_state(StreamState::buffer_limit_error);
 
-				return;
+				if(allow_throw()) {
+					throw buffer_underrun(read_size, total_read_, buffer_.size());
+				}
 			}
+
+			return;
 		}
 
 		total_read_ += read_size;
@@ -79,15 +77,12 @@ class BinaryStreamReader : virtual public StreamBase {
 	void read_container(container_type& container, const count_type count) {
 		using c_value_type = typename container_type::value_type;
 
-		// guard against large reserve/resize requests that could occur before
-		// the actual read size is validated
-		const auto bytes = count * sizeof(c_value_type);
-
-		if(bytes > read_max()) {
-			set_state(StreamState::malformed_read);
+		// guard against large reserve requests
+		if(count > MAX_OBJECTS_DESERIALISE) {
+			set_state(StreamState::object_limit);
 
 			if(allow_throw()) {
-				throw malformed_read(bytes, total_read_, buffer_.size());
+				throw object_limit(count, MAX_OBJECTS_DESERIALISE);
 			}
 
 			return;
@@ -102,8 +97,20 @@ class BinaryStreamReader : virtual public StreamBase {
 		}
 
 		if constexpr(memcpy_read<container_type, BinaryStreamReader>) {
-			container.resize(count);
+			// ensure there's enough data in the buffer to satisify this request
+			// before go ahead and resize the container and begin the read
+			if(const auto max = read_max(); count > max / sizeof(c_value_type)) {
+				set_state(StreamState::malformed_read);
 
+				if(allow_throw()) {
+					throw malformed_read(count * sizeof(c_value_type), total_read_, max);
+				}
+
+				return;
+			}
+
+			const auto bytes = count * sizeof(c_value_type);
+			container.resize(count);
 			SAFE_READ(container.data(), bytes, void());
 		} else {
 			for(count_type i = 0; i < count; ++i) {
@@ -167,7 +174,7 @@ public:
 				set_state(StreamState::malformed_read);
 
 				if(allow_throw()) {
-					throw malformed_read(size, total_read_, buffer_.size());
+					throw malformed_read(size, total_read_, read_max());
 				}
 
 				return *this;
@@ -199,7 +206,7 @@ public:
 				set_state(StreamState::malformed_read);
 
 				if(allow_throw()) {
-					throw malformed_read(size, total_read_, buffer_.size());
+					throw malformed_read(size, total_read_, read_max());
 				}
 
 				return *this;
@@ -210,7 +217,7 @@ public:
 			set_state(StreamState::malformed_read);
 
 			if(allow_throw()) {
-				throw malformed_read(size, total_read_, buffer_.size());
+				throw malformed_read(size, total_read_, read_max());
 			}
 
 			return *this;
@@ -255,7 +262,7 @@ public:
 			set_state(StreamState::malformed_read);
 
 			if(allow_throw()) {
-				throw malformed_read(pos, total_read_, buffer_.size());
+				throw malformed_read(pos, total_read_, read_max());
 			}
 
 			return *this;
@@ -310,7 +317,7 @@ public:
 				set_state(StreamState::malformed_read);
 
 				if(allow_throw()) {
-					throw malformed_read(count * sizeof(type::value_type), total_read_, buffer_.size());
+					throw malformed_read(count * sizeof(type::value_type), total_read_, read_max());
 				}
 
 				return *this;
