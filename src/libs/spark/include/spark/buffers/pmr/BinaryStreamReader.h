@@ -139,7 +139,6 @@ public:
 		  buffer_(rhs.buffer_),
 		  total_read_(rhs.total_read_),
 		  read_limit_(rhs.read_limit_) {
-		rhs.total_read_ = static_cast<std::size_t>(-1);
 		rhs.set_state(StreamState::invalid_stream);
 	}
 

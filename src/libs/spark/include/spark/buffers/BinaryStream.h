@@ -211,7 +211,6 @@ public:
 		  total_read_(rhs.total_read_),
 		  state_(rhs.state_),
 		  read_limit_(rhs.read_limit_) {
-		rhs.total_read_ = static_cast<size_type>(-1);
 		rhs.state_ = StreamState::invalid_stream;
 	}
 
