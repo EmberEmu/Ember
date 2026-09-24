@@ -16,6 +16,7 @@
 #include <spark/buffers/StringAdaptors.h>
 #include <shared/utility/polyfill/start_lifetime_as>
 #include <concepts>
+#include <limits>
 #include <ranges>
 #include <span>
 #include <type_traits>

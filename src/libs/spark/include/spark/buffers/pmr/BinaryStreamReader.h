@@ -17,6 +17,7 @@
 #include <spark/buffers/StreamAdaptors.h>
 #include <spark/buffers/StringAdaptors.h>
 #include <concepts>
+#include <limits>
 #include <ranges>
 #include <cassert>
 #include <cstddef>
