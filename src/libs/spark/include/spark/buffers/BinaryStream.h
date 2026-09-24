@@ -661,6 +661,10 @@ public:
 		*this >> count;
 		endian::storage_out(count, adaptor.byte_order);
 
+		if(state_ != StreamState::ok) {
+			return *this;
+		}
+
 		if constexpr(std::signed_integral<prefix_type>) {
 			if(count < 0) {
 				state_ = StreamState::malformed_read;
@@ -680,6 +684,10 @@ public:
 	template<non_std_string_iterable type>
 	BinaryStream& operator>>(prefixed_varint<type> adaptor) {
 		const auto count = detail::varint_decode<size_type>(*this);
+
+		if(state() != StreamState::ok) [[unlikely]] {
+			return *this;
+		}
 
 		if constexpr(std::signed_integral<size_type>) {
 			if(count < 0) {

@@ -170,7 +170,7 @@ public:
 		*this >> size;
 		endian::storage_out(size, adaptor.byte_order);
 
-		if(state() != StreamState::ok) {
+		if(state() != StreamState::ok) [[unlikely]] {
 			return *this;
 		}
 
@@ -202,7 +202,7 @@ public:
 		*this >> size;
 		endian::storage_out(size, adaptor.byte_order);
 
-		if(state() != StreamState::ok) {
+		if(state() != StreamState::ok) [[unlikely]] {
 			return *this;
 		}
 
@@ -244,9 +244,8 @@ public:
 	BinaryStreamReader& operator>>(prefixed_varint<string_type> adaptor) {
 		const auto size = detail::varint_decode<std::size_t>(*this);
 
-		// if an error was triggered during decode, we shouldn't reach here
-		if(state() != StreamState::ok) {
-			std::unreachable();
+		if(state() != StreamState::ok) [[unlikely]] {
+			return *this;
 		}
 
 		STREAM_READ_BOUNDS_ENFORCE(size, *this);
@@ -317,6 +316,10 @@ public:
 		*this >> count;
 		endian::storage_out(count, adaptor.byte_order);
 
+		if(state() != StreamState::ok) [[unlikely]] {
+			return *this;
+		}
+
 		if constexpr(std::signed_integral<prefix_type>) {
 			if(count < 0) {
 				set_state(StreamState::malformed_read);
@@ -336,6 +339,11 @@ public:
 	template<non_std_string_iterable T, std::integral prefix_type>
 	BinaryStreamReader& operator>>(prefixed_varint<T> adaptor) {
 		const auto count = detail::varint_decode<std::size_t>(*this);
+
+		if(state() != StreamState::ok) [[unlikely]] {
+			return *this;
+		}
+
 		read_container(adaptor.str, count);
 		return *this;
 	}
