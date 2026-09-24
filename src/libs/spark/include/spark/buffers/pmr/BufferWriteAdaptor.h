@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 - 2025 Ember
+ * Copyright (c) 2024 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -43,7 +43,7 @@ public:
 
 		if(buffer_.size() < min_req_size) [[likely]] {
 			if constexpr(has_resize_overwrite<buf_type>) {
-				buffer_.resize_and_overwrite(min_req_size, [](char*, std::size_t size) {
+				buffer_.resize_and_overwrite(min_req_size, [](buf_type::value_type*, std::size_t size) {
 					return size;
 				});
 			} else if constexpr(has_resize<buf_type>) {

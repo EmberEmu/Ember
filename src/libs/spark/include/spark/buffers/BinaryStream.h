@@ -30,14 +30,14 @@
 namespace ember::spark::io {
 
 #define STREAM_READ_BOUNDS_ENFORCE(read_size, ret_var)            \
-	if(state_ != StreamState::ok) [[unlikely]] {                 \
+	if(state_ != StreamState::ok) [[unlikely]] {                  \
 		return ret_var;                                           \
 	}                                                             \
                                                                   \
 	enforce_read_bounds(read_size);                               \
 	                                                              \
 	if constexpr(std::is_same_v<exceptions, no_throw_t>) {        \
-		if(state_ != StreamState::ok) [[unlikely]] {             \
+		if(state_ != StreamState::ok) [[unlikely]] {              \
 			return ret_var;                                       \
 		}                                                         \
 	}
@@ -239,22 +239,23 @@ public:
 		return *this;
 	}
 
-	template<basic_string_view T>
-	BinaryStream& operator<<(null_terminated<T> adaptor) requires writeable<buf_type> {
+	template<basic_string_view string_view_type>
+	BinaryStream& operator<<(null_terminated<string_view_type> adaptor) requires writeable<buf_type> {
 		write(adaptor->data(), adaptor->size());
 		write('\0');
 		return *this;
 	}
 
-	template<basic_string T>
-	BinaryStream& operator<<(null_terminated<T> adaptor) requires writeable<buf_type> {
+	template<basic_string string_type>
+	BinaryStream& operator<<(null_terminated<string_type> adaptor) requires writeable<buf_type> {
 		write(adaptor->data(), adaptor->size() + 1); // yes, the standard allows this
 		return *this;
 	}
 
-	template<is_iterable type, std::integral prefix_type, typename endian_tag>
-	requires basic_string_view<type>
-	BinaryStream& operator<<(prefixed_null_terminated<type, prefix_type, endian_tag> adaptor) requires writeable<buf_type> {
+	template<is_iterable string_view_type, std::integral prefix_type, typename endian_tag>
+	requires basic_string_view<string_view_type>
+	BinaryStream& operator<<(prefixed_null_terminated<string_view_type, prefix_type, endian_tag> adaptor)
+	requires writeable<buf_type> {
 		const auto count = endian::storage_in(
 			static_cast<prefix_type>(adaptor->size() + 1), adaptor.byte_order
 		); // account for the null terminator
@@ -265,9 +266,10 @@ public:
 		return *this;
 	}
 
-	template<is_iterable type, std::integral prefix_type, typename endian_tag>
-	requires basic_string<type>
-	BinaryStream& operator<<(prefixed_null_terminated<type, prefix_type, endian_tag> adaptor) requires writeable<buf_type> {
+	template<is_iterable string_type, std::integral prefix_type, typename endian_tag>
+	requires basic_string<string_type>
+	BinaryStream& operator<<(prefixed_null_terminated<string_type, prefix_type, endian_tag> adaptor)
+	requires writeable<buf_type> {
 		const auto count = endian::storage_in(
 			static_cast<prefix_type>(adaptor->size() + 1), adaptor.byte_order
 		); // account for the null terminator
@@ -283,13 +285,11 @@ public:
 		return *this;
 	}
 
-	template<basic_string_view string_view>
-	BinaryStream& operator<<(const string_view view) requires writeable<buf_type> {
+	BinaryStream& operator<<(const basic_string_view auto view) requires writeable<buf_type> {
 		return (*this << prefixed(view));
 	}
 
-	template<basic_string string_type>
-	BinaryStream& operator<<(const string_type& string) requires writeable<buf_type> {
+	BinaryStream& operator<<(const basic_string auto& string) requires writeable<buf_type> {
 		return (*this << prefixed(string));
 	}
 
@@ -300,15 +300,17 @@ public:
 		return *this;
 	}
 
-	BinaryStream& operator<<(const non_string_iterable auto& data)
-		requires writeable<buf_type> {
+	BinaryStream& operator<<(const non_std_string_iterable auto& data) requires writeable<buf_type> {
 		write_container(data);
 		return *this;
 	}
 
 	template<is_iterable type, std::integral prefix_type, typename endian_tag>
 	BinaryStream& operator<<(prefixed<type, prefix_type, endian_tag> adaptor) requires writeable<buf_type> {
-		const auto count = endian::storage_in(static_cast<prefix_type>(adaptor->size()), adaptor.byte_order);
+		const auto count = endian::storage_in(
+			static_cast<prefix_type>(adaptor->size()), adaptor.byte_order
+		);
+
 		write(count);
 		write_container(adaptor.str);
 		return *this;
@@ -534,7 +536,7 @@ public:
 		return *this;
 	}
 
-	template<non_string_iterable type, std::integral prefix_type, typename endian_tag>
+	template<non_std_string_iterable type, std::integral prefix_type, typename endian_tag>
 	BinaryStream& operator>>(prefixed<type, prefix_type, endian_tag> adaptor) {
 		prefix_type count = 0;
 		*this >> count;
@@ -543,7 +545,7 @@ public:
 		return *this;
 	}
 
-	template<non_string_iterable type>
+	template<non_std_string_iterable type>
 	BinaryStream& operator>>(prefixed_varint<type> adaptor) {
 		const auto count = detail::varint_decode<size_type>(*this);
 		read_container(adaptor.str, count);

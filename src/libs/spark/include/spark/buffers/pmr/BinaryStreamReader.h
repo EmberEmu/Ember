@@ -140,8 +140,8 @@ public:
 		return *this;
 	}
 
-	template<std::integral prefix_type, typename endian_tag>
-	BinaryStreamReader& operator>>(prefixed<std::string, prefix_type, endian_tag> adaptor) {
+	template<basic_string string_type, std::integral prefix_type, typename endian_tag>
+	BinaryStreamReader& operator>>(prefixed<string_type, prefix_type, endian_tag> adaptor) {
 		prefix_type size = 0;
 		*this >> size;
 		endian::storage_out(size, adaptor.byte_order);
@@ -152,7 +152,7 @@ public:
 
 		STREAM_READ_BOUNDS_ENFORCE(size, *this);
 
-		adaptor->resize_and_overwrite(size, [&](char* strbuf, std::size_t size) {
+		adaptor->resize_and_overwrite(size, [&](string_type::value_type* strbuf, std::size_t size) {
 			buffer_.read(strbuf, size);
 			return size;
 		});
@@ -160,8 +160,8 @@ public:
 		return *this;
 	}
 
-	template<std::integral prefix_type, typename endian_tag>
-	BinaryStreamReader& operator>>(prefixed_null_terminated<std::string, prefix_type, endian_tag> adaptor) {
+	template<basic_string string_type, std::integral prefix_type, typename endian_tag>
+	BinaryStreamReader& operator>>(prefixed_null_terminated<string_type, prefix_type, endian_tag> adaptor) {
 		prefix_type size = 0;
 		*this >> size;
 		endian::storage_out(size, adaptor.byte_order);
@@ -173,7 +173,7 @@ public:
 		++size; // include the null terminator
 		STREAM_READ_BOUNDS_ENFORCE(size, *this); // include null terminator
 
-		adaptor->resize_and_overwrite(size, [&](char* strbuf, std::size_t size) {
+		adaptor->resize_and_overwrite(size, [&](string_type::value_type* strbuf, string_type::size_type size) {
 			buffer_.read(strbuf, size - 1); // don't read the null terminator into the string
 			return size;
 		});
@@ -181,7 +181,8 @@ public:
 		return *this;
 	}
 	
-	BinaryStreamReader& operator>>(prefixed_varint<std::string> adaptor) {
+	template<basic_string string_type>
+	BinaryStreamReader& operator>>(prefixed_varint<string_type> adaptor) {
 		const auto size = detail::varint_decode<std::size_t>(*this);
 
 		// if an error was triggered during decode, we shouldn't reach here
@@ -191,7 +192,7 @@ public:
 
 		STREAM_READ_BOUNDS_ENFORCE(size, *this);
 
-		adaptor->resize_and_overwrite(size, [&](char* strbuf, std::size_t size) {
+		adaptor->resize_and_overwrite(size, [&](string_type::value_type* strbuf, string_type::size_type size) {
 			buffer_.read(strbuf, size);
 			return size;
 		});
@@ -199,7 +200,8 @@ public:
 		return *this;
 	}
 
-	BinaryStreamReader& operator>>(null_terminated<std::string> adaptor) {
+	template<basic_string string_type>
+	BinaryStreamReader& operator>>(null_terminated<string_type> adaptor) {
 		auto pos = buffer_.find_first_of(std::byte{0});
 
 		if(pos == buffer_.npos) {
@@ -209,7 +211,7 @@ public:
 
 		STREAM_READ_BOUNDS_ENFORCE(pos + 1, *this); // include null terminator
 
-		adaptor->resize_and_overwrite(pos, [&](char* strbuf, std::size_t size) {
+		adaptor->resize_and_overwrite(pos, [&](string_type::value_type* strbuf, string_type::size_type size) {
 			buffer_.read(strbuf, pos);
 			return size;
 		});
@@ -218,7 +220,7 @@ public:
 		return *this;
 	}
 
-	BinaryStreamReader& operator>>(std::string& data) {
+	BinaryStreamReader& operator>>(basic_string auto& data) {
 		return (*this >> prefixed(data));
 	}
 
@@ -245,9 +247,7 @@ public:
 		return *this;
 	}
 
-	template<is_iterable type, std::integral prefix_type, typename endian_tag>
-	requires (!std::is_same_v<std::decay_t<type>, std::string>
-		&& !std::is_same_v<std::decay_t<type>, std::string_view>)
+	template<non_std_string_iterable type, std::integral prefix_type, typename endian_tag>
 	BinaryStreamReader& operator>>(prefixed<type, prefix_type, endian_tag> adaptor) {
 		prefix_type count = 0;
 		*this >> count;
@@ -257,23 +257,22 @@ public:
 		return *this;
 	}
 
-	template<is_iterable T, std::integral prefix_type>
-	requires (!std::is_same_v<std::decay_t<T>, std::string>
-		&& !std::is_same_v<std::decay_t<T>, std::string_view>)
+	template<non_std_string_iterable T, std::integral prefix_type>
 	BinaryStreamReader& operator>>(prefixed_varint<T> adaptor) {
 		const auto count = detail::varint_decode<std::size_t>(*this);
 		read_container(adaptor.str, count);
 		return *this;
 	}
 
-	void get(std::string& dest) {
+	void get(basic_string auto& dest) {
 		*this >> dest;
 	}
 
-	void get(std::string& dest, std::size_t size) {
+	template<basic_string string_type>
+	void get(string_type& dest, std::size_t size) {
 		STREAM_READ_BOUNDS_ENFORCE(size, void());
 
-		dest.resize_and_overwrite(size, [&](char* strbuf, std::size_t len) {
+		dest.resize_and_overwrite(size, [&](string_type::value_type* strbuf, string_type::size_type len) {
 			buffer_.read(strbuf, len);
 			return len;
 		});

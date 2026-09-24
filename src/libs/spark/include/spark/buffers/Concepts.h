@@ -150,7 +150,7 @@ concept basic_string_view =
 };
 
 template<typename T>
-concept non_string_iterable =
+concept non_std_string_iterable =
 	is_iterable<T> && !basic_string<T> && !basic_string_view<T>;
 
 } // io, spark, ember

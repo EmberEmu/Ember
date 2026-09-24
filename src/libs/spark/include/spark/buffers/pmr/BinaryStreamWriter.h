@@ -112,9 +112,8 @@ public:
 		return *this;
 	}
 
-	template<typename T>
-	requires std::is_same_v<std::decay_t<T>, std::string_view>
-	BinaryStreamWriter& operator<<(null_terminated<T> adaptor) {
+	template<basic_string_view string_view_type>
+	BinaryStreamWriter& operator<<(null_terminated<string_view_type> adaptor) {
 		assert(adaptor->find_first_of('\0') == adaptor->npos);
 		write(adaptor->data(), adaptor->size());
 		const char terminator = '\0';
@@ -122,9 +121,8 @@ public:
 		return *this;
 	}
 
-	template<typename T>
-	requires std::is_same_v<std::decay_t<T>, std::string>
-	BinaryStreamWriter& operator<<(null_terminated<T> adaptor) {
+	template<basic_string string_type>
+	BinaryStreamWriter& operator<<(null_terminated<string_type> adaptor) {
 		assert(adaptor->find_first_of('\0') == adaptor->npos);
 		write(adaptor->data(), adaptor->size() + 1); // yes, the standard allows this
 		return *this;
@@ -136,11 +134,11 @@ public:
 		return *this;
 	}
 
-	BinaryStreamWriter& operator<<(const std::string_view string) {
+	BinaryStreamWriter& operator<<(const basic_string_view auto string) {
 		return (*this << prefixed(string));
 	}
 
-	BinaryStreamWriter& operator<<(const std::string& string) {
+	BinaryStreamWriter& operator<<(const basic_string auto& string) {
 		return (*this << prefixed(string));
 	}
 
@@ -151,7 +149,7 @@ public:
 		return *this;
 	}
 
-	BinaryStreamWriter& operator<<(const is_iterable auto& data) {
+	BinaryStreamWriter& operator<<(const non_std_string_iterable auto& data) {
 		write_container(data);
 		return *this;
 	}
@@ -167,9 +165,8 @@ public:
 		return *this;
 	}
 
-	template<is_iterable type, std::integral prefix_type, typename endian_tag>
-	requires std::is_same_v<std::decay_t<type>, std::string>
-	BinaryStreamWriter& operator<<(prefixed_null_terminated<const type, prefix_type, endian_tag> adaptor) {
+	template<basic_string string_type, std::integral prefix_type, typename endian_tag>
+	BinaryStreamWriter& operator<<(prefixed_null_terminated<const string_type, prefix_type, endian_tag> adaptor) {
 		const auto count = endian::storage_in(
 			static_cast<prefix_type>(adaptor->size()), adaptor.byte_order
 		);
@@ -179,9 +176,8 @@ public:
 		return *this;
 	}
 
-	template<is_iterable type, std::integral prefix_type, typename endian_tag>
-	requires std::is_same_v<std::decay_t<type>, std::string_view>
-	BinaryStreamWriter& operator<<(prefixed_null_terminated<type, prefix_type, endian_tag> adaptor) {
+	template<basic_string_view string_view_type, std::integral prefix_type, typename endian_tag>
+	BinaryStreamWriter& operator<<(prefixed_null_terminated<string_view_type, prefix_type, endian_tag> adaptor) {
 		const auto count = endian::storage_in(
 			static_cast<prefix_type>(adaptor->size() + 1), adaptor.byte_order
 		); // + 1 for the terminator
@@ -229,7 +225,6 @@ public:
 			*this << *it;
 		}
 	}
-
 
 	template<std::size_t size>
 	void fill(const std::uint8_t value) {
