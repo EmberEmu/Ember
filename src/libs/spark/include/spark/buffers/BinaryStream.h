@@ -440,7 +440,12 @@ public:
 		auto pos = buffer_.find_first_of(value_type(0));
 
 		if(pos == buf_type::npos) {
-			adaptor->clear();
+			state_ = StreamState::malformed_read;
+		
+			if constexpr(std::is_same_v<exceptions, allow_throw_t>) {
+				throw malformed_read(pos, total_read_, buffer_.size());
+			}
+
 			return *this;
 		}
 
@@ -638,6 +643,12 @@ public:
 		const auto pos = buffer_.find_first_of(terminator);
 
 		if(pos == buf_type::npos) {
+			state_ = StreamState::malformed_read;
+
+			if constexpr(std::is_same_v<exceptions, allow_throw_t>) {
+				throw malformed_read(pos, total_read_, buffer_.size());
+			}
+
 			return {};
 		}
 

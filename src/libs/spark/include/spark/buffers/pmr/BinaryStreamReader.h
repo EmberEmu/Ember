@@ -215,7 +215,12 @@ public:
 		auto pos = buffer_.find_first_of(std::byte{0});
 
 		if(pos == buffer_.npos) {
-			adaptor->clear();
+			set_state(StreamState::malformed_read);
+
+			if(allow_throw()) {
+				throw malformed_read(pos, total_read_, buffer_.size());
+			}
+
 			return *this;
 		}
 
