@@ -168,6 +168,16 @@ public:
 		if(state() != StreamState::ok) {
 			return *this;
 		}
+
+		if(size == 0) { // prefixed_null_terminated must always be at least one byte
+			set_state(StreamState::malformed_read);
+
+			if(allow_throw()) {
+				throw malformed_read(size, total_read_, buffer_.size());
+			}
+
+			return *this;
+		}
 		
 		STREAM_READ_BOUNDS_ENFORCE(size, *this);
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2025 Ember
+ * Copyright (c) 2016 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -45,6 +45,17 @@ public:
 	stream_read_limit(std::size_t read_size, std::size_t total_read, std::size_t read_limit)
 		: exception(std::format(
 			"Read boundary exceeded: {} byte read requested, read limit was {} bytes and total bytes read was {}",
+			read_size, read_limit, total_read)),
+		read_limit(read_limit), read_size(read_size), total_read(total_read) {}
+};
+
+class malformed_read final : public exception {
+public:
+	const std::size_t read_limit, read_size, total_read;
+
+	malformed_read(std::size_t read_size, std::size_t total_read, std::size_t read_limit)
+		: exception(std::format(
+			"Malformed read: {} byte read requested, read limit was {} bytes and total bytes read was {}",
 			read_size, read_limit, total_read)),
 		read_limit(read_limit), read_size(read_size), total_read(total_read) {}
 };

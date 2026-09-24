@@ -465,6 +465,16 @@ public:
 			return *this;
 		}
 
+		if(size == 0) { // prefixed_null_terminated must always be at least one byte
+			state_ = StreamState::malformed_read;
+
+			if constexpr(std::is_same_v<exceptions, allow_throw_t>) {
+				throw malformed_read(size, total_read_, buffer_.size());
+			}
+
+			return *this;
+		}
+
 		STREAM_READ_BOUNDS_ENFORCE(size, *this);
 
 		adaptor->resize_and_overwrite(size, [&](string_type::value_type* strbuf, string_type::size_type size) {
@@ -485,6 +495,16 @@ public:
 		endian::storage_out(size, adaptor.byte_order);
 
 		if(state_ != StreamState::ok) {
+			return *this;
+		}
+
+		if(size == 0) { // prefixed_null_terminated must always be at least one byte
+			state_ = StreamState::malformed_read;
+
+			if constexpr(std::is_same_v<exceptions, allow_throw_t>) {
+				throw malformed_read(size, total_read_, buffer_.size());
+			}
+
 			return *this;
 		}
 
