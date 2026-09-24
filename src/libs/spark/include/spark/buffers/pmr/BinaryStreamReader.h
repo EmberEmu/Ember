@@ -413,6 +413,7 @@ public:
 	[[nodiscard]]
 	std::size_t read_max() const {
 		if(read_limit_) {
+			assert(read_limit_ >= total_read_);
 			return read_limit_ - total_read_;
 		} else {
 			return buffer_.size();
