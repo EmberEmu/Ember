@@ -652,11 +652,12 @@ public:
 			return {};
 		}
 
-		string_view_type view { reinterpret_cast<char*>(buffer_.read_ptr()), pos };
+		STREAM_READ_BOUNDS_ENFORCE(pos + 1, {});
 
-		// no need to enforce bounds, we know there's enough data
-		buffer_.skip(pos + 1);
-		total_read_ += (pos + 1);
+		string_view_type view {
+			reinterpret_cast<string_view_type::value_type*>(buffer_.read_ptr()), pos
+		};
+
 		return view;
 	}
 
