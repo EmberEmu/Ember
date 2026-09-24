@@ -562,7 +562,7 @@ public:
 
 	template<std::derived_from<endian::adaptor_tag_t> endian_func>
 	void get(endian_func& adaptor) {
-		SAFE_READ(&adaptor.value, sizeof(adaptor), void());
+		SAFE_READ(&adaptor.value, sizeof(adaptor.value), void());
 		adaptor.value = adaptor.from();
 	}
 
