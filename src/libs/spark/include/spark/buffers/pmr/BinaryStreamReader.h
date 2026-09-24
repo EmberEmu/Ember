@@ -169,11 +169,12 @@ public:
 			return *this;
 		}
 		
-		++size; // include the null terminator
-		STREAM_READ_BOUNDS_ENFORCE(size, *this); // include null terminator
+		STREAM_READ_BOUNDS_ENFORCE(size, *this);
 
 		adaptor->resize_and_overwrite(size, [&](string_type::value_type* strbuf, string_type::size_type size) {
-			buffer_.read(strbuf, size - 1); // don't read the null terminator into the string
+			// std::*string is guaranteed to be null terminated, so we don't want to read the
+			// null terminator from the buffer (double null bytes)
+			buffer_.read(strbuf, size - 1);
 			return size;
 		});
 

@@ -264,8 +264,7 @@ public:
 		return *this;
 	}
 
-	template<is_iterable string_type, std::integral prefix_type, typename endian_tag>
-	requires basic_string<string_type>
+	template<basic_string string_type, std::integral prefix_type, typename endian_tag>
 	BinaryStream& operator<<(prefixed_null_terminated<string_type, prefix_type, endian_tag> adaptor)
 	requires writeable<buf_type> {
 		const auto count = endian::storage_in(
