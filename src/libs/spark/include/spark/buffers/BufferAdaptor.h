@@ -117,6 +117,7 @@ public:
 		buffer_.reserve(length);
 	}
 
+	[[nodiscard]]
 	size_type find_first_of(value_type val) const {
 		const auto data = read_ptr();
 
@@ -129,6 +130,7 @@ public:
 		return npos;
 	}
 	
+	[[nodiscard]]
 	size_type size() const {
 		return write_ - read_;
 	}
@@ -138,14 +140,17 @@ public:
 		return read_ == write_;
 	}
 
+	[[nodiscard]]
 	value_type& operator[](const size_type index) {
 		return read_ptr()[index];
 	}
 
+	[[nodiscard]]
 	const value_type& operator[](const size_type index) const {
 		return read_ptr()[index];
 	}
 
+	[[nodiscard]]
 	constexpr static bool can_write_seek() {
 		return seekable<BufferAdaptor>;
 	}
@@ -163,34 +168,42 @@ public:
 		}
 	}
 
+	[[nodiscard]]
 	auto read_ptr() const {
 		return buffer_.data() + read_;
 	}
 
+	[[nodiscard]]
 	auto read_ptr() {
 		return buffer_.data() + read_;
 	}
 
+	[[nodiscard]]
 	auto write_ptr() const {
 		return buffer_.data() + write_;
 	}
 
+	[[nodiscard]]
 	auto write_ptr() {
 		return buffer_.data() + write_;
 	}
 
+	[[nodiscard]]
 	auto data() const {
 		return buffer_.data() + read_;
 	}
 
+	[[nodiscard]]
 	auto data() {
 		return buffer_.data() + read_;
 	}
 
+	[[nodiscard]]
 	auto storage() const {
 		return buffer_.data();
 	}
 
+	[[nodiscard]]
 	auto storage() {
 		return buffer_.data();
 	}
@@ -200,6 +213,7 @@ public:
 		write_ += bytes;
 	}
 
+	[[nodiscard]]
 	auto free() const {
 		return buffer_.size() - write_;
 	}

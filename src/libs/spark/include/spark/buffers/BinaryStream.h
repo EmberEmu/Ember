@@ -776,7 +776,7 @@ public:
 	}
 
 	/**  Misc functions **/
-
+	[[nodiscard]]
 	constexpr static bool can_write_seek() {
 		return seekable<buf_type>;
 	}
@@ -795,6 +795,7 @@ public:
 		}
 	}
 
+	[[nodiscard]]
 	size_type size() const {
 		return buffer_.size();
 	}
@@ -804,30 +805,37 @@ public:
 		return buffer_.empty();
 	}
 
+	[[nodiscard]]
 	size_type total_write() const requires writeable<buf_type> {
 		return total_write_;
 	}
 
+	[[nodiscard]]
 	const buf_type* buffer() const {
 		return &buffer_;
 	}
 
+	[[nodiscard]]
 	buf_type* buffer() {
 		return &buffer_;
 	}
 
+	[[nodiscard]]
 	StreamState state() const {
 		return state_;
 	}
 
+	[[nodiscard]]
 	size_type total_read() const {
 		return total_read_;
 	}
 
+	[[nodiscard]]
 	size_type read_limit() const {
 		return read_limit_;
 	}
 
+	[[nodiscard]]
 	size_type read_max() const {
 		if(read_limit_) {
 			return read_limit_ - total_read_;
@@ -836,6 +844,7 @@ public:
 		}
 	}
 
+	[[nodiscard]]
 	bool good() const {
 		return state_ == StreamState::ok;
 	}
@@ -844,6 +853,7 @@ public:
 		state_ = StreamState::ok;
 	}
 
+	[[nodiscard]]
 	operator bool() const {
 		return good();
 	}

@@ -396,10 +396,12 @@ public:
 		size_ += length;
 	}
 
+	[[nodiscard]]
 	size_type size() const override {
 		return size_;
 	}
 
+	[[nodiscard]]
 	storage_type* back() const {
 		if(root_.prev == &root_) {
 			return nullptr;
@@ -408,6 +410,7 @@ public:
 		return buffer_from_node(root_.prev);
 	}
 
+	[[nodiscard]]
 	storage_type* front() const {
 		if(root_.next == &root_) {
 			return nullptr;
@@ -437,6 +440,7 @@ public:
 		size_ += size;
 	}
 
+	[[nodiscard]]
 	bool can_write_seek() const override {
 		return seekable<DynamicBuffer>;
 	}
@@ -502,18 +506,22 @@ public:
 		return !size_;
 	}
 
+	[[nodiscard]]
 	constexpr static size_type block_size() {
 		return block_sz;
 	}
 
+	[[nodiscard]]
 	value_type& operator[](const size_type index) override {
 		return byte_at_index(index);
 	}
 
+	[[nodiscard]]
 	const value_type& operator[](const size_type index) const override {
 		return byte_at_index(index);
 	}
 
+	[[nodiscard]]
 	size_type block_count() const {
 		auto node = &root_;
 		size_type count = 0;
@@ -528,6 +536,7 @@ public:
 		return count;
 	}
 
+	[[nodiscard]]
 	size_type find_first_of(value_type value) const override {
 		size_type index = 0;
 		auto head = root_.next;
@@ -550,10 +559,12 @@ public:
 		return npos;
 	}
 
+	[[nodiscard]]
 	auto& get_allocator() {
 		return allocator_;
 	}
 
+	[[nodiscard]]
 	auto& get_allocator() const {
 		return allocator_;
 	}

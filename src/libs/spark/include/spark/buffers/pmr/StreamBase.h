@@ -47,14 +47,17 @@ public:
 		return buffer_.empty();
 	}
 
+	[[nodiscard]]
 	StreamState state() const {
 		return state_;
 	}
 
+	[[nodiscard]]
 	bool good() const {
 		return state() == StreamState::ok;
 	}
 
+	[[nodiscard]]
 	operator bool() const {
 		return good();
 	}

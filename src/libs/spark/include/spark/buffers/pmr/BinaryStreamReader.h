@@ -400,14 +400,17 @@ public:
 		buffer_.skip(count);
 	}
 
+	[[nodiscard]]
 	std::size_t total_read() const {
 		return total_read_;
 	}
 
+	[[nodiscard]]
 	std::size_t read_limit() const {
 		return read_limit_;
 	}
 
+	[[nodiscard]]
 	std::size_t read_max() const {
 		if(read_limit_) {
 			return read_limit_ - total_read_;
@@ -416,6 +419,7 @@ public:
 		}
 	}
 
+	[[nodiscard]]
 	BufferRead* buffer() const {
 		return &buffer_;
 	}

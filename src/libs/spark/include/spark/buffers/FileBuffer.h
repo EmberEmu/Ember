@@ -174,6 +174,7 @@ public:
 		return write_ == read_;
 	}
 
+	[[nodiscard]]
 	constexpr static bool can_write_seek() {
 		return seekable<FileBuffer>;
 	}
@@ -213,23 +214,27 @@ public:
 		write_ += length;
 	}
 
-
+	[[nodiscard]] 
 	size_type size() const {
 		return static_cast<size_type>(write_) - read_;
 	}
 
+	[[nodiscard]]
 	FILE* handle() {
 		return file_;
 	}
 
+	[[nodiscard]]
 	const FILE* handle() const {
 		return file_;
 	}
 
+	[[nodiscard]]
 	bool error() const {
 		return error_;
 	}
 
+	[[nodiscard]]
 	operator bool() const {
 		return !error();
 	}

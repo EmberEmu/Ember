@@ -63,6 +63,7 @@ public:
 		}
 	}
 
+	[[nodiscard]]
 	bool can_write_seek() const override {
 		return true;
 	}
@@ -80,22 +81,27 @@ public:
 		}
 	}
 
+	[[nodiscard]]
 	auto storage() const {
 		return buffer_.data();
 	}
 
+	[[nodiscard]]
 	auto storage() {
 		return buffer_.data();
 	}
 
+	[[nodiscard]]
 	auto write_ptr() {
 		return buffer_.data() + write_;
 	}
 
+	[[nodiscard]]
 	auto write_ptr() const {
 		return buffer_.data() + write_;
 	}
 
+	[[nodiscard]]
 	auto write_offset() const {
 		return write_;
 	}
@@ -113,6 +119,7 @@ public:
 		write_ += bytes;
 	}
 
+	[[nodiscard]]
 	std::size_t free() const {
 		return buffer_.size() - write_;
 	}

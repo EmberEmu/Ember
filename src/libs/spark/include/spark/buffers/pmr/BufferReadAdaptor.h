@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 - 2025 Ember
+ * Copyright (c) 2024 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -59,6 +59,7 @@ public:
 		read_ += length;
 	}
 
+	[[nodiscard]]
 	std::size_t size() const override {
 		return write_ - read_;
 	}
@@ -68,18 +69,22 @@ public:
 		return read_ == write_;
 	}
 
+	[[nodiscard]]
 	const std::byte& operator[](const std::size_t index) const override {
 		return reinterpret_cast<const std::byte*>(buffer_.data() + read_)[index];
 	}
 
+	[[nodiscard]]
 	auto read_ptr() const {
 		return buffer_.data() + read_;
 	}
 
+	[[nodiscard]]
 	auto read_offset() const {
 		return read_;
 	}
 
+	[[nodiscard]]
 	std::size_t find_first_of(std::byte val) const override {
 		const auto data = read_ptr();
 

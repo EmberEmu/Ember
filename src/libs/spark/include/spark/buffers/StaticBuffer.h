@@ -135,10 +135,12 @@ public:
 		return size <= free();
 	}
 
+	[[nodiscard]]
 	value_type& operator[](const size_type index) {
 		return read_ptr()[index];
 	}
 
+	[[nodiscard]]
 	const value_type& operator[](const size_type index) const {
 		return read_ptr()[index];
 	}
@@ -148,10 +150,12 @@ public:
 		return write_ == read_;
 	}
 
+	[[nodiscard]]
 	bool full() const {
 		return write_ == capacity();
 	}
 
+	[[nodiscard]]
 	constexpr static bool can_write_seek() {
 		return seekable<StaticBuffer>;
 	}
@@ -184,70 +188,87 @@ public:
 		}
 	}
 
+	[[nodiscard]]
 	auto begin() {
 		return buffer_.begin() + read_;
 	}
 
+	[[nodiscard]]
 	auto begin() const {
 		return buffer_.begin() + read_;
 	}
 
+	[[nodiscard]]
 	auto end() {
 		return buffer_.begin() + write_;
 	}
 
+	[[nodiscard]]
 	auto end() const {
 		return buffer_.begin() + write_;
 	}
 
+	[[nodiscard]]
 	constexpr static size_type capacity() {
 		return buf_size;
 	}
 
+	[[nodiscard]]
 	size_type size() const {
 		return write_ - read_;
 	}
 
+	[[nodiscard]]
 	size_type free() const {
 		return buf_size - write_;
 	}
 
+	[[nodiscard]]
 	const value_type* data() const {
 		return read_ptr();
 	}
 
+	[[nodiscard]]
 	value_type* data() {
 		return read_ptr();
 	}
 
+	[[nodiscard]]
 	const value_type* read_ptr() const {
 		return buffer_.data() + read_;
 	}
 
+	[[nodiscard]]
 	value_type* read_ptr() {
 		return buffer_.data() + read_;
 	}
 
+	[[nodiscard]]
 	const value_type* write_ptr() const {
 		return buffer_.data() + write_;
 	}
 
+	[[nodiscard]]
 	value_type* write_ptr() {
 		return buffer_.data() + write_;
 	}
 
+	[[nodiscard]]
 	value_type* storage() {
 		return buffer_.data();
 	}
 
+	[[nodiscard]]
 	const value_type* storage() const {
 		return buffer_.data();
 	}
 
+	[[nodiscard]]
 	std::span<const value_type> read_span() const {
 		return { read_ptr(), size() };
 	}
 
+	[[nodiscard]]
 	std::span<value_type> write_span() {
 		return { write_ptr(), free() };
 	}
