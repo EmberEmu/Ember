@@ -249,11 +249,11 @@ public:
 			buffer_.write_seek(static_cast<BufferSeek>(direction), offset);
 
 			if(direction == StreamSeek::sk_forward) {
-				assert(offset <= std::numeric_limits<std::size_t>::max() - total_write_);
 				total_write_ += offset;
-			} else {
-				assert(offset <= total_write_);
+			} else if(direction == StreamSeek::sk_backward) {
 				total_write_ -= offset;
+			} else if(direction == StreamSeek::sk_buffer_absolute) {
+				total_write_ = offset;
 			}
 		}
 	}
