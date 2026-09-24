@@ -60,4 +60,15 @@ public:
 		read_limit(read_limit), read_size(read_size), total_read(total_read) {}
 };
 
+class object_limit final : public exception {
+public:
+	const std::size_t count, max;
+
+	object_limit(std::size_t count, std::size_t max)
+		: exception(std::format(
+			"Object limit: Requested read of {} objects, max allowed is currently {}",
+			count, max)),
+		count(count), max(max) {}
+};
+
 } // io, spark, ember

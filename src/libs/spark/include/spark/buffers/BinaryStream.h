@@ -27,6 +27,10 @@
 
 namespace ember::spark::io {
 
+#ifndef MAX_OBJECTS_DESERIALISE
+#define MAX_OBJECTS_DESERIALISE 1024
+#endif // MAX_OBJECTS_DESERIALISE
+
 #define STREAM_READ_BOUNDS_ENFORCE(read_size, ret_var)            \
 	if(state_ != StreamState::ok) [[unlikely]] {                  \
 		return ret_var;                                           \
@@ -69,28 +73,22 @@ private:
 	const size_type read_limit_;
 
 	inline void enforce_read_bounds(const size_type read_size) {
-		if(read_size > buffer_.size()) [[unlikely]] {
-			state_ = StreamState::buffer_limit_error;
-
-			if constexpr(std::is_same_v<exceptions, allow_throw_t>) {
-				throw buffer_underrun(read_size, total_read_, buffer_.size());
-			}
-
-			return;
-		}
-
-		if(read_limit_) {
-			const auto max_read_remaining = read_limit_ - total_read_;
-
-			if(read_size > max_read_remaining) [[unlikely]] {
+		if(const auto max = read_max();  read_size > max) [[unlikely]] {
+			if(read_limit_) {
 				state_ = StreamState::read_limit_error;
 
 				if constexpr(std::is_same_v<exceptions, allow_throw_t>) {
 					throw stream_read_limit(read_size, total_read_, read_limit_);
 				}
+			} else {
+				state_ = StreamState::buffer_limit_error;
 
-				return;
+				if constexpr(std::is_same_v<exceptions, allow_throw_t>) {
+					throw buffer_underrun(read_size, total_read_, buffer_.size());
+				}
 			}
+
+			return;
 		}
 
 		total_read_ += read_size;
@@ -140,15 +138,12 @@ private:
 	void read_container(container_type& container, const count_type count) {
 		using c_value_type = typename container_type::value_type;
 
-		// guard against large reserve/resize requests that could occur before
-		// the actual read size is validated
-		const auto bytes = static_cast<size_type>(count * sizeof(c_value_type));
-
-		if(bytes > read_max()) {
-			state_ = StreamState::malformed_read;
+		// guard against large reserve requests
+		if(count > MAX_OBJECTS_DESERIALISE) {
+			state_ = StreamState::object_limit;
 
 			if constexpr(std::is_same_v<exceptions, allow_throw_t>) {
-				throw malformed_read(bytes, total_read_, buffer_.size());
+				throw object_limit(count, MAX_OBJECTS_DESERIALISE);
 			}
 
 			return;
@@ -163,6 +158,19 @@ private:
 		}
 
 		if constexpr(memcpy_read<container_type, BinaryStream>) {
+			// ensure there's enough data in the buffer to satisify this request
+			// before go ahead and resize the container and begin the read
+			if(const auto max = read_max(); count > max / sizeof(c_value_type)) {
+				state_ = StreamState::malformed_read;
+
+				if constexpr(std::is_same_v<exceptions, allow_throw_t>) {
+					throw malformed_read(count * sizeof(c_value_type), total_read_, max);
+				}
+
+				return;
+			}
+
+			const auto bytes = static_cast<size_type>(count * sizeof(c_value_type));
 			container.resize(count);
 			SAFE_READ(container.data(), bytes, void());
 		} else {
@@ -396,7 +404,7 @@ public:
 				state_ = StreamState::malformed_read;
 
 				if constexpr(std::is_same_v<exceptions, allow_throw_t>) {
-					throw malformed_read(size, total_read_, buffer_.size());
+					throw malformed_read(size, total_read_, read_max());
 				}
 
 				return *this;
@@ -428,7 +436,7 @@ public:
 				state_ = StreamState::malformed_read;
 
 				if constexpr(std::is_same_v<exceptions, allow_throw_t>) {
-					throw malformed_read(size, total_read_, buffer_.size());
+					throw malformed_read(size, total_read_, read_max());
 				}
 
 				return *this;
@@ -453,7 +461,7 @@ public:
 				state_ = StreamState::malformed_read;
 
 				if constexpr(std::is_same_v<exceptions, allow_throw_t>) {
-					throw malformed_read(size, total_read_, buffer_.size());
+					throw malformed_read(size, total_read_, read_max());
 				}
 
 				return *this;
@@ -484,7 +492,7 @@ public:
 				state_ = StreamState::malformed_read;
 
 				if constexpr(std::is_same_v<exceptions, allow_throw_t>) {
-					throw malformed_read(size, total_read_, buffer_.size());
+					throw malformed_read(size, total_read_, read_max());
 				}
 
 				return *this;
@@ -503,7 +511,7 @@ public:
 			state_ = StreamState::malformed_read;
 		
 			if constexpr(std::is_same_v<exceptions, allow_throw_t>) {
-				throw malformed_read(pos, total_read_, buffer_.size());
+				throw malformed_read(pos, total_read_, read_max());
 			}
 
 			return *this;
@@ -535,7 +543,7 @@ public:
 				state_ = StreamState::malformed_read;
 
 				if constexpr(std::is_same_v<exceptions, allow_throw_t>) {
-					throw malformed_read(size, total_read_, buffer_.size());
+					throw malformed_read(size, total_read_, read_max());
 				}
 
 				return *this;
@@ -546,7 +554,7 @@ public:
 			state_ = StreamState::malformed_read;
 
 			if constexpr(std::is_same_v<exceptions, allow_throw_t>) {
-				throw malformed_read(size, total_read_, buffer_.size());
+				throw malformed_read(size, total_read_, read_max());
 			}
 
 			return *this;
@@ -579,7 +587,7 @@ public:
 			state_ = StreamState::malformed_read;
 
 			if constexpr(std::is_same_v<exceptions, allow_throw_t>) {
-				throw malformed_read(size, total_read_, buffer_.size());
+				throw malformed_read(size, total_read_, read_max());
 			}
 
 			return *this;
@@ -641,7 +649,7 @@ public:
 				state_ = StreamState::malformed_read;
 
 				if constexpr(std::is_same_v<exceptions, allow_throw_t>) {
-					throw malformed_read(count * sizeof(type::value_type), total_read_, buffer_.size());
+					throw malformed_read(count * sizeof(type::value_type), total_read_, read_max());
 				}
 
 				return *this;
@@ -661,7 +669,7 @@ public:
 				state_ = StreamState::malformed_read;
 
 				if constexpr(std::is_same_v<exceptions, allow_throw_t>) {
-					throw malformed_read(count * sizeof(type::value_type), total_read_, buffer_.size());
+					throw malformed_read(count * sizeof(type::value_type), total_read_, read_max());
 				}
 
 				return *this;
@@ -744,7 +752,7 @@ public:
 			state_ = StreamState::malformed_read;
 
 			if constexpr(std::is_same_v<exceptions, allow_throw_t>) {
-				throw malformed_read(pos, total_read_, buffer_.size());
+				throw malformed_read(pos, total_read_, read_max());
 			}
 
 			return {};

@@ -52,6 +52,7 @@ enum class StreamState {
 	buffer_write_error,
 	invalid_stream,
 	malformed_read,
+	object_limit,
 	user_defined_error
 };
 
