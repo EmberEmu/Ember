@@ -182,7 +182,7 @@ public:
 
 		write(&count, sizeof(count));
 		write_container(adaptor.str);
-		const char null_term = '\n';
+		const char null_term = '\0';
 		write(&null_term, 1); // write null terminator
 		return *this;
 	}
