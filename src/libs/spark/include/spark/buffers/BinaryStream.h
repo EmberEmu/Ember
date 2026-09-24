@@ -583,6 +583,18 @@ public:
 			return *this;
 		}
 
+		if constexpr(std::signed_integral<prefix_type>) {
+			if(size < 0) {
+				state_ = StreamState::malformed_read;
+
+				if constexpr(std::is_same_v<exceptions, allow_throw_t>) {
+					throw malformed_read(size, total_read_, read_max());
+				}
+
+				return *this;
+			}
+		}
+
 		if(size == 0) { // prefixed_null_terminated must always be at least one byte
 			state_ = StreamState::malformed_read;
 
