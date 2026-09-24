@@ -71,4 +71,13 @@ public:
 		count(count), max(max) {}
 };
 
+class misaligned_read final : public exception {
+public:
+	const std::size_t alignment;
+
+	misaligned_read(std::size_t alignment)
+		: exception(std::format("Misaligned read: Expected {} byte alignment", alignment)),
+		alignment(alignment) {}
+};
+
 } // io, spark, ember

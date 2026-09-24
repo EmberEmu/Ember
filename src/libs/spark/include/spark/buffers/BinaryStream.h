@@ -821,9 +821,11 @@ public:
 
 	template<typename out_type = value_type>
 	std::span<out_type> span(size_type count) requires contiguous<buf_type> {
-		if(count > read_max() / sizeof(out_type)) [[unlikely]] {
-			const auto read_size = count * sizeof(out_type);
+		const auto max_size = std::numeric_limits<size_type>::max();
+		const auto read_size = count > max_size / sizeof(out_type)?
+			max_size : count * sizeof(out_type);
 
+		if(count > read_max() / sizeof(out_type)) [[unlikely]] {
 			if(read_limit_) {
 				state_ = StreamState::read_limit_error;
 
@@ -840,12 +842,27 @@ public:
 
 			return {};
 		}
+
+		// ensure the buffer read cursor is correctly aligned for this type
+		if constexpr(alignof(out_type) > 1) {
+			const auto address = reinterpret_cast<std::uintptr_t>(buffer_.read_ptr());
+
+			if((address & (alignof(out_type) - 1)) != 0) [[unlikely]] {
+				state_ = StreamState::misaligned_read;
+
+				if constexpr(std::is_same_v<exceptions, allow_throw_t>) {
+					throw misaligned_read(alignof(out_type));
+				}
+
+				return {};
+			}
+		}
 		
 		std::span view {
 			std::start_lifetime_as<out_type>(buffer_.read_ptr()), count
 		};
 
-		skip(sizeof(out_type) * count);
+		skip(read_size);
 		return (state_ == StreamState::ok? view : std::span<out_type>());
 	}
 
