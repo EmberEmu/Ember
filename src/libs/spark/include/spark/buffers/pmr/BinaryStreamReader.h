@@ -18,7 +18,6 @@
 #include <spark/buffers/StringAdaptors.h>
 #include <concepts>
 #include <ranges>
-#include <string>
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
