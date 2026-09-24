@@ -178,6 +178,11 @@ private:
 			for(count_type i = 0; i < count; ++i) {
 				c_value_type value;
 				*this >> value;
+
+				if(state_ != StreamState::ok) [[unlikely]] {
+					return;
+				}
+
 				container.emplace_back(std::move(value));
 			}
 		}
