@@ -237,6 +237,17 @@ public:
 			return size;
 		});
 
+		// validate the terminator is as expected
+		char terminator = '\0';
+
+		if(buffer_.read(&terminator, sizeof(terminator)); terminator != '\0') [[unlikely]] {
+			set_state(StreamState::malformed_read);
+
+			if(allow_throw()) {
+				throw malformed_read(size, total_read_, read_max());
+			}
+		}
+
 		return *this;
 	}
 	

@@ -574,7 +574,17 @@ public:
 			return size;
 		});
 
-		buffer_.skip(1); // skip null terminator
+		// validate the terminator is as expected
+		value_type terminator { 0 };
+
+		if(buffer_.read(&terminator); terminator) {
+			state_ = StreamState::malformed_read;
+
+			if constexpr(std::is_same_v<exceptions, allow_throw_t>) {
+				throw malformed_read(size, total_read_, read_max());
+			}
+		}
+
 		return *this;
 	}
 
@@ -611,7 +621,23 @@ public:
 		}
 
 		++size; // add the null terminator to the view
-		adaptor.str = string_view_type { span<char>(size) };
+		string_view_type sv_span { span<char>(size) };
+
+		if(state_ != StreamState::ok) {
+			return *this;
+		}
+
+		adaptor.str = sv_span;
+
+		// validate the terminator is as expected
+		if(adaptor.str[adaptor.str.size() - 1] != value_type(0)) [[unlikely]] {
+			state_ = StreamState::malformed_read;
+
+			if constexpr(std::is_same_v<exceptions, allow_throw_t>) {
+				throw malformed_read(size, total_read_, read_max());
+			}
+		}
+
 		return *this;
 	}
 
@@ -795,7 +821,30 @@ public:
 
 	template<typename out_type = value_type>
 	std::span<out_type> span(size_type count) requires contiguous<buf_type> {
-		std::span view { std::start_lifetime_as<out_type>(buffer_.read_ptr()), count };
+		if(count > read_max() / sizeof(out_type)) [[unlikely]] {
+			const auto read_size = count * sizeof(out_type);
+
+			if(read_limit_) {
+				state_ = StreamState::read_limit_error;
+
+				if constexpr(std::is_same_v<exceptions, allow_throw_t>) {
+					throw stream_read_limit(read_size, total_read_, read_limit_);
+				}
+			} else {
+				state_ = StreamState::buffer_limit_error;
+
+				if constexpr(std::is_same_v<exceptions, allow_throw_t>) {
+					throw buffer_underrun(read_size, total_read_, buffer_.size());
+				}
+			}
+
+			return {};
+		}
+		
+		std::span view {
+			std::start_lifetime_as<out_type>(buffer_.read_ptr()), count
+		};
+
 		skip(sizeof(out_type) * count);
 		return (state_ == StreamState::ok? view : std::span<out_type>());
 	}
