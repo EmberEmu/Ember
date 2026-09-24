@@ -364,7 +364,7 @@ public:
 
 	template<typename T>
 	requires has_serialise<T, stream_read_adaptor<BinaryStream>>
-	BinaryStream& operator>>(T& data) requires writeable<buf_type> {
+	BinaryStream& operator>>(T& data) {
 		deserialise(data);
 		return *this;
 	}
