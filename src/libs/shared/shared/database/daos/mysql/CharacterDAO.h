@@ -124,7 +124,8 @@ public:
 			"FROM characters c "
 			"LEFT JOIN guild_characters gc ON c.id = gc.character_id "
 			"LEFT JOIN users u ON u.id = c.account_id "
-			"WHERE u.id = ? AND c.deletion_date IS NULL AND c.realm_id = ?";
+			"WHERE u.id = ? AND c.deletion_date IS NULL AND c.realm_id = ? "
+			"ORDER BY c.id ASC";
 		
 		// done at compile-time, obviates std::string allocation
 		constexpr auto pos = full_query.find(" AND c.realm_id = ?");
