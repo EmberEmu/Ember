@@ -24,7 +24,7 @@ public:
 		  BinaryStreamWriter(source) {}
 
 	explicit BinaryStream(Buffer& source, no_throw_t, std::size_t read_limit = 0)
-		: StreamBase(source),
+		: StreamBase(source, false),
 		  BinaryStreamReader(source, no_throw, read_limit),
 		  BinaryStreamWriter(source, no_throw) {}
 

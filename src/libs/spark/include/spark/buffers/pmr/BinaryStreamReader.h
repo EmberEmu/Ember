@@ -139,13 +139,22 @@ public:
 			if(allow_throw()) {
 				throw bad_read_limit(read_limit_, buffer_.size());
 			}
-		}}
+		}
+	}
 
 	explicit BinaryStreamReader(BufferRead& source, no_throw_t, std::size_t read_limit = 0)
 		: StreamBase(source, false),
 		  buffer_(source),
 		  total_read_(0),
-		  read_limit_(read_limit) {}
+		  read_limit_(read_limit) {
+		if(read_limit_ > buffer_.size()) {
+			set_state(StreamState::bad_read_limit);
+
+			if(allow_throw()) {
+				throw bad_read_limit(read_limit_, buffer_.size());
+			}
+		}
+	}
 
 	BinaryStreamReader(BinaryStreamReader&& rhs) noexcept
 		: StreamBase(rhs),
