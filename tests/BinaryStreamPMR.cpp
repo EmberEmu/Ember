@@ -749,6 +749,6 @@ TEST(BinaryStreamPMR, ReadLimitBadSize) {
 	spark::io::pmr::BufferAdaptor adaptor(buffer);
 	EXPECT_NO_THROW(spark::io::pmr::BinaryStream stream(adaptor, 16));
 	EXPECT_THROW(spark::io::pmr::BinaryStream stream(adaptor, 17), spark::io::bad_read_limit);
-	spark::io::pmr::BinaryStream stream(adaptor, spark::io::no_throw, 129);
+	spark::io::pmr::BinaryStream stream(adaptor, 129, spark::io::no_throw);
 	EXPECT_EQ(stream.state(), spark::io::StreamState::bad_read_limit);
 }

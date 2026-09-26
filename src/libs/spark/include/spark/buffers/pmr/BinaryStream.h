@@ -23,9 +23,15 @@ public:
 		  BinaryStreamReader(source, read_limit),
 		  BinaryStreamWriter(source) {}
 
-	explicit BinaryStream(Buffer& source, no_throw_t, std::size_t read_limit = 0)
+	explicit BinaryStream(Buffer& source, no_throw_t)
 		: StreamBase(source, false),
-		  BinaryStreamReader(source, no_throw, read_limit),
+		BinaryStreamReader(source, no_throw),
+		BinaryStreamWriter(source, no_throw) {}
+
+
+	explicit BinaryStream(Buffer& source, std::size_t read_limit, no_throw_t)
+		: StreamBase(source, false),
+		  BinaryStreamReader(source, read_limit, no_throw),
 		  BinaryStreamWriter(source, no_throw) {}
 
 	~BinaryStream() override = default;
