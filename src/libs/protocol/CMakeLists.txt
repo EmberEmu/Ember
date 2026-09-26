@@ -30,6 +30,7 @@ set(CORE_HEADERS
     include/protocol/MessageView.h
     include/protocol/Concepts.h
     include/protocol/StreamResult.h
+    include/protocol/StringTraits.h
 )
 
 set(HEADERS

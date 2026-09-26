@@ -19,6 +19,7 @@
 #include <protocol/Opcodes.h>
 #include <protocol/Packet.h>
 #include <protocol/StreamResult.h>
+{% if has_strings %}#include <protocol/StringTraits.h>{% endif %}
 #include <cstdint>
 ## for header in includes
 #include <{{ header }}>
@@ -26,7 +27,9 @@
 
 namespace ember::protocol::{{ direction }} {
 
+{% if has_strings %}template<class Ownership = use_strings>{% endif %}
 struct {{ name }} final {
+{% if has_strings %}	IMPORT_STRING_ALIASES{% endif %}
 {{ members }}
 
 	StreamResult read_from_stream(le_stream auto& stream) {
@@ -46,6 +49,7 @@ struct {{ name }} final {
 
 namespace ember::protocol {
 
-using {{ alias }} = {{ packet_template }}<{{ opcode_enum }}::{{ opcode }}, {{ direction }}::{{ name }}>;
+{% if has_strings %}template<class Ownership = use_strings>{% endif %}
+using {{ alias }} = {{ packet_template }}<{{ opcode_enum }}::{{ opcode }}, {{ direction }}::{{ name }}{% if has_strings %}<Ownership>{% endif %}>;
 
 } // protocol, ember
