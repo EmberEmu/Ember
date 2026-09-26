@@ -80,4 +80,15 @@ public:
 		alignment(alignment) {}
 };
 
+class bad_read_limit final : public exception {
+public:
+	const std::size_t read_limit, buff_size;
+
+	bad_read_limit(std::size_t read_limit, std::size_t buff_size)
+		: exception(std::format(
+			"Bad read limit: {} byte read limit set but buffer contains {} bytes",
+			read_limit, buff_size)),
+		read_limit(read_limit), buff_size(buff_size) {}
+};
+
 } // io, spark, ember

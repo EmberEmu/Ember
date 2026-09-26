@@ -1209,3 +1209,27 @@ TEST(BinaryStream, StringAdaptor_PrefixedEndianMismatch) {
 	stream >> spark::io::endian::le(read);
 	ASSERT_NE(input.size(), read);
 }
+
+TEST(BinaryStream, Size) {
+	spark::io::StaticBuffer<char, 128> buffer;
+	buffer.write_seek(spark::io::BufferSeek::sk_forward, 128);
+	spark::io::BinaryStream stream(buffer);
+	ASSERT_TRUE(stream.size() == buffer.size());
+}
+
+TEST(BinaryStream, ReadLimitSize) {
+	spark::io::StaticBuffer<char, 128> buffer;
+	buffer.write_seek(spark::io::BufferSeek::sk_forward, 8);
+	spark::io::BinaryStream stream(buffer, 8);
+	ASSERT_TRUE(stream.size() == 8);
+	ASSERT_TRUE(stream.read_limit() == 8);
+}
+
+TEST(BinaryStream, ReadLimitBadSize) {
+	spark::io::StaticBuffer<char, 128> buffer;
+	buffer.write_seek(spark::io::BufferSeek::sk_forward, 128);
+	EXPECT_NO_THROW(spark::io::BinaryStream stream(buffer, 128));
+	EXPECT_THROW(spark::io::BinaryStream stream(buffer, 129), spark::io::bad_read_limit);
+	spark::io::BinaryStream stream(buffer, 129, spark::io::no_throw);
+	EXPECT_EQ(stream.state(), spark::io::StreamState::bad_read_limit);
+}

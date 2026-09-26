@@ -258,12 +258,12 @@ public:
 		}
 	}
 
-	std::size_t size() const {
+	std::size_t buffer_size() const {
 		return buffer_.size();
 	}
 
 	[[nodiscard]]
-	bool empty() const {
+	bool buffer_empty() const {
 		return buffer_.empty();
 	}
 

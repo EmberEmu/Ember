@@ -54,6 +54,7 @@ enum class StreamState {
 	malformed_read,
 	object_limit,
 	misaligned_read,
+	bad_read_limit,
 	user_defined_error
 };
 

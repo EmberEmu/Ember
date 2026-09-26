@@ -727,3 +727,28 @@ TEST(BinaryStreamPMR, StdArraySize) {
 	EXPECT_EQ(adaptor.size(), 0);
 	EXPECT_EQ(stream.size(), 0);
 }
+
+TEST(BinaryStreamPMR, Size) {
+	[[indeterminate]] std::array<char, 16> buffer;
+	spark::io::pmr::BufferAdaptor adaptor(buffer);
+	spark::io::pmr::BinaryStream stream(adaptor);
+	ASSERT_TRUE(stream.size() == buffer.size());
+}
+
+TEST(BinaryStreamPMR, ReadLimitSize) {
+	[[indeterminate]] std::array<char, 16> buffer;
+	spark::io::pmr::BufferAdaptor adaptor(buffer);
+	adaptor.write_seek(spark::io::BufferSeek::sk_forward, 128);
+	spark::io::pmr::BinaryStream stream(adaptor, 8);
+	ASSERT_TRUE(stream.size() == 8);
+	ASSERT_TRUE(stream.read_limit() == 8);
+}
+
+TEST(BinaryStreamPMR, ReadLimitBadSize) {
+	[[indeterminate]] std::array<char, 16> buffer;
+	spark::io::pmr::BufferAdaptor adaptor(buffer);
+	EXPECT_NO_THROW(spark::io::pmr::BinaryStream stream(adaptor, 16));
+	EXPECT_THROW(spark::io::pmr::BinaryStream stream(adaptor, 17), spark::io::bad_read_limit);
+	spark::io::pmr::BinaryStream stream(adaptor, spark::io::no_throw, 129);
+	EXPECT_EQ(stream.state(), spark::io::StreamState::bad_read_limit);
+}

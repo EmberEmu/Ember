@@ -74,7 +74,7 @@ private:
 	const size_type read_limit_;
 
 	inline void enforce_read_bounds(const size_type read_size) {
-		if(const auto max = read_max();  read_size > max) [[unlikely]] {
+		if(const auto max = size();  read_size > max) [[unlikely]] {
 			if(read_limit_) {
 				state_ = StreamState::read_limit_error;
 
@@ -161,7 +161,7 @@ private:
 		if constexpr(memcpy_read<container_type, BinaryStream>) {
 			// ensure there's enough data in the buffer to satisify this request
 			// before go ahead and resize the container and begin the read
-			if(const auto max = read_max(); count > max / sizeof(c_value_type)) {
+			if(const auto max = size(); count > max / sizeof(c_value_type)) {
 				state_ = StreamState::malformed_read;
 
 				if constexpr(std::is_same_v<exceptions, allow_throw_t>) {
@@ -191,7 +191,15 @@ private:
 public:
 	explicit BinaryStream(buf_type& source, size_type read_limit = 0)
 		: buffer_(source),
-		  read_limit_(read_limit) {};
+		  read_limit_(read_limit) {
+		if(read_limit_ > buffer_.size()) {
+			state_ = StreamState::bad_read_limit;
+
+			if constexpr(std::is_same_v<exceptions, allow_throw_t>) {
+				throw bad_read_limit(read_limit_, buffer_.size());
+			}
+		}
+	};
 
 	explicit BinaryStream(buf_type& source, exceptions)
 		: BinaryStream(source, 0) {}
@@ -409,7 +417,7 @@ public:
 				state_ = StreamState::malformed_read;
 
 				if constexpr(std::is_same_v<exceptions, allow_throw_t>) {
-					throw malformed_read(size, total_read_, read_max());
+					throw malformed_read(size, total_read_, size());
 				}
 
 				return *this;
@@ -441,7 +449,7 @@ public:
 				state_ = StreamState::malformed_read;
 
 				if constexpr(std::is_same_v<exceptions, allow_throw_t>) {
-					throw malformed_read(size, total_read_, read_max());
+					throw malformed_read(size, total_read_, size());
 				}
 
 				return *this;
@@ -466,7 +474,7 @@ public:
 				state_ = StreamState::malformed_read;
 
 				if constexpr(std::is_same_v<exceptions, allow_throw_t>) {
-					throw malformed_read(size, total_read_, read_max());
+					throw malformed_read(size, total_read_, size());
 				}
 
 				return *this;
@@ -497,7 +505,7 @@ public:
 				state_ = StreamState::malformed_read;
 
 				if constexpr(std::is_same_v<exceptions, allow_throw_t>) {
-					throw malformed_read(size, total_read_, read_max());
+					throw malformed_read(size, total_read_, size());
 				}
 
 				return *this;
@@ -516,7 +524,7 @@ public:
 			state_ = StreamState::malformed_read;
 		
 			if constexpr(std::is_same_v<exceptions, allow_throw_t>) {
-				throw malformed_read(pos, total_read_, read_max());
+				throw malformed_read(pos, total_read_, size());
 			}
 
 			return *this;
@@ -548,7 +556,7 @@ public:
 				state_ = StreamState::malformed_read;
 
 				if constexpr(std::is_same_v<exceptions, allow_throw_t>) {
-					throw malformed_read(size, total_read_, read_max());
+					throw malformed_read(size, total_read_, size());
 				}
 
 				return *this;
@@ -559,7 +567,7 @@ public:
 			state_ = StreamState::malformed_read;
 
 			if constexpr(std::is_same_v<exceptions, allow_throw_t>) {
-				throw malformed_read(size, total_read_, read_max());
+				throw malformed_read(size, total_read_, size());
 			}
 
 			return *this;
@@ -581,7 +589,7 @@ public:
 			state_ = StreamState::malformed_read;
 
 			if constexpr(std::is_same_v<exceptions, allow_throw_t>) {
-				throw malformed_read(size, total_read_, read_max());
+				throw malformed_read(size, total_read_, size());
 			}
 		}
 
@@ -603,7 +611,7 @@ public:
 				state_ = StreamState::malformed_read;
 
 				if constexpr(std::is_same_v<exceptions, allow_throw_t>) {
-					throw malformed_read(size, total_read_, read_max());
+					throw malformed_read(size, total_read_, size());
 				}
 
 				return *this;
@@ -614,7 +622,7 @@ public:
 			state_ = StreamState::malformed_read;
 
 			if constexpr(std::is_same_v<exceptions, allow_throw_t>) {
-				throw malformed_read(size, total_read_, read_max());
+				throw malformed_read(size, total_read_, size());
 			}
 
 			return *this;
@@ -634,7 +642,7 @@ public:
 			state_ = StreamState::malformed_read;
 
 			if constexpr(std::is_same_v<exceptions, allow_throw_t>) {
-				throw malformed_read(size, total_read_, read_max());
+				throw malformed_read(size, total_read_, size());
 			}
 		}
 
@@ -696,7 +704,7 @@ public:
 				state_ = StreamState::malformed_read;
 
 				if constexpr(std::is_same_v<exceptions, allow_throw_t>) {
-					throw malformed_read(count * sizeof(type::value_type), total_read_, read_max());
+					throw malformed_read(count * sizeof(type::value_type), total_read_, size());
 				}
 
 				return *this;
@@ -720,7 +728,7 @@ public:
 				state_ = StreamState::malformed_read;
 
 				if constexpr(std::is_same_v<exceptions, allow_throw_t>) {
-					throw malformed_read(count * sizeof(type::value_type), total_read_, read_max());
+					throw malformed_read(count * sizeof(type::value_type), total_read_, size());
 				}
 
 				return *this;
@@ -803,7 +811,7 @@ public:
 			state_ = StreamState::malformed_read;
 
 			if constexpr(std::is_same_v<exceptions, allow_throw_t>) {
-				throw malformed_read(pos, total_read_, read_max());
+				throw malformed_read(pos, total_read_, size());
 			}
 
 			return {};
@@ -825,7 +833,7 @@ public:
 		const auto read_size = count > max_size / sizeof(out_type)?
 			max_size : count * sizeof(out_type);
 
-		if(count > read_max() / sizeof(out_type)) [[unlikely]] {
+		if(count > size() / sizeof(out_type)) [[unlikely]] {
 			if(read_limit_) {
 				state_ = StreamState::read_limit_error;
 
@@ -896,12 +904,21 @@ public:
 
 	[[nodiscard]]
 	size_type size() const {
-		return buffer_.size();
+		if(read_limit_) {
+			assert(read_limit_ >= total_read_);
+			return read_limit_ - total_read_;
+		} else {
+			return buffer_.size();
+		}
 	}
 
 	[[nodiscard]]
 	bool empty() const {
-		return buffer_.empty();
+		if(read_limit_ && total_read_ == read_limit_) {
+			return true;
+		} else {
+			return buffer_.empty();
+		}
 	}
 
 	[[nodiscard]]
@@ -932,16 +949,6 @@ public:
 	[[nodiscard]]
 	size_type read_limit() const {
 		return read_limit_;
-	}
-
-	[[nodiscard]]
-	size_type read_max() const {
-		if(read_limit_) {
-			assert(read_limit_ >= total_read_);
-			return read_limit_ - total_read_;
-		} else {
-			return buffer_.size();
-		}
 	}
 
 	[[nodiscard]]
