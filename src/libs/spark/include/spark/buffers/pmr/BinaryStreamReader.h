@@ -53,7 +53,7 @@ class BinaryStreamReader : virtual public StreamBase {
 	const std::size_t read_limit_;
 
 	inline void enforce_read_bounds(const std::size_t read_size) {
-		if(const auto max = read_max(); read_size > max) [[unlikely]] {
+		if(const auto max = size(); read_size > max) [[unlikely]] {
 			if(read_limit_) {
 				set_state(StreamState::read_limit_error);
 
@@ -100,7 +100,7 @@ class BinaryStreamReader : virtual public StreamBase {
 		if constexpr(memcpy_read<container_type, BinaryStreamReader>) {
 			// ensure there's enough data in the buffer to satisify this request
 			// before go ahead and resize the container and begin the read
-			if(const auto max = read_max(); count > max / sizeof(c_value_type)) {
+			if(const auto max = size(); count > max / sizeof(c_value_type)) {
 				set_state(StreamState::malformed_read);
 
 				if(allow_throw()) {
@@ -186,7 +186,7 @@ public:
 				set_state(StreamState::malformed_read);
 
 				if(allow_throw()) {
-					throw malformed_read(size, total_read_, read_max());
+					throw malformed_read(size, total_read_, size());
 				}
 
 				return *this;
@@ -218,7 +218,7 @@ public:
 				set_state(StreamState::malformed_read);
 
 				if(allow_throw()) {
-					throw malformed_read(size, total_read_, read_max());
+					throw malformed_read(size, total_read_, size());
 				}
 
 				return *this;
@@ -229,7 +229,7 @@ public:
 			set_state(StreamState::malformed_read);
 
 			if(allow_throw()) {
-				throw malformed_read(size, total_read_, read_max());
+				throw malformed_read(size, total_read_, size());
 			}
 
 			return *this;
@@ -251,7 +251,7 @@ public:
 			set_state(StreamState::malformed_read);
 
 			if(allow_throw()) {
-				throw malformed_read(size, total_read_, read_max());
+				throw malformed_read(size, total_read_, size());
 			}
 		}
 
@@ -284,7 +284,7 @@ public:
 			set_state(StreamState::malformed_read);
 
 			if(allow_throw()) {
-				throw malformed_read(pos, total_read_, read_max());
+				throw malformed_read(pos, total_read_, size());
 			}
 
 			return *this;
@@ -343,7 +343,7 @@ public:
 				set_state(StreamState::malformed_read);
 
 				if(allow_throw()) {
-					throw malformed_read(count * sizeof(type::value_type), total_read_, read_max());
+					throw malformed_read(count * sizeof(type::value_type), total_read_, size());
 				}
 
 				return *this;
@@ -458,16 +458,6 @@ public:
 	[[nodiscard]]
 	std::size_t read_limit() const {
 		return read_limit_;
-	}
-
-	[[nodiscard]]
-	std::size_t read_max() const {
-		if(read_limit_) {
-			assert(read_limit_ >= total_read_);
-			return read_limit_ - total_read_;
-		} else {
-			return buffer_.size();
-		}
 	}
 
 	[[nodiscard]]
