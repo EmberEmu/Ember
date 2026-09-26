@@ -16,8 +16,8 @@ namespace ember::realm {
 
 class ClientConnectionBuilder final {
 	const AllocationProvider& alloc_provider_;
-	log::Logger& logger_;
 	EventDispatcher& dispatcher_;
+	log::Logger& logger_;
 
 public:
 	ClientConnectionBuilder(const AllocationProvider& alloc_provider,
