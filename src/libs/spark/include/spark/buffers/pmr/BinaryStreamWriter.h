@@ -258,15 +258,6 @@ public:
 		}
 	}
 
-	std::size_t size() const {
-		return buffer_.size();
-	}
-
-	[[nodiscard]]
-	bool empty() const {
-		return buffer_.empty();
-	}
-
 	std::size_t total_write() const {
 		return total_write_;
 	}

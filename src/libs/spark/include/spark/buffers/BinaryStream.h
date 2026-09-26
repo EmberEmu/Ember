@@ -191,7 +191,15 @@ private:
 public:
 	explicit BinaryStream(buf_type& source, size_type read_limit = 0)
 		: buffer_(source),
-		  read_limit_(read_limit) {};
+		  read_limit_(read_limit) {
+		if(read_limit_ > buffer_.size()) {
+			state_ = StreamState::bad_read_limit;
+
+			if constexpr(std::is_same_v<exceptions, allow_throw_t>) {
+				throw bad_read_limit(read_limit_, buffer_.size());
+			}
+		}
+	};
 
 	explicit BinaryStream(buf_type& source, exceptions)
 		: BinaryStream(source, 0) {}
@@ -896,12 +904,21 @@ public:
 
 	[[nodiscard]]
 	size_type size() const {
-		return buffer_.size();
+		if(read_limit_) {
+			assert(read_limit_ >= total_read_);
+			return read_limit_ - total_read_;
+		} else {
+			return buffer_.size();
+		}
 	}
 
 	[[nodiscard]]
 	bool empty() const {
-		return buffer_.empty();
+		if(read_limit_ && total_read_ == read_limit_) {
+			return true;
+		} else {
+			return buffer_.empty();
+		}
 	}
 
 	[[nodiscard]]

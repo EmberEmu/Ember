@@ -132,7 +132,14 @@ public:
 		: StreamBase(source),
 		  buffer_(source),
 		  total_read_(0),
-		  read_limit_(read_limit) {}
+		  read_limit_(read_limit) {
+		if(read_limit_ > buffer_.size()) {
+			set_state(StreamState::bad_read_limit);
+
+			if(allow_throw()) {
+				throw bad_read_limit(read_limit_, buffer_.size());
+			}
+		}}
 
 	explicit BinaryStreamReader(BufferRead& source, no_throw_t, std::size_t read_limit = 0)
 		: StreamBase(source, false),
@@ -417,7 +424,26 @@ public:
 		return endian::convert<conversion>(t);
 	}
 
-	/**  Misc functions **/ 
+	/**  Misc functions **/
+
+	[[nodiscard]]
+	std::size_t size() const {
+		if(read_limit_) {
+			assert(read_limit_ >= total_read_);
+			return read_limit_ - total_read_;
+		} else {
+			return buffer_.size();
+		}
+	}
+
+	[[nodiscard]]
+	bool empty() const {
+		if(read_limit_ && total_read_ == read_limit_) {
+			return true;
+		} else {
+			return buffer_.empty();
+		}
+	}
 
 	void skip(std::size_t count) {
 		STREAM_READ_BOUNDS_ENFORCE(count, void());
