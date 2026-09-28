@@ -45,7 +45,7 @@ jobs:
           context: .
           build-args: |
             USE_CLANG=1
-            build_type=ReleaseUnoptimised
+            build_type=Debug
           tags: emberemu/ember:latest-gcc
           push: ${{ github.event_name != 'pull_request' }}
           load: ${{ github.event_name == 'pull_request' }}
@@ -89,7 +89,7 @@ jobs:
           context: .
           build-args: |
             build_shared_libs=true
-            build_type=ReleaseUnoptimised
+            build_type=Debug
           tags: emberemu/ember:latest-gcc
           push: ${{ github.event_name != 'pull_request' }}
           load: ${{ github.event_name == 'pull_request' }}
@@ -133,7 +133,7 @@ jobs:
           context: .
           build-args: |
             USE_CLANG=1
-            build_type=ReleaseUnoptimised
+            build_type=Debug
           tags: emberemu/ember:latest-clang
           push: ${{ github.event_name != 'pull_request' }}
           load: ${{ github.event_name == 'pull_request' }}

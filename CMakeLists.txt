@@ -25,7 +25,6 @@ endif()
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 set(CMAKE_STATIC_LIBRARY_PREFIX "")
 
-set(CMAKE_CONFIGURATION_TYPES ${CMAKE_CONFIGURATION_TYPES};ReleaseUnoptimised CACHE STRING "Build types" FORCE)
 
 if(MSVC)
     set(CMAKE_SYSTEM_VERSION 10.0)
@@ -34,6 +33,7 @@ if(MSVC)
     add_compile_options("/permissive-")     # Conformance mode
 
     # Release build without the optimisations for faster iteration
+	set(CMAKE_CONFIGURATION_TYPES ${CMAKE_CONFIGURATION_TYPES};ReleaseUnoptimised CACHE STRING "Build types" FORCE)
     set(CMAKE_EXE_LINKER_FLAGS_RELEASEUNOPTIMISED "${CMAKE_EXE_LINKER_FLAGS_RELEASE}" CACHE STRING "" FORCE)
 
     option(AVX2 "Enable AVX2 instruction set" ON)
@@ -88,8 +88,6 @@ endif()
 
 add_compile_options(
     "$<$<AND:$<COMPILE_LANGUAGE:CXX>,$<CXX_COMPILER_ID:GNU,Clang>>:-Wno-attributes>" # Don't warn about unknown attributes
-    "$<$<AND:$<CONFIG:ReleaseUnoptimised>,$<COMPILE_LANG_AND_ID:C,GNU,Clang>>:-O0>"
-    "$<$<AND:$<CONFIG:ReleaseUnoptimised>,$<COMPILE_LANG_AND_ID:CXX,GNU,Clang>>:-O0>"
 )
 
 set(BUILD_SHARED_MSG "Builds the services as shared libraries - generated code may be slower but Fusion service reloading is enabled")
