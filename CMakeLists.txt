@@ -7,8 +7,6 @@
 cmake_minimum_required(VERSION 3.30)
 project(Ember)
 
-option(BUILD_OPT_TOOLS "Build optional tools" ON)
-
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG ${PROJECT_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE ${PROJECT_BINARY_DIR}/bin)
@@ -17,10 +15,6 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${PROJECT_BINARY_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG ${PROJECT_BINARY_DIR}/bin/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${PROJECT_BINARY_DIR}/bin/lib)
 set(CMAKE_CXX_STANDARD 26)
-
-if(CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-attributes")  # Don't warn about unknown attributes
-endif()
 
 if(MSVC)
     set(CMAKE_CXX_STANDARD_REQUIRED OFF)
@@ -31,15 +25,15 @@ endif()
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 set(CMAKE_STATIC_LIBRARY_PREFIX "")
 
+set(CMAKE_CONFIGURATION_TYPES ${CMAKE_CONFIGURATION_TYPES};ReleaseUnoptimised CACHE STRING "Build types" FORCE)
+
 if(MSVC)
     set(CMAKE_SYSTEM_VERSION 10.0)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /MP") # Multiprocessor compilation
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP") # Multiprocessor compilation
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Zc:preprocessor")  # Enable the conforming preprocessor
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /permissive-")  # Conformance mode
+    add_compile_options("/MP")              # Multiprocessor compilation
+    add_compile_options("/Zc:preprocessor") # Enable the conforming preprocessor
+    add_compile_options("/permissive-")     # Conformance mode
 
     # Release build without the optimisations for faster iteration
-    set(CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebInfo;MinSizeRel;ReleaseUnoptimised" CACHE STRING "Build types" FORCE)
     set(CMAKE_EXE_LINKER_FLAGS_RELEASEUNOPTIMISED "${CMAKE_EXE_LINKER_FLAGS_RELEASE}" CACHE STRING "" FORCE)
 
     option(AVX2 "Enable AVX2 instruction set" ON)
@@ -92,9 +86,16 @@ if(MSVC)
     endif()
 endif()
 
+add_compile_options(
+    "$<$<AND:$<COMPILE_LANGUAGE:CXX>,$<CXX_COMPILER_ID:GNU,Clang>>:-Wno-attributes>" # Don't warn about unknown attributes
+    "$<$<AND:$<CONFIG:ReleaseUnoptimised>,$<COMPILE_LANG_AND_ID:C,GNU,Clang>>:-O0>"
+    "$<$<AND:$<CONFIG:ReleaseUnoptimised>,$<COMPILE_LANG_AND_ID:CXX,GNU,Clang>>:-O0>"
+)
+
 set(BUILD_SHARED_MSG "Builds the services as shared libraries - generated code may be slower but Fusion service reloading is enabled")
 set(CMAKE_POSITION_INDEPENDENT_CODE ${BUILD_SHARED})
 
+option(BUILD_OPT_TOOLS "Build optional tools" ON)
 option(BUILD_SHARED ${BUILD_SHARED_MSG} OFF)
 option(DISABLE_FAST_CLIENT_DISPATCH_TABLE "Fast client event dispatch cache at the cost extra per-thread memory consumption" OFF)
 option(ENABLE_HUGE_PAGES "When running on Linux, enable huge page support (disable if memory constrained)" ON)
