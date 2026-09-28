@@ -17,6 +17,7 @@ set(MYSQLCCPP_LIBRARY_NAMES
 set(_MYSQLCCPP_POSSIBLE_LIB_SUFFIXES lib)
 
 set(MYSQLCCPP_LIBRARYD_NAMES
+    mysqlcppconnd
     mysqlcppconnd                         # Docker
     mysqlcppconn-static                   # vcpkg (Windows)
     libmysqlcppconn-static.a)             # vcpkg (Linux)
