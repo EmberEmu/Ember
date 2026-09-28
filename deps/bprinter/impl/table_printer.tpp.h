@@ -26,18 +26,23 @@ template<typename T> void TablePrinter::OutputDecimalNumber(T input){
 #else
 template<typename T> void TablePrinter::OutputDecimalNumber(T input){
   // If we cannot handle this number, indicate so
-  if (input < 10*(column_widths_.at(j_)-1) || input > 10*column_widths_.at(j_)){
-    std::stringstream string_out;
-    string_out << std::setiosflags(std::ios::fixed)
-               << std::setprecision(column_widths_.at(j_))
-               << std::setw(column_widths_.at(j_))
-               << input;
+  const auto width = column_widths_.at(j_);
 
-    std::string string_rep_of_number = string_out.str();
+  if (input < 10*(width-1) || input > 10*width){
 
-    string_rep_of_number[column_widths_.at(j_)-1] = '*';
-    std::string string_to_print = string_rep_of_number.substr(0, column_widths_.at(j_));
-    *out_stream_ << string_to_print;
+    std::ostringstream string_out;
+    string_out << std::fixed
+	           << std::setprecision(width)
+	           << std::setw(width)
+	           << input;
+
+    auto string_rep = string_out.str();
+    string_rep[width - 1] = '*';
+
+    *out_stream_ << string_rep;
+   
+	std::string_view string_to_print(string_rep);
+    *out_stream_ << string_to_print.substr(0, width);
   } else {
 
     // determine what precision we need
