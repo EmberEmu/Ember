@@ -212,9 +212,6 @@ endif()
 ##############################
 find_package(MySQLConnectorCPP REQUIRED)
 include_directories(${MYSQLCCPP_INCLUDE_DIRS})
-message(STATUS "MYSQLCCPP_LIBRARY_RELEASE = ${MYSQLCCPP_LIBRARY_RELEASE}")
-message(STATUS "MYSQLCCPP_LIBRARY_DEBUG   = ${MYSQLCCPP_LIBRARY_DEBUG}")
-
 
 ##############################
 #         FlatBuffers        #

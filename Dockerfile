@@ -79,7 +79,7 @@ RUN --mount=type=cache,id=build-cache,target=/usr/src/ember/build \
     -DBUILD_SHARED=${build_shared_libs}       \
     -DWITH_JEMALLOC=1                         \
     && ccache --max-size=10G                  \
-    && cmake --build build -j$(nproc) -- VERBOSE=1 \
+    && cmake --build build -j$(nproc)         \
     && cmake --install build                  \
     && ctest --test-dir build
 
