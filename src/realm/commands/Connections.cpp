@@ -82,7 +82,7 @@ void connection_list(const commands::Arguments& args,
 	}
 
 	table.PrintFooter();
-	LOG_CONSOLE(logger, "Displaying {} connections\n{}", connections, stream.str());
+	LOG_CONSOLE(logger, "Displaying {} connections\n{}", connections, stream.view());
 }
 
 void print_connection_stats_header(bprinter::TablePrinter& table) {
@@ -145,7 +145,7 @@ void connection_statistics(const commands::Arguments& args,
 			print_connection_stats_header(table);
 			print_connection_stats(table, id, client);
 			print_connection_stats_footer(table);
-			LOG_CONSOLE(logger, "Displaying statistics for connection {}\n{}", id, stream.str());
+			LOG_CONSOLE(logger, "Displaying statistics for connection {}\n{}", id, stream.view());
 		});
 	} else {
 		std::stringstream stream;
@@ -159,7 +159,7 @@ void connection_statistics(const commands::Arguments& args,
 		}
 
 		print_connection_stats_footer(table);
-		LOG_CONSOLE(logger, "Displaying statistics for {} connections\n{}", connections, stream.str());
+		LOG_CONSOLE(logger, "Displaying statistics for {} connections\n{}", connections, stream.view());
 	}
 }
 

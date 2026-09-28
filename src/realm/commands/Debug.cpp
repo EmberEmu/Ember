@@ -48,7 +48,7 @@ void print_allocator_debug_table(log::Logger& logger) {
 	}
 
 	table.PrintFooter();
-	LOG_CONSOLE(logger, "Displaying memory allocation statistics\n{}", stream.str());
+	LOG_CONSOLE(logger, "Displaying memory allocation statistics\n{}", stream.view());
 }
 
 void handle_allocator_debug(const commands::Arguments& args, log::Logger& logger) {
