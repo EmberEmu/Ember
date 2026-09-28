@@ -43,6 +43,9 @@ jobs:
         uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294 # v7.0.0
         with:
           context: .
+          build-args: |
+            USE_CLANG=1
+            build_type=Debug
           tags: emberemu/ember:latest-gcc
           push: ${{ github.event_name != 'pull_request' }}
           load: ${{ github.event_name == 'pull_request' }}
@@ -86,6 +89,7 @@ jobs:
           context: .
           build-args: |
             build_shared_libs=true
+            build_type=Debug
           tags: emberemu/ember:latest-gcc
           push: ${{ github.event_name != 'pull_request' }}
           load: ${{ github.event_name == 'pull_request' }}
@@ -129,6 +133,7 @@ jobs:
           context: .
           build-args: |
             USE_CLANG=1
+            build_type=Debug
           tags: emberemu/ember:latest-clang
           push: ${{ github.event_name != 'pull_request' }}
           load: ${{ github.event_name == 'pull_request' }}
