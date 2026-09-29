@@ -24,6 +24,7 @@ class Client {
 	EventDispatcher& dispatcher_;
 	log::Logger& logger_;
 	std::atomic_bool running_;
+	std::size_t index_;
 
 	bool handle_self_event(const Event& event);
 	void handle_kick();

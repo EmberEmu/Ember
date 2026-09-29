@@ -20,12 +20,12 @@ namespace ember::realm {
 Client::Client(ClientHandler handler, ClientConnection connection,
                std::size_t index, EventDispatcher& dispatcher,
                log::Logger& logger)
-	: ident_(dispatcher.register_client(this, index))
-	, handler_(std::move(handler))
+	: handler_(std::move(handler))
 	, connection_(std::move(connection))
 	, dispatcher_(dispatcher)
 	, logger_(logger)
-	, running_(false) {}
+	, running_(false)
+	, index_(index) {}
 
 bool Client::handle_self_event(const Event& event) {
 	using enum EventType;
@@ -88,6 +88,8 @@ void Client::start() {
 	}
 
 	ClientSlots::update_peak();
+
+	ident_ = dispatcher_.register_client(this, index_);
 
 	// Referencing each other like this is fine because they won't start running until we return
 	// - that's assuming we're running on the same Asio worker, which we really should be
