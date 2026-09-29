@@ -95,12 +95,12 @@ void handle_authentication(ClientContext& ctx) {
 void fetch_account_id(const ClientContext& ctx, const utf8_string& username) {
 	LOG_TRACE(ctx.logger, log_func);
 
-	const auto& uuid = ctx.handler().ident();
+	const auto& ident = ctx.handler().ident();
 	auto& dispatcher = ctx.dispatcher;
 
-	ctx.account_rpc.locate_account_id(username, [dispatcher, uuid](auto status, auto id) {
+	ctx.account_rpc.locate_account_id(username, [dispatcher, ident](auto status, auto id) {
 		AccountIDResponse event(status, id);
-		dispatcher.post(uuid, event);
+		dispatcher.post(ident, event);
 	});
 }
 
@@ -133,12 +133,12 @@ void handle_account_id(ClientContext& ctx, const AccountIDResponse& event) {
 void fetch_session_key(const ClientContext& ctx, const std::uint32_t account_id) {
 	LOG_TRACE(ctx.logger, log_func);
 
-	const auto& uuid = ctx.handler().ident();
+	const auto& ident = ctx.handler().ident();
 	auto& dispatcher = ctx.dispatcher;
 		
-	ctx.account_rpc.locate_session(account_id, [dispatcher, uuid](auto status, auto key) {
+	ctx.account_rpc.locate_session(account_id, [dispatcher, ident](auto status, auto key) {
 		SessionKeyResponse event(status, key);
-		dispatcher.post(uuid, event);
+		dispatcher.post(ident, event);
 	});
 }
 

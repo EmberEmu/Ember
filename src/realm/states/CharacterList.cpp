@@ -78,26 +78,26 @@ void character_rename(ClientContext& ctx) {
 		return ctx.stream_err(result);
 	}
 
-	const auto& uuid = ctx.handler().ident();
+	const auto& ident = ctx.handler().ident();
 	auto& dispatcher = ctx.dispatcher;
 
 	ctx.character_rpc.rename_character(ctx.account->id, packet->id, packet->name,
-	                                  [dispatcher, uuid](auto result, auto id, const auto& name) {
+	                                  [dispatcher, ident](auto result, auto id, const auto& name) {
 		CharRenameResponse event(result, id, name);
-		dispatcher.post(uuid, std::move(event));
+		dispatcher.post(ident, std::move(event));
 	});
 }
 
 void character_enumerate(const ClientContext& ctx) {
 	LOG_TRACE(ctx.logger, log_func);
 
-	const auto& uuid = ctx.handler().ident();
+	const auto& ident = ctx.handler().ident();
 	auto& dispatcher = ctx.dispatcher;
 
 	ctx.character_rpc.retrieve_characters(ctx.account->id,
-		[dispatcher, uuid](auto status, auto characters) {
+		[dispatcher, ident](auto status, auto characters) {
 			CharEnumResponse event(status, std::move(characters));
-			dispatcher.post(uuid, std::move(event));
+			dispatcher.post(ident, std::move(event));
 		}
 	);
 }
@@ -137,11 +137,11 @@ void character_create(ClientContext& ctx) {
 		return ctx.stream_err(result);
 	}
 
-	const auto& uuid = ctx.handler().ident();
+	const auto& ident = ctx.handler().ident();
 	auto& dispatcher = ctx.dispatcher;
 
-	ctx.character_rpc.create_character(ctx.account->id, packet->character, [dispatcher, uuid](auto result) {
-		dispatcher.post(uuid, CharCreateResponse(result));
+	ctx.character_rpc.create_character(ctx.account->id, packet->character, [dispatcher, ident](auto result) {
+		dispatcher.post(ident, CharCreateResponse(result));
 	});
 }
 
@@ -154,11 +154,11 @@ void character_delete(ClientContext& ctx) {
 		return ctx.stream_err(result);
 	}
 
-	const auto& uuid = ctx.handler().ident();
+	const auto& ident = ctx.handler().ident();
 	auto& dispatcher = ctx.dispatcher;
 
-	ctx.character_rpc.delete_character(ctx.account->id, packet->guid, [dispatcher, uuid](auto result) {
-		dispatcher.post(uuid, CharDeleteResponse(result));
+	ctx.character_rpc.delete_character(ctx.account->id, packet->guid, [dispatcher, ident](auto result) {
+		dispatcher.post(ident, CharDeleteResponse(result));
 	});
 }
 

@@ -60,7 +60,7 @@ void Client::packet_log_start() {
 	handler_.log_redirect_stop(); // avoid generating an infinite packet loop
 	
 	auto plogger = create_packet_logger(
-		"realm", connection_.remote_address(), ident_.to_string(), logger_, false
+		"realm", connection_.remote_address(), ident().to_string(), logger_, false
 	);
 
 	if(!plogger) {
@@ -69,6 +69,10 @@ void Client::packet_log_start() {
 	}
 
 	connection_.packet_log_start(std::move(plogger));
+}
+
+const ClientIdent& Client::ident() const {
+	return handler_.ident();
 }
 
 void Client::handle_event(const Event& event) {
@@ -87,12 +91,12 @@ void Client::start(const std::size_t index) {
 
 	ClientSlots::update_peak();
 
-	ident_ = dispatcher_.register_client(this, index);
+	const auto ident = dispatcher_.register_client(this, index);
 
 	// Referencing each other like this is fine because they won't start running until we return
 	// - that's assuming we're running on the same Asio worker, which we really should be
-	handler_.start(connection_, ident_);
-	connection_.start(handler_, ident_);
+	handler_.start(connection_, ident);
+	connection_.start(handler_, ident);
 }
 
 void Client::stop() {

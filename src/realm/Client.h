@@ -18,7 +18,6 @@
 namespace ember::realm {
 
 class Client {
-	ClientIdent ident_;
 	ClientHandler handler_;
 	ClientConnection connection_;
 	EventDispatcher& dispatcher_;
@@ -46,10 +45,7 @@ public:
 
 	void handle_event(const Event& event);
 
-	const ClientIdent& uuid() const {
-		return ident_;
-	}
-
+	const ClientIdent& ident() const;
 	const ClientConnection& connection() const;
 	const ClientHandler& handler() const;
 };

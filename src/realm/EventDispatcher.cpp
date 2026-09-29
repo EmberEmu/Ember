@@ -138,13 +138,13 @@ void EventDispatcher::remove_client(const ClientType* client) {
 	assert(client);
 
 #ifndef DISABLE_FAST_DISPATCH_TABLE
-	if(auto slot = client->uuid().extract_slot(); slot != slot_npos) {
+	if(auto slot = client->ident().extract_slot(); slot != slot_npos) {
 		cache_[slot].set_zero();
 	}  else {
-		handlers_.erase(client->uuid());
+		handlers_.erase(client->ident());
 	}
 #else
-	handlers_.erase(client->uuid());
+	handlers_.erase(client->ident());
 #endif
 }
 

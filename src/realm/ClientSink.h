@@ -21,7 +21,7 @@ class EventDispatcher;
 
 /*
  * This sink enables forwarding log messages to interested game clients.
- * It does this by dispatching events to the provided ClientUUID, which allows for
+ * It does this by dispatching events to the provided ClientIdent, which allows for
  * safely addressing a specific client across threads.
  * 
  * Each client registers its own sink rather than sharing a single sink just for
