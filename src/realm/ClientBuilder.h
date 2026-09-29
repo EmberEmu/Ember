@@ -35,7 +35,7 @@ class ClientBuilder {
 		auto connection = conn_builder_.create(std::move(socket));
 
 		return unique_client_ptr(allocator .allocate(
-			index, dispatcher_, logger_, std::move(handler), std::move(connection)
+			std::move(handler), std::move(connection), index, dispatcher_, logger_
 		), ClientDeleter(allocator, pool_.get(index)));
 	}
 

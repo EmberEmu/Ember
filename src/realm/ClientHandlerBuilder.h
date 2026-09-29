@@ -10,7 +10,6 @@
 
 #include "ClientHandler.h"
 #include "ClientContextBuilder.h"
-#include <shared/ClientIdent.h>
 
 namespace ember::realm {
 

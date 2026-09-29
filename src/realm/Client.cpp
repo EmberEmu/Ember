@@ -16,8 +16,9 @@ using namespace std::string_view_literals;
 
 namespace ember::realm {
 
-Client::Client(std::size_t index, EventDispatcher& dispatcher, log::Logger& logger,
-               ClientHandler handler, ClientConnection connection)
+Client::Client(ClientHandler handler, ClientConnection connection,
+               std::size_t index, EventDispatcher& dispatcher,
+               log::Logger& logger)
 	: ident_(dispatcher.register_client(this, index))
 	, handler_(std::move(handler))
 	, connection_(std::move(connection))

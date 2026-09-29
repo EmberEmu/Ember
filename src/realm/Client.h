@@ -10,7 +10,6 @@
 
 #include "ClientConnection.h"
 #include "ClientHandler.h"
-#include "Forwards.h"
 #include "SocketType.h"
 #include <logger/LoggerFwd.h>
 #include <shared/ClientIdent.h>
@@ -36,8 +35,9 @@ class Client {
 	void update_peak();
 
 public:
-	Client(std::size_t index, EventDispatcher& dispatcher, log::Logger& logger,
-	       ClientHandler handler, ClientConnection connection);
+	Client(ClientHandler handler, ClientConnection connection,
+	       std::size_t index, EventDispatcher& dispatcher,
+	       log::Logger& logger);
 	~Client();
 
 	Client(Client&) = delete;
