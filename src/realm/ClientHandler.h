@@ -39,7 +39,7 @@ class ClientHandler final {
 
 	ClientConnection* connection_;
 	ClientContext context_;
-	ClientIdent uuid_;
+	ClientIdent ident_;
 	ClientState state_;
 
 	log::Logger& logger_;
@@ -66,17 +66,23 @@ class ClientHandler final {
 	void skip(BinaryStream& stream);
 	void stream_err(const protocol::StreamResult& result);
 	void set_connection(ClientConnection& connection);
+	void set_ident(const ClientIdent& ident);
 	void close_session();
 
 public:
-	ClientHandler(const ClientIdent& ident, ClientContext context, log::Logger& logger);
+	ClientHandler(ClientContext context, log::Logger& logger);
 	~ClientHandler();
 
-	void start(ClientConnection& connection);
+	ClientHandler(ClientHandler&& other) noexcept;
+	ClientHandler& operator=(ClientHandler&& other) noexcept = delete;
+	ClientHandler(ClientHandler& other) = delete;
+	ClientHandler& operator=(ClientHandler& other) = delete;
+
+	void start(ClientConnection& connection, const ClientIdent& ident);
 	void stop();
 	bool stopped() const;
 
-	const ClientIdent& uuid() const;
+	const ClientIdent& ident() const;
 	std::string_view whoami() const;
 
 	void handle_message(BinaryStream& stream);

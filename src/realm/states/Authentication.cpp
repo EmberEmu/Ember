@@ -95,7 +95,7 @@ void handle_authentication(ClientContext& ctx) {
 void fetch_account_id(const ClientContext& ctx, const utf8_string& username) {
 	LOG_TRACE(ctx.logger, log_func);
 
-	const auto& uuid = ctx.handler().uuid();
+	const auto& uuid = ctx.handler().ident();
 	auto& dispatcher = ctx.dispatcher;
 
 	ctx.account_rpc.locate_account_id(username, [dispatcher, uuid](auto status, auto id) {
@@ -133,7 +133,7 @@ void handle_account_id(ClientContext& ctx, const AccountIDResponse& event) {
 void fetch_session_key(const ClientContext& ctx, const std::uint32_t account_id) {
 	LOG_TRACE(ctx.logger, log_func);
 
-	const auto& uuid = ctx.handler().uuid();
+	const auto& uuid = ctx.handler().ident();
 	auto& dispatcher = ctx.dispatcher;
 		
 	ctx.account_rpc.locate_session(account_id, [dispatcher, uuid](auto status, auto key) {
@@ -200,7 +200,7 @@ void prove_session(ClientContext& ctx, const Botan::BigInt& key) {
 
 	ctx.cancel_timer();
 	
-	if(ctx.queue.enqueue(ctx.handler().uuid(), 0) == RealmQueue::Result::success) {
+	if(ctx.queue.enqueue(ctx.handler().ident(), 0) == RealmQueue::Result::success) {
 		auth_success(ctx);
 	} else {
 		auth_state(ctx, State::in_queue);
@@ -331,7 +331,7 @@ void exit(ClientContext& ctx) {
 	const auto& auth_ctx = std::get<Context>(ctx.state_ctx);
 
 	if(auth_ctx.state == State::in_queue) {
-		ctx.queue.dequeue(ctx.handler().uuid());
+		ctx.queue.dequeue(ctx.handler().ident());
 	} else {
 		ctx.cancel_timer();
 	}

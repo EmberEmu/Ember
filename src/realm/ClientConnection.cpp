@@ -23,10 +23,8 @@
 
 namespace ember::realm {
 
-ClientConnection::ClientConnection(tcp_socket socket, const ClientIdent& ident,
-                                   std::pair<DynamicTLSBuffer, DynamicTLSBuffer> buffers,
-								   EventDispatcher& dispatcher,
-                                   log::Logger& logger)
+ClientConnection::ClientConnection(tcp_socket socket,  std::pair<DynamicTLSBuffer, DynamicTLSBuffer> buffers,
+								   EventDispatcher& dispatcher, log::Logger& logger)
 	: socket_(std::move(socket))
 	, remote_ep_(socket_.remote_endpoint())
 	, stats_{}
@@ -41,8 +39,7 @@ ClientConnection::ClientConnection(tcp_socket socket, const ClientIdent& ident,
 	, outbound_front_(&outbound_buffers_.first)
 	, outbound_back_(&outbound_buffers_.second)
 	, allocator_(allocator_tag)
-	, dispatcher_(dispatcher)
-	, ident_(ident) {}
+	, dispatcher_(dispatcher) {}
 
 void ClientConnection::parse_header() {
 	LOG_TRACE(logger_, log_func);
@@ -210,12 +207,17 @@ void ClientConnection::set_key(std::span<const std::uint8_t, key_size> key) {
 	crypt_ = PacketCrypto<key_size>(key);
 }
 
-void ClientConnection::start(ClientHandler& handler) {
+void ClientConnection::set_ident(const ClientIdent& ident) {
+	ident_ = ident;
+}
+
+void ClientConnection::start(ClientHandler& handler, const ClientIdent& ident) {
 	if(stopped_) {
 		return;
 	}
 
 	set_handler(handler);
+	set_ident(ident);
 	read();
 }
 
@@ -288,6 +290,28 @@ void ClientConnection::set_handler(ClientHandler& handler) {
 
 bool ClientConnection::stopped() const {
 	return stopped_;
+}
+
+ClientConnection::ClientConnection(ClientConnection&& other) noexcept
+	: socket_(std::move(other.socket_))
+	, remote_ep_(socket_.remote_endpoint())
+	, stats_(other.stats_)
+	, msg_size_(other.msg_size_)
+	, logger_(other.logger_)
+	, read_state_(other.read_state_)
+	, stopped_(other.stopped_.load())
+	, write_in_progress_(other.write_in_progress_)
+	, handler_(other.handler_)
+	, compression_level_(other.compression_level_)
+	, outbound_buffers_{ std::move(other.outbound_buffers_) }
+	, outbound_front_(&outbound_buffers_.first)
+	, outbound_back_(&outbound_buffers_.second)
+	, allocator_(other.allocator_tag)
+	, dispatcher_(other.dispatcher_) {
+	assert(!handler_ && "ClientConnection can only be moved before start()");
+	other.stopped_ = true;
+	other.ident_ = {};
+	other.handler_ = nullptr;
 }
 
 ClientConnection::~ClientConnection() {

@@ -27,9 +27,9 @@ public:
 		, dispatcher_(dispatcher)
 		, logger_(logger) {}
 
-	ClientConnection create(tcp_socket socket, const ClientIdent& ident) const {
+	ClientConnection create(tcp_socket socket) const {
 		return ClientConnection(
-			std::move(socket), ident, alloc_provider_.make_buffer_pair(), dispatcher_, logger_
+			std::move(socket), alloc_provider_.make_buffer_pair(), dispatcher_, logger_
 		);
 	}
 };
