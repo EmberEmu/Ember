@@ -114,7 +114,7 @@ public:
 	void packet_log_stop();
 	bool packet_logging() const;
 
-	void rebind(ClientHandler& handler);
+	void rebind(ClientHandler& handler) noexcept;
 };
 
 } // realm, ember

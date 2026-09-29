@@ -279,7 +279,7 @@ bool ClientHandler::stopped() const {
 	return state_ == ClientState::cs_session_closed;
 }
 
-void ClientHandler::rebind(ClientConnection& connection) {
+void ClientHandler::rebind(ClientConnection& connection) noexcept {
 	assert(connection_);
 	connection_ = &connection;
 }

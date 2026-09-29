@@ -292,7 +292,7 @@ bool ClientConnection::stopped() const {
 	return stopped_;
 }
 
-void ClientConnection::rebind(ClientHandler& handler) {
+void ClientConnection::rebind(ClientHandler& handler) noexcept {
 	assert(handler_);
 	handler_ = &handler;
 }
