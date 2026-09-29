@@ -309,6 +309,7 @@ ClientConnection::ClientConnection(ClientConnection&& other) noexcept
 	, allocator_(other.allocator_tag)
 	, dispatcher_(other.dispatcher_) {
 	other.stopped_ = true;
+	other.ident_ = {};
 }
 
 ClientConnection::~ClientConnection() {
