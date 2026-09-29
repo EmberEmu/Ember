@@ -95,6 +95,8 @@ public:
 		return state_;
 	}
 
+	void rebind(ClientConnection& connection);
+
 	friend class ClientContext;
 };
 

@@ -292,6 +292,11 @@ bool ClientConnection::stopped() const {
 	return stopped_;
 }
 
+void ClientConnection::rebind(ClientHandler& handler) {
+	assert(handler_);
+	handler_ = &handler;
+}
+
 ClientConnection::ClientConnection(ClientConnection&& other) noexcept
 	: socket_(std::move(other.socket_))
 	, remote_ep_(socket_.remote_endpoint())
@@ -308,10 +313,13 @@ ClientConnection::ClientConnection(ClientConnection&& other) noexcept
 	, outbound_back_(&outbound_buffers_.second)
 	, allocator_(other.allocator_tag)
 	, dispatcher_(other.dispatcher_) {
-	assert(!handler_ && "ClientConnection can only be moved before start()");
+	if(handler_) {
+		handler_->rebind(*this);
+		other.handler_ = nullptr;
+	}
+
 	other.stopped_ = true;
 	other.ident_ = {};
-	other.handler_ = nullptr;
 }
 
 ClientConnection::~ClientConnection() {

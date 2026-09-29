@@ -279,6 +279,11 @@ bool ClientHandler::stopped() const {
 	return state_ == ClientState::cs_session_closed;
 }
 
+void ClientHandler::rebind(ClientConnection& connection) {
+	assert(connection_);
+	connection_ = &connection;
+}
+
 ClientHandler::ClientHandler(ClientContext context, log::Logger& logger)
 	: context_(std::move(context))
 	, state_(ClientState::cs_session_closed)
@@ -308,11 +313,14 @@ ClientHandler::ClientHandler(ClientHandler&& other) noexcept
 	, last_tick_(other.last_tick_)
 	, redirect_sink_(std::move(other.redirect_sink_))
 	, ident_(other.ident_) {
-	assert(!connection_ && "ClientHandler can only be moved before start()");
+	if(connection_) {
+		connection_->rebind(*this);
+		other.connection_ = nullptr;
+	}
+
 	context_.set_handler(*this);
 	other.state_ = ClientState::cs_session_closed;
 	other.ident_ = {};
-	other.connection_ = nullptr;
 }
 
 ClientHandler::~ClientHandler() {
