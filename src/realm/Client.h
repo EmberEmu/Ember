@@ -24,7 +24,6 @@ class Client {
 	EventDispatcher& dispatcher_;
 	log::Logger& logger_;
 	std::atomic_bool running_;
-	std::size_t index_;
 
 	bool handle_self_event(const Event& event);
 	void handle_kick();
@@ -33,8 +32,7 @@ class Client {
 
 public:
 	Client(ClientHandler handler, ClientConnection connection,
-	       std::size_t index, EventDispatcher& dispatcher,
-	       log::Logger& logger);
+	       EventDispatcher& dispatcher, log::Logger& logger);
 	~Client();
 
 	Client(Client&) = delete;
@@ -42,7 +40,7 @@ public:
 	Client& operator=(Client&) = delete;
 	Client& operator=(Client&&) = delete;
 
-	void start();
+	void start(std::size_t index);
 	void stop();
 	bool stopped() const;
 

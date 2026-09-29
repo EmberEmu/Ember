@@ -80,7 +80,7 @@ void NetworkListener::dispatch_socket() {
 		 */
 		boost::asio::dispatch(executor, [&, socket = std::move(socket_), index = index_]() mutable {
 			auto client = builder_.create(std::move(socket), index);
-			client->start();
+			client->start(index);
 			sessions_.enqueue(std::move(client));
 		});
 	} else {

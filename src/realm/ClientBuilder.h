@@ -36,7 +36,7 @@ class ClientBuilder {
 		return unique_client_ptr(allocator .allocate(
 			handler_builder_.create(executor),
 			conn_builder_.create(std::move(socket)),
-			index, dispatcher_, logger_
+			dispatcher_, logger_
 		), ClientDeleter(allocator, pool_.get(index)));
 	}
 
