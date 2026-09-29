@@ -8,6 +8,7 @@
 
 #include "Connections.h"
 #include "../Client.h"
+#include "../ClientSlots.h"
 #include "../Events.h"
 #include "../ServiceContextImpl.h"
 #include <logger/Logger.h>
@@ -185,7 +186,7 @@ void add_connections_commands(ServiceContext& context, commands::Command& regist
 		->description("Commands for connection & session management")
 		->handler(exec([&](auto&) {
 			LOG_CONSOLE(logger, "{} active connection(s), {} peak",
-				Client::curr_clients(), Client::peak_clients());
+				ClientSlots::curr_clients(), ClientSlots::peak_clients());
 		}));
 
 	root->insert("list")

@@ -7,6 +7,7 @@
  */
 
 #include "Client.h"
+#include "ClientSlots.h"
 #include "EventDispatcher.h"
 #include "packet_log/Helper.h"
 #include <logger/Logger.h>
@@ -86,7 +87,7 @@ void Client::start() {
 		return;
 	}
 
-	update_peak();
+	ClientSlots::update_peak();
 
 	// Referencing each other like this is fine because they won't start running until we return
 	// - that's assuming we're running on the same Asio worker, which we really should be
@@ -102,42 +103,6 @@ void Client::stop() {
 	dispatcher_.remove_client(this);
 	handler_.stop();
 	connection_.stop();
-}
-
-void Client::update_peak() {
-	// relaxed load is friendlier to cache than immediately trying to exchange
-	auto current = curr_clients_.load(std::memory_order_relaxed);
-	auto peak = peak_clients_.load(std::memory_order_relaxed);
-
-	while(current > peak) {
-		if(peak_clients_.compare_exchange_weak(peak, current, std::memory_order_relaxed)) {
-			return;
-		}
-	}
-}
-
-std::size_t Client::curr_clients() {
-	return curr_clients_;
-}
-
-std::size_t Client::peak_clients() {
-	return peak_clients_;
-}
-
-void Client::free_client_slot() {
-	--curr_clients_;
-}
-
-bool Client::reserve_client_slot(const std::size_t limit) {
-	const auto old_count = curr_clients_.fetch_add(1, std::memory_order_acquire);
-
-	// roll the counter back
-	if(old_count >= limit) {
-		curr_clients_.fetch_sub(1, std::memory_order_release);
-		return false;
-	}
-
-	return true;
 }
 
 bool Client::stopped() const {

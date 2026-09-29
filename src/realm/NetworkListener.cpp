@@ -7,6 +7,7 @@
  */
 
 #include "NetworkListener.h"
+#include "ClientSlots.h"
 #include "FilterTypes.h"
 #include <logger/Logger.h>
 #include <boost/asio/dispatch.hpp>
@@ -65,7 +66,7 @@ void NetworkListener::dispatch_socket() {
 	if(!ec) {
 		const auto max_socks = cfg_store_.config().max_sockets;
 
-		if(!Client::reserve_client_slot(max_socks)) {
+		if(!ClientSlots::reserve_slot(max_socks)) {
 			LOG_DEBUG(logger_, "Rejected connection from {}, too many sockets", ep.address().to_string());
 			return;
 		}

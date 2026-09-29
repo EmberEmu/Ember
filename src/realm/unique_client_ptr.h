@@ -10,6 +10,7 @@
 
 #include "Client.h"
 #include "ClientAllocator.h"
+#include "ClientSlots.h"
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/post.hpp>
 
@@ -24,7 +25,7 @@ struct ClientDeleter final {
 		, ioc(ioc) {}
 
 	void operator()(Client* ptr) const {
-		Client::free_client_slot();
+		ClientSlots::free_slot();
 
 		boost::asio::post(ioc, [&, ptr]()  {
 			allocator.deallocate(ptr);

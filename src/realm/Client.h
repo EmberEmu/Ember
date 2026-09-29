@@ -18,9 +18,6 @@
 namespace ember::realm {
 
 class Client {
-	inline static std::atomic_size_t curr_clients_;
-	inline static std::atomic_size_t peak_clients_;
-
 	ClientIdent ident_;
 	ClientHandler handler_;
 	ClientConnection connection_;
@@ -32,7 +29,6 @@ class Client {
 	void handle_kick();
 	void handle_request_stop();
 	void packet_log_start();
-	void update_peak();
 
 public:
 	Client(ClientHandler handler, ClientConnection connection,
@@ -57,11 +53,6 @@ public:
 
 	const ClientConnection& connection() const;
 	const ClientHandler& handler() const;
-
-	static std::size_t curr_clients();
-	static std::size_t peak_clients();
-	static bool reserve_client_slot(std::size_t limit);
-	static void free_client_slot();
 };
 
 } // realm, ember
