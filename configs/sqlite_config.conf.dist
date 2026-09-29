@@ -1,4 +1,4 @@
 # Sample SQLite configuration
 
 [sqlite]
-file = temp.db
+file = @CMAKE_INSTALL_PREFIX@/temp.db

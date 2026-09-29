@@ -5,7 +5,7 @@ id = 0     # realm ID, matching database value
 map_id = 0 # -1 = instances, 0 - EK, 1 - Kalimdor
 
 [dbc]
-path = dbcs/
+path = @CMAKE_INSTALL_PREFIX@/dbcs/
 
 [network]
 # IPv4 or IPv6 bind interface - this should be an internal address or closed port!
@@ -23,7 +23,7 @@ host = 127.0.0.1
 port = 6010
 
 [database]
-config_path = mysql_config.conf
+config_path = @CMAKE_INSTALL_PREFIX@/mysql_config.conf
 min_connections = 1
 max_connections = 8
 
@@ -35,7 +35,7 @@ port = 514
 
 [file_log]
 verbosity = none   # trace, debug, info, warning, error, fatal or none to disable
-path = logs/world_%d_%m_%Y.log
+path = @CMAKE_INSTALL_PREFIX@/logs/world_%d_%m_%Y.log
 midnight_rotate = 0
 mode = append      # if an existing log is found, you can either 'append' to it or 'truncate' it
 size_rotate = 0    # max log size in megabytes - 0 disables

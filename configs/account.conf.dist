@@ -9,7 +9,7 @@ host = 127.0.0.1
 port = 6010
 
 [database]
-config_path = mysql_config.conf
+config_path = @CMAKE_INSTALL_PREFIX@/mysql_config.conf
 min_connections = 1
 max_connections = 8
 
@@ -21,7 +21,7 @@ port = 514
 
 [file_log]
 verbosity = none # trace, debug, info, warning, error, fatal or none to disable
-path = logs/account_%d_%m_%Y.log
+path = @CMAKE_INSTALL_PREFIX@/logs/account_%d_%m_%Y.log
 midnight_rotate = 0
 mode = append # if an existing log is found, you can either 'append' to it or 'truncate' it
 size_rotate = 0 # max log size in megabytes - 0 disables

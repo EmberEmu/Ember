@@ -2,7 +2,7 @@
 
 [plugins]
 enable = 1
-path = plugins/
+path = @CMAKE_INSTALL_PREFIX@/plugins/
 
 [misc]
 threads = 0 # leave as 0 to automatically determine
@@ -15,7 +15,7 @@ port = 514
 
 [file_log]
 verbosity = none  # trace, debug, info, warning, error, fatal or none to disable
-path = logs/blaze_%d_%m_%Y.log
+path = @CMAKE_INSTALL_PREFIX@/logs/blaze_%d_%m_%Y.log
 midnight_rotate = 0
 mode = append     # if an existing log is found, you can either 'append' to it or 'truncate' it
 size_rotate = 0   # max log size in megabytes - 0 disables

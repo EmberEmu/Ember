@@ -3,39 +3,39 @@
 # Specify which services should be run within the Fusion instance
 [mdns]
 active = true
-config = mdns.conf
+config = @CMAKE_INSTALL_PREFIX@/mdns.conf
 prefix = [mdns]
-file = logs/mdns_fusion_%d_%m_%Y.log
+file = @CMAKE_INSTALL_PREFIX@/logs/mdns_fusion_%d_%m_%Y.log
 
 [account]
 active = true
-config = account.conf
+config = @CMAKE_INSTALL_PREFIX@/account.conf
 prefix = [account]
-file = logs/fusion_account_%d_%m_%Y.log
+file = @CMAKE_INSTALL_PREFIX@/logs/fusion_account_%d_%m_%Y.log
 
 [character]
 active = true
-config = character.conf
+config = @CMAKE_INSTALL_PREFIX@/character.conf
 prefix = [character]
-file = logs/fusion_character_%d_%m_%Y.log
+file = @CMAKE_INSTALL_PREFIX@/logs/fusion_character_%d_%m_%Y.log
 
 [login]
 active = true
-config = login.conf
+config = @CMAKE_INSTALL_PREFIX@/login.conf
 prefix = [login]
-file = logs/fusion_login_%d_%m_%Y.log
+file = @CMAKE_INSTALL_PREFIX@/logs/fusion_login_%d_%m_%Y.log
 
 [realm]
 active = true
-config = realm.conf
+config = @CMAKE_INSTALL_PREFIX@/realm.conf
 prefix = [realm]
-file = logs/fusion_realm_%d_%m_%Y.log
+file = @CMAKE_INSTALL_PREFIX@/logs/fusion_realm_%d_%m_%Y.log
 
 [world]
 active = true
-config = world.conf
+config = @CMAKE_INSTALL_PREFIX@/world.conf
 prefix = [world]
-file = logs/fusion_world_%d_%m_%Y.log
+file = @CMAKE_INSTALL_PREFIX@/logs/fusion_world_%d_%m_%Y.log
 
 [remote_log]
 service_name = fusion
@@ -45,7 +45,7 @@ port = 514
 
 [file_log]
 verbosity = none  # trace, debug, info, warning, error, fatal or none to disable
-path = logs/fusion_%d_%m_%Y.log
+path = @CMAKE_INSTALL_PREFIX@/logs/fusion_%d_%m_%Y.log
 midnight_rotate = 0
 mode = append     # if an existing log is found, you can either 'append' to it or 'truncate' it
 size_rotate = 0   # max log size in megabytes - 0 disables

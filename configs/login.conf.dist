@@ -5,7 +5,7 @@ builds = 1, 12, 1, 5875
 builds = 1, 12, 2, 6005
 
 [dbc]
-path = dbcs/
+path = @CMAKE_INSTALL_PREFIX@/dbcs/
 
 [integrity]
 enabled = 0    # validate the client's integrity
@@ -20,7 +20,7 @@ bin_path = ""  # path to patch files
 
 [survey]
 id = 0            # 0 = disabled, should be bumped for each new survey
-path = Survey.mpq # path to survey MPQ file
+path = @CMAKE_INSTALL_PREFIX@/Survey.mpq # path to survey MPQ file
 
 [network]
 interface = 0.0.0.0  # IPv4 or IPv6 bind interface - use 0.0.0.0 for all IPv4 interfaces
@@ -49,7 +49,7 @@ method = upnp       # auto, upnp, or natpmp
 gateway = 0.0.0.0   # only used for auto or natpmp
 
 [database]
-config_path = mysql_config.conf
+config_path = @CMAKE_INSTALL_PREFIX@/mysql_config.conf
 min_connections = 1
 max_connections = 8
 
@@ -61,7 +61,7 @@ port = 514
 
 [file_log]
 verbosity = none   # trace, debug, info, warning, error, fatal or none to disable
-path = logs/login_%d_%m_%Y.log
+path = @CMAKE_INSTALL_PREFIX@/logs/login_%d_%m_%Y.log
 midnight_rotate = 0
 mode = append      # if an existing log is found, you can either 'append' to it or 'truncate' it
 size_rotate = 0    # max log size in megabytes - 0 disables
