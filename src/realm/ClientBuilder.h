@@ -31,11 +31,12 @@ class ClientBuilder {
 		auto& allocator = alloc_provider_.client_allocator();
 		allocator.thread_enter();
 
-		auto handler = handler_builder_.create(socket.get_executor());
-		auto connection = conn_builder_.create(std::move(socket));
+		auto& executor = socket.get_executor();
 
 		return unique_client_ptr(allocator .allocate(
-			std::move(handler), std::move(connection), index, dispatcher_, logger_
+			handler_builder_.create(executor),
+			conn_builder_.create(std::move(socket)),
+			index, dispatcher_, logger_
 		), ClientDeleter(allocator, pool_.get(index)));
 	}
 
