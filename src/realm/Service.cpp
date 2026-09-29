@@ -257,7 +257,7 @@ void Service::initialise(const opts::variables_map& args) try {
 
 	ClientConnectionBuilder cc_builder(*ctx->alloc_provider, *ctx->dispatcher, logger);
 	ClientHandlerBuilder ch_builder(ctx_builder, logger);
-	ClientBuilder builder(ch_builder, cc_builder, *ctx->alloc_provider, *ctx->dispatcher, *ctx->service_pool, logger);
+	ClientBuilder builder(ch_builder, cc_builder, *ctx->alloc_provider, *ctx->dispatcher, logger);
 
 	// Start shutdown scheduling system
 	ctx->shutdown_pa = std::make_unique<ShutdownAnnouncer>(

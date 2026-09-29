@@ -14,7 +14,6 @@
 #include "Forwards.h"
 #include "unique_client_ptr.h"
 #include <logger/LoggerFwd.h>
-#include <thread/ServicePool.h>
 #include <memory>
 
 namespace ember::realm {
@@ -24,10 +23,9 @@ class ClientBuilder {
 	ClientConnectionBuilder conn_builder_;
 	const AllocationProvider& alloc_provider_;
 	EventDispatcher& dispatcher_;
-	thread::ServicePool& pool_;
 	log::Logger& logger_;
 
-	unique_client_ptr make_unique_client(tcp_socket socket, std::size_t index) const {
+	unique_client_ptr make_unique_client(tcp_socket socket, boost::asio::io_context& ioc) const {
 		auto& allocator = alloc_provider_.client_allocator();
 		allocator.thread_enter();
 
@@ -37,22 +35,21 @@ class ClientBuilder {
 			handler_builder_.create(executor),
 			conn_builder_.create(std::move(socket)),
 			dispatcher_, logger_
-		), ClientDeleter(allocator, pool_.get(index)));
+		), ClientDeleter(allocator, ioc));
 	}
 
 public:
 	ClientBuilder(ClientHandlerBuilder ch_builder, ClientConnectionBuilder cc_builder,
 				  const AllocationProvider& alloc_provider, EventDispatcher& dispatcher,
-	              thread::ServicePool& pool, log::Logger& logger)
+	              log::Logger& logger)
 		: handler_builder_(ch_builder)
 		, conn_builder_(cc_builder)
 		, dispatcher_(dispatcher)
 		, alloc_provider_(alloc_provider)
-		, pool_(pool)
 		, logger_(logger) {}
 
-	unique_client_ptr create(tcp_socket socket, std::size_t index) const {
-		return make_unique_client(std::move(socket), index);
+	unique_client_ptr create(tcp_socket socket, boost::asio::io_context& ioc) const {
+		return make_unique_client(std::move(socket), ioc);
 	}
 };
 
