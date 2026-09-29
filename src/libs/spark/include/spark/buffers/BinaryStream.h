@@ -435,7 +435,7 @@ public:
 	}
 
 	template<basic_string_view string_view_type, std::integral prefix_type, typename endian_tag>
-	BinaryStream& operator>>(prefixed<string_view_type, prefix_type, endian_tag> adaptor) {
+	BinaryStream& operator>>(prefixed<string_view_type, prefix_type, endian_tag> adaptor) requires contiguous<buf_type> {
 		prefix_type size = 0;
 		*this >> size;
 		endian::storage_out(size, adaptor.byte_order);
@@ -492,7 +492,7 @@ public:
 	}
 
 	template<basic_string_view string_view_type>
-	BinaryStream& operator>>(prefixed_varint<string_view_type> adaptor) {
+	BinaryStream& operator>>(prefixed_varint<string_view_type> adaptor) requires contiguous<buf_type> {
 		const auto size = detail::varint_decode<size_type>(*this);
 
 		// if an error was triggered during decode
@@ -597,7 +597,8 @@ public:
 	}
 
 	template<basic_string_view string_view_type, std::integral prefix_type, typename endian_tag>
-	BinaryStream& operator>>(prefixed_null_terminated<string_view_type, prefix_type, endian_tag> adaptor) {
+	BinaryStream& operator>>(prefixed_null_terminated<string_view_type, prefix_type, endian_tag> adaptor)
+	requires contiguous<buf_type> {
 		prefix_type size = 0;
 		*this >> size;
 		endian::storage_out(size, adaptor.byte_order);
@@ -650,13 +651,13 @@ public:
 	}
 
 	template<basic_string_view string_view_type>
-	BinaryStream& operator>>(null_terminated<string_view_type> adaptor) {
+	BinaryStream& operator>>(null_terminated<string_view_type> adaptor) requires contiguous<buf_type> {
 		adaptor.str = view();
 		return *this;
 	}
 
 	template<basic_string_view string_view_type>
-	BinaryStream& operator>>(string_view_type& data) {
+	BinaryStream& operator>>(string_view_type& data) requires contiguous<buf_type> {
 		return (*this >> prefixed(data));
 	}
 
