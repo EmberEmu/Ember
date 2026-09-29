@@ -161,7 +161,7 @@ private:
 		if constexpr(memcpy_read<container_type, BinaryStream>) {
 			// ensure there's enough data in the buffer to satisify this request
 			// before go ahead and resize the container and begin the read
-			if(const auto max = size(); count > max / sizeof(c_value_type)) {
+			if(const auto max = size(); count > max / sizeof(c_value_type)) [[unlikely]] {
 				state_ = StreamState::malformed_read;
 
 				if constexpr(std::is_same_v<exceptions, allow_throw_t>) {

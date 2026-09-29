@@ -100,7 +100,7 @@ class BinaryStreamReader : virtual public StreamBase {
 		if constexpr(memcpy_read<container_type, BinaryStreamReader>) {
 			// ensure there's enough data in the buffer to satisify this request
 			// before go ahead and resize the container and begin the read
-			if(const auto max = size(); count > max / sizeof(c_value_type)) {
+			if(const auto max = size(); count > max / sizeof(c_value_type)) [[unlikely]] {
 				set_state(StreamState::malformed_read);
 
 				if(allow_throw()) {
