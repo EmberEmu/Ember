@@ -7,8 +7,6 @@
  */
 
 #include "Client.h"
-#include "ClientConnectionBuilder.h"
-#include "ClientHandlerBuilder.h"
 #include "EventDispatcher.h"
 #include "packet_log/Helper.h"
 #include <logger/Logger.h>
@@ -18,11 +16,11 @@ using namespace std::string_view_literals;
 
 namespace ember::realm {
 
-Client::Client(tcp_socket socket, std::size_t index, EventDispatcher& dispatcher, log::Logger& logger,
-               const ClientHandlerBuilder& ch_builder, const ClientConnectionBuilder& cc_builder)
+Client::Client(std::size_t index, EventDispatcher& dispatcher, log::Logger& logger,
+               ClientHandler handler, ClientConnection connection)
 	: ident_(dispatcher.register_client(this, index))
-	, handler_(ch_builder.create(ident_, socket.get_executor()))
-	, connection_(cc_builder.create(std::move(socket), ident_))
+	, handler_(std::move(handler))
+	, connection_(std::move(connection))
 	, dispatcher_(dispatcher)
 	, logger_(logger)
 	, running_(false) {}
@@ -91,8 +89,8 @@ void Client::start() {
 
 	// Referencing each other like this is fine because they won't start running until we return
 	// - that's assuming we're running on the same Asio worker, which we really should be
-	handler_.start(connection_);
-	connection_.start(handler_);
+	handler_.start(connection_, ident_);
+	connection_.start(handler_, ident_);
 }
 
 void Client::stop() {

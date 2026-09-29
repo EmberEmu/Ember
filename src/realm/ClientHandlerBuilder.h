@@ -23,8 +23,8 @@ public:
 		: builder_(builder)
 		, logger_(logger) {}
 
-	ClientHandler create(ClientIdent ident, executor executor) const {
-		return ClientHandler(ident, builder_.create(executor), logger_);
+	ClientHandler create(executor executor) const {
+		return ClientHandler(builder_.create(executor), logger_);
 	}
 };
 

@@ -83,16 +83,20 @@ private:
 	std::size_t minimum_transfer() const;
 	void close_session();
 	void set_handler(ClientHandler& handler);
+	void set_ident(const ClientIdent& ident);
 
 public:
-	ClientConnection(tcp_socket socket, const ClientIdent& ident,
-	                 std::pair<DynamicTLSBuffer, DynamicTLSBuffer> buffers,
-	                 EventDispatcher& dispatcher,
-	                 log::Logger& logger);
+	ClientConnection(tcp_socket socket, std::pair<DynamicTLSBuffer, DynamicTLSBuffer> buffers,
+	                 EventDispatcher& dispatcher, log::Logger& logger);
 	~ClientConnection();
 
+	ClientConnection(ClientConnection&& other) noexcept;
+	ClientConnection& operator=(ClientConnection&& other) noexcept = delete;
+	ClientConnection(ClientConnection& other) = delete;
+	ClientConnection& operator=(ClientConnection& other) = delete;
+
 	// session management
-	void start(ClientHandler& handler);
+	void start(ClientHandler& handler, const ClientIdent& ident);
 	void stop();
 	bool stopped() const;
 

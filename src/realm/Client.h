@@ -18,9 +18,6 @@
 
 namespace ember::realm {
 
-class ClientHandlerBuilder;
-class ClientConnectionBuilder;
-
 class Client {
 	inline static std::atomic_size_t curr_clients_;
 	inline static std::atomic_size_t peak_clients_;
@@ -39,17 +36,8 @@ class Client {
 	void update_peak();
 
 public:
-	/*
-	 * We're referencing builders rather than moving the objects in because they're non-movable types
-	 * and making them safely movable under *all* conditions isn't worth the additional complexity and
-	 * performance penalties we'd have to pay - fast event dispatching would no longer play nicely with
-	 * RPC and we don't want to allocate the objects individually.
-	 * 
-	 * They'd be safe to move as long as it's done before calling start but it's best not to add the ability
-	 * at all unless it's always safe to do so. I did it and promptly undid it. Trust me, bro.
- 	 */
-	Client(tcp_socket socket, std::size_t index, EventDispatcher& dispatcher, log::Logger& logger,
-	       const ClientHandlerBuilder& ch_builder, const ClientConnectionBuilder& cc_builder);
+	Client(std::size_t index, EventDispatcher& dispatcher, log::Logger& logger,
+	       ClientHandler handler, ClientConnection connection);
 	~Client();
 
 	Client(Client&) = delete;

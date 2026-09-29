@@ -23,7 +23,8 @@
 
 namespace ember::realm {
 
-void ClientHandler::start(ClientConnection& connection) {
+void ClientHandler::start(ClientConnection& connection, const ClientIdent& ident) {
+	set_ident(ident);
 	set_connection(connection);
 	state_update(ClientState::cs_authenticating);
 }
@@ -120,7 +121,7 @@ void ClientHandler::handle_ping(BinaryStream& stream) {
 
 // stops the handler and requests for the session to be terminated
 void ClientHandler::close_session() {
-	context_.dispatcher.post(uuid_, RequestStop{});
+	context_.dispatcher.post(ident_, RequestStop{});
 	stop();
 }
 
@@ -229,7 +230,7 @@ void ClientHandler::log_redirect(LogRedirect::Type type, log::Severity severity)
 	log_redirect_stop(); // remove if we're just changing settings
 
 	auto sink = std::make_shared<ClientSink>(
-		context_.dispatcher, uuid_, severity, type, log::Filter(lf_packet_trace)
+		context_.dispatcher, ident_, severity, type, log::Filter(lf_packet_trace)
 	);
 
 	logger_.add_sink(sink);
@@ -257,8 +258,8 @@ void ClientHandler::stream_err(const protocol::StreamResult& result) {
 	}
 }
 
-const ClientIdent& ClientHandler::uuid() const {
-	return uuid_;
+const ClientIdent& ClientHandler::ident() const {
+	return ident_;
 }
 
 std::string_view ClientHandler::whoami() const {	
@@ -270,16 +271,19 @@ void ClientHandler::set_connection(ClientConnection& connection) {
 	context_.connection(connection);
 }
 
+void ClientHandler::set_ident(const ClientIdent& ident) {
+	ident_ = ident;
+}
+
 bool ClientHandler::stopped() const {
 	return state_ == ClientState::cs_session_closed;
 }
 
-ClientHandler::ClientHandler(const ClientIdent& ident, ClientContext context, log::Logger& logger)
+ClientHandler::ClientHandler(ClientContext context, log::Logger& logger)
 	: context_(std::move(context))
 	, state_(ClientState::cs_session_closed)
 	, connection_(nullptr)
 	, logger_(logger)
-	, uuid_(ident)
 	, packet_counter_(0)
 	, pps_violation_(0)
 	, ping_sequence_(0)
@@ -288,6 +292,25 @@ ClientHandler::ClientHandler(const ClientIdent& ident, ClientContext context, lo
 	, timer_events_(0)
 	, last_tick_(utility::get_tick_count()) {
 	context_.set_handler(*this);
+}
+
+ClientHandler::ClientHandler(ClientHandler&& other) noexcept
+	: context_(std::move(other.context_))
+	, state_(other.state_)
+	, connection_(other.connection_)
+	, logger_(other.logger_)
+	, packet_counter_(other.packet_counter_)
+	, pps_violation_(other.pps_violation_)
+	, ping_sequence_(other.ping_sequence_)
+	, ping_violation_(other.ping_violation_)
+	, prev_ping_sequence_(other.prev_ping_sequence_)
+	, timer_events_(other.timer_events_)
+	, last_tick_(other.last_tick_)
+	, redirect_sink_(std::move(other.redirect_sink_))
+	, ident_(other.ident_) {
+	context_.set_handler(*this);
+	other.state_ = ClientState::cs_session_closed;
+	other.ident_ = {};
 }
 
 ClientHandler::~ClientHandler() {

@@ -20,8 +20,8 @@
 namespace ember::realm {
 
 class ClientBuilder {
-	ClientHandlerBuilder ch_builder_;
-	ClientConnectionBuilder cc_builder_;
+	ClientHandlerBuilder handler_builder_;
+	ClientConnectionBuilder conn_builder_;
 	const AllocationProvider& alloc_provider_;
 	EventDispatcher& dispatcher_;
 	thread::ServicePool& pool_;
@@ -31,8 +31,11 @@ class ClientBuilder {
 		auto& allocator = alloc_provider_.client_allocator();
 		allocator.thread_enter();
 
+		auto handler = handler_builder_.create(socket.get_executor());
+		auto connection = conn_builder_.create(std::move(socket));
+
 		return unique_client_ptr(allocator .allocate(
-			std::move(socket), index, dispatcher_, logger_, ch_builder_, cc_builder_
+			index, dispatcher_, logger_, std::move(handler), std::move(connection)
 		), ClientDeleter(allocator, pool_.get(index)));
 	}
 
@@ -40,8 +43,8 @@ public:
 	ClientBuilder(ClientHandlerBuilder ch_builder, ClientConnectionBuilder cc_builder,
 				  const AllocationProvider& alloc_provider, EventDispatcher& dispatcher,
 	              thread::ServicePool& pool, log::Logger& logger)
-		: ch_builder_(ch_builder)
-		, cc_builder_(cc_builder)
+		: handler_builder_(ch_builder)
+		, conn_builder_(cc_builder)
 		, dispatcher_(dispatcher)
 		, alloc_provider_(alloc_provider)
 		, pool_(pool)
