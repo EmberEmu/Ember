@@ -308,9 +308,11 @@ ClientHandler::ClientHandler(ClientHandler&& other) noexcept
 	, last_tick_(other.last_tick_)
 	, redirect_sink_(std::move(other.redirect_sink_))
 	, ident_(other.ident_) {
+	assert(!connection_ && "ClientHandler can only be moved before start()");
 	context_.set_handler(*this);
 	other.state_ = ClientState::cs_session_closed;
 	other.ident_ = {};
+	other.connection_ = nullptr;
 }
 
 ClientHandler::~ClientHandler() {

@@ -308,8 +308,10 @@ ClientConnection::ClientConnection(ClientConnection&& other) noexcept
 	, outbound_back_(&outbound_buffers_.second)
 	, allocator_(other.allocator_tag)
 	, dispatcher_(other.dispatcher_) {
+	assert(!handler_ && "ClientConnection can only be moved before start()");
 	other.stopped_ = true;
 	other.ident_ = {};
+	other.handler_ = nullptr;
 }
 
 ClientConnection::~ClientConnection() {
