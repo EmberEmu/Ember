@@ -29,10 +29,8 @@ class ClientBuilder {
 		auto& allocator = alloc_provider_.client_allocator();
 		allocator.thread_enter();
 
-		auto& executor = socket.get_executor();
-
 		return unique_client_ptr(allocator .allocate(
-			handler_builder_.create(executor),
+			handler_builder_.create(ioc.get_executor()),
 			conn_builder_.create(std::move(socket)),
 			dispatcher_, logger_
 		), ClientDeleter(allocator, ioc));
