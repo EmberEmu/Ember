@@ -3,11 +3,11 @@
 FROM ubuntu:resolute AS builder
 LABEL description="Development build environment"
 
-ARG SKIP_UPGRADE
-ARG USE_CLANG
+ARG skip_upgrade
+ARG use_clang
 
 # Update the distro and install our tools
-RUN if [ -n "$SKIP_UPGRADE" ]; then apt-get -y update && apt-get -y upgrade; fi
+RUN if [ -n "skip_upgrade" ]; then apt-get -y update && apt-get -y upgrade; fi
 
 RUN apt-get -y update \
  && apt-get -y install software-properties-common \
@@ -30,7 +30,7 @@ RUN apt-get -y update \
  && apt-get install -y libpcre3-dev \
  && apt-get install -y libjsoncons-dev
 
-RUN if [ -n "$USE_CLANG" ]; then                                        \
+RUN if [ -n "use_clang" ]; then                                        \
  apt-get -y install clang;                                              \
 else                                                                    \
  apt-get -y install gcc-15 g++-15                                       \
@@ -71,17 +71,17 @@ ARG install_dir=/usr/local/bin
 
 # Generate Makefile & compile
 RUN --mount=type=cache,id=build-cache,target=/usr/src/ember/build \
-    cmake -S . -B build -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
-    -DAngelScript_DIR=/usr/local/lib/cmake/Angelscript  \
-    -DCMAKE_BUILD_TYPE=${build_type}          \
-    -DCMAKE_INSTALL_PREFIX=${install_dir}     \
-    -DBUILD_OPT_TOOLS=${build_optional_tools} \
-    -DBUILD_SHARED=${build_shared_libs}       \
-    -DWITH_JEMALLOC=1                         \
-    && ccache --max-size=10G                  \
-    && cmake --build build -j$(nproc)         \
-    && cmake --install build                  \
-    && ctest --test-dir build
+ cmake -S . -B build -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
+ -DAngelScript_DIR=/usr/local/lib/cmake/Angelscript  \
+ -DCMAKE_BUILD_TYPE=${build_type}          \
+ -DCMAKE_INSTALL_PREFIX=${install_dir}     \
+ -DBUILD_OPT_TOOLS=${build_optional_tools} \
+ -DBUILD_SHARED=${build_shared_libs}       \
+ -DWITH_JEMALLOC=1                         \
+ && ccache --max-size=10G                  \
+ && cmake --build build -j$(nproc)         \
+ && cmake --install build                  \
+ && ctest --test-dir build
 
 FROM ubuntu:resolute AS run_environment
 ARG install_dir=/usr/local/bin

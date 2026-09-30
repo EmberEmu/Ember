@@ -44,7 +44,7 @@ jobs:
         with:
           context: .
           build-args: |
-            USE_CLANG=1
+            use_clang=1
             build_type=Debug
           tags: emberemu/ember:latest-gcc
           push: ${{ github.event_name != 'pull_request' }}
@@ -132,7 +132,7 @@ jobs:
         with:
           context: .
           build-args: |
-            USE_CLANG=1
+            use_clang=1
             build_type=Debug
           tags: emberemu/ember:latest-clang
           push: ${{ github.event_name != 'pull_request' }}
