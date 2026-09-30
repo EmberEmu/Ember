@@ -42,8 +42,8 @@ public:
 	              log::Logger& logger)
 		: handler_builder_(ch_builder)
 		, conn_builder_(cc_builder)
-		, dispatcher_(dispatcher)
 		, alloc_provider_(alloc_provider)
+		, dispatcher_(dispatcher)
 		, logger_(logger) {}
 
 	unique_client_ptr create(tcp_socket socket, boost::asio::io_context& ioc) const {
