@@ -103,10 +103,6 @@ std::shared_ptr<commands::Command> init_commands(const opts::variables_map& args
 
 void print_defaulted(const opts::variables_map& args, log::Logger& logger) {
 	for(const auto& [key, value] : args) {
-		if(key == "config") {
-			continue;
-		}
-
 		if(value.defaulted()) {
 			SLOG_WARN(logger, "Configuration key '{}' missing, using default value", key);
 		}
@@ -114,20 +110,9 @@ void print_defaulted(const opts::variables_map& args, log::Logger& logger) {
 }
 
 opts::variables_map parse_arguments(const int argc, const char* argv[]) {
-	// Command-line options
-	opts::options_description cmdline_opts("Generic options");
-	cmdline_opts.add_options()
-		("help,h", "Displays a list of available options")
-		("config,c", opts::value<std::string>()->default_value("mdns.conf"),
-			 "Path to the configuration file");
-
-	opts::positional_options_description pos;
-	pos.add("config", 1);
-
-	// Config file options
-	opts::options_description opts("Multicast DNS configuration options");
-	opts.add(dns::Service::options());
-	opts.add_options()
+	opts::options_description config_opts("Realm configuration options");
+	config_opts.add(dns::Service::options());
+	config_opts.add_options()
 		("console_log.enable_input", opts::value<bool>()->required())
 		("console_log.verbosity", opts::value<log::Severity>()->required())
 		("console_log.filter-mask", opts::value<std::uint32_t>()->required())
@@ -148,23 +133,34 @@ opts::variables_map parse_arguments(const int argc, const char* argv[]) {
 		("file_log.log_timestamp", opts::value<bool>()->required())
 		("file_log.log_severity", opts::value<bool>()->required());
 
+	opts::options_description cmdline_opts("Command-line options");
+	cmdline_opts.add_options()
+		("help,h", "Displays a list of available options")
+		("config,c", opts::value<std::string>(), "Path to the configuration file");
+
+	cmdline_opts.add(config_opts);
+
+	opts::positional_options_description pos;
+	pos.add("config", 1);
+
 	opts::variables_map options;
 	opts::store(opts::command_line_parser(argc, argv).positional(pos).options(cmdline_opts).run(), options);
-	opts::notify(options);
 
 	if(options.count("help")) {
 		std::cout << cmdline_opts;
 		std::exit(EXIT_SUCCESS);
 	}
 
-	const auto& config_path = options["config"].as<std::string>();
+	const auto& config_path = options.count("config")?
+		options["config"].as<std::string>() : "mdns.conf";
+
 	std::ifstream ifs(config_path);
 
 	if(!ifs) {
 		throw std::invalid_argument("Unable to open configuration file: " + config_path);
 	}
 
-	opts::store(opts::parse_config_file(ifs, opts), options);
+	opts::store(opts::parse_config_file(ifs, config_opts), options);
 	opts::notify(options);
 
 	return options;

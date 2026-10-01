@@ -110,10 +110,6 @@ int launch(const opts::variables_map& args, log::Logger& logger) try {
 
 void print_defaulted(const opts::variables_map& args, log::Logger& logger) {
 	for(const auto& [key, value] : args) {
-		if(key == "config") {
-			continue;
-		}
-
 		if(value.defaulted()) {
 			SLOG_WARN(logger, "Configuration key '{}' missing, using default value", key);
 		}

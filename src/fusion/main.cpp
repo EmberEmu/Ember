@@ -230,18 +230,7 @@ void stop_services() {
 }
 
 opts::variables_map parse_arguments(const int argc, const char* argv[]) {
-	// Command-line options
-	opts::options_description cmdline_opts("Generic options");
-	cmdline_opts.add_options()
-		("help,h", "Displays a list of available options")
-		("config,c", opts::value<std::string>()->default_value("fusion.conf"),
-			 "Path to the configuration file");
-
-	opts::positional_options_description pos;
-	pos.add("config", 1);
-
-	// Config file options
-	opts::options_description config_opts("Fusion configuration options");
+	opts::options_description config_opts("Realm configuration options");
 	config_opts.add_options()
 		("mdns.active", opts::value<bool>()->required())
 		("mdns.config", opts::value<std::string>()->required())
@@ -288,16 +277,27 @@ opts::variables_map parse_arguments(const int argc, const char* argv[]) {
 		("file_log.log_timestamp", opts::value<bool>()->required())
 		("file_log.log_severity", opts::value<bool>()->required());
 
+	opts::options_description cmdline_opts("Command-line options");
+	cmdline_opts.add_options()
+		("help,h", "Displays a list of available options")
+		("config,c", opts::value<std::string>(), "Path to the configuration file");
+
+	cmdline_opts.add(config_opts);
+
+	opts::positional_options_description pos;
+	pos.add("config", 1);
+
 	opts::variables_map options;
 	opts::store(opts::command_line_parser(argc, argv).positional(pos).options(cmdline_opts).run(), options);
-	opts::notify(options);
 
 	if(options.count("help")) {
 		std::cout << cmdline_opts;
 		std::exit(EXIT_SUCCESS);
 	}
 
-	const auto& config_path = options["config"].as<std::string>();
+	const auto& config_path = options.count("config")?
+		options["config"].as<std::string>() : "fusion.conf";
+
 	std::ifstream ifs(config_path);
 
 	if(!ifs) {
