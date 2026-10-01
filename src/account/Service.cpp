@@ -126,10 +126,10 @@ opts::options_description Service::options() {
 		("database.config_path", opts::value<std::string>()->required())
 		("database.min_connections", opts::value<unsigned short>()->required())
 		("database.max_connections", opts::value<unsigned short>()->required())
-		("metrics.enabled", opts::bool_switch()->required())
+		("metrics.enabled", opts::value<bool>()->required())
 		("metrics.statsd_host", opts::value<std::string>()->required())
 		("metrics.statsd_port", opts::value<std::uint16_t>()->required())
-		("monitor.enabled", opts::bool_switch()->required())
+		("monitor.enabled", opts::value<bool>()->required())
 		("monitor.interface", opts::value<std::string>()->required())
 		("monitor.port", opts::value<std::uint16_t>()->required());
 	return opts;
