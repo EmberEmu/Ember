@@ -14,6 +14,9 @@ builds = 1, 12, 2, 6005
 clients = 0 # Number of clients per thread to preallocate
 nodes = 0   # Size of buffer node pool per thread to preallocate (recommended: clients * 2)
 
+[journal]
+path = @CMAKE_INSTALL_PREFIX@/realm.journal
+
 [dbc]
 path = @CMAKE_INSTALL_PREFIX@/dbcs/
 

@@ -23,6 +23,7 @@
 #include "WorldRPCClient.h"
 #include <commands/ScopedCommand.h>
 #include <dbcreader/Storage.h>
+#include <journal/Journal.h>
 #include <nsd/NSD.h>
 #include <ports/Forward.h>
 #include <shared/utility/CommandExecutor.h>
@@ -57,6 +58,7 @@ struct ServiceContext::Impl {
 	std::unique_ptr<BroadcastTimer> timer;
 	std::vector<commands::ScopedCommand> commands;
 	std::unique_ptr<AllocationProvider> alloc_provider;
+	std::unique_ptr<journal::Journal> journal;
 };
 
 } // realm, ember

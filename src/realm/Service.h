@@ -40,6 +40,7 @@ class EMBER_EXPORT_SERVICE Service final : public ember::Service {
 	boost::program_options::variables_map reload_options(const std::string& filename);
 	Config generate_config(const boost::program_options::variables_map& args);
 	void initialise(const boost::program_options::variables_map& args);
+	void process_journal();
 
 public:
 	static boost::program_options::options_description options();
