@@ -61,6 +61,8 @@ int main(int argc, const char* argv[]) try {
 	utility::configure_logger(logger, args);
 	log::global_logger(logger);
 
+	print_defaulted(args, logger);
+
 	root = commands::create("root");
 	create_service_subcommands(*root);
 	utility::register_command_handlers(root, logger, true);
@@ -267,18 +269,18 @@ opts::variables_map parse_arguments(const int argc, const char* argv[]) {
 		("login.file", opts::value<std::string>()->required())
 		("console_log.enable_input", opts::value<bool>()->required())
 		("console_log.verbosity", opts::value<log::Severity>()->required())
-		("console_log.filter-mask", opts::value<std::uint32_t>()->default_value(0))
+		("console_log.filter-mask", opts::value<std::uint32_t>()->required())
 		("console_log.colours", opts::value<bool>()->required())
-		("console_log.prefix", opts::value<std::string>()->default_value(""))
+		("console_log.prefix", opts::value<std::string>()->required())
 		("console_log.suggestions", opts::value<bool>()->required())
 		("remote_log.verbosity", opts::value<log::Severity>()->required())
-		("remote_log.filter-mask", opts::value<std::uint32_t>()->default_value(0))
+		("remote_log.filter-mask", opts::value<std::uint32_t>()->required())
 		("remote_log.service_name", opts::value<std::string>()->required())
 		("remote_log.host", opts::value<std::string>()->required())
 		("remote_log.port", opts::value<std::uint16_t>()->required())
 		("file_log.verbosity", opts::value<log::Severity>()->required())
-		("file_log.filter-mask", opts::value<std::uint32_t>()->default_value(0))
-		("file_log.path", opts::value<std::string>()->default_value("fusion.log"))
+		("file_log.filter-mask", opts::value<std::uint32_t>()->required())
+		("file_log.path", opts::value<std::string>()->required())
 		("file_log.timestamp_format", opts::value<std::string>())
 		("file_log.mode", opts::value<std::string>()->required())
 		("file_log.size_rotate", opts::value<std::uint32_t>()->required())

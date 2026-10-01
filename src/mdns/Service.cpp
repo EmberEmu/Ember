@@ -99,7 +99,7 @@ opts::options_description Service::options() {
 	opts.add_options()
 		("mdns.interface", opts::value<std::string>()->required())
 		("mdns.group", opts::value<std::string>()->required())
-		("mdns.port", opts::value<std::uint16_t>()->default_value(5353))
+		("mdns.port", opts::value<std::uint16_t>()->required())
 		("spark.address", opts::value<std::string>()->required())
 		("spark.port", opts::value<std::uint16_t>()->required())
 		("metrics.enabled", opts::value<bool>()->required())

@@ -22,7 +22,6 @@ namespace {
 namespace opts = boost::program_options;
 
 opts::variables_map parse_arguments(const std::string& config_path, const Options& opts) {
-
 	// Config file options
 	opts::options_description config_opts("Configuration options");
 	config_opts.add_options()

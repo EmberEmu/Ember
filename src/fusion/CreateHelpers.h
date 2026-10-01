@@ -178,6 +178,16 @@ opts::variables_map load_options(const std::string& config_path, const opts::opt
 	return options;
 }
 
+inline void print_defaulted(const opts::variables_map& args, log::Logger& logger) {
+	for(const auto& arg : args) {
+		const auto& [key, value] = arg;
+
+		if(value.defaulted()) {
+			SLOG_WARN(logger, "Configuration key '{}' missing, using default value", key);
+		}
+	}
+}
+
 // this genuinely might be the worst bit of code I've ever written 
 template<auto fn>
 ServiceRunner create_runner(const ServiceIndex idx, const Params& params,
@@ -199,6 +209,7 @@ ServiceRunner create_runner(const ServiceIndex idx, const Params& params,
 	// finally, create the service and assign it to a runner wrapper (coroutines when?)
 	auto service = create_service<fn>(idx, *logger_handle, *params.registry);
 	service.logger = std::move(service_logger);
+	print_defaulted(opts, *service.logger);
 	return ServiceRunner(std::move(service), std::move(opts));
 }
 

@@ -33,6 +33,7 @@ service_name = character
 verbosity = none # trace, debug, info, warning, error, fatal or none to disable
 host = localhost
 port = 514
+filter-mask = 0
 
 [file_log]
 verbosity = none # trace, debug, info, warning, error, fatal or none to disable
@@ -43,12 +44,14 @@ size_rotate = 0 # max log size in megabytes - 0 disables
 log_timestamp = 0 # enable/disable timestamping log records
 timestamp_format = [%d/%m/%Y %H:%M:%S] 
 log_severity = 1 # enable/disable writing severity to log records
+filter-mask = 0
 
 [console_log]
 enable_input = true # allows for commands to be executed on the console
 suggestions = true  # enables tab completion suggestions (only applicable when input enabled)
 verbosity = trace   # trace, debug, info, warning, error, fatal or none to disable
 colours = true      # colourise the output
+filter-mask = 0
 
 [metrics]
 enabled = false

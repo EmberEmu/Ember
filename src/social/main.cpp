@@ -41,6 +41,7 @@ namespace opts = boost::program_options;
 void print_lib_versions(log::Logger& logger);
 int launch(const opts::variables_map& args, log::Logger& logger);
 opts::variables_map parse_arguments(int argc, const char* argv[]);
+void print_defaulted(const opts::variables_map& args, log::Logger& logger);
 
 /*
  * We want to do the minimum amount of work required to get 
@@ -61,6 +62,7 @@ int main(int argc, const char* argv[]) try {
 	SLOG_INFO(logger, "Logger configured successfully");
 
 	print_lib_versions(logger);
+	print_defaulted(args, logger);
 	const auto ret = launch(args, logger);
 	SLOG_INFO(logger, "Social daemon terminated");
 	return ret;
@@ -106,6 +108,18 @@ int launch(const opts::variables_map& args, log::Logger& logger) try {
 	return EXIT_FAILURE;
 }
 
+void print_defaulted(const opts::variables_map& args, log::Logger& logger) {
+	for(const auto& [key, value] : args) {
+		if(key == "config") {
+			continue;
+		}
+
+		if(value.defaulted()) {
+			SLOG_WARN(logger, "Configuration key '{}' missing, using default value", key);
+		}
+	}
+}
+
 opts::variables_map parse_arguments(const int argc, const char* argv[]) {
 	//Command-line options
 	opts::options_description cmdline_opts("Generic options");
@@ -129,17 +143,17 @@ opts::variables_map parse_arguments(const int argc, const char* argv[]) {
 		("network.tcp_no_delay", opts::value<bool>()->required())
 		("console_log.enable_input", opts::value<bool>()->required())
 		("console_log.verbosity", opts::value<log::Severity>()->required())
-		("console_log.filter-mask", opts::value<std::uint32_t>()->default_value(0))
+		("console_log.filter-mask", opts::value<std::uint32_t>()->required())
 		("console_log.colours", opts::value<bool>()->required())
 		("console_log.suggestions", opts::value<bool>()->required())
 		("remote_log.verbosity", opts::value<log::Severity>()->required())
-		("remote_log.filter-mask", opts::value<std::uint32_t>()->default_value(0))
+		("remote_log.filter-mask", opts::value<std::uint32_t>()->required())
 		("remote_log.service_name", opts::value<std::string>()->required())
 		("remote_log.host", opts::value<std::string>()->required())
 		("remote_log.port", opts::value<std::uint16_t>()->required())
 		("file_log.verbosity", opts::value<log::Severity>()->required())
-		("file_log.filter-mask", opts::value<std::uint32_t>()->default_value(0))
-		("file_log.path", opts::value<std::string>()->default_value("social.log"))
+		("file_log.filter-mask", opts::value<std::uint32_t>()->required())
+		("file_log.path", opts::value<std::string>()->required())
 		("file_log.timestamp_format", opts::value<std::string>())
 		("file_log.mode", opts::value<std::string>()->required())
 		("file_log.size_rotate", opts::value<std::uint32_t>()->required())
@@ -177,7 +191,6 @@ opts::variables_map parse_arguments(const int argc, const char* argv[]) {
 
 	return options;
 }
-
 
 void print_lib_versions(log::Logger& logger) {
 	LOG_DEBUG_STREAM(logger)
