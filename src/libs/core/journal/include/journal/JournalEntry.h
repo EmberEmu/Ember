@@ -9,6 +9,7 @@
 #pragma once
 
 #include <chrono>
+#include <string>
 #include <nlohmann/json.hpp>
 
 namespace ember::journal {
