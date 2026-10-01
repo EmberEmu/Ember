@@ -305,26 +305,34 @@ void Service::initialise(const opts::variables_map& args) try {
 void Service::process_journal() {
 	auto ctx = context.get();
 
-	if(auto entry = ctx->journal->retrieve(); entry) {
-		if(entry->status == journal::Status::complete) {
-			if(!ctx->journal->remove()) {
-				SLOG_ERROR(logger, "Unable to remove journal");
-			}
-		} else if(entry->build == build::git_hash) {
-			SLOG_INFO(logger, "Found incomplete journal entry, resuming...");
+	auto entry = ctx->journal->retrieve();
 
-			auto seconds = std::max(std::chrono::seconds{0},
-				std::chrono::duration_cast<std::chrono::seconds>(
-				entry->time - std::chrono::system_clock::now())
-			);
+	if(!entry) {
+		return;
+	}
 
-			ctx->shutdown_pa->set_after(seconds, entry->announce);
-		} else {
-			SLOG_INFO(logger, "Found journal entry from previous build, removing...");
+	if(entry->status == journal::Status::complete) {
+		if(!ctx->journal->remove()) {
+			SLOG_ERROR(logger, "Unable to remove journal");
+		}
 
-			if(!ctx->journal->remove()) {
-				SLOG_ERROR(logger, "Failed to remove previous journal entry");
-			}
+		return;
+	}
+
+	if(entry->build == build::git_hash) {
+		SLOG_INFO(logger, "Found incomplete journal entry, resuming...");
+
+		auto seconds = std::max(std::chrono::seconds{0},
+			std::chrono::duration_cast<std::chrono::seconds>(
+			entry->time - std::chrono::system_clock::now())
+		);
+
+		ctx->shutdown_pa->set_after(seconds, entry->announce);
+	} else {
+		SLOG_INFO(logger, "Found journal entry from previous build, removing...");
+
+		if(!ctx->journal->remove()) {
+			SLOG_ERROR(logger, "Failed to remove previous journal entry");
 		}
 	}
 }
