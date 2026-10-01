@@ -304,7 +304,7 @@ void Service::initialise(const opts::variables_map& args) try {
 
 void Service::process_journal() {
 	auto ctx = context.get();
-	auto entry = ctx->journal->retrieve();
+	const auto entry = ctx->journal->retrieve();
 
 	if(!entry) {
 		return;
