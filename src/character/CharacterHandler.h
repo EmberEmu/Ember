@@ -90,7 +90,7 @@ public:
 	                 std::vector<utility::pcre::Result> spam_names,
 	                 const dbc::Storage& dbc,
 	                 const dal::CharacterDAO& dao,
-	                 const Config config,
+	                 Config config,
                      thread::ThreadPool& pool,
                      log::Logger& logger,
 	                 std::locale locale = {})
