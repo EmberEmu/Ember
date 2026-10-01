@@ -15,8 +15,10 @@
 namespace ember::realm {
 
 ShutdownAnnouncer::ShutdownAnnouncer(boost::asio::io_context& ioc, ShutdownFn callback,
-                                     EventDispatcher& dispatcher, log::Logger& logger)
+                                     EventDispatcher& dispatcher, journal::Journal& journal,
+                                     log::Logger& logger)
 	: dispatcher_(dispatcher)
+	, journal_(journal)
 	, timer_(ioc)
 	, logger_(logger)
 	, active_(false)
@@ -40,16 +42,25 @@ void ShutdownAnnouncer::set_after(std::chrono::seconds expiry, bool announce) {
 	reset();
 	auto message = std::format("Shutdown in {}", utility::time_duration_format(expiry));
 
+	LOG_INFO(logger_, message);
+
 	if(announce) {
 		broadcast(std::move(message));
 	}
 
-	LOG_INFO(logger_, message);
-
 	active_ = true;
 	expires_ = std::chrono::steady_clock::now() + expiry;
-
+	write_journal_entry(expiry, announce);
 	run_timer(expiry);
+}
+
+void ShutdownAnnouncer::write_journal_entry(std::chrono::seconds expiry, bool announce) {
+	const auto time = std::chrono::system_clock::now() + expiry;;
+	const auto result = journal_.create(time, journal::Operation::shutdown, announce);
+
+	if(!result) {
+		LOG_ERROR(logger_, "Unable to write journal entry");
+	}
 }
 
 auto ShutdownAnnouncer::nearest_interval(std::chrono::duration<int> duration) -> std::optional<std::chrono::duration<int>> {
@@ -68,6 +79,11 @@ void ShutdownAnnouncer::run_timer(std::chrono::seconds expiry) {
 	if(!interval) {
 		active_ = false;
 		callback_();
+		
+		if(!journal_.update(journal::Status::complete)) {
+			LOG_ERROR(logger_, "Unable to update journal entry");
+		}
+
 		return;
 	}
 
@@ -111,6 +127,11 @@ void ShutdownAnnouncer::reset() {
 void ShutdownAnnouncer::stop() {
 	if(active_) {
 		broadcast("Shutdown cancelled");
+		auto result = journal_.remove();
+
+		if(!result) {
+			LOG_ERROR(logger_, "Unable to remove journal entry");
+		}
 	}
 
 	timer_.cancel();

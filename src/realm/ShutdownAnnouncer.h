@@ -10,6 +10,7 @@
 
 #include "Forwards.h"
 #include "Events.h"
+#include <journal/Journal.h>
 #include <logger/LoggerFwd.h>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/steady_timer.hpp>
@@ -37,6 +38,7 @@ private:
 	using iterator = decltype(intervals)::const_iterator;
 
 	EventDispatcher& dispatcher_;
+	journal::Journal& journal_;
 	boost::asio::steady_timer timer_;
 	log::Logger& logger_;
 	bool active_;
@@ -46,13 +48,15 @@ private:
 	void reset();
 	void run_timer(std::chrono::seconds expiry);
 	void broadcast(std::string message);
+	void write_journal_entry(std::chrono::seconds expiry, bool announce);
 	std::optional<std::chrono::duration<int>> nearest_interval(std::chrono::duration<int> duration);
 
 	static std::string time_remaining_fmt(std::chrono::seconds remaining);
 
 public:
 	ShutdownAnnouncer(boost::asio::io_context& ioc, ShutdownFn callback,
-	                  EventDispatcher& dispatcher, log::Logger& logger);
+	                  EventDispatcher& dispatcher, journal::Journal& journal,
+	                  log::Logger& logger);
 
 	void set_at(std::chrono::steady_clock::time_point time, bool announce);
 	void set_after(std::chrono::seconds expiry, bool announce);
