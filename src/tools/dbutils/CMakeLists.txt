@@ -23,6 +23,6 @@ if(WIN32)
 endif()
 
 add_executable(${EXECUTABLE_NAME} ${EXECUTABLE_HDR} ${EXECUTABLE_SRC})
-target_link_libraries(${EXECUTABLE_NAME} PRIVATE banner logger shared conpool ${MYSQLCCPP_LIBRARY} ${Boost_LIBRARIES} Threads::Threads)
+target_link_libraries(${EXECUTABLE_NAME} PRIVATE banner logger shared conpool ${MYSQLCCPP_LIBRARY} Boost::program_options Threads::Threads)
 install(TARGETS ${EXECUTABLE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/tools)
 set_target_properties(${EXECUTABLE_NAME} PROPERTIES FOLDER "Tools")

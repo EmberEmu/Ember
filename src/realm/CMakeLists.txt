@@ -135,7 +135,7 @@ add_library(${LIBRARY_NAME} ${SERVICE_LIB_LINKAGE}
 )
 
 add_dependencies(${LIBRARY_NAME} SPARK_RPC_GENERATE)
-target_link_libraries(${LIBRARY_NAME} PRIVATE banner journal protocol thread nsd conpool stun ports dbcreader spark allocators ${ZLIB_LIBRARY} Threads::Threads PUBLIC service logger commands shared ${Boost_LIBRARIES})
+target_link_libraries(${LIBRARY_NAME} PRIVATE banner journal protocol thread nsd conpool stun ports dbcreader spark allocators ${ZLIB_LIBRARY} Threads::Threads PUBLIC service logger commands shared Boost::container Boost::program_options)
 
 add_dependencies(${LIBRARY_NAME}
     FB_SCHEMA_COMPILE
@@ -162,7 +162,7 @@ add_executable(${EXECUTABLE_NAME}
     ${ICON_RESOURCE}
 )
 
-target_link_libraries(${EXECUTABLE_NAME} PRIVATE ${LIBRARY_NAME} banner logger commands shared ${Boost_LIBRARIES} Threads::Threads)
+target_link_libraries(${EXECUTABLE_NAME} PRIVATE ${LIBRARY_NAME} banner logger commands shared Boost::program_options Threads::Threads)
 
 install(TARGETS ${EXECUTABLE_NAME} ${LIBRARY_INSTALL_TARGET} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})
 set_target_properties(${EXECUTABLE_NAME} PROPERTIES FOLDER "Services/Applications")

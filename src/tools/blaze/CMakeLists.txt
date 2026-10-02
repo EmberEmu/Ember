@@ -46,7 +46,7 @@ else()
 endif()
 
 add_library(${LIBRARY_NAME} ${LIBRARY_HDR} ${LIBRARY_SRC})
-target_link_libraries(${LIBRARY_NAME} PUBLIC blazesdk PRIVATE shared commands logger ${Boost_LIBRARIES})
+target_link_libraries(${LIBRARY_NAME} PUBLIC blazesdk PRIVATE shared commands logger Boost::program_options)
 
 if(WIN32)
     set(ICON_RESOURCE resources.rc)
@@ -58,7 +58,7 @@ add_executable(${EXECUTABLE_NAME}
     ${ICON_RESOURCE}
 )
 
-target_link_libraries(${EXECUTABLE_NAME} PRIVATE ${LIBRARY_NAME} banner logger shared commands ${Boost_LIBRARIES})
+target_link_libraries(${EXECUTABLE_NAME} PRIVATE ${LIBRARY_NAME} banner logger shared commands Boost::program_options)
 install(TARGETS ${EXECUTABLE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/tools)
 set_target_properties(${EXECUTABLE_NAME} PROPERTIES FOLDER "Tools")
 set_target_properties(${LIBRARY_NAME} PROPERTIES FOLDER "Tools//Libraries")

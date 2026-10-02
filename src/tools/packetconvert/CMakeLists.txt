@@ -22,6 +22,6 @@ endif()
 
 add_executable(${EXECUTABLE_NAME} ${EXECUTABLE_SRC})
 add_dependencies(${EXECUTABLE_NAME} FB_SCHEMA_COMPILE)
-target_link_libraries(${EXECUTABLE_NAME} PRIVATE shared thread protocol ${Boost_LIBRARIES})
+target_link_libraries(${EXECUTABLE_NAME} PRIVATE shared thread protocol Boost::program_options)
 install(TARGETS ${EXECUTABLE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/tools)
 set_target_properties(${EXECUTABLE_NAME} PROPERTIES FOLDER "Tools")
