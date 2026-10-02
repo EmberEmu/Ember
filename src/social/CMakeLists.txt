@@ -18,7 +18,7 @@ set(LIBRARY_SRC
 
 add_library(${LIBRARY_NAME} ${LIBRARY_HDR} ${LIBRARY_SRC})
 add_dependencies(${LIBRARY_NAME} SPARK_RPC_GENERATE)
-target_link_libraries(${LIBRARY_NAME} PUBLIC logger shared Boost::system Boost::program_options PRIVATE spark)
+target_link_libraries(${LIBRARY_NAME} PUBLIC logger shared Boost::program_options PRIVATE spark)
 
 if(WIN32)
     set(ICON_RESOURCE resources.rc)
@@ -29,7 +29,7 @@ add_executable(${EXECUTABLE_NAME}
     ${ICON_RESOURCE}
 )
 
-target_link_libraries(${EXECUTABLE_NAME} PRIVATE ${LIBRARY_NAME} banner logger shared Boost::system Boost::program_options Threads::Threads)
+target_link_libraries(${EXECUTABLE_NAME} PRIVATE ${LIBRARY_NAME} banner logger shared Boost::program_options Threads::Threads)
 
 install(TARGETS ${EXECUTABLE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})
 set_target_properties(social PROPERTIES FOLDER "Services/Applications")
