@@ -54,7 +54,7 @@ endif()
 add_dependencies(${LIBRARY_OBJECTS} SPARK_RPC_GENERATE)
 target_include_directories(${LIBRARY_OBJECTS} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(${LIBRARY_OBJECTS} PUBLIC service shared spark commands)
-target_link_libraries(${LIBRARY_NAME} PRIVATE ${LIBRARY_OBJECTS} spark INTERFACE commands logger ${Boost_LIBRARIES} PUBLIC shared Threads::Threads)
+target_link_libraries(${LIBRARY_NAME} PRIVATE ${LIBRARY_OBJECTS} spark INTERFACE commands logger Boost::system Boost::program_options PUBLIC shared Threads::Threads)
 
 if(WIN32)
     set(ICON_RESOURCE resources.rc)
@@ -65,7 +65,7 @@ add_executable(${EXECUTABLE_NAME}
     ${ICON_RESOURCE}
 )
 
-target_link_libraries(${EXECUTABLE_NAME} PRIVATE ${LIBRARY_NAME} service banner logger commands shared ${Boost_LIBRARIES} Threads::Threads)
+target_link_libraries(${EXECUTABLE_NAME} PRIVATE ${LIBRARY_NAME} service banner logger commands shared Boost::system Boost::program_options Threads::Threads)
 
 install(TARGETS ${EXECUTABLE_NAME} ${LIBRARY_INSTALL_TARGET} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})
 set_target_properties(${EXECUTABLE_NAME} PROPERTIES FOLDER "Services/Applications")

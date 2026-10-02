@@ -15,6 +15,6 @@ if(WIN32)
 endif()
 
 add_executable(${EXECUTABLE_NAME} ${EXECUTABLE_SRC})
-target_link_libraries(${EXECUTABLE_NAME} PRIVATE stun ${Boost_LIBRARIES})
+target_link_libraries(${EXECUTABLE_NAME} PRIVATE stun Boost::system Boost::program_options)
 install(TARGETS ${EXECUTABLE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/tools)
 set_target_properties(${EXECUTABLE_NAME} PROPERTIES FOLDER "Tools")
