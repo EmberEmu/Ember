@@ -129,8 +129,8 @@ add_library(${LIBRARY_NAME} STATIC ${LIBRARY_SRC})
 target_include_directories(${LIBRARY_NAME} PUBLIC
     ${CMAKE_SOURCE_DIR}/deps/utf8cpp
     ${PROJECT_BINARY_DIR}/src
+    ${CMAKE_CURRENT_SOURCE_DIR}/
 )
 
-target_include_directories(${LIBRARY_NAME} PUBLIC ${PROJECT_BINARY_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/)
 target_link_libraries(${LIBRARY_NAME} PUBLIC banner logger commands conpool Boost::program_options Boost::container ${BOTAN_TARGET} ${PCRE_LIBRARY})
 set_target_properties(${LIBRARY_NAME} PROPERTIES FOLDER "Common Libraries")
