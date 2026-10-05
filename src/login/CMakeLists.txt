@@ -85,7 +85,6 @@ set(LIBRARY_SRC
     Survey.cpp
     Service.cpp
     ServiceContext.cpp
-    Service.cpp
     Patcher.cpp
     PINAuthenticator.cpp
     IntegrityData.cpp
