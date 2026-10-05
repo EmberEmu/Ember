@@ -67,7 +67,6 @@ add_library(
     ${CORE}
     ${IO_SRC}
     ${IO_PMR_SRC}
-    ${IO_ALLOC_SRC}
 )
 
 source_group("Core" FILES ${CORE})
