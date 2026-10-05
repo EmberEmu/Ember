@@ -32,5 +32,5 @@ add_executable(${EXECUTABLE_NAME}
 target_link_libraries(${EXECUTABLE_NAME} PRIVATE ${LIBRARY_NAME} banner logger shared Boost::program_options Threads::Threads)
 
 install(TARGETS ${EXECUTABLE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})
-set_target_properties(social PROPERTIES FOLDER "Services/Applications")
-set_target_properties(libsocial PROPERTIES FOLDER "Services/Libraries")
+set_target_properties(${EXECUTABLE_NAME} PROPERTIES FOLDER "Services/Applications")
+set_target_properties(${LIBRARY_NAME} PROPERTIES FOLDER "Services/Libraries")
