@@ -27,12 +27,12 @@ set(LIBRARY_SRC
     ServiceContext.cpp
 )
 
-include_directories(${SPARK_INCLUDES_DIR})
-
 add_library(${LIBRARY_NAME} ${SERVICE_LIB_LINKAGE}
     ${LIBRARY_HDR}
     ${LIBRARY_SRC}
 )
+
+target_include_directories(${LIBRARY_NAME} PUBLIC ${SPARK_INCLUDES_DIR})
 
 if(BUILD_SHARED)
 	target_compile_definitions(${LIBRARY_NAME} PUBLIC EXPORT_SERVICE)

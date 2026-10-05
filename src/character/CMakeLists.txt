@@ -28,12 +28,12 @@ set(LIBRARY_SRC
     ServiceContext.cpp
 )
 
-include_directories(${CMAKE_SOURCE_DIR}/deps/utf8cpp)
-
 add_library(${LIBRARY_NAME} ${SERVICE_LIB_LINKAGE} 
     ${LIBRARY_HDR}
     ${LIBRARY_SRC}
 )
+
+target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/deps/utf8cpp)
 
 if(BUILD_SHARED)
     target_compile_definitions(${LIBRARY_NAME} PUBLIC EXPORT_SERVICE)

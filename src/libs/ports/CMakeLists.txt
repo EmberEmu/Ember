@@ -42,7 +42,10 @@ add_library(${LIBRARY_NAME} STATIC
     include/ports/upnp/ErrorCode.h
 )
 
-include_directories(${CMAKE_SOURCE_DIR}/deps/rapidxml)
-target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(${LIBRARY_NAME} PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_SOURCE_DIR}/deps/rapidxml
+)
+
 target_link_libraries(${LIBRARY_NAME} PUBLIC shared logger spark)
 set_target_properties(${LIBRARY_NAME} PROPERTIES FOLDER "Common Libraries")
