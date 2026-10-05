@@ -134,13 +134,12 @@ add_library(${LIBRARY_NAME} ${SERVICE_LIB_LINKAGE}
     ${LIBRARY_SRC}
 )
 
-add_dependencies(${LIBRARY_NAME} SPARK_RPC_GENERATE)
-target_link_libraries(${LIBRARY_NAME} PRIVATE banner journal protocol thread nsd conpool stun ports dbcreader spark allocators ${ZLIB_LIBRARY} Threads::Threads PUBLIC service logger commands shared Boost::container Boost::program_options)
-
 add_dependencies(${LIBRARY_NAME}
     FB_SCHEMA_COMPILE
     SPARK_RPC_GENERATE
 )
+
+target_link_libraries(${LIBRARY_NAME} PRIVATE banner journal protocol thread nsd conpool stun ports dbcreader spark allocators ${ZLIB_LIBRARY} Threads::Threads PUBLIC service logger commands shared Boost::container Boost::program_options)
 
 if(BUILD_SHARED)
     target_compile_definitions(${LIBRARY_NAME} PUBLIC EXPORT_SERVICE)
