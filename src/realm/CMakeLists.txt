@@ -151,8 +151,6 @@ if(DISABLE_FAST_CLIENT_DISPATCH_TABLE)
     target_compile_definitions(${LIBRARY_NAME} PUBLIC DISABLE_FAST_CLIENT_DISPATCH_TABLE)
 endif()
 
-target_compile_definitions(${LIBRARY_NAME} PUBLIC EXPORT_SERVICE)
-
 if(WIN32)
     set(ICON_RESOURCE resources.rc)
 endif()

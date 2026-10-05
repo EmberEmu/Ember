@@ -39,7 +39,6 @@ if(BUILD_SHARED)
 	set(LIBRARY_INSTALL_TARGET ${LIBRARY_NAME})
 endif()
 
-target_compile_definitions(${LIBRARY_NAME} PUBLIC EXPORT_SERVICE)
 add_dependencies(${LIBRARY_NAME} FB_SCHEMA_COMPILE)
 add_dependencies(${LIBRARY_NAME} SPARK_RPC_GENERATE)
 target_link_libraries(${LIBRARY_NAME} PRIVATE spark conpool ${MYSQLCCPP_LIBRARY} Threads::Threads PUBLIC service thread logger commands shared Boost::program_options)

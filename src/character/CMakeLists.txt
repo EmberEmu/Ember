@@ -36,11 +36,10 @@ add_library(${LIBRARY_NAME} ${SERVICE_LIB_LINKAGE}
 )
 
 if(BUILD_SHARED)
-	target_compile_definitions(${LIBRARY_NAME} PUBLIC EXPORT_SERVICE)
-	set(LIBRARY_INSTALL_TARGET ${LIBRARY_NAME})
+    target_compile_definitions(${LIBRARY_NAME} PUBLIC EXPORT_SERVICE)
+    set(LIBRARY_INSTALL_TARGET ${LIBRARY_NAME})
 endif()
 
-target_compile_definitions(${LIBRARY_NAME} PUBLIC EXPORT_SERVICE)
 add_dependencies(${LIBRARY_NAME} FB_SCHEMA_COMPILE)
 add_dependencies(${LIBRARY_NAME} SPARK_RPC_GENERATE)
 target_link_libraries(${LIBRARY_NAME} PRIVATE thread dbcreader spark protocol ${BOTAN_TARGET} Threads::Threads PUBLIC service logger commands shared Boost::program_options)

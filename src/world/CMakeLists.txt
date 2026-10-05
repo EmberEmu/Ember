@@ -51,7 +51,6 @@ add_executable(${EXECUTABLE_NAME}
     ${ICON_RESOURCE}
 )
 
-target_compile_definitions(${LIBRARY_NAME} PUBLIC EXPORT_SERVICE)
 target_link_libraries(${EXECUTABLE_NAME} PRIVATE ${LIBRARY_NAME} banner logger commands shared Boost::program_options)
 
 install(TARGETS ${EXECUTABLE_NAME} ${LIBRARY_INSTALL_TARGET} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})
