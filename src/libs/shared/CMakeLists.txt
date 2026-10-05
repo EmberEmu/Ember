@@ -121,10 +121,8 @@ source_group("Database Objects" FILES ${DB_OBJECTS})
 source_group("DAO base" FILES ${SHARED_DAOS_SRC})
 source_group("MySQL DAO" FILES ${MYSQL_DAOS_SRC})
 source_group("PostgreSQL DAO" FILES ${POSTGRESQL_DAOS_SRC})
-source_group("Threading" FILES ${THREADING_SRC})
 source_group("Utilities" FILES ${UTIL_SRC})
 source_group("Metrics" FILES ${METRICS_SRC})
-source_group("Command Parser" FILES ${COMMANDS_SRC})
 
 add_library(${LIBRARY_NAME} STATIC ${LIBRARY_SRC})
 
