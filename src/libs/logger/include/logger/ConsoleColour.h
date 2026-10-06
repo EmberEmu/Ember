@@ -8,15 +8,9 @@
 
 #pragma once
 
-namespace ember::log {
+#include <logger/Colour.h>
 
-enum class Colour : unsigned int {
-	black, blue, green, cyan, red, magenta,
-	brown, grey, dark_grey, light_blue, light_green,
-	light_cyan, light_red, light_magenta, yellow, white,
-	white_on_red_bg, black_on_white_bg, white_on_grey_bg,
-	white_on_cyan_bg, default_colour
-};
+namespace ember::log {
 
 void set_console_out_colour(Colour colour);
 Colour save_console_out_colour();
