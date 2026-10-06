@@ -15,6 +15,7 @@ add_library(${LIBRARY_NAME} STATIC
     src/ConsoleSink.cpp
     src/GlobalLogger.cpp
     src/ConsoleColour.cpp
+    src/detail/PlatformColour.cpp
     include/logger/LoggerImpl.h
     include/logger/FileSink.h
     include/logger/HelperMacros.h
@@ -30,7 +31,9 @@ add_library(${LIBRARY_NAME} STATIC
     include/logger/Severity.h
     include/logger/GlobalLogger.h
     include/logger/ConsoleColour.h
+    include/logger/Colour.h
     include/logger/detail/StreamBuffer.h
+    include/logger/detail/PlatformColour.h
 )
 
 if(WIN32)
