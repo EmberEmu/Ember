@@ -202,7 +202,7 @@ set(version_file "${CMAKE_CURRENT_BINARY_DIR}/Version.cpp")
 ##############################
 #            Botan           #
 ##############################
-find_package(Botan 3.10 REQUIRED)
+find_package(Botan 3.12 REQUIRED)
 
 if(BUILD_SHARED)
     set(BOTAN_TARGET botan::botan)
