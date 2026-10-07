@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Ember
+ * Copyright (c) 2024 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,7 +9,9 @@
 #pragma once
 
 #include <boost/unordered/unordered_flat_map.hpp>
+#include <functional>
 #include <mutex>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -22,11 +24,11 @@ class HandlerRegistry final {
 	mutable std::mutex mutex_;
 
 public:
-	void register_service(Handler* service);
-	void deregister_service(Handler* service);
+	void register_service(Handler& service);
+	void deregister_service(Handler& service);
 
-	Handler* service(const std::string& name) const;
-	Handler* service(const std::string& name, const std::string& type) const;
+	std::optional<std::reference_wrapper<Handler>> service(const std::string& name) const;
+	std::optional<std::reference_wrapper<Handler>> service(const std::string& name, const std::string& type) const;
 	std::vector<Handler*> services(const std::string& type) const;
 	std::vector<std::string> services() const;
 };

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 - 2025 Ember
+ * Copyright (c) 2024 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -68,7 +68,7 @@ void RemotePeer::handle_open_channel_response(const core::OpenChannelResponse& m
 	if(msg.result() != core::Result::ok) {
 		auto& channel = channels_[msg.requested_id()];
 		LOG_ERROR(log_, "[spark] Remote peer could not open channel ({}:{})",
-		                channel->handler()->type(), msg.requested_id());
+		                channel->handler().type(), msg.requested_id());
 		channels_[msg.requested_id()].reset();
 		return;
 	}
@@ -105,8 +105,7 @@ void RemotePeer::handle_open_channel_response(const core::OpenChannelResponse& m
 
 	channel->open();
 
-	LOG_DEBUG(log_, "[spark] Remote channel open, {}:{}",
-	                channel->handler()->name(), msg.actual_id());
+	LOG_DEBUG(log_, "[spark] Remote channel open, {}:{}", channel->handler().name(), msg.actual_id());
 }
 
 void RemotePeer::send_close_channel(const std::uint8_t id) {
@@ -122,7 +121,7 @@ void RemotePeer::send_close_channel(const std::uint8_t id) {
 	conn_->send(std::move(msg));
 }
 
-Handler* RemotePeer::find_handler(const core::OpenChannel& msg) {
+std::optional<std::reference_wrapper<Handler>> RemotePeer::find_handler(const core::OpenChannel& msg) {
 	const auto sname = msg.service_name();
 	const auto stype = msg.service_type();
 
@@ -139,24 +138,25 @@ Handler* RemotePeer::find_handler(const core::OpenChannel& msg) {
 
 		// just use the first matching handler
 		if(!services.empty()) {
-			return services.front();
+			return *services.front();
 		}
 	}
 
-	return nullptr;
+	return std::nullopt;
 }
 
 void RemotePeer::handle_open_channel(const core::OpenChannel& msg) {
 	LOG_TRACE(log_, log_func);
 
-	auto handler = find_handler(msg);
+	auto result = find_handler(msg);
 
-	if(!handler) {
-		LOG_DEBUG(log_, "[spark] Requested service handler ({}) does not exist",
-		                msg.service_type()->str());
+	if(!result) {
+		LOG_DEBUG(log_, "[spark] Requested service handler ({}) does not exist", msg.service_type()->str());
 		open_channel_response(core::Result::error_unk, 0, msg.id());
 		return;
 	}
+
+	auto& handler = result->get();
 
 	if(msg.id() == 0 || msg.id() >= channels_.size()) {
 		LOG_DEBUG(log_, "[spark] Bad channel ID ({}) specified", msg.id());
@@ -175,13 +175,13 @@ void RemotePeer::handle_open_channel(const core::OpenChannel& msg) {
 	}
 
 	auto channel = std::make_shared<Channel>(
-		ctx_, id, remote_banner_, handler->name(), handler, conn_, log_
+		ctx_, id, remote_banner_, handler.name(), handler, conn_, log_
 	);
 
 	channel->open();
 	channels_[id] = std::move(channel);
 	open_channel_response(core::Result::ok, id, msg.id());
-	LOG_DEBUG(log_, "[spark] Remote channel open, {}:{}", handler->name(), id);
+	LOG_DEBUG(log_, "[spark] Remote channel open, {}:{}", handler.name(), id);
 }
 
 std::uint8_t RemotePeer::next_empty_channel() {
@@ -198,7 +198,7 @@ std::uint8_t RemotePeer::next_empty_channel() {
 void RemotePeer::open_channel_response(const core::Result result,
                                        const std::uint8_t id,
                                        const std::uint8_t requested) {
-	const std::string& sname = channels_[id]->handler()->name();
+	const std::string& sname = channels_[id]->handler().name();
 
 	core::OpenChannelResponseT response {
 		.result = result,
@@ -311,14 +311,14 @@ void RemotePeer::send_open_channel(std::string name, std::string type, const std
 	conn_->send(std::move(msg));
 }
 
-void RemotePeer::open_channel(std::string type, gsl::not_null<Handler*> handler) {
+void RemotePeer::open_channel(std::string type, Handler& handler) {
 	LOG_TRACE(log_, log_func);
 
 	const auto id = next_empty_channel();
 	LOG_DEBUG(log_, "[spark] Requesting channel {} for {}", id, type);
 
 	auto channel = std::make_shared<Channel>(
-		ctx_, id, remote_banner_, handler->name(), handler, conn_, log_
+		ctx_, id, remote_banner_, handler.name(), handler, conn_, log_
 	);
 
 	channels_[id] = std::move(channel);
@@ -332,7 +332,7 @@ void RemotePeer::start() {
 }
 
 // very temporary, not thread-safe etc
-void RemotePeer::remove_handler(gsl::not_null<Handler*> handler) {
+void RemotePeer::remove_handler(Handler& handler) {
 	for(std::size_t i = 0u; i < channels_.size(); ++i) {
 		auto& channel = channels_[i];
 
@@ -340,7 +340,7 @@ void RemotePeer::remove_handler(gsl::not_null<Handler*> handler) {
 			continue;
 		}
 
-		if(channel->handler() == handler) {
+		if(&channel->handler() == &handler) {
 			send_close_channel(i);
 			channels_[i].reset();
 		}

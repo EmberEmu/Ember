@@ -97,17 +97,17 @@ asio::awaitable<void> Server::accept(boost::asio::ip::tcp::socket socket) try {
 	LOG_WARN(logger_, e.what());
 }
 
-void Server::register_handler(gsl::not_null<Handler*> handler) {
+void Server::register_handler(Handler& handler) {
 	handlers_.register_service(handler);
 
-	LOG_TRACE(logger_, "[spark] Registered handler for {}", handler->type());
+	LOG_TRACE(logger_, "[spark] Registered handler for {}", handler.type());
 }
 
-void Server::deregister_handler(gsl::not_null<Handler*> handler) {
+void Server::deregister_handler(Handler& handler) {
 	handlers_.deregister_service(handler);
 	peers_.notify_remove_handler(handler);
 
-	LOG_TRACE(logger_, "[spark] Removed handler for {}", handler->type());
+	LOG_TRACE(logger_, "[spark] Removed handler for {}", handler.type());
 }
 
 asio::awaitable<std::shared_ptr<RemotePeer>>
@@ -141,7 +141,7 @@ Server::connect(const std::string_view host, const std::uint16_t port) try {
 }
 
 asio::awaitable<void> Server::try_open(std::string host, std::uint16_t port,
-                                     std::string service, gsl::not_null<Handler*> handler) {
+                                       std::string service, Handler& handler) {
 	LOG_TRACE(logger_, log_func);
 
 	const auto key = std::format("{}:{}", host, port);
@@ -156,7 +156,7 @@ asio::awaitable<void> Server::try_open(std::string host, std::uint16_t port,
 	auto peer = co_await connect(host, port);
 
 	if(!peer) {
-		handler->connect_failed(host, port);
+		handler.connect_failed(host, port);
 		co_return;
 	}
 
@@ -166,12 +166,12 @@ asio::awaitable<void> Server::try_open(std::string host, std::uint16_t port,
 }
 
 void Server::connect(const std::string_view host, const std::uint16_t port,
-                     std::string_view service, gsl::not_null<Handler*> handler) {
+                     std::string_view service, Handler& handler) {
 	connect(std::string(host), port, std::string(service), handler);
 }
 
 void Server::connect(std::string host, const std::uint16_t port,
-                     std::string service, gsl::not_null<Handler*> handler) {
+                     std::string service, Handler& handler) {
 	LOG_TRACE(logger_, log_func);
 
 	asio::co_spawn(ctx_, try_open(

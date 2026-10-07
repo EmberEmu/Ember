@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - 2025 Ember
+ * Copyright (c) 2021 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -15,11 +15,12 @@
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/io_context.hpp>
 #include <logger/LoggerFwd.h>
-#include <gsl/pointers>
 #include <array>
 #include <chrono>
 #include <concepts>
+#include <functional>
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 
@@ -49,7 +50,7 @@ class RemotePeer final {
 	std::chrono::steady_clock::time_point ping_time_;
 
 	void send(Message&& msg);
-	Handler* find_handler(const core::OpenChannel& msg);
+	std::optional<std::reference_wrapper<Handler>> find_handler(const core::OpenChannel& msg);
 	std::uint8_t next_empty_channel();
 
 	void handle_control_message(std::span<const std::uint8_t> data);
@@ -76,8 +77,8 @@ public:
 	RemotePeer(RemotePeer&) = delete;
 	RemotePeer operator=(RemotePeer&) = delete;
 
-	void open_channel(std::string type, gsl::not_null<Handler*> handler);
-	void remove_handler(gsl::not_null<Handler*> handler);
+	void open_channel(std::string type, Handler& handler);
+	void remove_handler(Handler& handler);
 	void start();
 };
 

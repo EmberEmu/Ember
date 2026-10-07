@@ -62,11 +62,11 @@ public:
 	{{name}}Service(spark::Server& spark)
 		: spark_(spark),
 		  uuid_(boost::uuids::random_generator()()) {
-		spark_.register_handler(this);
+		spark_.register_handler(*this);
 	}
 
 	~{{name}}Service() {
-		spark_.deregister_handler(this);
+		spark_.deregister_handler(*this);
 	}
 
 	std::string name() override {
