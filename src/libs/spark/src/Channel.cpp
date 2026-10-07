@@ -12,7 +12,6 @@
 #include <spark/buffers/BinaryStream.h>
 #include <spark/buffers/BufferAdaptor.h>
 #include <logger/Logger.h>
-#include <cassert>
 
 namespace ember::spark {
 
@@ -103,7 +102,6 @@ Handler& Channel::handler() const {
 }
 
 void Channel::link_up() {
-	assert(handler_);
 	link_.channel = weak_from_this();
 	handler_.on_link_up(link_);
 }
