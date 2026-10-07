@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Ember
+ * Copyright (c) 2024 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -32,7 +32,7 @@ std::shared_ptr<RemotePeer> Peers::find(const std::string& key) {
 	return nullptr;
 }
 
-void Peers::notify_remove_handler(Handler* handler) {
+void Peers::notify_remove_handler(Handler& handler) {
 	std::lock_guard guard(lock_);
 
 	for(auto& peer : peers_ | std::views::values) {

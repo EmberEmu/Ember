@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - 2025 Ember
+ * Copyright (c) 2021 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -12,7 +12,6 @@
 #include <spark/HandlerRegistry.h>
 #include <spark/RemotePeer.h>
 #include <logger/LoggerFwd.h>
-#include <gsl/pointers>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/awaitable.hpp>
@@ -45,7 +44,7 @@ class Server final {
 	boost::asio::awaitable<void> try_open(std::string host,
 	                                      std::uint16_t port,
 	                                      std::string service,
-	                                      gsl::not_null<Handler*> handler);
+	                                      Handler& handler);
 
 	void close_peer(const std::string& key);
 
@@ -54,16 +53,16 @@ public:
 	       std::string_view iface, std::uint16_t port, log::Logger& logger);
 	~Server();
 
-	void register_handler(gsl::not_null<Handler*> handler);
-	void deregister_handler(gsl::not_null<Handler*> handler);
+	void register_handler(Handler& handler);
+	void deregister_handler(Handler& handler);
 
 	std::uint16_t port() const;
 
 	void connect(const std::string_view host, std::uint16_t port,
-	             std::string_view service, gsl::not_null<Handler*> handler);
+	             std::string_view service, Handler& handler);
 
 	void connect(std::string host, std::uint16_t port,
-	             std::string service, gsl::not_null<Handler*> handler);
+	             std::string service, Handler& handler);
 	void shutdown();
 };
 

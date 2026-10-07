@@ -87,7 +87,7 @@ protected:
 	}
 
 	void connect(std::string host, std::uint16_t port) {
-		spark_.connect(host, port, type(), this);
+		spark_.connect(host, port, type(), *this);
 	}
 
 public:

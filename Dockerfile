@@ -30,7 +30,7 @@ RUN apt-get -y update \
  && apt-get install -y libpcre3-dev \
  && apt-get install -y libjsoncons-dev
 
-RUN if [ -n "use_clang" ]; then                                        \
+RUN if [ -n "use_clang" ]; then                                         \
  apt-get -y install clang;                                              \
 else                                                                    \
  apt-get -y install gcc-15 g++-15                                       \

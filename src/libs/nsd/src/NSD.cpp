@@ -29,7 +29,7 @@ NetworkServiceDiscovery::NetworkServiceDiscovery(spark::Server& spark, std::stri
 }
 
 void NetworkServiceDiscovery::connect() {
-	spark_.connect(host_, port_, SERVICE_NAME, this);
+	spark_.connect(host_, port_, SERVICE_NAME, *this);
 }
 
 void NetworkServiceDiscovery::on_link_up(const spark::Link& link) {

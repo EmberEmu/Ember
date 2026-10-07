@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 - 2025 Ember
+ * Copyright (c) 2024 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -40,7 +40,7 @@ private:
 	Tracking tracking_;
 	State state_ = State::awaiting;
 	std::uint8_t channel_id_;
-	Handler* handler_;
+	Handler& handler_;
 	std::shared_ptr<Connection> connection_;
 	Link link_;
 	boost::uuids::random_generator uuid_gen_;
@@ -51,13 +51,13 @@ private:
 public:
 	Channel(boost::asio::io_context& ctx, std::uint8_t id,
 	        std::string banner, std::string service, 
-	        Handler* handler, std::shared_ptr<Connection> connection,
+	        Handler& handler, std::shared_ptr<Connection> connection,
 	        log::Logger& logger);
 
 	Channel() = delete;
 	~Channel();
 
-	Handler* handler() const;
+	Handler& handler() const;
 	State state() const;
 	bool is_open() const;
 
