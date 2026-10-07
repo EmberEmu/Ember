@@ -25,7 +25,6 @@ endif()
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 set(CMAKE_STATIC_LIBRARY_PREFIX "")
 
-
 if(MSVC)
     set(CMAKE_SYSTEM_VERSION 10.0)
     add_compile_options("/MP")              # Multiprocessor compilation
@@ -100,10 +99,10 @@ option(ENABLE_HUGE_PAGES "When running on Linux, enable huge page support (disab
 option(ENABLE_PAGE_LOCKING "Allow the allocator to lock pages (disable if memory constrained)" ON)
 option(ALLOCATOR_TRACKING "Enable viewing custom memory allocator statistics - slow, debugging only!" OFF)
 
-set(PGO "OFF" CACHE STRING "Profile guided optimisation mode")
-set_property(CACHE PGO PROPERTY STRINGS "OFF" "GENERATE" "USE")
+set(PGO "off" CACHE STRING "Profile guided optimisation mode")
+set_property(CACHE PGO PROPERTY STRINGS "off" "generate" "use")
 
-if (PGO STREQUAL "GENERATE")
+if(PGO STREQUAL "generate")
     if(MSVC)
         add_compile_options("/GL")
         add_link_options("/LTCG" "/GENPROFILE")
@@ -113,7 +112,7 @@ if (PGO STREQUAL "GENERATE")
     endif()
 endif()
 
-if (PGO STREQUAL "USE")
+if(PGO STREQUAL "use")
     if(MSVC)
         add_link_options("/LTCG" "/USEPROFILE")
     else()
@@ -121,19 +120,22 @@ if (PGO STREQUAL "USE")
     endif()
 endif()
 
-if (ALLOCATOR_TRACKING)
+set(Allocator "default" CACHE STRING "Allocation selection")
+set_property(CACHE Allocator PROPERTY STRINGS "default" "mimalloc" "jemalloc")
+
+if(ALLOCATOR_TRACKING)
     add_compile_definitions(EMBER_DEBUG_ALLOCATOR_TRACKING)
 endif()
 
-if (ENABLE_HUGE_PAGES)
+if(ENABLE_HUGE_PAGES)
     add_compile_definitions(ENABLE_HUGE_PAGES)
 endif()
 
-if (ENABLE_PAGE_LOCKING)
+if(ENABLE_PAGE_LOCKING)
     add_compile_definitions(ENABLE_PAGE_LOCKING)
 endif()
 
-if (BUILD_SHARED)
+if(BUILD_SHARED)
     add_compile_definitions(BUILD_SHARED_SERVICES)
     set(SERVICE_LIB_LINKAGE "SHARED")
 else()
@@ -144,7 +146,7 @@ find_package(Threads REQUIRED)
 
 # todo, breaks with 64-bit
 # http://stackoverflow.com/questions/9742003/platform-detection-in-cmake
-if (WIN32)
+if(WIN32)
     macro(get_WIN32_WINNT version)
         if (CMAKE_SYSTEM_VERSION)
             set(ver ${CMAKE_SYSTEM_VERSION})
@@ -166,12 +168,6 @@ if (WIN32)
     get_WIN32_WINNT(ver)
     add_compile_definitions(_WIN32_WINNT=${ver})
 endif(WIN32)
-
-option(WITH_JEMALLOC "Compile with Jemalloc, replacing the system allocator" OFF)
-
-if(WITH_JEMALLOC)
-    add_compile_definitions(WITH_JEMALLOC)
-endif()
 
 ##############################
 #            Boost           #
@@ -260,9 +256,19 @@ endif()
 ##############################
 #          JEMALLOC          #
 ##############################
-if(WITH_JEMALLOC)
+if(allocator STREQUAL "jemalloc")
+    add_compile_definitions(WITH_JEMALLOC)
     find_package(Jemalloc REQUIRED)
     link_libraries(Jemalloc::Jemalloc)
+endif()
+
+##############################
+#          MIMALLOC          #
+##############################
+if(allocator STREQUAL "mimalloc")
+    add_compile_definitions(WITH_MIMALLOC)
+    find_package(Mimalloc REQUIRED)
+    link_libraries(Mimalloc::Mimalloc)
 endif()
 
 ##############################

@@ -26,6 +26,9 @@
 #include <boost/asio/dispatch.hpp>
 #include <boost/asio/executor_work_guard.hpp>
 #include <boost/locale/generator.hpp>
+#ifdef WITH_MIMALLOC
+#include <mimalloc/mimalloc-new-delete.h>
+#endif
 #include <chrono>
 #include <ranges>
 #include <cstddef>

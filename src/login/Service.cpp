@@ -33,6 +33,8 @@
 #include <boost/program_options.hpp>
 #ifdef WITH_JEMALLOC
 #include <jemalloc/jemalloc.h>
+#elifdef WITH_MIMALLOC
+#include <mimalloc/mimalloc-new-delete.h>
 #endif
 #include <pcre.h>
 #include <zlib.h>
