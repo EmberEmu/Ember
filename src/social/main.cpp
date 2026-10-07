@@ -21,6 +21,9 @@
 #include <boost/version.hpp>
 #include <boost/program_options.hpp>
 #include <boost/range/adaptor/map.hpp>
+#ifdef WITH_MIMALLOC
+#include <mimalloc/mimalloc-new-delete.h>
+#endif
 #include <format>
 #include <fstream>
 #include <functional>

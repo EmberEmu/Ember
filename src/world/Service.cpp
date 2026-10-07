@@ -17,6 +17,9 @@
 #include <shared/utility/Utility.h>
 #include <spark/Server.h>
 #include <boost/program_options.hpp>
+#ifdef WITH_MIMALLOC
+#include <mimalloc/mimalloc-new-delete.h>
+#endif
 #include <thread>
 #include <vector>
 #include <cstdint>

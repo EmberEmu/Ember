@@ -22,6 +22,9 @@
 #include <shared/utility/Utility.h>
 #include <spark/Server.h>
 #include <boost/asio/dispatch.hpp>
+#ifdef WITH_MIMALLOC
+#include <mimalloc/mimalloc-new-delete.h>
+#endif
 #include <cstddef>
 #include <cstdlib>
 #include <cstdint>

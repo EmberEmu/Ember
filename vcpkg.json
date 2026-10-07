@@ -4,7 +4,7 @@
     "boost-asio",
     "boost-headers",
     "boost-interprocess",
-	"boost-locale",
+    "boost-locale",
     "boost-program-options",
     "boost-system",
     "boost-uuid",
@@ -15,7 +15,14 @@
     "angelscript",
     "jsoncons",
     "jemalloc",
-    "mysql-connector-cpp"
+    "mysql-connector-cpp",
+    "mimalloc",
+	{
+      "name": "mimalloc",
+      "features": [
+        "override"
+      ]
+    }
   ],
   "overrides": [
   {
