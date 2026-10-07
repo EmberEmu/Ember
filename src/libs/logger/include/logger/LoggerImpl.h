@@ -40,7 +40,7 @@ class Logger::impl final {
 	std::mutex sink_lock_;
 	Worker worker_;
 
-	static inline thread_local std::pair<RecordDetail, std::vector<char>> buffer_;
+	static inline thread_local std::pair<RecordDetail, std::string> buffer_;
 	static inline thread_local std::binary_semaphore sem_{0};
 
 	void finalise() {
@@ -62,7 +62,7 @@ class Logger::impl final {
 	void finalise_sync() {
 		buffer_.second.push_back('\n');
 
-		auto r = std::make_tuple<RecordDetail, std::vector<char>, std::binary_semaphore*>(
+		auto r = std::make_tuple<RecordDetail, std::string, std::binary_semaphore*>(
 			std::move(buffer_.first), std::move(buffer_.second), &sem_
 		);
 
@@ -73,8 +73,8 @@ class Logger::impl final {
 		sem_.acquire();
 	}
 
-	std::vector<char>* get_buffer() {
-		return &buffer_.second;
+	std::string& get_buffer() {
+		return buffer_.second;
 	}
 
 public:

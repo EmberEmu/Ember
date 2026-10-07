@@ -72,7 +72,7 @@ void CommandSink::stop() {
 	ReleaseSemaphore(semaphore_, 1, NULL);
 }
 
-void CommandSink::batch_write(const std::span<std::pair<RecordDetail, std::vector<char>>>& records) {
+void CommandSink::batch_write(const std::span<std::pair<RecordDetail, std::string>>& records) {
 	if(!colour_) [[unlikely]] {
 		do_batch_write(records);
 	} else { // we can't do batch output if we need to colour each individual log record
@@ -82,7 +82,7 @@ void CommandSink::batch_write(const std::span<std::pair<RecordDetail, std::vecto
 	}
 }
 
-void CommandSink::do_batch_write(const std::span<std::pair<RecordDetail, std::vector<char>>>& records) {
+void CommandSink::do_batch_write(const std::span<std::pair<RecordDetail, std::string>>& records) {
 	std::size_t size = 0;
 	Severity sink_sev = this->severity();
 	Filter sink_filter = this->filter();
@@ -132,7 +132,7 @@ void CommandSink::do_batch_write(const std::span<std::pair<RecordDetail, std::ve
 	}
 }
 
-void CommandSink::write(Severity severity, Filter type, std::span<const char> record, bool flush) {
+void CommandSink::write(Severity severity, Filter type, std::string_view record, bool flush) {
 	if(this->severity() > severity || (this->filter() & type)) {
 		return;
 	}

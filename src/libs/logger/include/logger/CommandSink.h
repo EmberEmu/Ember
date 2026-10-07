@@ -17,9 +17,9 @@
 #include <mutex>
 #include <span>
 #include <string>
+#include <string_view>
 #include <thread>
 #include <utility>
-#include <vector>
 
 namespace ember::log {
 
@@ -87,7 +87,7 @@ class CommandSink final : public Sink {
 	void read_console_input(const std::stop_token stop);
 	void dispatch_command();
 	void write_buffer(std::span<const char> buffer, bool redraw = true);
-	void do_batch_write(const std::span<std::pair<RecordDetail, std::vector<char>>>& records);
+	void do_batch_write(const std::span<std::pair<RecordDetail, std::string>>& records);
 	void autocomplete();
 	bool invoke_handler(const std::string_view command);
 
@@ -98,8 +98,8 @@ public:
 	~CommandSink();
 
 	void stop();
-	void write(Severity severity, Filter type, std::span<const char> record, bool flush) override;
-	void batch_write(const std::span<std::pair<RecordDetail, std::vector<char>>>& records) override;
+	void write(Severity severity, Filter type, std::string_view record, bool flush) override;
+	void batch_write(const std::span<std::pair<RecordDetail, std::string>>& records) override;
 	void colourise(bool colourise) { colour_ = colourise; }
 	void prefix(std::string prefix) { prefix_ = std::move(prefix); }
 

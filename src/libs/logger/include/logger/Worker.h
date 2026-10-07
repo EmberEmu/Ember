@@ -26,11 +26,11 @@ class Worker final {
 	static const std::size_t batch_write_threshold = 10;
 	static const std::size_t max_dequed_capacity   = 100;
 
-	moodycamel::ConcurrentQueue<std::pair<RecordDetail, std::vector<char>>> queue_;
-	moodycamel::ConcurrentQueue<std::tuple<RecordDetail, std::vector<char>, std::binary_semaphore*>> queue_sync_;
+	moodycamel::ConcurrentQueue<std::pair<RecordDetail, std::string>> queue_;
+	moodycamel::ConcurrentQueue<std::tuple<RecordDetail, std::string, std::binary_semaphore*>> queue_sync_;
 	moodycamel::ConsumerToken queue_tok_;
 	moodycamel::ConsumerToken squeue_tok_;
-	std::vector<std::pair<RecordDetail, std::vector<char>>> dequeued_;
+	std::vector<std::pair<RecordDetail, std::string>> dequeued_;
 	std::vector<std::shared_ptr<Sink>>& sinks_;
 	std::mutex& sink_lock_;
 	std::counting_semaphore<> sem_;

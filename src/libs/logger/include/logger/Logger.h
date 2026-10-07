@@ -27,14 +27,14 @@ class Logger final {
 	class impl;
 	std::unique_ptr<impl> pimpl_;
 
-	std::vector<char>* get_buffer();
+	std::string& get_buffer();
 
 	template<bool async, typename ... Args>
 	requires (sizeof...(Args) > 0)
 	constexpr void fmt_write(std::format_string<Args...>& fmt, Args&&... args) {
-		auto buffer = get_buffer();
+		auto& buffer = get_buffer();
 
-		std::format_to(std::back_inserter(*buffer), fmt, std::forward<Args>(args)...);
+		std::format_to(std::back_inserter(buffer), fmt, std::forward<Args>(args)...);
 
 		if constexpr(async) {
 			finalise();

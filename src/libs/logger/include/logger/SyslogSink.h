@@ -39,8 +39,8 @@ public:
 	            unsigned int port, Facility facility, std::string tag);
 	~SyslogSink();
 
-	void write(log::Severity severity, Filter type, std::span<const char> record, bool flush) override;
-	void batch_write(const std::span<std::pair<RecordDetail, std::vector<char>>>& records) override;
+	void write(log::Severity severity, Filter type, std::string_view record, bool flush) override;
+	void batch_write(const std::span<std::pair<RecordDetail, std::string>>& records) override;
 };
 
 } // log, ember
