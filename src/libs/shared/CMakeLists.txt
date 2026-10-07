@@ -132,5 +132,5 @@ target_include_directories(${LIBRARY_NAME} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/
 )
 
-target_link_libraries(${LIBRARY_NAME} PUBLIC banner logger commands conpool Boost::program_options Boost::container ${BOTAN_TARGET} ${PCRE_LIBRARY})
+target_link_libraries(${LIBRARY_NAME} PRIVATE Boost::locale PUBLIC banner logger commands conpool Boost::program_options Boost::container ${BOTAN_TARGET} ${PCRE_LIBRARY})
 set_target_properties(${LIBRARY_NAME} PROPERTIES FOLDER "Common Libraries")
