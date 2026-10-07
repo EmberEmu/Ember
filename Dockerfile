@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:experimental
 
-FROM ubuntu:resolute AS builder
+FROM ubuntu:stonking AS builder
 LABEL description="Development build environment"
 
 ARG SKIP_UPGRADE
@@ -83,7 +83,7 @@ RUN --mount=type=cache,id=build-cache,target=/usr/src/ember/build \
     && cmake --install build                  \
     && ctest --test-dir build
 
-FROM ubuntu:resolute AS run_environment
+FROM ubuntu:stonking AS run_environment
 ARG install_dir=/usr/local/bin
 ARG working_dir=/usr/src/ember
 WORKDIR ${install_dir}
