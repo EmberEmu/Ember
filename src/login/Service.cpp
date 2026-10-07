@@ -447,6 +447,8 @@ void print_lib_versions(log::Logger& logger) {
 		<< " - Zlib " << ZLIB_VERSION
 #ifdef WITH_JEMALLOC
 		<< "\n" << " - jemalloc " << JEMALLOC_VERSION
+#elifdef WITH_MIMALLOC
+		<< "\n" << " - mimalloc " << MI_MALLOC_VERSION
 #endif
 		<< LOG_SYNC;
 }
