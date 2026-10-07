@@ -173,7 +173,7 @@ void RemotePeer::handle_open_channel(const core::OpenChannel& msg) {
 	}
 
 	auto channel = std::make_shared<Channel>(
-		ctx_, id, remote_banner_, handler->name(), handler, conn_, log_
+		ctx_, id, remote_banner_, handler->name(), *handler, conn_, log_
 	);
 
 	channel->open();
