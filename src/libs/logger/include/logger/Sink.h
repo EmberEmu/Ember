@@ -12,7 +12,8 @@
 #include <string_view>
 #include <utility>
 #include <span>
-#include <vector>
+#include <string>
+#include <string_view>
 
 namespace ember::log {
 
@@ -34,8 +35,8 @@ public:
 	void filter(const Filter& filter) { filter_ = filter; }
 	virtual std::string_view name() const { return name_; }
 	virtual bool unique() { return false;  }
-	virtual void write(Severity severity, Filter type, std::span<const char> record, bool flush) = 0;
-	virtual void batch_write(const std::span<std::pair<RecordDetail, std::vector<char>>>& records) = 0;
+	virtual void write(Severity severity, Filter type, std::string_view record, bool flush) = 0;
+	virtual void batch_write(const std::span<std::pair<RecordDetail, std::string>>& records) = 0;
 	virtual ~Sink() = default;
 };
 

@@ -14,7 +14,7 @@ namespace ember::log {
 Logger::Logger() : pimpl_(std::make_unique<impl>()) {}
 Logger::~Logger() = default;
 
-std::vector<char>* Logger::get_buffer() {
+std::string& Logger::get_buffer() {
 	return pimpl_->get_buffer();
 }
 

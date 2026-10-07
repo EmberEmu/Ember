@@ -51,8 +51,8 @@ class SyslogSink::impl final : public Sink {
 public:
 	impl(Severity severity, Filter filter, const std::string& host, unsigned int port,
 	     Facility facility, std::string tag);
-	void write(Severity severity, Filter type, const std::span<const char> record, bool flush) override;
-	void batch_write(const std::span<std::pair<RecordDetail, std::vector<char>>>& records) override;
+	void write(Severity severity, Filter type, const std::string_view record, bool flush) override;
+	void batch_write(const std::span<std::pair<RecordDetail, std::string>>& records) override;
 };
 
 SyslogSink::impl::impl(Severity severity, Filter filter, const std::string& host, unsigned int port,
@@ -93,7 +93,7 @@ auto SyslogSink::impl::severity_map(Severity severity) -> SyslogSeverity {
 	}
 }
 
-void SyslogSink::impl::write(Severity severity, Filter type, std::span<const char> record, bool flush) {
+void SyslogSink::impl::write(Severity severity, Filter type, std::string_view record, bool flush) {
 	if(this->severity() >= severity || (this->filter() & type)) {
 		return;
 	}
@@ -112,14 +112,14 @@ void SyslogSink::impl::write(Severity severity, Filter type, std::span<const cha
 		{ std::span(time_fmt) },
 		{ std::span(tag_) },
 		{ ": ", 2 },
-		{ record }
+		{ std::span(record) }
 	}};
 
 	boost::system::error_code err; // ignoring any send errors
 	socket_.send(segments, 0, err);
 }
 
-void SyslogSink::impl::batch_write(const std::span<std::pair<RecordDetail, std::vector<char>>>& records) {
+void SyslogSink::impl::batch_write(const std::span<std::pair<RecordDetail, std::string>>& records) {
 	for(auto& [detail, data] : records) {
 		write(detail.severity, detail.type, data, false);
 	}
@@ -132,11 +132,11 @@ SyslogSink::SyslogSink(Severity severity, Filter filter, std::string host, unsig
 
 SyslogSink::~SyslogSink() = default;
 
-void SyslogSink::write(Severity severity, Filter type, std::span<const char> record, bool flush) {
+void SyslogSink::write(Severity severity, Filter type, std::string_view record, bool flush) {
 	pimpl_->write(severity, type, record, flush);
 }
 
-void SyslogSink::batch_write(const std::span<std::pair<RecordDetail, std::vector<char>>>& records) {
+void SyslogSink::batch_write(const std::span<std::pair<RecordDetail, std::string>>& records) {
 	pimpl_->batch_write(records);
 }
 

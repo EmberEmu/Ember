@@ -28,7 +28,7 @@ class ConsoleSink final : public Sink {
 	boost::container::small_vector<char, sv_reserve> out_buf_;
 
 	Colour severity_colour(Severity severity);
-	void do_batch_write(const std::span<std::pair<RecordDetail, std::vector<char>>>& records);
+	void do_batch_write(const std::span<std::pair<RecordDetail, std::string>>& records);
 
 public:
 	static constexpr std::string_view sink_name = "ConsoleSink";
@@ -37,8 +37,8 @@ public:
 		: Sink(severity, filter, "ConsoleSink")
 		, colour_(false) {}
 
-	void write(Severity severity, Filter type, std::span<const char> record, bool flush) override;
-	void batch_write(const std::span<std::pair<RecordDetail, std::vector<char>>>& records) override;
+	void write(Severity severity, Filter type, std::string_view record, bool flush) override;
+	void batch_write(const std::span<std::pair<RecordDetail, std::string>>& records) override;
 	void colourise(bool colourise) { colour_ = colourise; }
 	void prefix(std::string prefix) { prefix_ = std::move(prefix); }
 };

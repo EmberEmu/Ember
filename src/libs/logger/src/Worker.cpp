@@ -54,7 +54,7 @@ void Worker::apply_hard_backpressure(const std::size_t size_approx) {
 
 	const auto discard_count = size_approx - hard_queue_limit;
 
-	std::vector<std::pair<RecordDetail, std::vector<char>>> item;
+	std::vector<std::pair<RecordDetail, std::string>> item;
 	item.resize(discard_count);
 	discarded_ += queue_.try_dequeue_bulk(queue_tok_, std::back_inserter(item), discard_count);
 
@@ -93,7 +93,7 @@ void Worker::write_discard_log() {
 }
 
 void Worker::process_outstanding_sync() {
-	std::tuple<RecordDetail, std::vector<char>, std::binary_semaphore*> item;
+	std::tuple<RecordDetail, std::string, std::binary_semaphore*> item;
 
 	std::lock_guard lock(sink_lock_);
 

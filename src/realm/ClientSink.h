@@ -63,8 +63,8 @@ public:
 	           log::Severity severity, LogRedirect::Type type,
 	           log::Filter filter);
 
-	void write(log::Severity severity, log::Filter type, std::span<const char> record, bool flush) override;
-	void batch_write(const std::span<std::pair<log::RecordDetail, std::vector<char>>>& records) override;
+	void write(log::Severity severity, log::Filter type, std::string_view record, bool flush) override;
+	void batch_write(const std::span<std::pair<log::RecordDetail, std::string>>& records) override;
 };
 
 } // realm, ember
