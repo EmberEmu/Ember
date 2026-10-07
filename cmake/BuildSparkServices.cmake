@@ -13,6 +13,11 @@ function(build_spark_services
     set(rpcgen "rpcgen")
     set(output_files "")
 
+    set(template_files
+        "${template_dir}/Client.h_"
+        "${template_dir}/Service.h_"
+    )
+
     foreach(schema_path IN LISTS service_schemas)
         cmake_path(GET schema_path FILENAME name)
         cmake_path(REMOVE_EXTENSION name)
@@ -27,7 +32,8 @@ function(build_spark_services
                     -t ${template_dir}
                     -s ${bfbs_file}
                     -o ${output_dir}
-            DEPENDS ${rpcgen} FB_SCHEMA_COMPILE
+            DEPENDS ${rpcgen} ${bfbs_file} ${template_files}
+
             COMMENT "Generating Spark stubs for ${name}"
             VERBATIM
         )
