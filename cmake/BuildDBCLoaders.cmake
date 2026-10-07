@@ -13,44 +13,58 @@
                             fverbosity)
     set(dbcparser "dbcparser")
 
-    set(${dbc_hdr} "")
-    set(${dbc_src} "")
-
-    list(APPEND ${dbc_hdr}
-        ${output_dir}/DiskDefs.h
-        ${output_dir}/MemoryDefs.h
-        ${output_dir}/Storage.h
-    )
-    list(APPEND ${dbc_src}
-        ${output_dir}/DiskLoader.cpp
-        ${output_dir}/Linker.cpp
+    set(template_files
+        "${template_dir}/DiskDefs.h_"
+        "${template_dir}/DiskLoader.cpp_"
+        "${template_dir}/Linker.cpp_"
+        "${template_dir}/MemoryDefs.h_"
+        "${template_dir}/Storage.h_"
     )
 
-    set_source_files_properties(${${dbc_hdr}} ${${dbc_src}} PROPERTIES GENERATED TRUE)
+    set(headers
+        "${output_dir}/DiskDefs.h"
+        "${output_dir}/MemoryDefs.h"
+        "${output_dir}/Storage.h"
+    )
+
+    set(sources
+        "${output_dir}/DiskLoader.cpp"
+        "${output_dir}/Linker.cpp"
+    )
+
+    set_source_files_properties(
+        ${headers}
+        ${sources}
+        PROPERTIES GENERATED TRUE
+    )
+
+    set(${dbc_hdr} ${headers} PARENT_SCOPE)
+    set(${dbc_src} ${sources} PARENT_SCOPE)
 
     set(input_dbcs "")
+
     foreach(dir ${definition_dirs})
         file(GLOB input_dbcs ${input_dbcs} ${dir}/*.xml)
     endforeach()
 
     add_custom_command(
-        OUTPUT ${${dbc_hdr}} ${${dbc_src}}
-        COMMAND ${dbcparser} 
+        OUTPUT ${headers} ${sources}
+        COMMAND ${dbcparser}
         -d ${definition_dirs}
-        -t ${template_dir} 
-        -o ${output_dir} 
-        --fverbosity ${fverbosity} 
+        -t ${template_dir}
+        -o ${output_dir}
+        --fverbosity ${fverbosity}
         --disk
-        DEPENDS ${dbcparser} ${input_dbcs}
+        DEPENDS ${dbcparser} ${input_dbcs} ${template_files}
         COMMENT "Generating DBC loaders..."
     )
 
     add_custom_target(
         ${target_name}
-        DEPENDS ${dbcparser} ${${dbc_hdr}} ${${dbc_src}} ${additional_dependencies}
+        DEPENDS ${dbcparser} ${headers} ${sources} ${additional_dependencies}
     )
 
-    set(${dbc_hdr} ${${dbc_hdr}} PARENT_SCOPE)
-    set(${dbc_src} ${${dbc_src}} PARENT_SCOPE)
-	set_target_properties(${target_name} PROPERTIES FOLDER "Code Generation")
+    set(${dbc_hdr} ${headers} PARENT_SCOPE)
+    set(${dbc_src} ${sources} PARENT_SCOPE)
+    set_target_properties(${target_name} PROPERTIES FOLDER "Code Generation")
 endfunction()
