@@ -88,7 +88,7 @@ ARG install_dir=/usr/local/bin
 ARG working_dir=/usr/src/ember
 WORKDIR ${install_dir}
 RUN apt-get -y update \
- && apt-get install -y libbotan-3-10 \
+ && apt-get install -y libbotan-3-12 \
  && apt-get install -y libmysqlcppconn7v5 \
  && apt-get install -y mysql-client \
  && apt-get install -y libjemalloc2 
