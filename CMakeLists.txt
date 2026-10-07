@@ -101,9 +101,9 @@ option(ENABLE_PAGE_LOCKING "Allow the allocator to lock pages (disable if memory
 option(ALLOCATOR_TRACKING "Enable viewing custom memory allocator statistics - slow, debugging only!" OFF)
 
 set(PGO "OFF" CACHE STRING "Profile guided optimisation mode")
-set_property(CACHE PGO PROPERTY STRINGS "OFF" "GEN" "USE")
+set_property(CACHE PGO PROPERTY STRINGS "OFF" "GENERATE" "USE")
 
-if (PGO STREQUAL "GEN")
+if (PGO STREQUAL "GENERATE")
     if(MSVC)
         add_compile_options("/GL")
         add_link_options("/LTCG" "/GENPROFILE")
