@@ -121,7 +121,7 @@ void RemotePeer::send_close_channel(const std::uint8_t id) {
 	conn_->send(std::move(msg));
 }
 
-std::optional<std::reference_wrapper<Handler>> RemotePeer::find_handler(const core::OpenChannel& msg) {
+std::optional<Handler&> RemotePeer::find_handler(const core::OpenChannel& msg) {
 	const auto sname = msg.service_name();
 	const auto stype = msg.service_type();
 
@@ -148,15 +148,13 @@ std::optional<std::reference_wrapper<Handler>> RemotePeer::find_handler(const co
 void RemotePeer::handle_open_channel(const core::OpenChannel& msg) {
 	LOG_TRACE(log_, log_func);
 
-	auto result = find_handler(msg);
+	auto handler = find_handler(msg);
 
-	if(!result) {
+	if(!handler) {
 		LOG_DEBUG(log_, "[spark] Requested service handler ({}) does not exist", msg.service_type()->str());
 		open_channel_response(core::Result::error_unk, 0, msg.id());
 		return;
 	}
-
-	auto& handler = result->get();
 
 	if(msg.id() == 0 || msg.id() >= channels_.size()) {
 		LOG_DEBUG(log_, "[spark] Bad channel ID ({}) specified", msg.id());
@@ -175,13 +173,13 @@ void RemotePeer::handle_open_channel(const core::OpenChannel& msg) {
 	}
 
 	auto channel = std::make_shared<Channel>(
-		ctx_, id, remote_banner_, handler.name(), handler, conn_, log_
+		ctx_, id, remote_banner_, handler->name(), handler, conn_, log_
 	);
 
 	channel->open();
 	channels_[id] = std::move(channel);
 	open_channel_response(core::Result::ok, id, msg.id());
-	LOG_DEBUG(log_, "[spark] Remote channel open, {}:{}", handler.name(), id);
+	LOG_DEBUG(log_, "[spark] Remote channel open, {}:{}", handler->name(), id);
 }
 
 std::uint8_t RemotePeer::next_empty_channel() {

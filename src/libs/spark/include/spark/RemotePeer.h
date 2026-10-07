@@ -18,7 +18,6 @@
 #include <array>
 #include <chrono>
 #include <concepts>
-#include <functional>
 #include <memory>
 #include <optional>
 #include <string>
@@ -50,7 +49,7 @@ class RemotePeer final {
 	std::chrono::steady_clock::time_point ping_time_;
 
 	void send(Message&& msg);
-	std::optional<std::reference_wrapper<Handler>> find_handler(const core::OpenChannel& msg);
+	std::optional<Handler&> find_handler(const core::OpenChannel& msg);
 	std::uint8_t next_empty_channel();
 
 	void handle_control_message(std::span<const std::uint8_t> data);
