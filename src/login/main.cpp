@@ -9,7 +9,6 @@
 #include "Service.h"
 #include <banner/Banner.h>
 #include <commands/Commands.h>
-#include <logger/CommandSink.h>
 #include <logger/Logger.h>
 #include <thread/Utility.h>
 #include <shared/utility/CommandHelpers.h>
