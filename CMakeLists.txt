@@ -120,7 +120,7 @@ if(PGO STREQUAL "use")
     endif()
 endif()
 
-set(Allocator "default" CACHE STRING "Allocation selection")
+set(Allocator "default" CACHE STRING "Allocator selection")
 set_property(CACHE Allocator PROPERTY STRINGS "default" "mimalloc" "jemalloc")
 
 if(ALLOCATOR_TRACKING)
