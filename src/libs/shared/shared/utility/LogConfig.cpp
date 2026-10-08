@@ -28,14 +28,14 @@ std::shared_ptr<log::Sink> init_remote_sink(const opts::variables_map& args, log
 	const auto& service = args["remote_log.service_name"].as<std::string>();
 	auto port = args["remote_log.port"].as<std::uint16_t>();
 	auto facility = log::SyslogSink::Facility::local_use_0;
-	auto filter = args["remote_log.filter-mask"].as<std::uint32_t>();
+	auto filter = args["remote_log.filter_mask"].as<std::uint32_t>();
 	return std::make_shared<log::SyslogSink>(severity, log::Filter(filter), host, port, facility, service);
 }
 
 std::shared_ptr<log::Sink> init_file_sink(const opts::variables_map& args, log::Severity severity) {
 	const auto& mode_str = args["file_log.mode"].as<std::string>();
 	const auto& path = args["file_log.path"].as<std::string>();
-	auto filter = args["file_log.filter-mask"].as<std::uint32_t>();
+	auto filter = args["file_log.filter_mask"].as<std::uint32_t>();
 
 	if(mode_str != "append" && mode_str != "truncate") {
 		throw std::runtime_error("Invalid file logging mode supplied");
@@ -54,7 +54,7 @@ std::shared_ptr<log::Sink> init_file_sink(const opts::variables_map& args, log::
 }
 
 std::shared_ptr<log::Sink> init_console_sink(const opts::variables_map& args, log::Severity severity) {
-	auto filter = args["console_log.filter-mask"].as<std::uint32_t>();
+	auto filter = args["console_log.filter_mask"].as<std::uint32_t>();
 	auto colourise = args["console_log.colours"].as<bool>();
 	auto sink = std::make_shared<log::ConsoleSink>(severity, log::Filter(filter));
 	sink->colourise(colourise);
@@ -68,7 +68,7 @@ std::shared_ptr<log::Sink> init_console_sink(const opts::variables_map& args, lo
 
 #ifdef _WIN32
 std::shared_ptr<log::Sink> init_command_sink(const opts::variables_map& args, log::Severity severity) {
-	auto filter = args["console_log.filter-mask"].as<std::uint32_t>();
+	auto filter = args["console_log.filter_mask"].as<std::uint32_t>();
 	auto colourise = args["console_log.colours"].as<bool>();
 	auto sink = std::make_shared<log::CommandSink>(severity, log::Filter(filter), "ember( ");
 	sink->colourise(colourise);
