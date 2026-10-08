@@ -66,37 +66,41 @@ std::shared_ptr<log::Sink> init_console_sink(const opts::variables_map& args, lo
 	return sink;
 }
 
-#ifdef _WIN32
 std::shared_ptr<log::Sink> init_command_sink(const opts::variables_map& args, log::Severity severity) {
-	auto filter = args["console_log.filter-mask"].as<std::uint32_t>();
-	auto colourise = args["console_log.colours"].as<bool>();
-	auto sink = std::make_shared<log::CommandSink>(severity, log::Filter(filter), "ember( ");
-	sink->colourise(colourise);
+	const auto filter = args["console_log.filter-mask"].as<std::uint32_t>();
+	const auto colourise = args["console_log.colours"].as<bool>();
 
-	if(args.count("console_log.prefix")) {
-		sink->prefix(args["console_log.prefix"].as<std::string>());
-	}
+#ifdef _WIN32
+	const auto ansi = args["console_log.win32_ansi"].as<bool>();
 
-	return sink;
-}
+	if(ansi) {
 #endif
+
+		return nullptr;
+#ifdef _WIN32
+	} else {
+		auto sink = std::make_shared<log::CommandSink>(severity, log::Filter(filter), "ember( ");
+		sink->colourise(colourise);
+
+		if(args.count("console_log.prefix")) {
+			sink->prefix(args["console_log.prefix"].as<std::string>());
+		}
+
+		return sink;
+	}
+#endif
+}
 
 } // unnamed
 
 void configure_logger(log::Logger& logger, const opts::variables_map& args) {
 	const bool enable_input = args["console_log.enable_input"].as<bool>();
-	log::Severity severity = args["console_log.verbosity"].as<log::Severity>();
+	auto severity = args["console_log.verbosity"].as<log::Severity>();
 
-	if(enable_input) {
-		if(severity != log::Severity::disabled) {
-#ifdef _WIN32
+	if(severity != log::Severity::disabled) {
+		if(enable_input) {
 			logger.add_sink(init_command_sink(args, severity));
-#else
-			logger.add_sink(init_console_sink(args, severity));
-#endif
-		}
-	} else {
-		if(severity != log::Severity::disabled) {
+		} else {
 			logger.add_sink(init_console_sink(args, severity));
 		}
 	}

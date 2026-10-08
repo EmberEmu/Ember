@@ -62,3 +62,4 @@ verbosity = trace   # trace, debug, info, warning, error, fatal or none to disab
 colours = true      # colourise the output
 filter-mask = 0
 prefix = [fusion]
+win32_ansi = false  # use cross-platform input sink rather than Win32 API sink (Windows only)
