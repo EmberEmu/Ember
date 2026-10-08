@@ -49,9 +49,12 @@ public:
 		std::unique_ptr<sql::ResultSet> res(stmt->executeQuery());
 
 		if(res->next()) {
-			auto salt_it = res->getBlob("s");
-			std::vector<std::uint8_t> salt((std::istreambuf_iterator<char>(*salt_it)),
-				std::istreambuf_iterator<char>());
+			std::unique_ptr<std::istream> salt_stream(res->getBlob("s"));
+
+			std::vector<std::uint8_t> salt(
+				(std::istreambuf_iterator<char>(*salt_stream)), // () = msvc bug
+				std::istreambuf_iterator<char>()
+			);
 
 			User user(res->getUInt("id"), res->getString("username"), std::move(salt),
 			          res->getString("v"), static_cast<PINMethod>(res->getUInt("pin_method")),
