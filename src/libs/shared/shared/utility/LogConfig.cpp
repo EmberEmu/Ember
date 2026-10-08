@@ -8,7 +8,7 @@
 
 #include "LogConfig.h"
 #include <logger/Logger.h>
-#include <logger/CommandSink.h>
+#include <logger/win32/CommandSink.h>
 #include <logger/ConsoleSink.h>
 #include <logger/FileSink.h>
 #include <logger/SyslogSink.h>
@@ -79,7 +79,7 @@ std::shared_ptr<log::Sink> init_command_sink(const opts::variables_map& args, lo
 		return nullptr;
 #ifdef _WIN32
 	} else {
-		auto sink = std::make_shared<log::CommandSink>(severity, log::Filter(filter), "ember( ");
+		auto sink = std::make_shared<log::win32::CommandSink>(severity, log::Filter(filter), "ember( ");
 		sink->colourise(colourise);
 
 		if(args.count("console_log.prefix")) {

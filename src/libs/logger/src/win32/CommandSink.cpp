@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include <logger/CommandSink.h>
+#include <logger/win32/CommandSink.h>
 #include <logger/Exception.h>
 #include <logger/Utility.h>
 #include <logger/detail/StreamBuffer.h>
@@ -25,7 +25,7 @@
 #include <cstdio>
 #include <cstring>
 
-namespace ember::log {
+namespace ember::log::win32 {
 
 using namespace detail;
 
@@ -739,4 +739,4 @@ bool CommandSink::invoke(const std::string_view command) {
 	return invoke_handler(command);
 }
 
-} // log, ember
+} // win32, log, ember

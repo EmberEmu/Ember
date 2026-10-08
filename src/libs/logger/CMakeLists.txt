@@ -25,7 +25,7 @@ add_library(${LIBRARY_NAME} STATIC
     include/logger/Sink.h
     include/logger/Utility.h
     include/logger/ConsoleSink.h
-    include/logger/CommandSink.h
+    include/logger/win32/CommandSink.h
     include/logger/Exception.h
     include/logger/FileWrapper.h
     include/logger/Severity.h

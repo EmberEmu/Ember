@@ -21,7 +21,7 @@
 #include <thread>
 #include <utility>
 
-namespace ember::log {
+namespace ember::log::win32 {
 
 class CommandSink final : public Sink {
 	enum class ScrollDirection {
@@ -114,4 +114,4 @@ public:
 	bool unique() override { return true; }
 };
 
-} // log, ember
+} // win32, log, ember

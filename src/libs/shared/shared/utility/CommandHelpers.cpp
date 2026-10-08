@@ -9,7 +9,7 @@
 #include "CommandHelpers.h"
 #include <banner/Version.h>
 #include <commands/Commands.h>
-#include <logger/CommandSink.h>
+#include <logger/win32/CommandSink.h>
 #include <logger/Logger.h>
 #include <shared/utility/DurationString.h>
 #include <boost/lexical_cast.hpp>
@@ -187,7 +187,7 @@ std::string suggest_command(const commands::Command& root, const std::string_vie
 
 #ifdef _WIN32
 void handle_cls_command(log::Logger& logger) {
-	const auto sinks = logger.fetch_sink(log::CommandSink::sink_name);
+	const auto sinks = logger.fetch_sink(log::win32::CommandSink::sink_name);
 
 	if(sinks.empty()) {
 		SLOG_ERROR(logger, "Could not locate a command sink, cannot execute cls");
@@ -196,7 +196,7 @@ void handle_cls_command(log::Logger& logger) {
 
 	assert(sinks.size() == 1 && "multiple command sinks?");
 
-	auto& sink = static_cast<log::CommandSink&>(*sinks.front());
+	auto& sink = static_cast<log::win32::CommandSink&>(*sinks.front());
 	sink.clear_console();
 }
 #endif
@@ -230,14 +230,14 @@ void register_common_commands(std::shared_ptr<commands::Command> root, log::Logg
 
 void register_command_handlers(std::shared_ptr<commands::Command> root, log::Logger& logger, const bool suggestions) {
 #ifdef _WIN32
-	auto sinks = logger.fetch_sink(log::CommandSink::sink_name);
+	auto sinks = logger.fetch_sink(log::win32::CommandSink::sink_name);
 
 	if(sinks.empty()) {
 		SLOG_INFO(logger, "Console commands disabled, no suitable logging sink found");
 		return;
 	}
 
-	auto& sink = static_cast<log::CommandSink&>(*sinks.front());
+	auto& sink = static_cast<log::win32::CommandSink&>(*sinks.front());
 
 	sink.register_autocomplete([&, root](auto cmd) {
 		return root->autocomplete(cmd);

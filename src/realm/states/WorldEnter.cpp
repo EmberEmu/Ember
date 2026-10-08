@@ -12,7 +12,7 @@
 #include "../ClientConnection.h"
 #include "../RealmQueue.h"
 #include <commands/Utility.h>
-#include <logger/CommandSink.h>
+#include <logger/win32/CommandSink.h>
 #include <protocol/Deserialise.h>
 #include <protocol/server/TriggerCinematic.h>
 #include <protocol/server/LoginVerifyWorld.h>
@@ -314,16 +314,16 @@ void handle_tutorial_flag(ClientContext& ctx) {
 
 // again, this entire file is just for testing other dev functionality
 #ifdef _WIN32
-std::shared_ptr<log::CommandSink> cmdsink;
+std::shared_ptr<log::win32::CommandSink> cmdsink;
 
 void patch_console_test(ClientContext& ctx) {
-	const auto sinks = ctx.logger.fetch_sink(log::CommandSink::sink_name);
+	const auto sinks = ctx.logger.fetch_sink(log::win32::CommandSink::sink_name);
 
 	if(sinks.empty()) {
 		return;
 	}
 
-	cmdsink = dynamic_pointer_cast<log::CommandSink>(sinks.front());
+	cmdsink = dynamic_pointer_cast<log::win32::CommandSink>(sinks.front());
 }
 #endif
 
