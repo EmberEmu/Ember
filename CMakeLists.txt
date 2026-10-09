@@ -108,7 +108,7 @@ if(PGO STREQUAL "generate")
         add_link_options("/LTCG" "/GENPROFILE")
     else()
         add_compile_options("$<$<CXX_COMPILER_ID:GNU,Clang>:-fprofile-generate>")
-		add_link_options("$<$<CXX_COMPILER_ID:GNU,Clang>:-fprofile-generate>")
+        add_link_options("$<$<CXX_COMPILER_ID:GNU,Clang>:-fprofile-generate>")
     endif()
 endif()
 
@@ -267,8 +267,8 @@ endif()
 ##############################
 if(allocator STREQUAL "mimalloc")
     add_compile_definitions(WITH_MIMALLOC)
-    find_package(Mimalloc REQUIRED)
-    link_libraries(Mimalloc::Mimalloc)
+    find_package(mimalloc CONFIG REQUIRED)
+    link_libraries($<IF:$<TARGET_EXISTS:mimalloc-static>,mimalloc-static,mimalloc>)
 endif()
 
 ##############################
