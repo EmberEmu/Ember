@@ -1,6 +1,16 @@
 # Module for locating the MySQL Connector/C++ library
 # Based on Sergiu Dotenco's FindBotan module
 
+find_package(unofficial-mysql-connector-cpp CONFIG QUIET)
+
+if(TARGET mysqlcppconn-static)
+    set(MYSQLCCPP_LIBRARY mysqlcppconn-static)
+    set(MYSQLCCPP_LIBRARIES mysqlcppconn-static)
+    set(MYSQLCCPP_INCLUDE_DIRS "")
+    set(MySQLConnectorCPP_FOUND TRUE)
+    return()
+endif()
+
 include(FindPackageHandleStandardArgs)
 
 set(MYSQLCCPP_ROOT_HINTS
