@@ -3,13 +3,10 @@
 
 find_package(unofficial-mysql-connector-cpp CONFIG QUIET)
 
-if(TARGET unofficial::mysql-connector-cpp::connector-jdbc)
-    set(MYSQLCCPP_LIBRARY
-        unofficial::mysql-connector-cpp::connector-jdbc)
-    set(MYSQLCCPP_LIBRARIES
-        unofficial::mysql-connector-cpp::connector-jdbc)
+if(TARGET mysqlcppconn-static)
+    set(MYSQLCCPP_LIBRARY mysqlcppconn-static)
+    set(MYSQLCCPP_LIBRARIES mysqlcppconn-static)
     set(MYSQLCCPP_INCLUDE_DIRS "")
-
     set(MySQLConnectorCPP_FOUND TRUE)
     return()
 endif()
