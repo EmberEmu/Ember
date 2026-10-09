@@ -38,7 +38,14 @@ function(build_messages
                 --messages ${messages_dir}
                 --output ${output_root}
                 --templates ${templates_dir}
-        DEPENDS ${protogen} ${types_path} ${message_jsons} ${templates}
+        DEPENDS
+            ${protogen}
+            "${message_schema}"
+            "${types_schema}"
+            "${types_path}"
+             ${message_jsons}
+             ${templates}
+
         COMMENT "Generating message headers under ${output_root}"
         VERBATIM
     )
