@@ -23,6 +23,7 @@ IF !nodb! == "false" (
 )
 
 ECHO -- Paste your migration query below>>!file!
+ECHO Created migration file: !file!
 GOTO EndOfScript
 
 :GetFormattedCurrentUTCDate outString
@@ -47,8 +48,8 @@ SET %1=%year%%month%%day%%hour%%minute%%second%
 GOTO EndOfScript
 
 :NoDBError
-echo No valid database argument specified (world or login), file will be created in current directory instead. Please move it to the desired directory.
-pause
+ECHO No valid database argument specified (world or login), file will be created in current directory instead. Please move it to the desired directory.
+PAUSE
 GOTO EndOfScript
 
 :EndOfScript
