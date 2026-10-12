@@ -68,19 +68,17 @@ std::size_t max_consecutive(const utf8_string& string, const bool case_insensiti
 
 	std::size_t current_run = 0;
 	std::size_t longest_run = 0;
-	char32_t last = 0;
+	::utf8::utfchar32_t last = 0;
 
 	while(it != end) {
-		const char32_t current = static_cast<char32_t>(*it);
-
-		if(current == last) {
+		if(*it == last) {
 			++current_run;
 		} else {
 			current_run = 1;
 		}
 
 		longest_run = std::max(longest_run, current_run);
-		last = current;
+		last = *it;
 		++it;
 	}
 
