@@ -545,7 +545,7 @@ opts::variables_map parse_arguments(const int argc, const char* argv[]) {
 			"Whether to use transactions to allow for rolling back updates in the event of failure. "
 			"Note that not all migrations can be applied transactionally (e.g. DDL queries).")
 		("shutup", opts::bool_switch()->default_value(false),
-			"Silence the timed warnings displayed during a updates or a --clean install.")
+			"Silence the timed warnings displayed during an update or a --clean install.")
 		("verbosity,v", opts::value<log::Severity>()->default_value(log::Severity::trace),
 			"Logging verbosity")
 		("fverbosity", opts::value<log::Severity>()->default_value(log::Severity::disabled),
