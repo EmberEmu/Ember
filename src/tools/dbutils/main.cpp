@@ -496,9 +496,8 @@ bool pluralise(auto value) {
 }
 
 opts::variables_map parse_arguments(const int argc, const char* argv[]) {
-	opts::options_description opt("Options");
-	opt.add_options()
-		("help,h", "Displays a list of available options")
+	opts::options_description config_opts("Configuration options");
+	config_opts.add_options()
 		("install", opts::value<std::vector<std::string>>()->multitoken(),
 			"Perform initial installation of the listed database types")
 		("update", opts::value<std::vector<std::string>>()->multitoken(),
@@ -552,17 +551,37 @@ opts::variables_map parse_arguments(const int argc, const char* argv[]) {
 		("fverbosity", opts::value<log::Severity>()->default_value(log::Severity::disabled),
 			"File logging verbosity");
 
+	opts::options_description cmdline_opts("Command-line options");
+	cmdline_opts.add_options()
+		("help,h", "Displays a list of available options")
+		("config,c", opts::value<std::string>(), "Path to the configuration file");
+
+	cmdline_opts.add(config_opts);
+
+	opts::positional_options_description pos;
+	pos.add("config", 1);
+
 	opts::variables_map options;
-	
-	opts::store(opts::command_line_parser(argc, argv).options(opt)
-			  .style(opts::command_line_style::default_style & ~opts::command_line_style::allow_guessing)
-			  .run(), options);
+	opts::store(opts::command_line_parser(argc, argv).positional(pos).options(cmdline_opts).run(), options);
 
 	if(options.count("help")) {
-		std::cout << opt;
+		std::cout << cmdline_opts;
 		std::exit(EXIT_SUCCESS);
 	}
 
+	if(options.count("config")) {
+		const auto& config_path = options["config"].as<std::string>();
+
+		std::ifstream ifs(config_path);
+
+		if(!ifs) {
+			throw std::invalid_argument("Unable to open configuration file: " + config_path);
+		}
+
+		opts::store(opts::parse_config_file(ifs, config_opts), options);
+	}
+
 	opts::notify(options);
+
 	return options;
 }
