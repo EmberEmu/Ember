@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Ember
+ * Copyright (c) 2024 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -10,7 +10,6 @@
 
 #include "grunt/Magic.h"
 #include <shared/database/objects/PatchMeta.h>
-#include <functional>
 #include <span>
 #include <string>
 #include <optional>
@@ -53,8 +52,7 @@ public:
 	void add_data(grunt::Platform platform, grunt::System os, const std::string& path);
 	
 	[[nodiscard]]
-	std::optional<std::reference_wrapper<const FileMeta>>
-	meta(grunt::Platform platform, grunt::System os) const;
+	std::optional<const FileMeta&> meta(grunt::Platform platform, grunt::System os) const;
 
 	[[nodiscard]]
 	std::optional<std::span<const std::byte>>

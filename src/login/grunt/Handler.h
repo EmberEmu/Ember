@@ -13,7 +13,6 @@
 #include <logger/LoggerFwd.h>
 #include <concepts>
 #include <expected>
-#include <functional>
 #include <optional>
 #include <type_traits>
 #include <variant>
