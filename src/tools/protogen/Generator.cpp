@@ -800,6 +800,47 @@ std::string join_lines(std::span<const std::string> lines) {
 	return out.str();
 }
 
+bool contains_string_type(const nlohmann::json& fields) {
+	for(const auto& field : fields) {
+		if(!field.contains("as")) {
+			continue;
+		}
+
+		const std::string& type = field["as"];
+
+		std::cout << "Type: " << type << std::endl;
+
+		if(auto it = type_map.find(type); it != type_map.end()) {
+			auto& [name, info] = it->second;
+
+			if(info == TypeInfo::string) {
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
+// todo, pretty messy to have an overloaded function
+// - should probably change it to collect the fields only 
+// in nlohmann for inja's sake
+bool contains_string_type(const jsoncons::json& fields) {
+	for(const auto& field : fields.array_range()) {
+		const auto type = field["type"].as<std::string>();
+
+		if(auto it = type_map.find(type); it != type_map.end()) {
+			auto& [name, info] = it->second;
+			
+			if(info == TypeInfo::string) {
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
 GeneratedFile generate_message(const jsoncons::json& message,
                                const TypeRegistry& registry,
                                const std::filesystem::path& templates_dir) {
@@ -820,6 +861,12 @@ GeneratedFile generate_message(const jsoncons::json& message,
 		walk(message["fields"], registry, state, scope, {});
 	}
 
+	bool has_strings = false;
+
+	if(message.contains("fields")) {
+		has_strings = contains_string_type(message["fields"]);
+	}
+
 	nlohmann::json data;
 	data["year"] = current_year();
 	data["name"] = name;
@@ -831,6 +878,7 @@ GeneratedFile generate_message(const jsoncons::json& message,
 	data["read_body"] = join_lines(state.read_ops);
 	data["write_body"] = join_lines(state.write_ops);
 	data["alias"] = alias;
+	data["has_strings"] = has_strings;
 
 	auto includes_json = nlohmann::json::array();
 
@@ -917,6 +965,8 @@ void collect_struct_members(const jsoncons::json& fields, const TypeRegistry& re
 		entry["type"] = decl_type;
 		entry["name"] = field["name"].as<std::string>();
 		entry["suffix"] = suffix;
+		entry["as"] = declared_type;
+
 		out.push_back(std::move(entry));
 
 		// includes for both the wire primitive and any 'as' semantic type
@@ -1022,6 +1072,7 @@ std::vector<GeneratedFile> generate_type_headers(const TypeRegistry& reg, const 
 				includes_arr.push_back(h);
 			}
 
+			data["has_strings"] = contains_string_type(fields);
 			data["includes"] = std::move(includes_arr);
 			data["fields"] = std::move(fields);
 
