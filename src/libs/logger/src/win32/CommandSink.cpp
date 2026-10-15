@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include <logger/CommandSink.h>
+#include <logger/win32/CommandSink.h>
 #include <logger/Exception.h>
 #include <logger/Utility.h>
 #include <logger/detail/StreamBuffer.h>
@@ -25,7 +25,7 @@
 #include <cstdio>
 #include <cstring>
 
-namespace ember::log {
+namespace ember::log::win32 {
 
 using namespace detail;
 
@@ -33,7 +33,7 @@ static constexpr auto text_white = FOREGROUND_INTENSITY | FOREGROUND_RED | FOREG
 static constexpr auto text_grey = FOREGROUND_INTENSITY;
 
 CommandSink::CommandSink(Severity severity, Filter filter, std::string prompt)
-	: Sink(severity, filter, sink_name)
+	: log::CommandSink(severity, filter)
 	, prompt_(std::move(prompt))
 	, colour_(false)
 	, history_idx_(0)
@@ -152,7 +152,7 @@ void CommandSink::write(Severity severity, Filter type, std::string_view record,
 	append(record);
 
 	if(colour_) [[likely]] {
-		ConsoleColour concol(severity_colour(severity));
+		ConsoleColour concol(detail::severity_colour(severity));
 		write_buffer(out_buf_, false);
 	} else {
 		write_buffer(out_buf_, false);
@@ -170,31 +170,6 @@ void CommandSink::write(Severity severity, Filter type, std::string_view record,
 
 	if(out_buf_.capacity() > max_buf_size) [[unlikely]] {
 		out_buf_.shrink_to_fit();
-	}
-}
-
-Colour CommandSink::severity_colour(Severity severity) {
-	switch(severity) {
-		case Severity::console:
-			return Colour::white_on_cyan_bg;
-		case Severity::console_error:
-			return Colour::white_on_red_bg;
-		case Severity::fatal:
-			[[fallthrough]];
-		case Severity::error:
-			[[fallthrough]];
-		case Severity::warn:
-			return Colour::light_red;
-		case Severity::info:
-			return Colour::white;
-		case Severity::debug:
-			return Colour::light_cyan;
-		case Severity::trace:
-			return Colour::dark_grey;
-		case Severity::disabled:
-			[[fallthrough]];
-		default:
-			return Colour::default_colour;
 	}
 }
 
@@ -520,7 +495,7 @@ std::string CommandSink::truncate_description(const int cols, const std::string_
 
 void CommandSink::print_command_table(std::span<const commands::Suggestions::Record> matches) {
 	boost::container::small_vector<char, max_buf_size> buffer;
-	StreamBuffer stream_buffer(buffer);
+	detail::StreamBuffer stream_buffer(buffer);
 	std::ostream stream(&stream_buffer);
 
 	auto handle = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -739,4 +714,4 @@ bool CommandSink::invoke(const std::string_view command) {
 	return invoke_handler(command);
 }
 
-} // log, ember
+} // win32, log, ember

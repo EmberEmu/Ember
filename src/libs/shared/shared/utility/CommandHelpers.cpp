@@ -185,7 +185,6 @@ std::string suggest_command(const commands::Command& root, const std::string_vie
 		results.substring : std::string{};
 }
 
-#ifdef _WIN32
 void handle_cls_command(log::Logger& logger) {
 	const auto sinks = logger.fetch_sink(log::CommandSink::sink_name);
 
@@ -199,7 +198,6 @@ void handle_cls_command(log::Logger& logger) {
 	auto& sink = static_cast<log::CommandSink&>(*sinks.front());
 	sink.clear_console();
 }
-#endif
 
 // command handler keeps 'root' alive so shared_ptr is not strictly necessary
 // but it also doesn't hurt since this not performance sensitive
@@ -219,17 +217,14 @@ void register_common_commands(std::shared_ptr<commands::Command> root, log::Logg
 			);
 		});
 
-#ifdef _WIN32
 	root->insert("cls")
 		->description("Clears the console")
 		->handler([&](const auto&) {
 			handle_cls_command(logger);
 		});
-#endif
 }
 
 void register_command_handlers(std::shared_ptr<commands::Command> root, log::Logger& logger, const bool suggestions) {
-#ifdef _WIN32
 	auto sinks = logger.fetch_sink(log::CommandSink::sink_name);
 
 	if(sinks.empty()) {
@@ -252,7 +247,6 @@ void register_command_handlers(std::shared_ptr<commands::Command> root, log::Log
 			return suggest_command(*root, cmd);
 		});
 	}
-#endif
 }
 
 } // utility, ember

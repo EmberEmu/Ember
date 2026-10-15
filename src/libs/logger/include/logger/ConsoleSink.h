@@ -27,7 +27,6 @@ class ConsoleSink final : public Sink {
 	std::string prefix_;
 	boost::container::small_vector<char, sv_reserve> out_buf_;
 
-	Colour severity_colour(Severity severity);
 	void do_batch_write(const std::span<std::pair<RecordDetail, std::string>>& records);
 
 public:

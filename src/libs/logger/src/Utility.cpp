@@ -58,6 +58,32 @@ std::string put_time(const std::tm& time, cstring_view format) {
 	return buffer;
 }
 
+
+Colour severity_colour(Severity severity) {
+	switch(severity) {
+		case Severity::console:
+			return Colour::white_on_cyan_bg;
+		case Severity::console_error:
+			return Colour::white_on_red_bg;
+		case Severity::fatal:
+			[[fallthrough]];
+		case Severity::error:
+			[[fallthrough]];
+		case Severity::warn:
+			return Colour::light_red;
+		case Severity::info:
+			return Colour::white;
+		case Severity::debug:
+			return Colour::light_cyan;
+		case Severity::trace:
+			return Colour::dark_grey;
+		case Severity::disabled:
+			[[fallthrough]];
+		default:
+			return Colour::default_colour;
+	}
+}
+
 } // detail
 
 std::string_view severity_string(Severity severity) {
