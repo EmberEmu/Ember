@@ -32,6 +32,8 @@ public:
 
 	virtual void colourise(bool colourise) = 0;
 	virtual void prefix(std::string prefix) = 0;
+	virtual void log_timestamp(bool enable) = 0;
+	virtual void timestamp_format(std::string format) = 0;
 
 	virtual void register_handler(CommandHandler handler) = 0;
 	virtual void register_autocomplete(Autocomplete handler) = 0;

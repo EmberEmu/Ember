@@ -55,8 +55,8 @@ std::shared_ptr<log::Sink> init_file_sink(const opts::variables_map& args, log::
 
 	auto sink = std::make_shared<log::FileSink>(severity, log::Filter(filter), path, mode);
 	sink->size_limit( args["file_log.size_rotate"].as<std::uint32_t>());
-	sink->log_severity(args["file_log.log_severity"].as<bool>());
-	sink->log_date(args["file_log.log_timestamp"].as<bool>());
+	sink->log_severity(args["file_log.severity"].as<bool>());
+	sink->log_date(args["file_log.timestamp"].as<bool>());
 	sink->time_format(args["file_log.timestamp_format"].as<std::string>());
 	sink->midnight_rotate(args["file_log.midnight_rotate"].as<bool>());
 	return sink;
@@ -67,6 +67,8 @@ std::shared_ptr<log::Sink> init_console_sink(const opts::variables_map& args, lo
 	auto colourise = args["console_log.colours"].as<bool>();
 	auto sink = std::make_shared<log::ConsoleSink>(severity, log::Filter(filter));
 	sink->colourise(colourise);
+	sink->log_timestamp(args["console_log.timestamp"].as<bool>());
+	sink->timestamp_format(args["console_log.timestamp_format"].as<std::string>());
 
 	if(args.count("console_log.prefix")) {
 		sink->prefix(args["console_log.prefix"].as<std::string>());
@@ -104,6 +106,8 @@ std::shared_ptr<log::Sink> init_command_sink(const opts::variables_map& args, lo
 #endif
 
 	sink->colourise(colourise);
+	sink->log_timestamp(args["console_log.timestamp"].as<bool>());
+	sink->timestamp_format(args["console_log.timestamp_format"].as<std::string>());
 
 	if(args.count("console_log.prefix")) {
 		sink->prefix(args["console_log.prefix"].as<std::string>());

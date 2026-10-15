@@ -88,6 +88,8 @@ opts::variables_map parse_arguments(const int argc, const char* argv[]) {
 		("console_log.verbosity", opts::value<log::Severity>()->required())
 		("console_log.filter_mask", opts::value<std::uint32_t>()->required())
 		("console_log.colours", opts::value<bool>()->required())
+		("console_log.timestamp", opts::value<bool>()->required())
+		("console_log.timestamp_format", opts::value<std::string>()->required())
 		("console_log.suggestions", opts::value<bool>()->required())
 		("remote_log.verbosity", opts::value<log::Severity>()->required())
 		("remote_log.filter_mask", opts::value<std::uint32_t>()->required())
@@ -101,8 +103,8 @@ opts::variables_map parse_arguments(const int argc, const char* argv[]) {
 		("file_log.mode", opts::value<std::string>()->required())
 		("file_log.size_rotate", opts::value<std::uint32_t>()->required())
 		("file_log.midnight_rotate", opts::value<bool>()->required())
-		("file_log.log_timestamp", opts::value<bool>()->required())
-		("file_log.log_severity", opts::value<bool>()->required());
+		("file_log.timestamp", opts::value<bool>()->required())
+		("file_log.severity", opts::value<bool>()->required());
 
 	opts::variables_map options;
 	opts::store(opts::command_line_parser(argc, argv).positional(pos).options(cmdline_opts).run(), options);

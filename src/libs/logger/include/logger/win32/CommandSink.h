@@ -21,10 +21,13 @@
 #include <string_view>
 #include <thread>
 #include <utility>
+#include <cstddef>
 
 namespace ember::log::win32 {
 
 class CommandSink final : public log::CommandSink {
+	const std::string_view default_timestamp_fmt = "%d/%m/%Y %H:%M:%S ";
+
 	enum class ScrollDirection {
 		up, down
 	};
@@ -51,6 +54,7 @@ class CommandSink final : public log::CommandSink {
 	static constexpr auto table_min_cols = 35u;
 	static constexpr auto table_max_cols = 100u;
 	static constexpr auto table_padding = 3u;
+	static constexpr auto timestamp_buf_size = 64u;
 
 	CommandHandler handler_;
 	Autocomplete autocomplete_;
@@ -62,8 +66,10 @@ class CommandSink final : public log::CommandSink {
 	std::string suggested_;
 	std::string prompt_;
 	std::string prefix_;
+	std::string timestamp_fmt_;
 	std::jthread input_reader_;
 	bool colour_;
+	bool timestamp_;
 	unsigned int max_cols_;
 	void* semaphore_;
 
@@ -74,6 +80,7 @@ class CommandSink final : public log::CommandSink {
 	boost::container::small_vector<char, sv_reserve> out_buf_;
 	void print_command_table(std::span<const commands::Suggestions::Record> matches);
 	std::string truncate_description(int cols, const std::string_view description);
+	std::size_t generate_timestamp(std::span<char> buffer);
 
 	void clear_line();
 	void redraw_prompt(bool update_cursor = true);
@@ -102,6 +109,8 @@ public:
 	void batch_write(const std::span<std::pair<RecordDetail, std::string>>& records) override;
 	void colourise(bool colourise) override { colour_ = colourise; }
 	void prefix(std::string prefix) override { prefix_ = std::move(prefix); }
+	void log_timestamp(bool enable) override { timestamp_ = enable; }
+	void timestamp_format(std::string format) override { timestamp_fmt_ = format; }
 
 	void register_handler(CommandHandler handler) override;
 	void register_autocomplete(Autocomplete handler) override;

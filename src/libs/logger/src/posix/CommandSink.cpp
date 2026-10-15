@@ -13,12 +13,11 @@
 #include <logger/detail/PlatformColour.h>
 #include <bprinter/table_printer.h>
 #include <boost/algorithm/string/trim.hpp>
+#include <array>
 #include <algorithm>
 #include <format>
 #include <ostream>
 #include <stdexcept>
-#include <string_view>
-#include <utility>
 #include <cctype>
 #include <cstdio>
 
@@ -30,7 +29,9 @@ constexpr std::string_view ansi_erase = "\033[K";  // erase to end of line
 CommandSink::CommandSink(Severity severity,	Filter filter, std::string prompt, LogTheme theme, bool colour, bool no_bg)
 	: log::CommandSink(severity, filter)
 	, prompt_(std::move(prompt))
+	, timestamp_fmt_(default_timestamp_fmt)
 	, colour_(colour)
+	, timestamp_(false)
 	, max_cols_(table_max_cols)
 	, theme_(theme)
 	, no_bg_(no_bg) {
@@ -71,7 +72,7 @@ void CommandSink::stop() {
 void CommandSink::batch_write(const std::span<std::pair<RecordDetail, std::string>>& records) {
 	if(!colour_) [[unlikely]] {
 		do_batch_write(records);
-	} else { // we can't do batch output if we need to colour each individual log record
+	} else { // we can't do batch output if we need to colour each individual log record - todo, we can in this sink, actually
 		for(auto& [detail, data] : records) {
 			write(detail.severity, detail.type, data, false);
 		}
@@ -95,26 +96,41 @@ void CommandSink::do_batch_write(const std::span<std::pair<RecordDetail, std::st
 		return;
 	}
 
-	out_buf_.reserve(size + (10 * records.size()));
+	[[indeterminate]] std::array<char, timestamp_buf_size> ts_buffer;
+	std::size_t ts_size = 0;
 
-	const bool prefix = !prefix_.empty();
+	if(timestamp_) {
+		ts_size = generate_timestamp(ts_buffer);
+	}
+
+	const std::span<char> timestamp(ts_buffer.data(), ts_size);
+	out_buf_.reserve(size + (10 * records.size()));
 
 	for(auto&& [detail, data] : records) {
 		if(sink_sev <= detail.severity && !(sink_filter & detail.type)) {
 			std::string_view severity = severity_string(detail.severity);
 			const auto cur_sz = out_buf_.size();
-			const auto new_sz = cur_sz + severity.size() + data.size() + prefix_.size();
-			out_buf_.resize(new_sz, boost::container::default_init);
+
+			const auto req_buf_size
+				= cur_sz
+				+ timestamp.size()
+				+ severity.size()
+				+ data.size()
+				+ prefix_.size();
+
+			out_buf_.resize(req_buf_size, boost::container::default_init);
 			auto write_ptr = out_buf_.data() + cur_sz;
 			std::size_t offset = 0;
 
-			if(prefix) {
-				std::memcpy(write_ptr + offset, prefix_.data(), prefix_.size());
-				offset += prefix_.size();
-			}
+			std::memcpy(write_ptr + offset, timestamp.data(), timestamp.size());
+			offset += timestamp.size();
+
+			std::memcpy(write_ptr + offset, prefix_.data(), prefix_.size());
+			offset += prefix_.size();
 
 			std::memcpy(write_ptr + offset, severity.data(), severity.size());
 			offset += severity.size();
+
 			std::memcpy(write_ptr + offset, data.data(), data.size());
 		}
 	}
@@ -133,8 +149,16 @@ void CommandSink::write(Severity severity, Filter type,	std::string_view record,
 		return;
 	}
 
-	std::string_view sevsv = severity_string(severity);
-	std::string_view recordsv = record;
+	[[indeterminate]] std::array<char, timestamp_buf_size> ts_buffer;
+	std::size_t ts_size = 0;
+
+	if(timestamp_) {
+		ts_size = generate_timestamp(ts_buffer);
+	}
+
+	const std::span<char> timestamp(ts_buffer.data(), ts_size);
+	const std::string_view sevsv = severity_string(severity);
+	const std::string_view recordsv = record;
 
 	// hack, need to make newline handling more consistent rather than... this
 	if(record.ends_with('\n')) {
@@ -142,12 +166,20 @@ void CommandSink::write(Severity severity, Filter type,	std::string_view record,
 	}
 
 	// calculate the precise size of the buffer in advance to avoid reallocations
-	std::size_t buff_req_size = prefix_.size() + record.size() + sevsv.size();
+	std::size_t buff_req_size
+		= timestamp.size()
+		+ prefix_.size()
+		+ record.size()
+		+ sevsv.size();
 
 	const auto tag_style = theme_colour(theme_, severity, StyleSegment::tag);
 	const auto text_style = theme_colour(theme_, severity, StyleSegment::text);
 
 	if(colour_) {
+		if(timestamp_) {
+			buff_req_size += theme_.timestamp.size();
+		}
+
 		buff_req_size += tag_style.size();
 		buff_req_size += text_style.size();
 		buff_req_size += ansi_erase.size();
@@ -171,6 +203,11 @@ void CommandSink::write(Severity severity, Filter type,	std::string_view record,
 
 	// generate output
 	if(colour_) [[likely]] {
+		if(timestamp_) {
+			append(theme_.timestamp);
+			append(timestamp);
+		}
+
 		append(tag_style);
 		append(prefix_);
 		append(sevsv);
@@ -185,6 +222,7 @@ void CommandSink::write(Severity severity, Filter type,	std::string_view record,
 			append(ansi_reset);
 		}
 	} else {
+		append(timestamp);
 		append(prefix_);
 		append(sevsv);
 		append(record);
@@ -207,6 +245,23 @@ void CommandSink::write(Severity severity, Filter type,	std::string_view record,
 		out_buf_.shrink_to_fit();
 	}
 }
+
+std::size_t CommandSink::generate_timestamp(std::span<char> buffer) {
+	const auto curr_time = detail::current_time();
+	const auto size = detail::put_time(curr_time, timestamp_fmt_, buffer);
+
+	if(!size) [[unlikely]] {
+		throw std::runtime_error("timestamp formatting failed");
+	}
+
+		if(size >= buffer.size()) [[unlikely]] {
+			throw std::runtime_error("timestamp buffer out of space");
+		}
+
+	buffer[size] = ' '; // add a trailing space
+	return size + 1;    // we don't need the null terminator
+}
+
 
 void CommandSink::set_max_table_cols(unsigned int cols) {
 	max_cols_ = std::max(cols, table_min_cols);

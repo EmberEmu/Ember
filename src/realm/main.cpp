@@ -122,6 +122,8 @@ opts::variables_map parse_arguments(const int argc, const char* argv[]) {
 		("console_log.colours", opts::value<bool>()->required())
 		("console_log.suggestions", opts::value<bool>()->required())
 		("console_log.win_ansi", opts::value<bool>()->required())
+		("console_log.timestamp", opts::value<bool>()->required())
+		("console_log.timestamp_format", opts::value<std::string>()->required())
 		("remote_log.verbosity", opts::value<log::Severity>()->required())
 		("remote_log.filter_mask", opts::value<std::uint32_t>()->required())
 		("remote_log.service_name", opts::value<std::string>()->required())
@@ -134,8 +136,8 @@ opts::variables_map parse_arguments(const int argc, const char* argv[]) {
 		("file_log.mode", opts::value<std::string>()->required())
 		("file_log.size_rotate", opts::value<std::uint32_t>()->required())
 		("file_log.midnight_rotate", opts::value<bool>()->required())
-		("file_log.log_timestamp", opts::value<bool>()->required())
-		("file_log.log_severity", opts::value<bool>()->required());
+		("file_log.timestamp", opts::value<bool>()->required())
+		("file_log.severity", opts::value<bool>()->required());
 
 	opts::options_description cmdline_opts("Command-line options");
 	cmdline_opts.add_options()
