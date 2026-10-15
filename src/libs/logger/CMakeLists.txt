@@ -13,6 +13,9 @@ add_library(${LIBRARY_NAME} STATIC
     src/Utility.cpp
     src/Worker.cpp
     src/ConsoleSink.cpp
+    src/CommandSink.cpp
+    src/posix/TerminalCtl.cpp
+    src/posix/CommandSink.cpp
     src/GlobalLogger.cpp
     src/ConsoleColour.cpp
     src/detail/PlatformColour.cpp
@@ -26,6 +29,9 @@ add_library(${LIBRARY_NAME} STATIC
     include/logger/Utility.h
     include/logger/ConsoleSink.h
     include/logger/CommandSink.h
+    include/logger/win32/CommandSink.h
+    include/logger/posix/CommandSink.h
+    include/logger/posix/TerminalCtl.h
     include/logger/Exception.h
     include/logger/FileWrapper.h
     include/logger/Severity.h

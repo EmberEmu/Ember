@@ -23,7 +23,7 @@ void set_console_out_colour(Colour colour) {
 	HANDLE console = GetStdHandle(STD_OUTPUT_HANDLE);
 	SetConsoleTextAttribute(console, detail::colour_attribute(colour));
 #else
-	std::cout << detail::ansi_sequence(colour);
+	std::cout << detail::ansi_sequence(colour) << std::flush;
 #endif
 }
 

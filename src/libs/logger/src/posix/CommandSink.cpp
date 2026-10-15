@@ -1,0 +1,574 @@
+/*
+ * Copyright (c) 2026 Ember
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
+
+#include <logger/Exception.h>
+#include <logger/Utility.h>
+#include <logger/detail/StreamBuffer.h>
+#include <logger/posix/CommandSink.h>
+#include <logger/detail/PlatformColour.h>
+#include <bprinter/table_printer.h>
+#include <boost/algorithm/string/trim.hpp>
+#include <algorithm>
+#include <format>
+#include <ostream>
+#include <stdexcept>
+#include <string_view>
+#include <utility>
+#include <cctype>
+#include <cstdio>
+
+namespace ember::log::posix {
+
+constexpr std::string_view ansi_reset = "\x1b[0m";
+
+CommandSink::CommandSink(Severity severity,	Filter filter, std::string prompt)
+	: log::CommandSink(severity, filter)
+	, prompt_(std::move(prompt))
+	, colour_(false)
+	, max_cols_(table_max_cols) {
+	bool expected = false;
+
+	if(!exists_.compare_exchange_strong(expected, true)) {
+		throw std::runtime_error("A process cannot have multiple CommandSinks!");
+	}
+
+	const auto [rows, _] = terminal_.get_size();
+	terminal_.set_log_region(rows);
+
+	input_reader_ = std::jthread([this](auto stop_token) {
+		redraw_prompt();
+		read_console_input(stop_token);
+	});
+}
+
+CommandSink::~CommandSink() {
+	stop();
+
+	if(input_reader_.joinable()) {
+		input_reader_.join();
+	}
+
+	exists_ = false;
+}
+
+void CommandSink::stop() {
+	input_reader_.request_stop();
+	terminal_.wake();
+}
+
+void CommandSink::batch_write(const std::span<std::pair<RecordDetail, std::string>>& records) {
+	if(!colour_) [[unlikely]] {
+		do_batch_write(records);
+	} else { // we can't do batch output if we need to colour each individual log record
+		for(auto& [detail, data] : records) {
+			write(detail.severity, detail.type, data, false);
+		}
+	}
+}
+
+void CommandSink::do_batch_write(const std::span<std::pair<RecordDetail, std::string>>& records) {
+	std::size_t size = 0;
+	Severity sink_sev = this->severity();
+	Filter sink_filter = this->filter();
+	bool matches = false;
+
+	for(auto&& [detail, data] : records) {
+		if(sink_sev <= detail.severity && !(sink_filter & detail.type)) {
+			size += data.size();
+			matches = true;
+		}
+	}
+
+	if(!matches) {
+		return;
+	}
+
+	out_buf_.reserve(size + (10 * records.size()));
+
+	const bool prefix = !prefix_.empty();
+
+	for(auto&& [detail, data] : records) {
+		if(sink_sev <= detail.severity && !(sink_filter & detail.type)) {
+			std::string_view severity = severity_string(detail.severity);
+			const auto cur_sz = out_buf_.size();
+			const auto new_sz = cur_sz + severity.size() + data.size() + prefix_.size();
+			out_buf_.resize(new_sz, boost::container::default_init);
+			auto write_ptr = out_buf_.data() + cur_sz;
+			std::size_t offset = 0;
+
+			if(prefix) {
+				std::memcpy(write_ptr + offset, prefix_.data(), prefix_.size());
+				offset += prefix_.size();
+			}
+
+			std::memcpy(write_ptr + offset, severity.data(), severity.size());
+			offset += severity.size();
+			std::memcpy(write_ptr + offset, data.data(), data.size());
+		}
+	}
+
+	write_buffer(out_buf_, false);
+	redraw_prompt(false);
+	out_buf_.clear();
+
+	if(out_buf_.capacity() > max_buf_size) [[unlikely]] {
+		out_buf_.shrink_to_fit();
+	}
+}
+
+void CommandSink::write(Severity severity, Filter type,	std::string_view record, bool flush) {
+	if(this->severity() > severity || (this->filter() & type)) {
+		return;
+	}
+
+	std::string_view sevsv = severity_string(severity);
+	out_buf_.resize(prefix_.size() + record.size() + sevsv.size(), boost::container::default_init);
+
+	std::size_t offset = 0;
+
+	const auto append = [&](auto& fragment) {
+		std::copy(fragment.begin(), fragment.end(), out_buf_.begin() + offset);
+		offset += fragment.size();
+	};
+
+	append(prefix_);
+	append(sevsv);
+	append(record);
+
+	if(colour_) [[likely]] {
+		std::lock_guard guard(console_lock_);
+		ConsoleColour concol(detail::severity_colour(severity));
+		write_buffer(out_buf_, false);
+	} else {
+		write_buffer(out_buf_, false);
+	}
+
+	redraw_prompt(false);
+
+	if(flush) {
+		if(std::fflush(stdout) != 0) {
+			throw exception("Unable to flush log record to console");
+		}
+	}
+
+	out_buf_.clear();
+
+	if(out_buf_.capacity() > max_buf_size) [[unlikely]] {
+		out_buf_.shrink_to_fit();
+	}
+}
+
+void CommandSink::set_max_table_cols(unsigned int cols) {
+	max_cols_ = std::max(cols, table_min_cols);
+}
+
+void CommandSink::clear_line() {
+	std::lock_guard guard(console_lock_);
+
+	const auto [rows, cols] = terminal_.get_size();
+	terminal_.move_to(rows, 1);
+	terminal_.clear_line();
+}
+
+std::string_view CommandSink::suggestion_substring() {
+	if(const auto pos = suggested_.find(command_); pos != std::string::npos) {
+		return std::string_view(suggested_).substr(pos + command_.length());
+	}
+
+	return {};
+}
+
+void CommandSink::redraw_prompt(bool update_cursor) {
+	std::lock_guard guard(console_lock_);
+
+	const auto [rows, cols] = terminal_.get_size();
+
+	const auto available = static_cast<std::size_t>(
+		std::max(0u, cols - static_cast<unsigned int>(prompt_.size()) - 1) // todo, size_t literal
+	);
+
+	const auto visible_command = command_.substr(0, available);
+	const auto suggestion = suggestion_substring();
+
+	const auto visible_suggestion = suggestion.substr(
+		0, available > visible_command.size()? available - visible_command.size(): 0
+	);
+
+	terminal_.move_to(rows, 1);
+	terminal_.clear_line();
+
+	if(colour_) {
+		terminal_.write(
+			detail::ansi_sequence(Colour::dark_grey)
+		);
+	}
+
+	terminal_.write(prompt_);
+
+	if(colour_) {
+		terminal_.write(
+			detail::ansi_sequence(Colour::white)
+		);
+	}
+
+	terminal_.write(visible_command);
+
+	if(colour_) {
+		terminal_.write(
+			detail::ansi_sequence(Colour::dark_grey)
+		);
+	}
+
+	terminal_.write(visible_suggestion);
+	terminal_.write(ansi_reset);
+
+	if(update_cursor) {
+		const auto visible_cursor = std::min(cursor_pos_, command_.size());
+
+		const auto cursor_col = std::min(
+			prompt_.size() + visible_cursor + 1, static_cast<std::size_t>(cols)
+		);
+
+		terminal_.move_to(rows, cursor_col);
+	}
+}
+
+void CommandSink::insert_history(const std::string& command) {
+	if(!cmd_history_.empty() && cmd_history_.back() == command) {
+		return;
+	}
+
+	cmd_history_.emplace_back(command);
+
+	if(cmd_history_.size() > history_size) {
+		cmd_history_.pop_front();
+	}
+}
+
+void CommandSink::dispatch_command() {
+	boost::trim(command_);
+	cursor_pos_ = command_.size();
+	suggested_.clear();
+
+	if(command_.empty()) {
+		redraw_prompt();
+		return;
+	}
+
+	if(!invoke_handler(command_)) {
+		constexpr std::string_view message =
+			"Unable to execute command, no command handler has been registered\n";
+
+		if(colour_) {
+			std::lock_guard guard(console_lock_);
+
+			terminal_.write(
+				detail::ansi_sequence(Colour::white_on_red_bg)
+			);
+
+			write_buffer(std::span(message.data(), message.size()), false);
+			terminal_.write(ansi_reset);
+		} else {
+			write_buffer(std::span(message.data(), message.size()), false);
+		}
+	}
+
+	insert_history(command_);
+	history_idx_ = cmd_history_.size();
+
+	command_.clear();
+	cursor_pos_ = 0;
+
+	redraw_prompt();
+}
+
+void CommandSink::history_scroll(ScrollDirection dir) {
+	if(cmd_history_.empty()) {
+		return;
+	}
+
+	if(dir == ScrollDirection::up) {
+		if(history_idx_ > 0) {
+			--history_idx_;
+		}
+	} else if(history_idx_ < cmd_history_.size()) {
+		++history_idx_;
+	}
+
+	if(history_idx_ == cmd_history_.size()) {
+		command_.clear();
+	} else {
+		command_ = cmd_history_[history_idx_];
+	}
+
+	cursor_pos_ = command_.size();
+
+	update_suggestion();
+	redraw_prompt();
+}
+
+void CommandSink::delete_character(bool after) {
+	if(after) {
+		if(cursor_pos_ < command_.size()) {
+			command_.erase(cursor_pos_, 1);
+		}
+	} else if(cursor_pos_ > 0) {
+		command_.erase(--cursor_pos_, 1);
+	}
+
+	update_suggestion();
+	redraw_prompt();
+}
+
+void CommandSink::buffer_scroll(CursorDirection dir) {
+	if(dir == CursorDirection::back) {
+		if(cursor_pos_ > 0) {
+			--cursor_pos_;
+		}
+	} else if(cursor_pos_ < command_.size()) {
+		++cursor_pos_;
+	}
+
+	redraw_prompt();
+}
+
+void CommandSink::insert_character(char ch) {
+	command_.insert(cursor_pos_, 1, ch);
+	++cursor_pos_;
+
+	const auto suggestion = suggestion_substring();
+
+	// prevent calling the handler for every key stroke if we
+	// know the result wouldn't change
+	if((suggestion.empty() && !suggested_.empty()) ||
+		command_.size() == 1 ||
+		cursor_pos_ != command_.size()) {
+		update_suggestion();
+	}
+
+	redraw_prompt();
+}
+
+void CommandSink::read_console_input(std::stop_token stop) {
+	using Key = TerminalCtl::Key;
+
+	while(!stop.stop_requested()) {
+		const auto event = terminal_.read_key();
+
+		if(stop.stop_requested()) {
+			break;
+		}
+
+		switch (event.key) {
+			case Key::Character:
+				if(std::isprint(static_cast<unsigned char>(event.ch))) {
+					insert_character(static_cast<char>(event.ch));
+				}
+				break;
+			case Key::Enter:
+				dispatch_command();
+				break;
+			case Key::Tab:
+				autocomplete();
+				break;
+			case Key::Backspace:
+				delete_character(false);
+				break;
+			case Key::Delete:
+				delete_character(true);
+				break;
+			case Key::Up:
+				history_scroll(ScrollDirection::up);
+				break;
+			case Key::Down:
+				history_scroll(ScrollDirection::down);
+				break;
+			case Key::Left:
+				buffer_scroll(CursorDirection::back);
+				break;
+			case Key::Right:
+				buffer_scroll(CursorDirection::forward);
+				break;
+			case Key::Home:
+				cursor_reposition(CursorPosition::start);
+				break;
+			case Key::End:
+				cursor_reposition(CursorPosition::end);
+				break;
+			case Key::Interrupted:
+				break;
+			case Key::Escape:
+				[[fallthrough]];
+			case Key::Other:
+				break;
+			case Key::EndOfInput:
+				return;
+		}
+	}
+}
+
+void CommandSink::autocomplete() {
+	Autocomplete handler;
+
+	{
+		std::lock_guard guard(handler_lock_);
+		handler = autocomplete_;
+	}
+
+	if(!handler) {
+		return;
+	}
+
+	const auto result = handler(command_);
+
+	if(result.records.empty()) {
+		return;
+	}
+
+	std::lock_guard guard(console_lock_);
+
+	command_ = result.substring;
+	cursor_pos_ = command_.size();
+
+	print_command_table(result.records);
+
+	update_suggestion();
+	redraw_prompt();
+}
+
+std::string CommandSink::truncate_description(const int cols, const std::string_view description) {
+	if(description.size() <= cols) {
+		return std::string(description);
+	}
+
+	constexpr std::string_view ellipsis { "..." };
+	const auto ellipsis_space = cols - ellipsis.size();
+	return std::string(description.substr(0, ellipsis_space)) + "...";
+}
+
+void CommandSink::print_command_table(std::span<const commands::Suggestions::Record> matches) {
+	boost::container::small_vector<char, max_buf_size> buffer;
+	detail::StreamBuffer stream_buffer(buffer);
+	std::ostream stream(&stream_buffer);
+
+	const auto [rows, cols] = terminal_.get_size();
+
+	const auto columns = std::max(
+		std::min(cols, max_cols_) - table_padding, table_min_cols - table_padding
+	);
+
+	const auto name_cols = std::max(columns / 3, table_name_min_cols);
+	const auto desc_cols = std::max(columns - name_cols, table_desc_min_cols);
+
+	bprinter::TablePrinter printer(&stream);
+
+	printer.AddColumn("Command", name_cols);
+	printer.AddColumn("Description", desc_cols);
+	printer.PrintHeader();
+
+	for(const auto& match : matches) {
+		printer << match.name;
+		printer << truncate_description(desc_cols, match.desc);
+	}
+
+	printer.PrintFooter();
+	write_buffer(buffer, false);
+}
+
+void CommandSink::cursor_reposition(CursorPosition position) {
+	cursor_pos_ = position == CursorPosition::start? 0 : command_.size();
+	redraw_prompt();
+}
+
+void CommandSink::clear_console() {
+	std::lock_guard guard(console_lock_);
+
+	terminal_.clear_screen();
+	log_line_used_ = false;
+
+	const auto [rows, cols] = terminal_.get_size();
+	terminal_.set_log_region(rows);
+
+	redraw_prompt();
+}
+
+void CommandSink::write_buffer(std::span<const char> buffer, bool redraw) {
+	std::lock_guard guard(console_lock_);
+
+    if(buffer.empty()) {
+        if (redraw) {
+            redraw_prompt();
+        }
+
+        return;
+    }
+
+    const auto [rows, cols] = terminal_.get_size();
+    terminal_.set_log_region(static_cast<int>(rows));
+
+    // scroll the log region up
+    if(log_line_used_) {
+        terminal_.write("\x1b[S");
+    }
+
+    terminal_.move_to(std::max(1u, rows - 1), 1);
+    terminal_.clear_line();
+
+    auto text = std::string_view(buffer.data(), buffer.size());
+
+    if(text.ends_with('\n')) {
+        text.remove_suffix(1);
+    }
+
+    terminal_.write(text);
+	log_line_used_ = true;
+
+	if(redraw) {
+		redraw_prompt();
+	}
+}
+
+void CommandSink::update_suggestion() {
+	std::lock_guard lock(handler_lock_);
+
+	if(suggestion_) {
+		suggested_ = suggestion_(command_);
+	}
+}
+
+void CommandSink::register_autocomplete(Autocomplete handler) {
+	std::lock_guard guard(handler_lock_);
+	autocomplete_ = std::move(handler);
+}
+
+void CommandSink::register_handler(CommandHandler handler) {
+	std::lock_guard guard(handler_lock_);
+	handler_ = std::move(handler);
+}
+
+void CommandSink::register_suggestion(Suggestion handler) {
+	std::lock_guard guard(handler_lock_);
+	suggestion_ = std::move(handler);
+}
+
+bool CommandSink::invoke_handler(const std::string_view command) {
+	std::lock_guard lock(handler_lock_);
+
+	if(handler_) {
+		handler_(command);
+		return true;
+	}
+
+	return false;
+}
+
+bool CommandSink::invoke(const std::string_view command) {
+	return invoke_handler(command);
+}
+
+} // posix, log, ember

@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <logger/Colour.h>
 #include <logger/Exception.h>
 #include <logger/Severity.h>
 #include <shared/utility/cstring_view.hpp>
@@ -30,5 +31,6 @@ namespace detail {
 std::tm current_time();
 std::string put_time(const std::tm& time, cstring_view format);
 std::size_t put_time(const std::tm& time, cstring_view format, std::span<char> buffer);
+Colour severity_colour(Severity severity);
 
 }} // detail, log, ember

@@ -313,7 +313,6 @@ void handle_tutorial_flag(ClientContext& ctx) {
 }
 
 // again, this entire file is just for testing other dev functionality
-#ifdef _WIN32
 std::shared_ptr<log::CommandSink> cmdsink;
 
 void patch_console_test(ClientContext& ctx) {
@@ -325,7 +324,6 @@ void patch_console_test(ClientContext& ctx) {
 
 	cmdsink = dynamic_pointer_cast<log::CommandSink>(sinks.front());
 }
-#endif
 
 // also temporary, if it's not clear - this needs to be properly hooked
 // up to the actual command system at some point in the future, but not right now

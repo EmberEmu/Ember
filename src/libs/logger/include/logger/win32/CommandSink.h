@@ -1,0 +1,117 @@
+/*
+ * Copyright (c) 2026 Ember
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
+
+#pragma once
+
+#include <commands/Suggestions.h>
+#include <logger/Sink.h>
+#include <logger/CommandSink.h>
+#include <logger/ConsoleColour.h>
+#include <boost/container/small_vector.hpp>
+#include <deque>
+#include <functional>
+#include <mutex>
+#include <span>
+#include <string>
+#include <string_view>
+#include <thread>
+#include <utility>
+
+namespace ember::log::win32 {
+
+class CommandSink final : public log::CommandSink {
+	enum class ScrollDirection {
+		up, down
+	};
+
+	enum class CursorDirection {
+		back, forward
+	};
+
+	enum class CursorPosition {
+		start, end
+	};
+
+	using CommandHandler = std::function<void(const std::string_view)>;
+	using Autocomplete = std::function<commands::Suggestions(const std::string&)>;
+	using Suggestion = std::function<std::string(const std::string_view)>;
+
+	inline static std::atomic_bool exists_ = false;
+	static constexpr auto sv_reserve = 256u;
+	static constexpr auto max_buf_size = 4096u;
+	static constexpr auto reserve_buf_size = 512u;
+	static constexpr auto history_size = 10u;
+	static constexpr auto table_name_min_cols = 20u;
+	static constexpr auto table_desc_min_cols = 10u;
+	static constexpr auto table_min_cols = 35u;
+	static constexpr auto table_max_cols = 100u;
+	static constexpr auto table_padding = 3u;
+
+	CommandHandler handler_;
+	Autocomplete autocomplete_;
+	Suggestion suggestion_;
+
+	std::mutex handler_lock_;
+	std::recursive_mutex console_lock_;
+	std::string command_;
+	std::string suggested_;
+	std::string prompt_;
+	std::string prefix_;
+	std::jthread input_reader_;
+	bool colour_;
+	unsigned int max_cols_;
+	void* semaphore_;
+
+	std::deque<std::string> cmd_history_;
+	std::size_t history_idx_;
+
+	std::string_view suggestion_substring();
+	boost::container::small_vector<char, sv_reserve> out_buf_;
+	void print_command_table(std::span<const commands::Suggestions::Record> matches);
+	std::string truncate_description(int cols, const std::string_view description);
+
+	void clear_line();
+	void redraw_prompt(bool update_cursor = true);
+	void history_scroll(ScrollDirection dir);
+	void buffer_scroll(CursorDirection dir);
+	void insert_character(char ch);
+	void delete_character(bool after);
+	void cursor_reposition(CursorPosition position);
+	void insert_history(const std::string& command);
+	void update_suggestion();
+	void read_console_input(const std::stop_token stop);
+	void dispatch_command();
+	void write_buffer(std::span<const char> buffer, bool redraw = true);
+	void do_batch_write(const std::span<std::pair<RecordDetail, std::string>>& records);
+	void autocomplete();
+	bool invoke_handler(const std::string_view command);
+
+public:
+	static constexpr std::string_view sink_name = "CommandSink";
+
+	CommandSink(Severity severity, Filter filter, std::string prompt);
+	~CommandSink();
+
+	void stop();
+	void write(Severity severity, Filter type, std::string_view record, bool flush) override;
+	void batch_write(const std::span<std::pair<RecordDetail, std::string>>& records) override;
+	void colourise(bool colourise) override { colour_ = colourise; }
+	void prefix(std::string prefix) override { prefix_ = std::move(prefix); }
+
+	void register_handler(CommandHandler handler) override;
+	void register_autocomplete(Autocomplete handler) override;
+	void register_suggestion(Suggestion handler) override;
+
+	void clear_console() override;
+	void set_max_table_cols(unsigned int cols);
+	bool invoke(const std::string_view command) override;
+
+	bool unique() override { return true; }
+};
+
+} // win32, log, ember
