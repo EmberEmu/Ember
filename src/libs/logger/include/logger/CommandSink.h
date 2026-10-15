@@ -39,7 +39,7 @@ public:
 
 	virtual bool invoke(const std::string_view command) = 0;
 	virtual void clear_console() = 0;
-	virtual bool unique() = 0;
+	virtual bool unique() override = 0;
 };
 
 } // log, ember
