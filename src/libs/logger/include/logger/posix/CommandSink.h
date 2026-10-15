@@ -91,8 +91,6 @@ class CommandSink final : public log::CommandSink {
 	void cursor_reposition(CursorPosition position);
 	void insert_history(const std::string& command);
 	void update_suggestion();
-	void prepare_log_line();
-	void finish_log_line(bool redraw = true);
 
 	void read_console_input(std::stop_token stop);
 	void dispatch_command();
