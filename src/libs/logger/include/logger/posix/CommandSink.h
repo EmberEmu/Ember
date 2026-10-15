@@ -107,7 +107,7 @@ class CommandSink final : public log::CommandSink {
 public:
 	static constexpr std::string_view sink_name = "CommandSink";
 
-	CommandSink(Severity severity, Filter filter, std::string prompt, LogTheme theme, bool no_bg);
+	CommandSink(Severity severity, Filter filter, std::string prompt, LogTheme theme, bool colour, bool no_bg);
 	~CommandSink();
 
 	CommandSink(const CommandSink&) = delete;
