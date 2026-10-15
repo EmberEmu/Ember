@@ -111,7 +111,7 @@ bool isatty() {
 #ifdef _WIN32
 	return !!_isatty(_fileno(stdout));
 #else
-	return !!::isatty(stdout);
+	return !!::isatty(fileno(stdout));
 #endif
 }
 
