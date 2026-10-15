@@ -36,7 +36,7 @@ suggestions = true  # enables tab completion suggestions
 verbosity = trace   # trace, debug, info, warning, error, fatal or none to disable
 colours = true      # colourise the output
 filter_mask = 0
-win32_ansi = false  # Windows: use cross-platform input sink rather than WinAPI (falls back if unsupported)
+win_ansi = true     # Windows: use ANSI output rather than WinAPI (falls back if unsupported)
 
 [metrics]
 enabled = false

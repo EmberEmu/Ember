@@ -81,7 +81,7 @@ std::shared_ptr<log::Sink> init_command_sink(const opts::variables_map& args, lo
 	std::shared_ptr<log::CommandSink> sink;
 
 #ifdef _WIN32
-	const auto ansi = args["console_log.win32_ansi"].as<bool>();
+	const auto ansi = args["console_log.win_ansi"].as<bool>();
 
 	if(ansi) {
 		try {
@@ -122,7 +122,7 @@ void configure_logger(log::Logger& logger, const opts::variables_map& args) {
 	auto severity = args["console_log.verbosity"].as<log::Severity>();
 
 	if(severity != log::Severity::disabled) {
-		if(enable_input && isatty()) { // fall back if we've redirected
+		if(enable_input && isatty()) { // fall back if we're redirected
 			logger.add_sink(init_command_sink(args, severity));
 		} else {
 			logger.add_sink(init_console_sink(args, severity));
