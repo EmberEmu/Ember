@@ -123,6 +123,7 @@ void CommandSink::do_batch_write(const std::span<std::pair<RecordDetail, std::st
 		}
 	}
 
+	std::lock_guard guard(console_lock_);
 	write_buffer(out_buf_, false);
 	redraw_prompt(false);
 	out_buf_.clear();
@@ -152,6 +153,7 @@ void CommandSink::write(Severity severity, Filter type, std::string_view record,
 	append(record);
 
 	if(colour_) [[likely]] {
+		std::lock_guard guard(console_lock_);
 		ConsoleColour concol(detail::severity_colour(severity));
 		write_buffer(out_buf_, false);
 	} else {

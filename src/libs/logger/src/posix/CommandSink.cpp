@@ -140,9 +140,8 @@ void CommandSink::write(Severity severity, Filter type,	std::string_view record,
 	append(sevsv);
 	append(record);
 
-	std::lock_guard guard(console_lock_);
-
 	if(colour_) [[likely]] {
+		std::lock_guard guard(console_lock_);
 		ConsoleColour concol(detail::severity_colour(severity));
 		write_buffer(out_buf_, false);
 	} else {
