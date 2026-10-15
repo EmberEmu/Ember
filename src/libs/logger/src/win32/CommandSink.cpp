@@ -123,7 +123,6 @@ void CommandSink::do_batch_write(const std::span<std::pair<RecordDetail, std::st
 		}
 	}
 
-	std::lock_guard guard(console_lock_);
 	write_buffer(out_buf_, false);
 	redraw_prompt(false);
 	out_buf_.clear();
