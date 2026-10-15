@@ -141,6 +141,7 @@ void CommandSink::write(Severity severity, Filter type,	std::string_view record,
 		record.remove_suffix(1);
 	}
 
+	// calculate the precise size of the buffer in advance to avoid reallocations
 	std::size_t buff_req_size = prefix_.size() + record.size() + sevsv.size();
 
 	const auto tag_style = theme_colour(theme_, severity, StyleSegment::tag);
@@ -154,6 +155,8 @@ void CommandSink::write(Severity severity, Filter type,	std::string_view record,
 
 		if(!no_bg_) {
 			buff_req_size += theme_.bg.size();
+		} else {
+			buff_req_size += ansi_reset.size();
 		}
 	}
 
@@ -166,6 +169,7 @@ void CommandSink::write(Severity severity, Filter type,	std::string_view record,
 		offset += fragment.size();
 	};
 
+	// generate output
 	if(colour_) [[likely]] {
 		append(tag_style);
 		append(prefix_);
@@ -177,6 +181,8 @@ void CommandSink::write(Severity severity, Filter type,	std::string_view record,
 
 		if(!no_bg_) {
 			append(theme_.bg);
+		} else {
+			append(ansi_reset);
 		}
 	} else {
 		append(prefix_);
@@ -184,6 +190,7 @@ void CommandSink::write(Severity severity, Filter type,	std::string_view record,
 		append(record);
 	}
 
+	// output
 	std::lock_guard guard(console_lock_);
 	write_buffer(out_buf_, false);
 	redraw_prompt(false);
