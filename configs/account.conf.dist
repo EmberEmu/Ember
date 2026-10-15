@@ -26,9 +26,9 @@ path = @CMAKE_INSTALL_PREFIX@/logs/account_%d_%m_%Y.log
 midnight_rotate = 0
 mode = append # if an existing log is found, you can either 'append' to it or 'truncate' it
 size_rotate = 0 # max log size in megabytes - 0 disables
-log_timestamp = 0 # enable/disable timestamping log records
-timestamp_format = [%d/%m/%Y %H:%M:%S] 
-log_severity = 1 # enable/disable writing severity to log records
+timestamp = on # enable/disable timestamping log records
+timestamp_format = [%d/%m/%Y %H:%M:%S]
+severity = on # enable/disable writing severity to log records
 filter_mask = 0
 
 [console_log]
@@ -40,6 +40,8 @@ filter_mask = 0
 theme = abyssal     # legacy, aurora, aurora_day, abyssal, smoky - requires true colour terminal support
 no_bg = false       # disables theme bg colours, uses terminal default
 win_ansi = true     # Windows: use ANSI output rather than WinAPI (falls back if unsupported)
+timestamp = on
+timestamp_format = %d/%m/%Y %H:%M:%S
 
 [metrics]
 enabled = false

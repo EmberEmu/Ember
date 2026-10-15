@@ -129,7 +129,7 @@ std::string FileSink::generate_record_detail(Severity severity, const std::tm& c
 	if(log_date_) {
 		std::array<char, 128> time_buf {};
 		const auto size = detail::put_time(curr_time, time_format_, time_buf);
-		prepend = std::string(std::data(time_buf), size);
+		prepend = std::string(time_buf.data(), size);
 	}
 
 	if(log_severity_) {

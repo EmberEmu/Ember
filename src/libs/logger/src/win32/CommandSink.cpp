@@ -35,7 +35,9 @@ static constexpr auto text_grey = FOREGROUND_INTENSITY;
 CommandSink::CommandSink(Severity severity, Filter filter, std::string prompt)
 	: log::CommandSink(severity, filter)
 	, prompt_(std::move(prompt))
+	, timestamp_fmt_(default_timestamp_fmt)
 	, colour_(false)
+	, timestamp_(false)
 	, history_idx_(0)
 	, max_cols_(table_max_cols) {
 	bool expected = false;
@@ -101,24 +103,42 @@ void CommandSink::do_batch_write(const std::span<std::pair<RecordDetail, std::st
 
 	out_buf_.reserve(size + (10 * records.size()));
 
+	[[indeterminate]] std::array<char, timestamp_buf_size> ts_buffer;
+	std::size_t ts_size = 0;
+
+	if(timestamp_) {
+		ts_size = generate_timestamp(ts_buffer);
+	}
+
+	std::span<char> timestamp(ts_buffer.data(), ts_size);
+
 	const bool prefix = !prefix_.empty();
 
 	for(auto&& [detail, data] : records) {
 		if(sink_sev <= detail.severity && !(sink_filter & detail.type)) {
 			std::string_view severity = severity_string(detail.severity);
 			const auto cur_sz = out_buf_.size();
-			const auto new_sz = cur_sz + severity.size() + data.size() + prefix_.size();
-			out_buf_.resize(new_sz, boost::container::default_init);
+
+			const auto req_buf_size
+				= cur_sz
+				+ timestamp.size()
+				+ severity.size()
+				+ data.size()
+				+ prefix_.size();
+
+			out_buf_.resize(req_buf_size, boost::container::default_init);
 			auto write_ptr = out_buf_.data() + cur_sz;
 			std::size_t offset = 0;
 
-			if(prefix) {
-				std::memcpy(write_ptr + offset, prefix_.data(), prefix_.size());
-				offset += prefix_.size();
-			}
+			std::memcpy(write_ptr + offset, timestamp.data(), timestamp.size());
+			offset += timestamp.size();
+		
+			std::memcpy(write_ptr + offset, prefix_.data(), prefix_.size());
+			offset += prefix_.size();
 
 			std::memcpy(write_ptr + offset, severity.data(), severity.size());
 			offset += severity.size();
+
 			std::memcpy(write_ptr + offset, data.data(), data.size());
 		}
 	}
@@ -137,8 +157,23 @@ void CommandSink::write(Severity severity, Filter type, std::string_view record,
 		return;
 	}
 
+	[[indeterminate]] std::array<char, timestamp_buf_size> ts_buffer;
+	std::size_t ts_size = 0;
+
+	if(timestamp_) {
+		ts_size = generate_timestamp(ts_buffer);
+	}
+
+	std::span<char> timestamp(ts_buffer.data(), ts_size);
 	std::string_view sevsv = severity_string(severity);
-	out_buf_.resize(prefix_.size() + record.size() + sevsv.size(), boost::container::default_init);
+
+	const auto buff_req_size
+		= timestamp.size()
+		+ prefix_.size()
+		+ record.size()
+		+ sevsv.size();
+
+	out_buf_.resize(buff_req_size, boost::container::default_init);
 
 	std::size_t offset = 0;
 
@@ -147,6 +182,7 @@ void CommandSink::write(Severity severity, Filter type, std::string_view record,
 		offset += fragment.size();
 	};
 
+	append(timestamp);
 	append(prefix_);
 	append(sevsv);
 	append(record);
@@ -206,6 +242,22 @@ std::string_view CommandSink::suggestion_substring() {
 	} else {
 		return {};
 	}
+}
+
+std::size_t CommandSink::generate_timestamp(std::span<char> buffer) {
+	const auto curr_time = detail::current_time();
+	const auto size = detail::put_time(curr_time, timestamp_fmt_, buffer);
+
+	if(!size) [[unlikely]] {
+		throw std::runtime_error("timestamp formatting failed");
+	}
+
+	if(size >= buffer.size()) [[unlikely]] {
+		throw std::runtime_error("timestamp buffer out of space");
+	}
+
+	buffer[size] = ' '; // add a trailing space
+	return size + 1;    // we don't need the null terminator
 }
 
 void CommandSink::redraw_prompt(bool update_cursor) {

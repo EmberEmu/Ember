@@ -32,13 +32,17 @@ std::tm current_time() {
 }
 
 std::size_t put_time(const std::tm& time, cstring_view format, std::span<char> buffer) {
+	if(buffer.empty()) {
+		return 0;
+	}
+
 	const auto res = std::strftime(buffer.data(), buffer.size(), format.c_str(), &time);
 
 	if(!res) [[unlikely]] {
 		const char err[] = "[error]";
 
 		if(buffer.size() >= sizeof(err)) {
-			std::memcpy(std::data(buffer), err, sizeof(err));
+			std::memcpy(buffer.data(), err, sizeof(err));
 		} else {
 			buffer[0] = '\0';
 		}

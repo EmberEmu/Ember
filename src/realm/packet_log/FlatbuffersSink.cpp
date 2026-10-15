@@ -85,7 +85,7 @@ void FlatbuffersSink::log(std::span<const std::uint8_t> buffer, const std::time_
 
 	std::array<char, 64> time_buf{};
 	const auto time_sz = log::detail::put_time(utc_time, time_fmt_, std::span(time_buf));
-	const auto fbtime = fbb.CreateString(std::data(time_buf), time_sz);
+	const auto fbtime = fbb.CreateString(time_buf.data(), time_sz);
 
 	fblog::MessageBuilder mb(fbb);
 	mb.add_time(fbtime);
