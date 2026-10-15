@@ -24,13 +24,16 @@
 
 namespace ember::log::posix {
 
-constexpr std::string_view ansi_reset = "\x1b[0m";
+constexpr std::string_view ansi_reset = "\x1b[0m"; // clears all attributes
+constexpr std::string_view ansi_erase = "\033[K";  // erase to end of line
 
-CommandSink::CommandSink(Severity severity,	Filter filter, std::string prompt)
+CommandSink::CommandSink(Severity severity,	Filter filter, std::string prompt, LogTheme theme, bool colour, bool no_bg)
 	: log::CommandSink(severity, filter)
 	, prompt_(std::move(prompt))
-	, colour_(false)
-	, max_cols_(table_max_cols) {
+	, colour_(colour)
+	, max_cols_(table_max_cols)
+	, theme_(theme)
+	, no_bg_(no_bg) {
 	bool expected = false;
 
 	if(!exists_.compare_exchange_strong(expected, true)) {
@@ -39,6 +42,10 @@ CommandSink::CommandSink(Severity severity,	Filter filter, std::string prompt)
 
 	const auto [rows, _] = terminal_.get_size();
 	terminal_.set_log_region(rows);
+
+	if(colour_ && !no_bg) {
+		terminal_.write(theme_.bg);
+	}
 
 	input_reader_ = std::jthread([this](auto stop_token) {
 		redraw_prompt();
@@ -127,27 +134,58 @@ void CommandSink::write(Severity severity, Filter type,	std::string_view record,
 	}
 
 	std::string_view sevsv = severity_string(severity);
-	out_buf_.resize(prefix_.size() + record.size() + sevsv.size(), boost::container::default_init);
+	std::string_view recordsv = record;
+
+	// hack, need to make newline handling more consistent rather than... this
+	if(record.ends_with('\n')) {
+		record.remove_suffix(1);
+	}
+
+	std::size_t buff_req_size = prefix_.size() + record.size() + sevsv.size();
+
+	const auto tag_style = theme_colour(theme_, severity, StyleSegment::tag);
+	const auto text_style = theme_colour(theme_, severity, StyleSegment::text);
+
+	if(colour_) {
+		buff_req_size += tag_style.size();
+		buff_req_size += text_style.size();
+		buff_req_size += ansi_erase.size();
+		buff_req_size += theme_.reset.size();
+
+		if(!no_bg_) {
+			buff_req_size += theme_.bg.size();
+		}
+	}
+
+	out_buf_.resize(buff_req_size, boost::container::default_init);
 
 	std::size_t offset = 0;
 
-	const auto append = [&](auto& fragment) {
+	const auto append = [&](const auto& fragment) {
 		std::copy(fragment.begin(), fragment.end(), out_buf_.begin() + offset);
 		offset += fragment.size();
 	};
 
-	append(prefix_);
-	append(sevsv);
-	append(record);
-
 	if(colour_) [[likely]] {
-		std::lock_guard guard(console_lock_);
-		ConsoleColour concol(detail::severity_colour(severity));
-		write_buffer(out_buf_, false);
+		append(tag_style);
+		append(prefix_);
+		append(sevsv);
+		append(text_style);
+		append(record);
+		append(ansi_erase);
+		append(theme_.reset);
+
+		if(!no_bg_) {
+			append(theme_.bg);
+		}
 	} else {
-		write_buffer(out_buf_, false);
+		append(prefix_);
+		append(sevsv);
+		append(record);
 	}
 
+	std::lock_guard guard(console_lock_);
+	write_buffer(out_buf_, false);
 	redraw_prompt(false);
 
 	if(flush) {
@@ -203,29 +241,23 @@ void CommandSink::redraw_prompt(bool update_cursor) {
 	terminal_.clear_line();
 
 	if(colour_) {
-		terminal_.write(
-			detail::ansi_sequence(Colour::dark_grey)
-		);
+		terminal_.write(theme_.prompt);
 	}
 
 	terminal_.write(prompt_);
 
 	if(colour_) {
-		terminal_.write(
-			detail::ansi_sequence(Colour::white)
-		);
+		terminal_.write(theme_.input);
 	}
 
 	terminal_.write(visible_command);
 
 	if(colour_) {
-		terminal_.write(
-			detail::ansi_sequence(Colour::dark_grey)
-		);
+		terminal_.write(theme_.suggestion);
 	}
 
 	terminal_.write(visible_suggestion);
-	terminal_.write(ansi_reset);
+	terminal_.write(theme_.reset);
 
 	if(update_cursor) {
 		const auto visible_cursor = std::min(cursor_pos_, command_.size());
@@ -266,13 +298,9 @@ void CommandSink::dispatch_command() {
 
 		if(colour_) {
 			std::lock_guard guard(console_lock_);
-
-			terminal_.write(
-				detail::ansi_sequence(Colour::white_on_red_bg)
-			);
-
+			terminal_.write(theme_.text.conerr);
 			write_buffer(std::span(message.data(), message.size()), false);
-			terminal_.write(ansi_reset);
+			terminal_.write(theme_.reset);
 		} else {
 			write_buffer(std::span(message.data(), message.size()), false);
 		}

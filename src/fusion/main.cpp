@@ -233,7 +233,7 @@ void stop_services() {
 }
 
 opts::variables_map parse_arguments(const int argc, const char* argv[]) {
-	opts::options_description config_opts("Realm configuration options");
+	opts::options_description config_opts("Fusion configuration options");
 	config_opts.add_options()
 		("mdns.active", opts::value<bool>()->required())
 		("mdns.config", opts::value<std::string>()->required())
@@ -265,6 +265,8 @@ opts::variables_map parse_arguments(const int argc, const char* argv[]) {
 		("console_log.colours", opts::value<bool>()->required())
 		("console_log.prefix", opts::value<std::string>()->required())
 		("console_log.suggestions", opts::value<bool>()->required())
+		("console_log.no_bg", opts::value<bool>()->required())
+		("console_log.theme", opts::value<log::posix::LogTheme>()->required())
 		("console_log.win_ansi", opts::value<bool>()->required())
 		("remote_log.verbosity", opts::value<log::Severity>()->required())
 		("remote_log.filter_mask", opts::value<std::uint32_t>()->required())

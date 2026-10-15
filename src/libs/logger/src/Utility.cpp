@@ -58,7 +58,6 @@ std::string put_time(const std::tm& time, cstring_view format) {
 	return buffer;
 }
 
-
 Colour severity_colour(Severity severity) {
 	switch(severity) {
 		case Severity::console:
@@ -178,5 +177,24 @@ std::ostream& operator<<(std::ostream& stream, const Severity& severity) {
 
 	return stream;
 }
+
+namespace posix {
+
+std::istream& operator>>(std::istream& in, LogTheme& log_theme) try {
+	std::string token;
+	in >> token;
+	log_theme = themes::theme(token);
+	return in;
+} catch(...) {
+	in.setstate(std::ios_base::failbit);
+	return in;
+}
+
+std::ostream& operator<<(std::ostream& stream, const LogTheme& theme) {
+	stream << theme.name;
+	return stream;
+}
+
+} // posix
 
 } // log, ember

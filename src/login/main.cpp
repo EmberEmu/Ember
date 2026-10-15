@@ -119,7 +119,7 @@ void print_defaulted(const opts::variables_map& args, log::Logger& logger) {
 }
 
 opts::variables_map parse_arguments(const int argc, const char* argv[]) {
-	opts::options_description config_opts("Realm configuration options");
+	opts::options_description config_opts("Login configuration options");
 	config_opts.add(login::Service::options());
 	config_opts.add_options()
 		("console_log.enable_input", opts::value<bool>()->required())
@@ -127,6 +127,8 @@ opts::variables_map parse_arguments(const int argc, const char* argv[]) {
 		("console_log.filter_mask", opts::value<std::uint32_t>()->required())
 		("console_log.colours", opts::value<bool>()->required())
 		("console_log.suggestions", opts::value<bool>()->required())
+		("console_log.no_bg", opts::value<bool>()->required())
+		("console_log.theme", opts::value<log::posix::LogTheme>()->required())
 		("console_log.win_ansi", opts::value<bool>()->required())
 		("remote_log.verbosity", opts::value<log::Severity>()->required())
 		("remote_log.filter_mask", opts::value<std::uint32_t>()->required())
