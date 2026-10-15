@@ -58,7 +58,6 @@ std::string put_time(const std::tm& time, cstring_view format) {
 	return buffer;
 }
 
-
 Colour severity_colour(Severity severity) {
 	switch(severity) {
 		case Severity::console:

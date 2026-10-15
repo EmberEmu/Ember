@@ -11,6 +11,7 @@
 #include <commands/Suggestions.h>
 #include <logger/CommandSink.h>
 #include <logger/ConsoleColour.h>
+#include <logger/posix/Themes.h>
 #include <logger/posix/TerminalCtl.h>
 #include <boost/container/small_vector.hpp>
 #include <atomic>
@@ -65,6 +66,7 @@ class CommandSink final : public log::CommandSink {
 	TerminalCtl terminal_;
 	bool colour_;
 	bool log_line_used_ = false;
+	const LogTheme& theme_;
 
 	unsigned int max_cols_ = table_max_cols;
 
@@ -104,7 +106,7 @@ class CommandSink final : public log::CommandSink {
 public:
 	static constexpr std::string_view sink_name = "CommandSink";
 
-	CommandSink(Severity severity, Filter filter, std::string prompt);
+	CommandSink(Severity severity, Filter filter, std::string prompt, const LogTheme& theme = themes::legacy);
 	~CommandSink();
 
 	CommandSink(const CommandSink&) = delete;
