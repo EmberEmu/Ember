@@ -66,7 +66,8 @@ class CommandSink final : public log::CommandSink {
 	TerminalCtl terminal_;
 	bool colour_;
 	bool log_line_used_ = false;
-	const LogTheme& theme_;
+	const LogTheme theme_;
+	const bool no_bg_ = false;
 
 	unsigned int max_cols_ = table_max_cols;
 
@@ -106,7 +107,7 @@ class CommandSink final : public log::CommandSink {
 public:
 	static constexpr std::string_view sink_name = "CommandSink";
 
-	CommandSink(Severity severity, Filter filter, std::string prompt, const LogTheme& theme = themes::legacy);
+	CommandSink(Severity severity, Filter filter, std::string prompt, LogTheme theme, bool no_bg);
 	~CommandSink();
 
 	CommandSink(const CommandSink&) = delete;

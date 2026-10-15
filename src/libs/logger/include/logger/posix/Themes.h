@@ -13,6 +13,7 @@
 namespace ember::log::posix::themes {
 
 inline constexpr LogTheme legacy {
+	.name = "legacy",
     .tag {
         .trace  = "\033[01;30m",
         .debug  = "\033[01;36m",
@@ -43,6 +44,7 @@ inline constexpr LogTheme legacy {
 };
 
 inline constexpr LogTheme aurora {
+	.name = "aurora",
     .tag {
         .trace  = "\033[38;2;132;145;168m",
         .debug  = "\033[38;2;130;170;255m",
@@ -73,6 +75,7 @@ inline constexpr LogTheme aurora {
 };
 
 inline constexpr LogTheme aurora_day {
+	.name = "aurora_day",
     .tag {
         .trace  = "\033[38;2;104;117;138m",
         .debug  = "\033[38;2;36;92;197m",
@@ -103,6 +106,7 @@ inline constexpr LogTheme aurora_day {
 };
 
 inline constexpr LogTheme smoky {
+	.name = "smoky",
     .tag {
         .trace  = "\033[38;2;163;148;133m",
         .debug  = "\033[38;2;209;154;106m",
@@ -161,5 +165,21 @@ inline constexpr LogTheme abyssal {
     .timestamp = "\033[38;2;96;119;130m",
 	.reset     = "\033[39;22m"
 };
+
+constexpr const LogTheme& theme(std::string_view name) {
+	if(name == "legacy") {
+		return legacy;
+	} else if(name == "aurora") {
+		return aurora;
+	} else if(name == "aurora_day") {
+		return aurora_day;
+	} else if(name == "abyssal") {
+		return abyssal;
+	} else if(name == "smoky") {
+		return smoky;
+	} else {
+		throw std::runtime_error("Unknown theme requested");
+	}
+}
 
 } // themes, posix, log, ember

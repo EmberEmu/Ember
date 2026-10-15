@@ -12,6 +12,7 @@
 #include <logger/HelperMacros.h>
 #include <logger/GlobalLogger.h>
 #include <logger/Utility.h>
+#include <logger/posix/Themes.h>
 #include <format>
 #include <memory>
 #include <string>

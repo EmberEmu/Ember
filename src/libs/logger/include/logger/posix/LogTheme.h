@@ -14,6 +14,8 @@
 namespace ember::log::posix {
 
 struct LogTheme {
+	std::string_view name;
+
 	struct StyleBody {
 		std::string_view trace;
 		std::string_view debug;

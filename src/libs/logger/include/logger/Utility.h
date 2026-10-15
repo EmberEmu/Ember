@@ -11,6 +11,7 @@
 #include <logger/Colour.h>
 #include <logger/Exception.h>
 #include <logger/Severity.h>
+#include <logger/posix/Themes.h>
 #include <shared/utility/cstring_view.hpp>
 #include <iostream>
 #include <span>
@@ -23,8 +24,17 @@ namespace ember::log {
 
 Severity severity_string(const std::string_view severity);
 std::string_view severity_string(Severity severity);
+
+
 std::istream& operator>>(std::istream& in, Severity& severity);
 std::ostream& operator<<(std::ostream& stream, const Severity& severity);
+
+namespace posix {
+
+std::istream& operator>>(std::istream& in, LogTheme& theme);
+std::ostream& operator<<(std::ostream& stream, const LogTheme& theme);
+
+} // posix
 
 namespace detail {
 
