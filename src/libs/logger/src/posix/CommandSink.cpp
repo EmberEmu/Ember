@@ -114,7 +114,7 @@ void CommandSink::do_batch_write(const std::span<std::pair<RecordDetail, std::st
 			const auto req_buf_size
 				= cur_sz
 				+ timestamp.size()
-				+ severity.size() 
+				+ severity.size()
 				+ data.size()
 				+ prefix_.size();
 
