@@ -19,6 +19,12 @@
 #include <stdexcept>
 #include <utility>
 #include <cstdint>
+#ifdef _WIN32
+#include <io.h>
+#else
+#include <unistd.h>
+#endif
+#include <cstdio>
 
 namespace opts = boost::program_options;
 
@@ -44,8 +50,8 @@ std::shared_ptr<log::Sink> init_file_sink(const opts::variables_map& args, log::
 		throw std::runtime_error("Invalid file logging mode supplied");
 	}
 
-	auto mode = (mode_str == "append")? log::FileSink::Mode::append :
-	                                    log::FileSink::Mode::truncate;
+	auto mode = (mode_str == "append")?
+		log::FileSink::Mode::append : log::FileSink::Mode::truncate;
 
 	auto sink = std::make_shared<log::FileSink>(severity, log::Filter(filter), path, mode);
 	sink->size_limit( args["file_log.size_rotate"].as<std::uint32_t>());
@@ -78,9 +84,14 @@ std::shared_ptr<log::Sink> init_command_sink(const opts::variables_map& args, lo
 	const auto ansi = args["console_log.win32_ansi"].as<bool>();
 
 	if(ansi) {
+		try {
 #endif
-		sink = std::make_shared<log::posix::CommandSink>(severity, log::Filter(filter), "ember( ");
+			sink = std::make_shared<log::posix::CommandSink>(severity, log::Filter(filter), "ember( ");
 #ifdef _WIN32
+		} catch(std::exception&) {
+			// fall back to WinAPI impl. if we're running in a terminal that doesn't support ANSI VT
+			sink = std::make_shared<log::win32::CommandSink>(severity, log::Filter(filter), "ember( ");
+		}
 	} else {
 		sink = std::make_shared<log::win32::CommandSink>(severity, log::Filter(filter), "ember( ");
 	}
@@ -96,6 +107,14 @@ std::shared_ptr<log::Sink> init_command_sink(const opts::variables_map& args, lo
 	return sink;
 }
 
+bool isatty() {
+#ifdef _WIN32
+	return !!_isatty(_fileno(stdout));
+#else
+	return !!::isatty(stdout);
+#endif
+}
+
 } // unnamed
 
 void configure_logger(log::Logger& logger, const opts::variables_map& args) {
@@ -103,7 +122,7 @@ void configure_logger(log::Logger& logger, const opts::variables_map& args) {
 	auto severity = args["console_log.verbosity"].as<log::Severity>();
 
 	if(severity != log::Severity::disabled) {
-		if(enable_input) {
+		if(enable_input && isatty()) { // fall back if we've redirected
 			logger.add_sink(init_command_sink(args, severity));
 		} else {
 			logger.add_sink(init_console_sink(args, severity));
