@@ -665,6 +665,10 @@ bool CommandSink::invoke(const std::string_view command) {
 void CommandSink::set_theme(LogTheme theme) {
 	std::lock_guard guard(console_lock_);
 	theme_ = theme;
+
+	if(colour_ && !no_bg_) {
+		terminal_.write(theme_.bg);
+	}
 }
 
 } // posix, log, ember
