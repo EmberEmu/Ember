@@ -42,7 +42,7 @@ inline constexpr LogTheme legacy {
 	.input      = "\033[01;37m",
 	.suggestion = "\033[01;30m",
 
-	.bg         = "\033[48;00;00;00;36m",
+	.bg         = "\033[48;2;0;0;0m",
 	.timestamp  = "\033[01;30m",
 	.reset      = "\033[39;22m"
 };
