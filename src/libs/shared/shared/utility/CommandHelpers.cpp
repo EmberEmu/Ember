@@ -10,6 +10,7 @@
 #include <banner/Version.h>
 #include <commands/Commands.h>
 #include <logger/CommandSink.h>
+#include <logger/posix/CommandSink.h>
 #include <logger/Logger.h>
 #include <shared/utility/DurationString.h>
 #include <boost/lexical_cast.hpp>
@@ -20,6 +21,7 @@
 #include <string_view>
 #include <utility>
 #include <vector>
+#include <cassert>
 
 namespace ember::utility {
 
@@ -179,6 +181,46 @@ void handle_help_command(const commands::Arguments& arguments, const commands::C
 	}
 }
 
+void handle_theme_list_command(log::Logger& logger) {
+	const auto themes = log::posix::themes::get_themes();
+
+	if(themes.empty()) {
+		LOG_CONSOLE(logger, "No themes available");
+	} else {
+		LOG_CONSOLE(logger, "Available themes:");
+
+		for(const auto& theme : themes) {
+			LOG_CONSOLE(logger, "{} :: {}", theme.name, theme.desc);
+		}
+	}
+}
+
+void handle_theme_set_command(const commands::Arguments& arguments, log::Logger& logger) try {
+	const auto theme_name = arguments["name"].as<std::string>();
+	const auto& theme = log::posix::themes::theme(theme_name);
+	const auto sinks = logger.fetch_sink(log::posix::CommandSink::sink_name);
+
+	if(sinks.empty()) {
+		throw std::runtime_error("no command sinks found");
+	}
+	
+	assert(sinks.size() == 1 && "multiple command logging sinks?");
+
+	auto posix_sink = std::dynamic_pointer_cast<log::posix::CommandSink>(sinks.front());
+
+	if(!posix_sink) {
+		throw std::runtime_error("current sink does not support themes");
+	}
+
+	posix_sink->set_theme(theme);
+	posix_sink->clear_console();
+
+	LOG_CONSOLE(logger, "Theme successfully set to {}", theme_name);
+} catch(const std::exception& e) {
+	LOG_CONERR(logger, "Error setting theme: {}", e.what());
+}
+
+
 std::string suggest_command(const commands::Command& root, const std::string_view cmd) {
 	const auto results = root.autocomplete(cmd);
 	return !results.substring.empty()?
@@ -221,6 +263,22 @@ void register_common_commands(std::shared_ptr<commands::Command> root, log::Logg
 		->description("Clears the console")
 		->handler([&](const auto&) {
 			handle_cls_command(logger);
+		});
+
+	auto theme_cmd = root->insert("theme")
+		->description("Console logging theme options");
+
+	theme_cmd->insert("set")
+		->description("Change the logger's current theme")
+		->argument<std::string>("name")
+		->handler([&](const auto& arguments) {
+			handle_theme_set_command(arguments, logger);
+		});
+	
+	theme_cmd->insert("list")
+		->description("Display all available console themes")
+		->handler([&](const auto&) {
+			handle_theme_list_command(logger);
 		});
 }
 

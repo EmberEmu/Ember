@@ -72,7 +72,7 @@ class CommandSink final : public log::CommandSink {
 	bool colour_;
 	bool timestamp_;
 	bool log_line_used_ = false;
-	const LogTheme theme_;
+	LogTheme theme_;
 	const bool no_bg_ = false;
 
 	unsigned int max_cols_ = table_max_cols;
@@ -129,6 +129,7 @@ public:
 	void prefix(std::string prefix) override { prefix_ = std::move(prefix); }
 	void log_timestamp(bool enable) override { timestamp_ = enable; }
 	void timestamp_format(std::string format) override { timestamp_fmt_ = format; }
+	void set_theme(LogTheme theme);
 
 	void register_handler(CommandHandler handler) override;
 	void register_autocomplete(Autocomplete handler) override;

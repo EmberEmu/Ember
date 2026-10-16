@@ -172,6 +172,8 @@ void CommandSink::write(Severity severity, Filter type,	std::string_view record,
 		+ record.size()
 		+ sevsv.size();
 
+	std::lock_guard guard(console_lock_); // only protecting theme
+
 	const auto tag_style = theme_colour(theme_, severity, StyleSegment::tag);
 	const auto text_style = theme_colour(theme_, severity, StyleSegment::text);
 
@@ -229,7 +231,6 @@ void CommandSink::write(Severity severity, Filter type,	std::string_view record,
 	}
 
 	// output
-	std::lock_guard guard(console_lock_);
 	write_buffer(out_buf_, false);
 	redraw_prompt(false);
 
@@ -659,6 +660,11 @@ bool CommandSink::invoke_handler(const std::string_view command) {
 
 bool CommandSink::invoke(const std::string_view command) {
 	return invoke_handler(command);
+}
+
+void CommandSink::set_theme(LogTheme theme) {
+	std::lock_guard guard(console_lock_);
+	theme_ = theme;
 }
 
 } // posix, log, ember
