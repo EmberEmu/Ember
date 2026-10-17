@@ -78,7 +78,7 @@ constexpr std::string_view theme_colour(const LogTheme& theme, Severity severity
 			return severity_colour(theme.text, severity);
 	}
 
-	return theme.reset;
+	std::unreachable();
 }
 
 } // posix, log, ember
