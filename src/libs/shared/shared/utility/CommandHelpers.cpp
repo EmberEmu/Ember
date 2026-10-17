@@ -256,17 +256,17 @@ void register_common_commands(std::shared_ptr<commands::Command> root, log::Logg
 		});
 
 	auto theme_cmd = root->insert("theme")
-		->description("Console logging theme options");
+		->description("Console theme options");
 
 	theme_cmd->insert("set")
-		->description("Change the logger's current theme")
+		->description("Change the console's current theme")
 		->argument<std::string>("name")
 		->handler([&](const auto& arguments) {
 			handle_theme_set_command(arguments, logger);
 		});
 	
 	theme_cmd->insert("list")
-		->description("Display all available console themes")
+		->description("Display available console themes")
 		->handler([&](const auto&) {
 			handle_theme_list_command(logger);
 		});
