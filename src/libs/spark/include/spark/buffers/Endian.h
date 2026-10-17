@@ -136,9 +136,9 @@ constexpr auto convert(arithmetic auto value) -> decltype(value) {
 			return little_to_native(value);
 		case conversion::native_to_little:
 			return native_to_little(value);
-		default:
-			std::unreachable();
-	};
+	}
+
+	std::unreachable();
 }
 
 struct adaptor_tag_t {};

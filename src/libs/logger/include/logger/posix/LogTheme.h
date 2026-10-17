@@ -10,6 +10,7 @@
 
 #include <logger/Severity.h>
 #include <string_view>
+#include <utility>
 
 namespace ember::log::posix {
 
