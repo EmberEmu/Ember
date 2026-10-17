@@ -217,13 +217,6 @@ void handle_theme_set_command(const commands::Arguments& arguments, log::Logger&
 	LOG_CONERR(logger, "Error setting theme: {}", e.what());
 }
 
-
-std::string suggest_command(const commands::Command& root, const std::string_view cmd) {
-	const auto results = root.autocomplete(cmd);
-	return !results.substring.empty()?
-		results.substring : std::string{};
-}
-
 void handle_cls_command(log::Logger& logger) {
 	const auto result = logger.fetch_unique(log::CommandSink::type());
 
@@ -297,7 +290,7 @@ void register_command_handlers(std::shared_ptr<commands::Command> root, log::Log
 
 	if(suggestions) {
 		sink.register_suggestion([&, root](auto cmd) {
-			return suggest_command(*root, cmd);
+			return root->autocomplete(cmd).substring;
 		});
 	}
 }
