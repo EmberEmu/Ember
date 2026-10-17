@@ -227,7 +227,7 @@ std::string suggest_command(const commands::Command& root, const std::string_vie
 void handle_cls_command(log::Logger& logger) {
 	const auto result = logger.fetch_unique(log::CommandSink::type());
 
-	if(!sink) {
+	if(!result) {
 		SLOG_ERROR(logger, "Could not locate a command sink, cannot execute cls");
 		return;
 	}
