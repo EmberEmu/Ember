@@ -19,6 +19,7 @@
 #include <protocol/server/Pong.h>
 #include <shared/Realm.h>
 #include <shared/utility/TickCount.h>
+#include <format>
 #include <utility>
 
 namespace ember::realm {
@@ -229,24 +230,28 @@ bool ClientHandler::validate_ping(const protocol::cmsg_ping& ping) {
 void ClientHandler::log_redirect(LogRedirect::Type type, log::Severity severity) {
 	log_redirect_stop(); // remove if we're just changing settings
 
+	auto sink_name = std::format("client_sink_{}", ident_.to_string());
+
 	auto sink = std::make_shared<ClientSink>(
-		context_.dispatcher, ident_, severity, type, log::Filter(lf_packet_trace)
+		std::move(sink_name) , context_.dispatcher, ident_, severity, type, log::Filter(lf_packet_trace)
 	);
 
 	logger_.add_sink(sink);
-	redirect_sink_ = std::move(sink);
+	redirecting_ = true;
 }
 
 void ClientHandler::log_redirect_stop() {
-	if(!redirect_sink_) {
+	if(!redirecting_) {
 		return;
 	}
 
-	if(!logger_.remove_sink(redirect_sink_)) {
+	auto sink_name = std::format("client_sink_{}", ident_.to_string());
+
+	if(!logger_.remove_sink(sink_name)) {
 		LOG_WARN(logger_, "Client logging sink not found, remove failed");
 	}
-
-	redirect_sink_.reset();
+	
+	redirecting_ = false;
 }
 
 void ClientHandler::stream_err(const protocol::StreamResult& result) {
@@ -289,6 +294,7 @@ ClientHandler::ClientHandler(ClientContext context, log::Logger& logger)
 	, state_(ClientState::cs_session_closed)
 	, connection_(nullptr)
 	, logger_(logger)
+	, redirecting_(false)
 	, packet_counter_(0)
 	, pps_violation_(0)
 	, ping_sequence_(0)
@@ -311,7 +317,7 @@ ClientHandler::ClientHandler(ClientHandler&& other) noexcept
 	, prev_ping_sequence_(other.prev_ping_sequence_)
 	, timer_events_(other.timer_events_)
 	, last_tick_(other.last_tick_)
-	, redirect_sink_(std::move(other.redirect_sink_))
+	, redirecting_(other.redirecting_)
 	, ident_(other.ident_) {
 	if(connection_) {
 		connection_->rebind(*this);

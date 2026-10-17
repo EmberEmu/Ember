@@ -19,12 +19,12 @@
 namespace ember::log {
 
 class SyslogSink final : public Sink {
+	static constexpr std::string_view sink_type = "SyslogSink";
+
 	class impl;
 	std::unique_ptr<impl> pimpl_;
 
 public:	
-	static constexpr std::string_view sink_name = "SyslogSink";
-
 	enum class Facility : std::uint8_t {
 		kernel, user_level, mail_system, system_daemon,
 		security_and_auth, syslogd_internal, line_printer_subsystem,
@@ -35,12 +35,14 @@ public:
 		local_use_6, local_use_7
 	};
 
-	SyslogSink(log::Severity severity, Filter filter, std::string host,
-	            unsigned int port, Facility facility, std::string tag);
+	SyslogSink(std::string name, log::Severity severity, Filter filter,
+	           std::string host, unsigned int port, Facility facility, std::string tag);
 	~SyslogSink();
 
 	void write(log::Severity severity, Filter type, std::string_view record, bool flush) override;
 	void batch_write(const std::span<std::pair<RecordDetail, std::string>>& records) override;
+
+	static constexpr std::string_view type() { return sink_type; }
 };
 
 } // log, ember

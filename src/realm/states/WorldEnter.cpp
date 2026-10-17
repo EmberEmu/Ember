@@ -316,7 +316,7 @@ void handle_tutorial_flag(ClientContext& ctx) {
 std::shared_ptr<log::CommandSink> cmdsink;
 
 void patch_console_test(ClientContext& ctx) {
-	const auto sinks = ctx.logger.fetch_sink(log::CommandSink::sink_name);
+	const auto sinks = ctx.logger.fetch_sinks(log::CommandSink::type());
 
 	if(sinks.empty()) {
 		return;

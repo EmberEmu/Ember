@@ -14,6 +14,7 @@
 #include <shared/utility/cstring_view.hpp>
 #include <boost/container/small_vector.hpp>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 #include <cstdio>
@@ -22,6 +23,7 @@
 namespace ember::log {
 
 class FileSink final : public Sink {
+	static constexpr std::string_view sink_type { "FileSink" };
 	static constexpr auto sv_reserve = 256u;
 	static constexpr auto max_buf_size = 4096u;
 
@@ -54,9 +56,7 @@ private:
 	std::string generate_record_detail(Severity severity, const std::tm& curr_time);
 
 public:
-	static constexpr std::string_view sink_name = "FileSink";
-
-	FileSink(Severity severity, Filter filter, std::string file_name, Mode mode);
+	FileSink(std::string name, Severity severity, Filter filter, std::string file_name, Mode mode);
 	~FileSink();
 
 	void log_severity(bool enable) { log_severity_ = enable; }
@@ -66,6 +66,8 @@ public:
 	void time_format(cstring_view format);
 	void write(Severity severity, Filter type, std::string_view record, bool flush) override;
 	void batch_write(const std::span<std::pair<RecordDetail, std::string>>& records) override;
+
+	static constexpr std::string_view type() { return sink_type; }
 };
 
 

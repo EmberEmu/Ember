@@ -20,17 +20,20 @@ namespace ember::log {
 class Sink {
 	Severity severity_;
 	Filter filter_;
-	std::string_view name_;
+	std::string name_;
+	std::string type_;
 
 protected:
-	Sink(Severity severity, Filter filter, std::string_view name)
-		: severity_(severity),
-		  filter_(filter),
-		  name_(name) {}
+	Sink(std::string name, std::string type, Severity severity, Filter filter)
+		: severity_(severity)
+		, filter_(filter)
+		, name_(std::move(name))
+		, type_(std::move(type)) {}
 
 public:
 	Severity severity() const { return severity_; }
 	Filter filter() const { return filter_; }
+	std::string_view type() const { return type_; }
 	void severity(Severity severity) { severity_ = severity; }
 	void filter(const Filter& filter) { filter_ = filter; }
 	virtual std::string_view name() const { return name_; }

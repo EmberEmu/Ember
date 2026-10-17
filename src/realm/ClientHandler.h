@@ -43,7 +43,7 @@ class ClientHandler final {
 	ClientState state_;
 
 	log::Logger& logger_;
-	std::shared_ptr<ClientSink> redirect_sink_;
+	bool redirecting_;
 
 	// client sanity check state
 	unsigned int packet_counter_;

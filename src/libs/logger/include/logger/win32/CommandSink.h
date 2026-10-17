@@ -26,7 +26,8 @@
 namespace ember::log::win32 {
 
 class CommandSink final : public log::CommandSink {
-	const std::string_view default_timestamp_fmt = "%d/%m/%Y %H:%M:%S ";
+	static constexpr std::string_view sink_name { "WinCommandSink" };
+	static constexpr std::string_view default_timestamp_fmt { "%d/%m/%Y %H:%M:%S " };
 
 	enum class ScrollDirection {
 		up, down
@@ -99,8 +100,6 @@ class CommandSink final : public log::CommandSink {
 	bool invoke_handler(const std::string_view command);
 
 public:
-	static constexpr std::string_view sink_name = "CommandSink";
-
 	CommandSink(Severity severity, Filter filter, std::string prompt);
 	~CommandSink();
 
@@ -121,6 +120,8 @@ public:
 	bool invoke(const std::string_view command) override;
 
 	bool unique() override { return true; }
+
+	static constexpr std::string_view name() { return sink_name; }
 };
 
 } // win32, log, ember

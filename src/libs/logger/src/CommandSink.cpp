@@ -10,7 +10,7 @@
 
 namespace ember::log {
 
-CommandSink::CommandSink(Severity severity, Filter filter)
-	: Sink(severity, filter, sink_name) {}
+CommandSink::CommandSink(std::string name, Severity severity, Filter filter)
+	: Sink(std::move(name), std::string(type()), severity, filter) {}
 
 } // log, ember
