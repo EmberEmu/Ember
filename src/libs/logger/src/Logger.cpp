@@ -50,6 +50,10 @@ std::shared_ptr<Sink> Logger::fetch_sink(const std::string_view name) {
 	return pimpl_->fetch_sink(name);
 }
 
+std::shared_ptr<Sink> Logger::fetch_unique(const std::string_view type) {
+	return pimpl_->fetch_unique(type);
+}
+
 void Logger::set_soft_limit(std::size_t value) {
 	pimpl_->set_soft_limit(value);
 }

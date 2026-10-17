@@ -225,14 +225,14 @@ std::string suggest_command(const commands::Command& root, const std::string_vie
 }
 
 void handle_cls_command(log::Logger& logger) {
-	const auto sinks = logger.fetch_sinks(log::CommandSink::type());
+	const auto result = logger.fetch_unique(log::CommandSink::type());
 
-	if(sinks.empty()) {
+	if(!sink) {
 		SLOG_ERROR(logger, "Could not locate a command sink, cannot execute cls");
 		return;
 	}
 
-	auto& sink = static_cast<log::CommandSink&>(*sinks.front());
+	auto& sink = static_cast<log::CommandSink&>(*result);
 	sink.clear_console();
 }
 
@@ -278,14 +278,14 @@ void register_common_commands(std::shared_ptr<commands::Command> root, log::Logg
 }
 
 void register_command_handlers(std::shared_ptr<commands::Command> root, log::Logger& logger, const bool suggestions) {
-	auto sinks = logger.fetch_sinks(log::CommandSink::type());
+	auto result = logger.fetch_unique(log::CommandSink::type());
 
-	if(sinks.empty()) {
+	if(!result) {
 		SLOG_INFO(logger, "Console commands disabled, no suitable logging sink found");
 		return;
 	}
 
-	auto& sink = static_cast<log::CommandSink&>(*sinks.front());
+	auto& sink = static_cast<log::CommandSink&>(*result);
 
 	sink.register_autocomplete([&, root](auto cmd) {
 		return root->autocomplete(cmd);

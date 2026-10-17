@@ -259,6 +259,23 @@ public:
 		return nullptr;
 	}
 
+	std::shared_ptr<Sink> fetch_unique(const std::string_view type) {
+		std::lock_guard lock(sink_lock_);
+		std::shared_ptr<Sink> sink;
+
+		for(auto& sink : sinks_) {
+			if(sink->type() == type) {
+				if(!sink->unique()) {
+					throw std::runtime_error("attempted to fetch non-unique sink type from fetch_unique");
+				}
+
+				return sink;
+			}
+		}
+
+		return nullptr;
+	}
+
 	void set_soft_limit(std::size_t value) {
 		worker_.set_soft_limit(value);
 	}
