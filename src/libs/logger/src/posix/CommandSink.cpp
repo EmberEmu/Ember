@@ -187,7 +187,9 @@ void CommandSink::write(Severity severity, Filter type,	std::string_view record,
 		buff_req_size += ansi_erase.size();
 		buff_req_size += theme_.reset.size();
 
-		if(no_bg_) {
+		if(!no_bg_) {
+			buff_req_size += theme_.bg.size();
+		} else {
 			buff_req_size += ansi_reset.size();
 		}
 	}
@@ -220,7 +222,9 @@ void CommandSink::write(Severity severity, Filter type,	std::string_view record,
 		append(ansi_erase);
 		append(theme_.reset);
 
-		if(no_bg_) {
+		if(!no_bg_) {
+			append(theme_.bg);
+		} else {
 			append(ansi_reset);
 		}
 	} else {
