@@ -113,7 +113,7 @@ class CommandSink final : public log::CommandSink {
 	bool invoke_handler(std::string_view command);
 
 public:
-	CommandSink(Severity severity, Filter filter, std::string prompt, LogTheme theme, bool colour, bool no_bg);
+	CommandSink(Severity severity, Filter filter, std::string prompt, LogTheme theme, bool no_bg);
 	~CommandSink();
 
 	CommandSink(const CommandSink&) = delete;

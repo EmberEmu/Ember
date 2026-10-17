@@ -26,11 +26,11 @@ namespace ember::log::posix {
 constexpr std::string_view ansi_reset = "\x1b[0m"; // clears all attributes
 constexpr std::string_view ansi_erase = "\033[K";  // erase to end of line
 
-CommandSink::CommandSink(Severity severity, Filter filter, std::string prompt, LogTheme theme, bool colour, bool no_bg)
+CommandSink::CommandSink(Severity severity, Filter filter, std::string prompt, LogTheme theme, bool no_bg)
 	: log::CommandSink(std::string(name()), severity, filter)
 	, prompt_(std::move(prompt))
 	, timestamp_fmt_(default_timestamp_fmt)
-	, colour_(colour)
+	, colour_(false)
 	, timestamp_(false)
 	, max_cols_(table_max_cols)
 	, theme_(theme)
@@ -43,10 +43,6 @@ CommandSink::CommandSink(Severity severity, Filter filter, std::string prompt, L
 
 	const auto [rows, _] = terminal_.get_size();
 	terminal_.set_log_region(rows);
-
-	if(colour_ && !no_bg) {
-		terminal_.write(theme_.bg);
-	}
 
 	input_reader_ = std::jthread([this](auto stop_token) {
 		redraw_prompt();
@@ -178,6 +174,10 @@ void CommandSink::write(Severity severity, Filter type,	std::string_view record,
 	const auto text_style = theme_colour(theme_, severity, StyleSegment::text);
 
 	if(colour_) {
+		if(!no_bg_) {
+			buff_req_size += theme_.bg.size();
+		}
+
 		if(timestamp_) {
 			buff_req_size += theme_.timestamp.size();
 		}
@@ -187,9 +187,7 @@ void CommandSink::write(Severity severity, Filter type,	std::string_view record,
 		buff_req_size += ansi_erase.size();
 		buff_req_size += theme_.reset.size();
 
-		if(!no_bg_) {
-			buff_req_size += theme_.bg.size();
-		} else {
+		if(no_bg_) {
 			buff_req_size += ansi_reset.size();
 		}
 	}
@@ -205,6 +203,10 @@ void CommandSink::write(Severity severity, Filter type,	std::string_view record,
 
 	// generate output
 	if(colour_) [[likely]] {
+		if(!no_bg_) {
+			append(theme_.bg);
+		}
+
 		if(timestamp_) {
 			append(theme_.timestamp);
 			append(timestamp);
@@ -218,9 +220,7 @@ void CommandSink::write(Severity severity, Filter type,	std::string_view record,
 		append(ansi_erase);
 		append(theme_.reset);
 
-		if(!no_bg_) {
-			append(theme_.bg);
-		} else {
+		if(no_bg_) {
 			append(ansi_reset);
 		}
 	} else {

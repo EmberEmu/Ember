@@ -102,7 +102,7 @@ std::shared_ptr<log::Sink> init_command_sink(const opts::variables_map& args, lo
 			const auto no_bg = args["console_log.no_bg"].as<bool>();
 
 			sink = std::make_shared<log::posix::CommandSink>(
-				severity, log::Filter(filter), "ember( ", theme, colourise, no_bg
+				severity, log::Filter(filter), "ember( ", theme, no_bg
 			);
 #ifdef _WIN32
 		} catch(std::exception&) {
