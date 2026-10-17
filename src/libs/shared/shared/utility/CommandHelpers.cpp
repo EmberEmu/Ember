@@ -282,7 +282,7 @@ void register_command_handlers(std::shared_ptr<commands::Command> root, log::Log
 
 	auto& sink = static_cast<log::CommandSink&>(*result);
 
-	sink.register_autocomplete([&, root](auto cmd) {
+	sink.register_autocomplete([root](auto cmd) {
 		return root->autocomplete(cmd);
 	});
 
@@ -291,7 +291,7 @@ void register_command_handlers(std::shared_ptr<commands::Command> root, log::Log
 	});
 
 	if(suggestions) {
-		sink.register_suggestion([&, root](auto cmd) {
+		sink.register_suggestion([root](auto cmd) {
 			return root->autocomplete(cmd).substring;
 		});
 	}
