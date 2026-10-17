@@ -200,7 +200,7 @@ void handle_theme_set_command(const commands::Arguments& arguments, log::Logger&
 	const auto sink = logger.fetch_sink(log::posix::CommandSink::name());
 
 	if(!sink) {
-		throw std::runtime_error("command sink not found found");
+		throw std::runtime_error("command sink not found");
 	}
 	
 	auto posix_sink = std::dynamic_pointer_cast<log::posix::CommandSink>(sink);
