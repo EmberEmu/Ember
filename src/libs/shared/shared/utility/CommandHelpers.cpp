@@ -36,19 +36,21 @@ void handle_command_result(commands::Result result,
                            const std::string& path,
                            const commands::Command& command,
                            log::Logger& logger) {
+	using enum commands::Result;
+
     switch(result) {
-        case commands::Result::missing_args:
+		case missing_args:
 			[[fallthrough]];
-        case commands::Result::too_many_args:
+        case too_many_args:
 			LOG_CONERR(logger, "Usage: {} {}", path, command.usage_string());
             break;
-        case commands::Result::subcommands:
+        case subcommands:
 			log_subcommands(logger, path, command.commands());
             break;
-        case commands::Result::unavailable:
+        case unavailable:
 			LOG_CONERR(logger, R"(Command "{}" is currently unavailable.)", path);
             break;
-		case commands::Result::invalid_types:
+		case invalid_types:
 			LOG_CONERR(logger, R"(Bad argument types when attempting to execute "{}")", path);
 			break;
         default:

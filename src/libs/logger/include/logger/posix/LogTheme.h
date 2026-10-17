@@ -44,22 +44,24 @@ enum class StyleSegment {
 };
 
 constexpr std::string_view severity_colour(const LogTheme::StyleBody& style, Severity severity) {
+	using enum Severity;
+
 	switch(severity) {
-		case Severity::trace:
+		case trace:
 			return style.trace;
-		case Severity::debug:
+		case debug:
 			return style.debug;
-		case Severity::info:
+		case info:
 			return style.info;
-		case Severity::warn:
+		case warn:
 			return style.warn;
-		case Severity::error:
+		case error:
 			return style.error;
-		case Severity::fatal:
+		case fatal:
 			return style.fatal;
-		case Severity::console:
+		case console:
 			return style.con;
-		case Severity::console_error:
+		case console_error:
 			return style.conerr;
 		default:
 			return {};
@@ -67,10 +69,12 @@ constexpr std::string_view severity_colour(const LogTheme::StyleBody& style, Sev
 }
 
 constexpr std::string_view theme_colour(const LogTheme& theme, Severity severity, StyleSegment segment) {
+	using enum StyleSegment;
+
 	switch(segment) {
-		case StyleSegment::tag:
+		case tag:
 			return severity_colour(theme.tag, severity);
-		case StyleSegment::text:
+		case text:
 			return severity_colour(theme.text, severity);
 	}
 
