@@ -271,7 +271,7 @@ void CommandSink::set_max_table_cols(unsigned int cols) {
 void CommandSink::clear_line() {
 	std::lock_guard guard(console_lock_);
 
-	const auto [rows, cols] = terminal_.get_size();
+	const auto [rows, _] = terminal_.get_size();
 	terminal_.move_to(rows, 1);
 	terminal_.clear_line();
 }
@@ -547,7 +547,7 @@ void CommandSink::print_command_table(std::span<const commands::Suggestions::Rec
 	detail::StreamBuffer stream_buffer(buffer);
 	std::ostream stream(&stream_buffer);
 
-	const auto [rows, cols] = terminal_.get_size();
+	const auto [_, cols] = terminal_.get_size();
 
 	const auto columns = std::max(
 		std::min(cols, max_cols_) - table_padding, table_min_cols - table_padding
@@ -582,7 +582,7 @@ void CommandSink::clear_console() {
 	terminal_.clear_screen();
 	log_line_used_ = false;
 
-	const auto [rows, cols] = terminal_.get_size();
+	const auto [rows, _] = terminal_.get_size();
 	terminal_.set_log_region(rows);
 
 	redraw_prompt();
@@ -599,7 +599,7 @@ void CommandSink::write_buffer(std::span<const char> buffer, bool redraw) {
         return;
     }
 
-    const auto [rows, cols] = terminal_.get_size();
+    const auto [rows, _] = terminal_.get_size();
     terminal_.set_log_region(static_cast<int>(rows));
 
     // scroll the log region up
