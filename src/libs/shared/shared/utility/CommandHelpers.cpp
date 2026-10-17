@@ -232,8 +232,6 @@ void handle_cls_command(log::Logger& logger) {
 		return;
 	}
 
-	assert(sinks.size() == 1 && "multiple command sinks?");
-
 	auto& sink = static_cast<log::CommandSink&>(*sinks.front());
 	sink.clear_console();
 }
