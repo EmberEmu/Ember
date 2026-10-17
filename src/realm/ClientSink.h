@@ -31,7 +31,8 @@ class EventDispatcher;
  * This is purely intended for development and debugging.
  */
 class ClientSink final : public log::Sink {
-	constexpr static auto reserve_size = 128;
+	static constexpr std::string_view sink_type { "ClientSink" };
+	static constexpr auto reserve_size = 128;
 
 	enum class Colour : std::uint32_t {
 		alpha_grey = 0x80808080,
@@ -57,14 +58,14 @@ class ClientSink final : public log::Sink {
 	bool filter(log::Severity severity, log::Filter type) const;
 
 public:
-	static constexpr std::string_view sink_name = "ClientSink";
-
-	ClientSink(EventDispatcher& dispatcher, ClientIdent client,
+	ClientSink(std::string name, EventDispatcher& dispatcher, ClientIdent client,
 	           log::Severity severity, LogRedirect::Type type,
 	           log::Filter filter);
 
 	void write(log::Severity severity, log::Filter type, std::string_view record, bool flush) override;
 	void batch_write(const std::span<std::pair<log::RecordDetail, std::string>>& records) override;
+
+	static constexpr std::string_view type() { return sink_type; }
 };
 
 } // realm, ember

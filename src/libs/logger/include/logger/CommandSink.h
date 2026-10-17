@@ -17,15 +17,15 @@
 namespace ember::log {
 
 class CommandSink : public Sink {
-public:
-	static constexpr std::string_view sink_name = "CommandSink";
+	static constexpr std::string_view sink_type { "CommandSink" };
 
+public:
 	using CommandHandler = std::function<void(const std::string_view)>;
 	using Autocomplete = std::function<commands::Suggestions(const std::string&)>;
 	using Suggestion = std::function<std::string(const std::string_view)>;
 
-	CommandSink(Severity severity, Filter filter);
-	~CommandSink() {}
+	CommandSink(std::string name, Severity severity, Filter filter);
+	~CommandSink() = default;
 
 	void write(Severity severity, Filter type, std::string_view record, bool flush) override = 0;
 	void batch_write(const std::span<std::pair<RecordDetail, std::string>>& records) override = 0;
@@ -42,6 +42,8 @@ public:
 	virtual bool invoke(const std::string_view command) = 0;
 	virtual void clear_console() = 0;
 	virtual bool unique() override = 0;
+
+	static constexpr std::string_view type() { return sink_type; }
 };
 
 } // log, ember

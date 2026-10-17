@@ -117,10 +117,13 @@ void configure_logger(log::Logger& logger, const opts::variables_map& args) {
 	const auto file_verbosity = args["fverbosity"].as<log::Severity>();
 
 	auto fsink = std::make_shared<log::FileSink>(
-		file_verbosity, log::Filter(0), "dbcparser.log", log::FileSink::Mode::append
+		"file_sink_0", file_verbosity, log::Filter(0), "dbcparser.log", log::FileSink::Mode::append
 	);
 
-	auto consink = std::make_shared<log::ConsoleSink>(con_verbosity, log::Filter(0));
+	auto consink = std::make_shared<log::ConsoleSink>(
+		"console_sink_0", con_verbosity, log::Filter(0)
+	);
+
 	consink->colourise(true);
 	logger->add_sink(std::move(consink));
 	logger->add_sink(std::move(fsink));

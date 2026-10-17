@@ -13,9 +13,9 @@
 
 namespace ember::realm {
 
-ClientSink::ClientSink(EventDispatcher& dispatcher, ClientIdent client, log::Severity severity,
-                       LogRedirect::Type type, log::Filter filter)
-	: log::Sink(severity, filter, sink_name)
+ClientSink::ClientSink(std::string name, EventDispatcher& dispatcher, ClientIdent client,
+                       log::Severity severity, LogRedirect::Type type, log::Filter filter)
+	: log::Sink(std::move(name), std::string(sink_type), severity, filter)
 	, dispatcher_(dispatcher)
 	, severity_(severity)
 	, filter_(filter)

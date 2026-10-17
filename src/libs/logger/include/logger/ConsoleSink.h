@@ -20,7 +20,8 @@
 namespace ember::log {
 
 class ConsoleSink final : public Sink {
-	const std::string_view default_timestamp_fmt = "%d/%m/%Y %H:%M:%S ";
+	static constexpr std::string_view sink_type { "ConsoleSink" };
+	static constexpr std::string_view default_timestamp_fmt { "%d/%m/%Y %H:%M:%S " };
 
 	static constexpr auto sv_reserve = 256u;
 	static constexpr auto max_buf_size = 4096u;
@@ -38,10 +39,8 @@ class ConsoleSink final : public Sink {
 	std::size_t generate_timestamp(std::span<char> buffer);
 	void do_batch_write(const std::span<std::pair<RecordDetail, std::string>>& records);
 public:
-	static constexpr std::string_view sink_name = "ConsoleSink";
-
-	ConsoleSink(Severity severity, Filter filter)
-		: Sink(severity, filter, "ConsoleSink")
+	ConsoleSink(std::string name, Severity severity, Filter filter)
+		: Sink(std::move(name), std::string(type()), severity, filter)
 		, colour_(false)
 		, timestamp_(false) {}
 
@@ -51,6 +50,8 @@ public:
 	void prefix(std::string prefix) { prefix_ = std::move(prefix); }
 	void log_timestamp(bool enable) { timestamp_ = enable; }
 	void timestamp_format(std::string format) { timestamp_fmt_ = format; }
+
+	static constexpr std::string_view type() { return sink_type; }
 };
 
 } // log, ember

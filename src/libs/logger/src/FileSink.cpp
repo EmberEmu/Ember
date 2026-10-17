@@ -24,9 +24,9 @@ namespace ember::log {
 
 namespace fs = std::filesystem;
 
-FileSink::FileSink(Severity severity, Filter filter, std::string file_name, Mode mode)
-                   : Sink(severity, filter, "FileSink"),
-                     file_name_format_(std::move(file_name)) {
+FileSink::FileSink(std::string name, Severity severity, Filter filter, std::string file_name, Mode mode)
+	: Sink(std::move(name), std::string(type()), severity, filter)
+    , file_name_format_(std::move(file_name)) {
 	format_file_name();
 
 	if(mode == Mode::append) {

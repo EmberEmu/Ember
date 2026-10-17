@@ -34,12 +34,24 @@ bool Logger::remove_sink(const std::shared_ptr<Sink>& sink) {
 	return pimpl_->remove_sink(sink);
 }
 
+bool Logger::remove_sink(const std::string_view name) {
+	return pimpl_->remove_sink(name);
+}
+
 std::vector<std::shared_ptr<Sink>> Logger::fetch_sinks() {
 	return pimpl_->fetch_sinks();
 }
 
-std::vector<std::shared_ptr<Sink>> Logger::fetch_sink(const std::string_view name) {
+std::vector<std::shared_ptr<Sink>> Logger::fetch_sinks(const std::string_view type) {
+	return pimpl_->fetch_sinks(type);
+}
+
+std::shared_ptr<Sink> Logger::fetch_sink(const std::string_view name) {
 	return pimpl_->fetch_sink(name);
+}
+
+std::shared_ptr<Sink> Logger::fetch_unique(const std::string_view type) {
+	return pimpl_->fetch_unique(type);
 }
 
 void Logger::set_soft_limit(std::size_t value) {

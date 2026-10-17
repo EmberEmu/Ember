@@ -38,7 +38,10 @@ std::shared_ptr<log::Sink> init_remote_sink(const opts::variables_map& args, log
 	auto port = args["remote_log.port"].as<std::uint16_t>();
 	auto facility = log::SyslogSink::Facility::local_use_0;
 	auto filter = args["remote_log.filter_mask"].as<std::uint32_t>();
-	return std::make_shared<log::SyslogSink>(severity, log::Filter(filter), host, port, facility, service);
+
+	return std::make_shared<log::SyslogSink>(
+		"remote_sink_0", severity, log::Filter(filter), host, port, facility, service
+	);
 }
 
 std::shared_ptr<log::Sink> init_file_sink(const opts::variables_map& args, log::Severity severity) {
@@ -53,7 +56,10 @@ std::shared_ptr<log::Sink> init_file_sink(const opts::variables_map& args, log::
 	auto mode = (mode_str == "append")?
 		log::FileSink::Mode::append : log::FileSink::Mode::truncate;
 
-	auto sink = std::make_shared<log::FileSink>(severity, log::Filter(filter), path, mode);
+	auto sink = std::make_shared<log::FileSink>(
+		"file_sink_0", severity, log::Filter(filter), path, mode
+	);
+
 	sink->size_limit( args["file_log.size_rotate"].as<std::uint32_t>());
 	sink->log_severity(args["file_log.severity"].as<bool>());
 	sink->log_date(args["file_log.timestamp"].as<bool>());
@@ -65,7 +71,11 @@ std::shared_ptr<log::Sink> init_file_sink(const opts::variables_map& args, log::
 std::shared_ptr<log::Sink> init_console_sink(const opts::variables_map& args, log::Severity severity) {
 	auto filter = args["console_log.filter_mask"].as<std::uint32_t>();
 	auto colourise = args["console_log.colours"].as<bool>();
-	auto sink = std::make_shared<log::ConsoleSink>(severity, log::Filter(filter));
+
+	auto sink = std::make_shared<log::ConsoleSink>(
+		"console_sink_0", severity, log::Filter(filter)
+	);
+
 	sink->colourise(colourise);
 	sink->log_timestamp(args["console_log.timestamp"].as<bool>());
 	sink->timestamp_format(args["console_log.timestamp_format"].as<std::string>());
@@ -97,10 +107,14 @@ std::shared_ptr<log::Sink> init_command_sink(const opts::variables_map& args, lo
 #ifdef _WIN32
 		} catch(std::exception&) {
 			// fall back to WinAPI impl. if we're running in a terminal that doesn't support ANSI VT
-			sink = std::make_shared<log::win32::CommandSink>(severity, log::Filter(filter), "ember( ");
+			sink = std::make_shared<log::win32::CommandSink>(
+				severity, log::Filter(filter), "ember( "
+			);
 		}
 	} else {
-		sink = std::make_shared<log::win32::CommandSink>(severity, log::Filter(filter), "ember( ");
+		sink = std::make_shared<log::win32::CommandSink>(
+			severity, log::Filter(filter), "ember( "
+		);
 	}
 
 #endif

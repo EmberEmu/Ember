@@ -21,7 +21,6 @@
 #include <string_view>
 #include <utility>
 #include <vector>
-#include <cassert>
 
 namespace ember::utility {
 
@@ -198,18 +197,16 @@ void handle_theme_list_command(log::Logger& logger) {
 void handle_theme_set_command(const commands::Arguments& arguments, log::Logger& logger) try {
 	const auto theme_name = arguments["name"].as<std::string>();
 	const auto& theme = log::posix::themes::theme(theme_name);
-	const auto sinks = logger.fetch_sink(log::posix::CommandSink::sink_name);
+	const auto sink = logger.fetch_sink(log::posix::CommandSink::name());
 
-	if(sinks.empty()) {
-		throw std::runtime_error("no command sinks found");
+	if(!sink) {
+		throw std::runtime_error("command sink not found");
 	}
 	
-	assert(sinks.size() == 1 && "multiple command logging sinks?");
-
-	auto posix_sink = std::dynamic_pointer_cast<log::posix::CommandSink>(sinks.front());
+	auto posix_sink = std::dynamic_pointer_cast<log::posix::CommandSink>(sink);
 
 	if(!posix_sink) {
-		throw std::runtime_error("current sink does not support themes");
+		throw std::runtime_error("incompatible sink type found");
 	}
 
 	posix_sink->set_theme(theme);
@@ -228,16 +225,14 @@ std::string suggest_command(const commands::Command& root, const std::string_vie
 }
 
 void handle_cls_command(log::Logger& logger) {
-	const auto sinks = logger.fetch_sink(log::CommandSink::sink_name);
+	const auto result = logger.fetch_unique(log::CommandSink::type());
 
-	if(sinks.empty()) {
+	if(!result) {
 		SLOG_ERROR(logger, "Could not locate a command sink, cannot execute cls");
 		return;
 	}
 
-	assert(sinks.size() == 1 && "multiple command sinks?");
-
-	auto& sink = static_cast<log::CommandSink&>(*sinks.front());
+	auto& sink = static_cast<log::CommandSink&>(*result);
 	sink.clear_console();
 }
 
@@ -283,14 +278,14 @@ void register_common_commands(std::shared_ptr<commands::Command> root, log::Logg
 }
 
 void register_command_handlers(std::shared_ptr<commands::Command> root, log::Logger& logger, const bool suggestions) {
-	auto sinks = logger.fetch_sink(log::CommandSink::sink_name);
+	auto result = logger.fetch_unique(log::CommandSink::type());
 
-	if(sinks.empty()) {
+	if(!result) {
 		SLOG_INFO(logger, "Console commands disabled, no suitable logging sink found");
 		return;
 	}
 
-	auto& sink = static_cast<log::CommandSink&>(*sinks.front());
+	auto& sink = static_cast<log::CommandSink&>(*result);
 
 	sink.register_autocomplete([&, root](auto cmd) {
 		return root->autocomplete(cmd);

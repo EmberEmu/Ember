@@ -49,15 +49,15 @@ class SyslogSink::impl final : public Sink {
 	SyslogSeverity severity_map(Severity severity);
 
 public:
-	impl(Severity severity, Filter filter, const std::string& host, unsigned int port,
+	impl(std::string name, Severity severity, Filter filter, const std::string& host, unsigned int port,
 	     Facility facility, std::string tag);
 	void write(Severity severity, Filter type, const std::string_view record, bool flush) override;
 	void batch_write(const std::span<std::pair<RecordDetail, std::string>>& records) override;
 };
 
-SyslogSink::impl::impl(Severity severity, Filter filter, const std::string& host, unsigned int port,
-                       Facility facility, std::string tag) try
-    : Sink(severity, filter, "SyslogSink"),
+SyslogSink::impl::impl(std::string name, Severity severity, Filter filter, const std::string& host,
+                       unsigned int port, Facility facility, std::string tag) try
+    : Sink(std::move(name), std::string(type()), severity, filter),
 	  socket_(service_),
 	  host_(asio::ip::host_name()),
       tag_(std::move(tag)) {
@@ -125,10 +125,10 @@ void SyslogSink::impl::batch_write(const std::span<std::pair<RecordDetail, std::
 	}
 }
 
-SyslogSink::SyslogSink(Severity severity, Filter filter, std::string host, unsigned int port,
-                       Facility facility, std::string tag)
-	: Sink(severity, filter, "SyslogSink"),
-      pimpl_(std::make_unique<impl>(severity, filter, std::move(host), port, facility, std::move(tag))) {}
+SyslogSink::SyslogSink(std::string name, Severity severity, Filter filter, std::string host,
+                       unsigned int port, Facility facility, std::string tag)
+	: Sink(name, std::string(sink_type), severity, filter)
+	, pimpl_(std::make_unique<impl>(name, severity, filter, std::move(host), port, facility, std::move(tag))) {}
 
 SyslogSink::~SyslogSink() = default;
 

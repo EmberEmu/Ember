@@ -26,8 +26,8 @@ namespace ember::log::posix {
 constexpr std::string_view ansi_reset = "\x1b[0m"; // clears all attributes
 constexpr std::string_view ansi_erase = "\033[K";  // erase to end of line
 
-CommandSink::CommandSink(Severity severity,	Filter filter, std::string prompt, LogTheme theme, bool colour, bool no_bg)
-	: log::CommandSink(severity, filter)
+CommandSink::CommandSink(Severity severity, Filter filter, std::string prompt, LogTheme theme, bool colour, bool no_bg)
+	: log::CommandSink(std::string(name()), severity, filter)
 	, prompt_(std::move(prompt))
 	, timestamp_fmt_(default_timestamp_fmt)
 	, colour_(colour)

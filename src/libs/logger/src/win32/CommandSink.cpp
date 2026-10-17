@@ -33,7 +33,7 @@ static constexpr auto text_white = FOREGROUND_INTENSITY | FOREGROUND_RED | FOREG
 static constexpr auto text_grey = FOREGROUND_INTENSITY;
 
 CommandSink::CommandSink(Severity severity, Filter filter, std::string prompt)
-	: log::CommandSink(severity, filter)
+	: log::CommandSink(std::string(name()), severity, filter)
 	, prompt_(std::move(prompt))
 	, timestamp_fmt_(default_timestamp_fmt)
 	, colour_(false)

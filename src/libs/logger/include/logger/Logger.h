@@ -98,10 +98,13 @@ public:
 	Logger& operator <<(unsigned int data);
 	void add_sink(std::shared_ptr<Sink> sink);
 	bool remove_sink(const std::shared_ptr<Sink>& sink);
+	bool remove_sink(std::string_view name);
 	void set_soft_limit(std::size_t value);
 	void set_hard_limit(std::size_t value);
-	std::vector<std::shared_ptr<Sink>> fetch_sink(const std::string_view name);
+	std::shared_ptr<Sink> fetch_sink(const std::string_view name);
+	std::vector<std::shared_ptr<Sink>> fetch_sinks(const std::string_view type);
 	std::vector<std::shared_ptr<Sink>> fetch_sinks();
+	std::shared_ptr<Sink> fetch_unique(const std::string_view type);
 	Severity severity();
 	Filter filter();
 	void finalise();

@@ -172,13 +172,23 @@ public:
 	void add_sink(std::shared_ptr<Sink> sink) {
 		std::lock_guard lock(sink_lock_);
 
-		if(sink->unique()) {
-			for(auto& s : sinks_) {
-				if(s->name() == sink->name()) {
+		for(const auto& s : sinks_) {
+			if(sink->unique()) {
+				if(s->type() == sink->type()) {
 					throw std::runtime_error(
-						std::format(R"(Attempt to register multiple instances of a sink, "{}", declared as unique)", sink->name())
+						std::format(
+							R"(Attempt to register multiple instances of a sink, "{}", declared as unique)", sink->type()
+						)
 					);
 				}
+			}
+
+			if(s->name() == sink->name()) {
+				throw std::runtime_error(
+					std::format(
+						R"(Attempt to register sink with non-unique name, "{}")", sink->name()
+					)
+				);
 			}
 		}
 
@@ -201,22 +211,69 @@ public:
 		return false;
 	}
 
+	bool remove_sink(const std::string_view name) {
+		std::lock_guard lock(sink_lock_);
+		std::shared_ptr<Sink> target;
+
+		for(auto& sink : sinks_) {
+			if(sink->name() == name) {
+				target = sink;
+			}
+		}
+
+		if(!target) {
+			return false;
+		}
+
+		return remove_sink(target);
+	}
+
 	std::vector<std::shared_ptr<Sink>> fetch_sinks() {
 		std::lock_guard lock(sink_lock_);
 		return sinks_;
 	}
 
-	std::vector<std::shared_ptr<Sink>> fetch_sink(const std::string_view name) {
+	std::vector<std::shared_ptr<Sink>> fetch_sinks(const std::string_view type) {
 		std::lock_guard lock(sink_lock_);
 		std::vector<std::shared_ptr<Sink>> sinks;
 
 		for(auto& sink : sinks_) {
-			if(sink->name() == name) {
+			if(sink->type() == type) {
 				sinks.emplace_back(sink);
 			}
 		}
 
 		return sinks;
+	}
+
+	std::shared_ptr<Sink> fetch_sink(const std::string_view name) {
+		std::lock_guard lock(sink_lock_);
+		std::vector<std::shared_ptr<Sink>> sinks;
+
+		for(auto& sink : sinks_) {
+			if(sink->name() == name) {
+				return sink;
+			}
+		}
+
+		return nullptr;
+	}
+
+	std::shared_ptr<Sink> fetch_unique(const std::string_view type) {
+		std::lock_guard lock(sink_lock_);
+		std::shared_ptr<Sink> sink;
+
+		for(auto& sink : sinks_) {
+			if(sink->type() == type) {
+				if(!sink->unique()) {
+					throw std::runtime_error("attempted to fetch non-unique sink type from fetch_unique");
+				}
+
+				return sink;
+			}
+		}
+
+		return nullptr;
 	}
 
 	void set_soft_limit(std::size_t value) {
