@@ -79,35 +79,35 @@ inline constexpr LogTheme aurora {
 	.reset      = "\033[39;22m"
 };
 
-inline constexpr LogTheme aurora_day {
-	.name = "aurora_day",
-	.desc = "aurora borealis but it's daylight",
+inline constexpr LogTheme daybreak {
+	.name = "daybreak",
+	.desc = "first light, it's time to go to bed",
 	.tag {
-		.trace  = "\033[38;2;104;117;138m",
-		.debug  = "\033[38;2;36;92;197m",
-		.info   = "\033[38;2;8;127;112m",
-		.warn   = "\033[38;2;152;96;0m",
-		.error  = "\033[38;2;196;56;72m",
-		.fatal  = "\033[1;38;2;194;24;66m",
-		.con    = "\033[38;2;120;80;174m",
-		.conerr = "\033[38;2;184;92;50m",
+		.trace  = "\033[38;2;162;172;168m",
+		.debug  = "\033[38;2;157;187;224m",
+		.info   = "\033[38;2;154;208;176m",
+		.warn   = "\033[38;2;228;193;138m",
+		.error  = "\033[38;2;229;160;154m",
+		.fatal  = "\033[1;38;2;240;143;159m",
+		.con    = "\033[38;2;190;174;221m",
+		.conerr = "\033[38;2;229;160;154m",
 	},
 	.text {
-		.trace  = "\033[38;2;115;126;144m",
-		.debug  = "\033[38;2;69;106;168m",
-		.info   = "\033[38;2;50;127;117m",
-		.warn   = "\033[38;2;144;110;53m",
-		.error  = "\033[38;2;168;79;91m",
-		.fatal  = "\033[1;38;2;181;45;75m",
-		.con    = "\033[38;2;121;94;156m",
-		.conerr = "\033[38;2;166;93;66m",
+		.trace  = "\033[38;2;162;172;168m",
+		.debug  = "\033[38;2;157;187;224m",
+		.info   = "\033[38;2;154;208;176m",
+		.warn   = "\033[38;2;228;193;138m",
+		.error  = "\033[38;2;229;160;154m",
+		.fatal  = "\033[1;38;2;240;143;159m",
+		.con    = "\033[38;2;190;174;221m",
+		.conerr = "\033[38;2;229;160;154m",
 	},
-	.prompt     = "\033[38;2;8;127;112m",
-	.input      = "\033[38;2;38;52;69m",
-	.suggestion = "\033[38;2;104;117;138m",
+	.prompt     = "\033[38;2;154;208;176m",
+	.input      = "\033[38;2;224;231;219m",
+	.suggestion = "\033[38;2;162;172;168m",
 
-	.bg         = "\033[48;2;243;245;248m",
-	.timestamp  = "\033[38;2;100;116;139m",
+	.bg         = "\033[48;2;48;59;56m",
+	.timestamp  = "\033[38;2;133;150;140m",
 	.reset      = "\033[39;22m"
 };
 
@@ -274,7 +274,7 @@ inline constexpr LogTheme midnight {
 inline constexpr std::array themes {
 	legacy,
 	aurora,
-	aurora_day,
+	daybreak,
 	abyssal,
 	smoky,
 	sahara,
