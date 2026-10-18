@@ -55,6 +55,7 @@ class CommandSink final : public log::CommandSink {
 	static constexpr auto table_max_cols = 100u;
 	static constexpr auto table_padding = 3u;
 	static constexpr auto timestamp_buf_size = 64u;
+	static constexpr auto max_command_length = 256u;
 
 	CommandHandler handler_;
 	Autocomplete autocomplete_;
@@ -93,7 +94,7 @@ class CommandSink final : public log::CommandSink {
 	std::size_t generate_timestamp(std::span<char> buffer);
 
 	void clear_line();
-	void redraw_prompt(bool update_cursor = true);
+	void redraw_prompt();
 
 	void history_scroll(ScrollDirection dir);
 	void buffer_scroll(CursorDirection dir);

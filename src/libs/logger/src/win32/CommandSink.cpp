@@ -178,6 +178,10 @@ void CommandSink::write(Severity severity, Filter type, std::string_view record,
 	std::size_t offset = 0;
 
 	const auto append = [&](auto& fragment) {
+		if(fragment.size() > out_buf_.size() - offset) {
+			throw std::runtime_error("output buffer full, bad calculation");
+		}
+
 		std::copy(fragment.begin(), fragment.end(), out_buf_.begin() + offset);
 		offset += fragment.size();
 	};
@@ -186,6 +190,10 @@ void CommandSink::write(Severity severity, Filter type, std::string_view record,
 	append(prefix_);
 	append(sevsv);
 	append(record);
+
+	if(offset != buff_req_size) {
+		throw std::runtime_error("output buffer size != offset, bad calculation");
+	}
 
 	if(colour_) [[likely]] {
 		std::lock_guard guard(console_lock_);

@@ -13,6 +13,7 @@
 #include <logger/detail/PlatformColour.h>
 #include <bprinter/table_printer.h>
 #include <boost/algorithm/string/trim.hpp>
+#include <boost/container/small_vector.hpp>
 #include <array>
 #include <algorithm>
 #include <format>
@@ -132,7 +133,7 @@ void CommandSink::do_batch_write(const std::span<std::pair<RecordDetail, std::st
 	}
 
 	write_buffer(out_buf_, false);
-	redraw_prompt(false);
+	redraw_prompt();
 	out_buf_.clear();
 
 	if(out_buf_.capacity() > max_buf_size) [[unlikely]] {
@@ -199,6 +200,10 @@ void CommandSink::write(Severity severity, Filter type,	std::string_view record,
 	std::size_t offset = 0;
 
 	const auto append = [&](const auto& fragment) {
+		if(fragment.size() > out_buf_.size() - offset) {
+			throw std::runtime_error("output buffer size != offset, bad calculation");
+		}
+
 		std::copy(fragment.begin(), fragment.end(), out_buf_.begin() + offset);
 		offset += fragment.size();
 	};
@@ -234,9 +239,13 @@ void CommandSink::write(Severity severity, Filter type,	std::string_view record,
 		append(record);
 	}
 
+	if(offset != buff_req_size) {
+		throw std::runtime_error("output buffer size calculation error");
+	}
+
 	// output
 	write_buffer(out_buf_, false);
-	redraw_prompt(false);
+	redraw_prompt();
 
 	if(flush) {
 		if(std::fflush(stdout) != 0) {
@@ -288,53 +297,79 @@ std::string_view CommandSink::suggestion_substring() {
 	return {};
 }
 
-void CommandSink::redraw_prompt(bool update_cursor) {
-	std::lock_guard guard(console_lock_);
+void CommandSink::redraw_prompt() {
+   std::lock_guard guard(console_lock_);
 
-	const auto [rows, cols] = terminal_.get_size();
+    const auto [rows, cols] = terminal_.get_size();
+	
+    const auto available = cols > prompt_.size() + 1?
+		static_cast<std::size_t>(cols) - prompt_.size() - 1 : 0u; // todo, size_t literal
 
-	const auto available = static_cast<std::size_t>(
-		std::max(0u, cols - static_cast<unsigned int>(prompt_.size()) - 1) // todo, size_t literal
+    const auto visible_command = command_.substr(0, available);
+    const auto suggestion = suggestion_substring();
+
+    const auto visible_suggestion = suggestion.substr(0, available > visible_command.size()?
+		available - visible_command.size() : 0
+    );
+
+    const auto visible_cursor = std::min(cursor_pos_, command_.size());
+
+    const auto cursor_col = std::min(
+		prompt_.size() + visible_cursor + 1, static_cast<std::size_t>(cols)
 	);
 
-	const auto visible_command = command_.substr(0, available);
-	const auto suggestion = suggestion_substring();
-
-	const auto visible_suggestion = suggestion.substr(
-		0, available > visible_command.size()? available - visible_command.size(): 0
+	std::size_t offset = 0;
+	[[indeterminate]] boost::container::small_vector<char, max_buf_size> buffer(
+		max_buf_size, boost::container::default_init
 	);
 
-	terminal_.move_to(rows, 1);
-	terminal_.clear_line();
+	const auto append = [&](const std::string_view fragment) {
+		const auto required_size = offset + fragment.size();
 
-	if(colour_) {
-		terminal_.write(theme_.prompt);
-	}
+		if(fragment.size() > buffer.size() - offset) {
+			buffer.resize(
+				std::max(required_size, buffer.size() * 2),
+				boost::container::default_init
+			);
+		}
 
-	terminal_.write(prompt_);
+		std::copy(fragment.begin(), fragment.end(), buffer.begin() + offset);
+		offset += fragment.size();
+	};
 
-	if(colour_) {
-		terminal_.write(theme_.input);
-	}
+    append("\x1b[?25l"); // hide cursor
+	append("\x1b[");
+	append(std::to_string(rows));
+	append(";1H"); // move
+    append("\x1b[2K"); // erase line
 
-	terminal_.write(visible_command);
+    if(colour_) {
+        append(theme_.prompt);
+    }
 
-	if(colour_) {
-		terminal_.write(theme_.suggestion);
-	}
+	append(prompt_);
 
-	terminal_.write(visible_suggestion);
-	terminal_.write(theme_.reset);
+    if(colour_) {
+		append(theme_.input);
+    }
 
-	if(update_cursor) {
-		const auto visible_cursor = std::min(cursor_pos_, command_.size());
+	append(visible_command);
 
-		const auto cursor_col = std::min(
-			prompt_.size() + visible_cursor + 1, static_cast<std::size_t>(cols)
-		);
+    if(colour_) {
+		append(theme_.suggestion);
+    }
 
-		terminal_.move_to(rows, cursor_col);
-	}
+	append(visible_suggestion);
+	append(theme_.reset);
+	append("\x1b[");
+	append(std::to_string(rows));
+	append(";");
+	append(std::to_string(cursor_col));
+	append("H");
+	append("\x1b[?25h"); // restore cursor
+
+	const std::string_view output(buffer.data(), offset);
+    terminal_.write(output);
 }
 
 void CommandSink::insert_history(const std::string& command) {
@@ -433,6 +468,10 @@ void CommandSink::buffer_scroll(CursorDirection dir) {
 }
 
 void CommandSink::insert_character(char ch) {
+	if(command_.size() >= max_command_length) {
+		return;
+	}
+
 	command_.insert(cursor_pos_, 1, ch);
 	++cursor_pos_;
 
@@ -458,6 +497,8 @@ void CommandSink::read_console_input(std::stop_token stop) {
 		if(stop.stop_requested()) {
 			break;
 		}
+
+		std::lock_guard guard(console_lock_);
 
 		switch (event.key) {
 			case Key::Character:
