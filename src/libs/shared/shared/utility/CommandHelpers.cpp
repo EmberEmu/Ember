@@ -13,10 +13,12 @@
 #include <logger/posix/CommandSink.h>
 #include <logger/Logger.h>
 #include <shared/utility/DurationString.h>
+#include <bprinter/table_printer.h>
 #include <boost/lexical_cast.hpp>
 #include <chrono>
 #include <ranges>
 #include <span>
+#include <sstream>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -182,17 +184,32 @@ void handle_help_command(const commands::Arguments& arguments, const commands::C
 	}
 }
 
+void print_themes(log::Logger& logger) {
+	std::stringstream stream;
+	stream << "Available themes:" << '\n';
+
+	bprinter::TablePrinter printer(&stream);
+
+	printer.AddColumn("Name", 25);
+	printer.AddColumn("Description", 55);
+	printer.PrintHeader();
+
+	for(const auto& theme : log::posix::builtin_themes()) {
+		printer << theme.name;
+		printer << theme.desc;
+	}
+
+	printer.PrintFooter();
+	LOG_CONSOLE(logger, stream.str());
+}
+
 void handle_theme_list_command(log::Logger& logger) {
 	const auto themes = log::posix::builtin_themes();
 
 	if(themes.empty()) {
 		LOG_CONSOLE(logger, "No themes available");
 	} else {
-		LOG_CONSOLE(logger, "Available themes:");
-
-		for(const auto& theme : themes) {
-			LOG_CONSOLE(logger, "{} :: {}", theme.name, theme.desc);
-		}
+		print_themes(logger);
 	}
 }
 
@@ -219,12 +236,11 @@ void handle_theme_set_command(const commands::Arguments& arguments, log::Logger&
 	}
 
 	const std::string theme_name(theme.name);
-	const std::string theme_desc(theme.desc);
 
 	posix_sink->set_theme(std::move(theme));
 	posix_sink->clear_console();
 
-	LOG_CONSOLE(logger, "Theme set to {}, {}", theme_name, theme_desc);
+	LOG_CONSOLE(logger, "Theme set to {}", theme_name);
 } catch(const std::exception& e) {
 	LOG_CONERR(logger, "Error setting theme: {}", e.what());
 }
