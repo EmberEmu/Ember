@@ -544,7 +544,7 @@ void CommandSink::autocomplete() {
 	redraw_prompt();
 }
 
-std::string CommandSink::truncate_description(const int cols, const std::string_view description) {
+std::string CommandSink::truncate_description(const std::size_t cols, const std::string_view description) {
 	if(description.size() <= cols) {
 		return std::string(description);
 	}
@@ -576,7 +576,9 @@ void CommandSink::print_command_table(std::span<const commands::Suggestions::Rec
 		printer << match.name;
 
 		if(match.desc.size() > table_desc_cols) {
-			printer << truncate_description(table_desc_cols, match.desc);
+			printer << truncate_description(
+				static_cast<std::size_t>(table_desc_cols), match.desc
+			);
 		} else {
 			printer << match.desc;
 		}

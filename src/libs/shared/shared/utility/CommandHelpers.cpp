@@ -184,19 +184,32 @@ void handle_help_command(const commands::Arguments& arguments, const commands::C
 	}
 }
 
+std::string truncate_output(const std::size_t cols, const std::string_view string) {
+	if(string.size() <= cols) {
+		return std::string(string);
+	}
+
+	constexpr std::string_view ellipsis { "..." };
+	const auto ellipsis_space = cols - ellipsis.size();
+	return std::string(string.substr(0, ellipsis_space)) + "...";
+}
+
 void print_themes(log::Logger& logger) {
+	constexpr auto max_name_len = 20u; // todo, size_t literals on bump
+	constexpr auto max_desc_len = 80u;
+
 	std::stringstream stream;
 	stream << "Available themes:" << '\n';
 
 	bprinter::TablePrinter printer(&stream);
 
-	printer.AddColumn("Name", 25);
-	printer.AddColumn("Description", 55);
+	printer.AddColumn("Name", max_name_len);
+	printer.AddColumn("Description", max_desc_len);
 	printer.PrintHeader();
 
 	for(const auto& theme : log::posix::builtin_themes()) {
-		printer << theme.name;
-		printer << theme.desc;
+		printer << truncate_output(max_name_len, theme.name);
+		printer << truncate_output(max_desc_len, theme.desc);
 	}
 
 	printer.PrintFooter();

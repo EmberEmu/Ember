@@ -577,7 +577,7 @@ void CommandSink::autocomplete() {
 	redraw_prompt();
 }
 
-std::string CommandSink::truncate_description(const int cols, const std::string_view description) {
+std::string CommandSink::truncate_description(const std::size_t cols, const std::string_view description) {
 	if(description.size() <= cols) {
 		return std::string(description);
 	}

@@ -90,7 +90,7 @@ class CommandSink final : public log::CommandSink {
 
 	void print_command_table(std::span<const commands::Suggestions::Record> matches);
 
-	std::string truncate_description(int cols, std::string_view description);
+	std::string truncate_description(std::size_t cols, std::string_view description);
 	std::size_t generate_timestamp(std::span<char> buffer);
 
 	void clear_line();
