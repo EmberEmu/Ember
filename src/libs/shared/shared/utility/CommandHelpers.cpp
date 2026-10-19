@@ -209,19 +209,22 @@ void handle_theme_set_command(const commands::Arguments& arguments, log::Logger&
 		throw std::runtime_error("incompatible sink type found");
 	}
 
-	const auto theme_name = arguments["name"].as<std::string>();
+	const auto name = arguments["name"].as<std::string>();
 	log::posix::Theme theme;
 	
-	if(log::posix::has_builtin_theme(theme_name)) {
-		theme = log::posix::builtin_theme(theme_name);
+	if(log::posix::has_builtin_theme(name)) {
+		theme = log::posix::builtin_theme(name);
 	} else {
-		theme = log::posix::load_theme(theme_name);
+		theme = log::posix::load_theme(name);
 	}
+
+	const std::string theme_name(theme.name);
+	const std::string theme_desc(theme.desc);
 
 	posix_sink->set_theme(std::move(theme));
 	posix_sink->clear_console();
 
-	LOG_CONSOLE(logger, "Theme successfully set to {}", theme_name);
+	LOG_CONSOLE(logger, "Theme set to {}, {}", theme_name, theme_desc);
 } catch(const std::exception& e) {
 	LOG_CONERR(logger, "Error setting theme: {}", e.what());
 }
