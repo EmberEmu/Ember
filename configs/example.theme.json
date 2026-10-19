@@ -1,6 +1,6 @@
 {
   "name": "Example Theme",
-  "desc": "An example of a custom console theme",
+  "desc": "An example of a custom console theme - the filename can be used as the theme name to load",
   "tag": {
 	"trace": "\u001b[90m",
 	"debug": "\u001b[36m",

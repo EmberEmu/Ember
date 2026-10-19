@@ -19,4 +19,4 @@ foreach(CONFIG_FILE IN LISTS CONFIG_FILES)
     )
 endforeach()
 
-install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/theme.json" DESTINATION configs)
+install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/example.theme.json" DESTINATION .)
