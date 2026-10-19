@@ -183,7 +183,7 @@ void handle_help_command(const commands::Arguments& arguments, const commands::C
 }
 
 void handle_theme_list_command(log::Logger& logger) {
-	const auto themes = log::posix::themes::get_themes();
+	const auto themes = log::posix::builtin_themes();
 
 	if(themes.empty()) {
 		LOG_CONSOLE(logger, "No themes available");
@@ -197,8 +197,6 @@ void handle_theme_list_command(log::Logger& logger) {
 }
 
 void handle_theme_set_command(const commands::Arguments& arguments, log::Logger& logger) try {
-	const auto theme_name = arguments["name"].as<std::string>();
-	const auto& theme = log::posix::themes::theme(theme_name);
 	const auto sink = logger.fetch_sink(log::posix::CommandSink::name());
 
 	if(!sink) {
@@ -211,7 +209,16 @@ void handle_theme_set_command(const commands::Arguments& arguments, log::Logger&
 		throw std::runtime_error("incompatible sink type found");
 	}
 
-	posix_sink->set_theme(theme);
+	const auto theme_name = arguments["name"].as<std::string>();
+	log::posix::Theme theme;
+	
+	if(log::posix::has_builtin_theme(theme_name)) {
+		theme = log::posix::builtin_theme(theme_name);
+	} else {
+		theme = log::posix::load_theme(theme_name);
+	}
+
+	posix_sink->set_theme(std::move(theme));
 	posix_sink->clear_console();
 
 	LOG_CONSOLE(logger, "Theme successfully set to {}", theme_name);

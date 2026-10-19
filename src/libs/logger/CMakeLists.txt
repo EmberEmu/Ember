@@ -6,7 +6,19 @@
 
 set(LIBRARY_NAME logger)
 
+set(builtin_themes
+    include/logger/posix/themes/Legacy.h
+    include/logger/posix/themes/Abyssal.h
+    include/logger/posix/themes/Aurora.h
+    include/logger/posix/themes/Daybreak.h
+    include/logger/posix/themes/Smoky.h
+    include/logger/posix/themes/Sahara.h
+    include/logger/posix/themes/Regalia.h
+    include/logger/posix/themes/Midnight.h
+)
+
 add_library(${LIBRARY_NAME} STATIC
+    ${builtin_themes}
     src/FileSink.cpp
     src/SyslogSink.cpp
     src/Logger.cpp
@@ -32,7 +44,7 @@ add_library(${LIBRARY_NAME} STATIC
     include/logger/win32/CommandSink.h
     include/logger/posix/CommandSink.h
     include/logger/posix/TerminalCtl.h
-    include/logger/posix/LogTheme.h
+    include/logger/posix/Theme.h
     include/logger/posix/Themes.h
     include/logger/Exception.h
     include/logger/FileWrapper.h

@@ -74,7 +74,7 @@ class CommandSink final : public log::CommandSink {
 	bool colour_;
 	bool timestamp_;
 	bool log_line_used_ = false;
-	LogTheme theme_;
+	Theme theme_;
 	const bool no_bg_ = false;
 
 	unsigned int max_cols_ = table_max_cols;
@@ -114,7 +114,7 @@ class CommandSink final : public log::CommandSink {
 	bool invoke_handler(std::string_view command);
 
 public:
-	CommandSink(Severity severity, Filter filter, std::string prompt, LogTheme theme, bool no_bg);
+	CommandSink(Severity severity, Filter filter, std::string prompt, Theme theme, bool no_bg);
 	~CommandSink();
 
 	CommandSink(const CommandSink&) = delete;
@@ -129,7 +129,7 @@ public:
 	void prefix(std::string prefix) override { prefix_ = std::move(prefix); }
 	void log_timestamp(bool enable) override { timestamp_ = enable; }
 	void timestamp_format(std::string format) override { timestamp_fmt_ = format; }
-	void set_theme(LogTheme theme);
+	void set_theme(Theme theme);
 
 	void register_handler(CommandHandler handler) override;
 	void register_autocomplete(Autocomplete handler) override;

@@ -15,6 +15,8 @@ foreach(CONFIG_FILE IN LISTS CONFIG_FILES)
         @ONLY
     )
 
-    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${CONFIG_NAME}" DESTINATION ${CMAKE_INSTALL_PREFIX}/configs
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${CONFIG_NAME}" DESTINATION configs
     )
 endforeach()
+
+install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/example.theme.json" DESTINATION .)

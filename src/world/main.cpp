@@ -126,7 +126,7 @@ opts::variables_map parse_arguments(const int argc, const char* argv[]) {
 		("console_log.colours", opts::value<bool>()->required())
 		("console_log.suggestions", opts::value<bool>()->required())
 		("console_log.no_bg", opts::value<bool>()->required())
-		("console_log.theme", opts::value<log::posix::LogTheme>()->required())
+		("console_log.theme", opts::value<log::posix::Theme>()->required())
 		("console_log.timestamp", opts::value<bool>()->required())
 		("console_log.timestamp_format", opts::value<std::string>()->required())
 		("console_log.win_ansi", opts::value<bool>()->required())
