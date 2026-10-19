@@ -184,17 +184,23 @@ std::ostream& operator<<(std::ostream& stream, const Severity& severity) {
 
 namespace posix {
 
-std::istream& operator>>(std::istream& in, LogTheme& log_theme) try {
+std::istream& operator>>(std::istream& in, Theme& log_theme) try {
 	std::string token;
 	in >> token;
-	log_theme = themes::theme(token);
+
+	if(has_builtin_theme(token)) {
+		log_theme = builtin_theme(token);
+	} else {
+		log_theme = load_theme(token);
+	}
+
 	return in;
 } catch(...) {
 	in.setstate(std::ios_base::failbit);
 	return in;
 }
 
-std::ostream& operator<<(std::ostream& stream, const LogTheme& theme) {
+std::ostream& operator<<(std::ostream& stream, const Theme& theme) {
 	stream << theme.name;
 	return stream;
 }

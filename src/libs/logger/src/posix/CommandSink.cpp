@@ -27,14 +27,14 @@ namespace ember::log::posix {
 constexpr std::string_view ansi_reset = "\x1b[0m"; // clears all attributes
 constexpr std::string_view ansi_erase = "\033[K";  // erase to end of line
 
-CommandSink::CommandSink(Severity severity, Filter filter, std::string prompt, LogTheme theme, bool no_bg)
+CommandSink::CommandSink(Severity severity, Filter filter, std::string prompt, Theme theme, bool no_bg)
 	: log::CommandSink(std::string(name()), severity, filter)
 	, prompt_(std::move(prompt))
 	, timestamp_fmt_(default_timestamp_fmt)
 	, colour_(false)
 	, timestamp_(false)
 	, max_cols_(table_max_cols)
-	, theme_(theme)
+	, theme_(std::move(theme))
 	, no_bg_(no_bg) {
 	bool expected = false;
 
@@ -707,9 +707,9 @@ bool CommandSink::invoke(const std::string_view command) {
 	return invoke_handler(command);
 }
 
-void CommandSink::set_theme(LogTheme theme) {
+void CommandSink::set_theme(Theme theme) {
 	std::lock_guard guard(console_lock_);
-	theme_ = theme;
+	theme_ = std::move(theme);
 
 	if(colour_ && !no_bg_) {
 		terminal_.write(theme_.bg);

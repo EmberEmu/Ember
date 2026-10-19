@@ -8,14 +8,16 @@
 
 #pragma once
 
-#include <logger/posix/LogTheme.h>
+#include <logger/posix/Theme.h>
 #include <array>
 #include <span>
 #include <stdexcept>
 
-namespace ember::log::posix::themes {
+namespace ember::log::posix {
 
-inline constexpr LogTheme legacy {
+namespace themes {
+
+inline constexpr ThemeView legacy {
 	.name = "legacy",
 	.desc = "original high-contrast logging theme, a touch of nostalgia",
 	.tag {
@@ -47,7 +49,7 @@ inline constexpr LogTheme legacy {
 	.reset      = "\033[39;22m"
 };
 
-inline constexpr LogTheme aurora {
+inline constexpr ThemeView aurora {
 	.name = "aurora",
 	.desc = "aurora borealis but localised entirely within your terminal",
 	.tag {
@@ -79,7 +81,7 @@ inline constexpr LogTheme aurora {
 	.reset      = "\033[39;22m"
 };
 
-inline constexpr LogTheme daybreak {
+inline constexpr ThemeView daybreak {
 	.name = "daybreak",
 	.desc = "first light, it's time to go to bed",
 	.tag {
@@ -111,7 +113,7 @@ inline constexpr LogTheme daybreak {
 	.reset      = "\033[39;22m"
 };
 
-inline constexpr LogTheme smoky {
+inline constexpr ThemeView smoky {
 	.name = "smoky",
 	.desc = "comfiest of themes, evoking wooden cabins and smoky, cosy fires",
 	.tag {
@@ -143,7 +145,7 @@ inline constexpr LogTheme smoky {
 	.reset      = "\033[39;22m"
 };
 
-inline constexpr LogTheme abyssal {
+inline constexpr ThemeView abyssal {
 	.name = "abyssal",
 	.desc = "in the depths of the ocean, mysterious log messages dwell",
 	.tag {
@@ -175,7 +177,7 @@ inline constexpr LogTheme abyssal {
 	.reset     = "\033[39;22m"
 };
 
-inline constexpr LogTheme sahara {
+inline constexpr ThemeView sahara {
 	.name = "sahara",
 	.desc = "sand spills across your terminal, shimmering dunes during a glorious sunset",
 	.tag {
@@ -207,7 +209,7 @@ inline constexpr LogTheme sahara {
 	.reset      = "\033[39;22m"
 };
 
-inline constexpr LogTheme regalia {
+inline constexpr ThemeView regalia {
 	.name = "regalia",
 	.desc = "fit for a king, enchanting your log messages with +5 opulence",
 	.tag {
@@ -239,7 +241,7 @@ inline constexpr LogTheme regalia {
 	.reset      = "\033[39;22m"
 };
 
-inline constexpr LogTheme midnight {
+inline constexpr ThemeView midnight {
 	.name = "midnight",
 	.desc = "easy on weary eyes, staring at debug logs as the night slips away, once again",
 	.tag {
@@ -271,29 +273,41 @@ inline constexpr LogTheme midnight {
 	.reset     = "\033[39;22m"
 };
 
-inline constexpr std::array themes {
-	legacy,
-	aurora,
-	daybreak,
-	abyssal,
-	smoky,
-	sahara,
-	regalia,
-	midnight
+} // themes
+
+inline constexpr std::array builtins {
+	themes::legacy,
+	themes::aurora,
+	themes::daybreak,
+	themes::abyssal,
+	themes::smoky,
+	themes::sahara,
+	themes::regalia,
+	themes::midnight
 };
 
-constexpr const LogTheme& theme(std::string_view name) {
-	for(const auto& theme : themes) {
+inline Theme builtin_theme(std::string_view name) {
+	for(const auto& theme : builtins) {
 		if(theme.name == name) {
-			return theme;
+			return Theme(theme);
 		}
 	}
 
 	throw std::runtime_error("unknown theme requested");
 }
 
-constexpr const std::span<const LogTheme> get_themes() {
-	return themes;
+constexpr const std::span<const ThemeView> builtin_themes() {
+	return builtins;
 }
 
-} // themes, posix, log, ember
+inline bool has_builtin_theme(std::string_view name) {
+	for(const auto& theme : builtins) {
+		if(theme.name == name) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+} // posix, log, ember

@@ -31,8 +31,8 @@ std::ostream& operator<<(std::ostream& stream, const Severity& severity);
 
 namespace posix {
 
-std::istream& operator>>(std::istream& in, LogTheme& theme);
-std::ostream& operator<<(std::ostream& stream, const LogTheme& theme);
+std::istream& operator>>(std::istream& in, Theme& theme);
+std::ostream& operator<<(std::ostream& stream, const Theme& theme);
 
 } // posix
 
