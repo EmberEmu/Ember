@@ -11,7 +11,7 @@
 #ifdef EMBER_DEBUG_ALLOCATOR_TRACKING
 #include <allocators/Tracking.h>
 #define ALLOC_TRACK(tag, type, ...) \
-ember::allocators::tracking::record(tag, type __VA_OPT__(,) __VA_ARGS__);
+	ember::allocators::tracking::record(tag, type __VA_OPT__(,) __VA_ARGS__);
 #else
-#define ALLOC_TRACK(tag, type, ...)
+	#define ALLOC_TRACK(tag, type, ...)
 #endif
