@@ -550,6 +550,11 @@ std::string CommandSink::truncate_description(const std::size_t cols, const std:
 	}
 
 	constexpr std::string_view ellipsis { "..." };
+
+	if(cols <= ellipsis.size()) {
+		return std::string(ellipsis.substr(0, cols));
+	}
+
 	const auto ellipsis_space = cols - ellipsis.size();
 	return std::string(description.substr(0, ellipsis_space)) + "...";
 }

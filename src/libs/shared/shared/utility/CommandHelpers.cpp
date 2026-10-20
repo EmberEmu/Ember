@@ -190,6 +190,11 @@ std::string truncate_output(const std::size_t cols, const std::string_view strin
 	}
 
 	constexpr std::string_view ellipsis { "..." };
+
+	if(cols <= ellipsis.size()) {
+		return std::string(ellipsis.substr(0, cols));
+	}
+
 	const auto ellipsis_space = cols - ellipsis.size();
 	return std::string(string.substr(0, ellipsis_space)) + "...";
 }
