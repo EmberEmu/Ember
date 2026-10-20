@@ -158,6 +158,11 @@ class BlockAllocator {
 		alloc_size_ = alloc_size;
 #else
 		storage_ = static_cast<Block*>(allocator_.allocate(storage_size));
+
+		if(!storage_) {
+			throw std::bad_alloc();
+		}
+
 		alloc_size_ = storage_size;
 #endif
 	}
