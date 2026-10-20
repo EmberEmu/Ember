@@ -69,7 +69,7 @@ set(LIBRARY_HDR
     Forwards.h
     SessionIterator.h
     ClientSink.h
-    unique_client_ptr.h
+    DeferredClientDeleter.h
     ClientAllocator.h
     commands/Commands.h
     commands/Connections.h
@@ -143,7 +143,7 @@ target_link_libraries(${LIBRARY_NAME} PRIVATE banner journal protocol thread nsd
 
 if(BUILD_SHARED)
     target_compile_definitions(${LIBRARY_NAME} PUBLIC EXPORT_SERVICE)
-	set(LIBRARY_INSTALL_TARGET ${LIBRARY_NAME})
+    set(LIBRARY_INSTALL_TARGET ${LIBRARY_NAME})
 endif()
 
 if(DISABLE_FAST_CLIENT_DISPATCH_TABLE)

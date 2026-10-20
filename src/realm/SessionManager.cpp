@@ -37,7 +37,7 @@ void SessionManager::start_timer() {
 	});
 }
 
-std::size_t SessionManager::bulk_insert(std::span<unique_client_ptr> clients) {
+std::size_t SessionManager::bulk_insert(std::span<unique_deferred_client> clients) {
 	auto count = clients.size();
 	std::lock_guard guard(sessions_lock_);
 
@@ -55,7 +55,7 @@ std::size_t SessionManager::bulk_insert(std::span<unique_client_ptr> clients) {
 
 void SessionManager::process_queue() {
 	std::size_t count = 0;
-	std::inplace_vector<unique_client_ptr, max_bulk_dequeue> dequeued;
+	std::inplace_vector<unique_deferred_client, max_bulk_dequeue> dequeued;
 
 	while(true) {
 #if __has_include(<inplace_vector>) // todo, temporary until supported compiler versions are bumped
@@ -77,7 +77,7 @@ void SessionManager::process_queue() {
 	}
 }
 
-void SessionManager::enqueue(unique_client_ptr client) {
+void SessionManager::enqueue(unique_deferred_client client) {
 	queue_.enqueue(std::move(client));
 }
 

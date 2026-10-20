@@ -12,7 +12,7 @@
 #include "ClientHandlerBuilder.h"
 #include "ClientConnectionBuilder.h"
 #include "Forwards.h"
-#include "unique_client_ptr.h"
+#include "DeferredClientDeleter.h"
 #include <logger/LoggerFwd.h>
 #include <memory>
 
@@ -25,15 +25,15 @@ class ClientBuilder {
 	EventDispatcher& dispatcher_;
 	log::Logger& logger_;
 
-	unique_client_ptr make_unique_client(tcp_socket socket, boost::asio::io_context& ioc) const {
+	unique_deferred_client make_unique_client(tcp_socket socket, boost::asio::io_context& ioc) const {
 		auto& allocator = alloc_provider_.client_allocator();
 		allocator.thread_enter();
 
-		return unique_client_ptr(allocator .allocate(
+		return unique_deferred_client(allocator .allocate(
 			handler_builder_.create(ioc.get_executor()),
 			conn_builder_.create(std::move(socket)),
 			dispatcher_, logger_
-		), ClientDeleter(allocator, ioc));
+		), DeferredClientDeleter(allocator, ioc));
 	}
 
 public:
@@ -46,7 +46,7 @@ public:
 		, dispatcher_(dispatcher)
 		, logger_(logger) {}
 
-	unique_client_ptr create(tcp_socket socket, boost::asio::io_context& ioc) const {
+	unique_deferred_client create(tcp_socket socket, boost::asio::io_context& ioc) const {
 		return make_unique_client(std::move(socket), ioc);
 	}
 };

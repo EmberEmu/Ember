@@ -16,11 +16,11 @@
 
 namespace ember::realm {
 
-struct ClientDeleter final {
+struct DeferredClientDeleter final {
 	ClientAllocator& allocator;
 	boost::asio::io_context& ioc;
 
-	explicit ClientDeleter(ClientAllocator& allocator, boost::asio::io_context& ioc) noexcept
+	explicit DeferredClientDeleter(ClientAllocator& allocator, boost::asio::io_context& ioc) noexcept
 		: allocator(allocator)
 		, ioc(ioc) {}
 
@@ -33,6 +33,6 @@ struct ClientDeleter final {
 	}
 };
 
-using unique_client_ptr = std::unique_ptr<Client, ClientDeleter>;
+using unique_deferred_client = std::unique_ptr<Client, DeferredClientDeleter>;
 
 } // realm, ember
