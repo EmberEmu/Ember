@@ -103,10 +103,10 @@ void print_connection_stats_footer(bprinter::TablePrinter& table) {
 	table.PrintFooter();
 }
 
-void print_connection_stats(bprinter::TablePrinter& table, SessionManager::SessionID id, const Client* client) {
-	const auto stats = client->connection().stats();
+void print_connection_stats(bprinter::TablePrinter& table, SessionManager::SessionID id, const Client& client) {
+	const auto stats = client.connection().stats();
 	table << id;
-	table << client->connection().remote_address();
+	table << client.connection().remote_address();
 	table << stats.latency;
 	table << stats.messages_in;
 	table << stats.messages_out;
@@ -130,9 +130,8 @@ void connection_statistics(const commands::Arguments& args,
 	if(args.contains("id")) {
 		const auto id = args["id"].as<SessionManager::SessionID>();
 		const auto ident = sessions.client_ident(id);
-		auto client = sessions.client(id);
 
-		if(!ident || !client) {
+		if(!ident) {
 			LOG_CONERR(logger, "Could not locate connection {}", id);
 			return;
 		}
@@ -140,7 +139,7 @@ void connection_statistics(const commands::Arguments& args,
 		// it's only safe to interact with a client from within a session
 		// iteration or by dispatching tasks/events to it - never interact
 		// with a client outside of these two mechanisms
-		dispatcher.execute(*ident, [&, id, client] {
+		dispatcher.execute(*ident, [&, id](const Client& client) {
 			std::stringstream stream;
 			bprinter::TablePrinter table(&stream);
 			print_connection_stats_header(table);
@@ -153,9 +152,8 @@ void connection_statistics(const commands::Arguments& args,
 		bprinter::TablePrinter table(&stream);
 		print_connection_stats_header(table);
 
-		for(const auto& session : sessions) {
-			const auto& [k, v] = session;
-			print_connection_stats(table, k, v.get());
+		for(const auto& [session_id, client] : sessions) {
+			print_connection_stats(table, session_id, *client);
 			++connections;
 		}
 

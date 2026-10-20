@@ -64,7 +64,6 @@ public:
 	std::size_t count() const;
 	std::size_t peak_count() const;
 	std::optional<ClientIdent> client_ident(SessionID id) const;
-	Client* client(const SessionID id) const;
 
 	locked_const_iterator begin() const;
 	locked_const_iterator end() const;

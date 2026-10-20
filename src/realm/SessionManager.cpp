@@ -162,16 +162,6 @@ std::optional<ClientIdent> SessionManager::client_ident(const SessionID id) cons
 	return std::nullopt;
 }
 
-Client* SessionManager::client(const SessionID id) const {
-	std::lock_guard guard(sessions_lock_);
-
-	if(auto it = sessions_.find(id); it != sessions_.end()) {
-		return it->second.get();
-	}
-
-	return nullptr;
-}
-
 void SessionManager::collect() {
 	std::size_t collected = 0;
 	
