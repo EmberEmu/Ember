@@ -47,9 +47,7 @@ inline Client* EventDispatcher::locate_handler(const ClientIdent& client) const 
 	}
 }
 
-template<typename F>
-requires std::invocable<F> && (!std::invocable<F, const Client&>)
-void EventDispatcher::execute(const ClientIdent& client, F&& work) const {
+void EventDispatcher::execute(const ClientIdent& client, auto&& work) const {
 	auto service = pool_.get_if(client.service());
 
 	// bad service index encoded in the UUID
@@ -60,27 +58,11 @@ void EventDispatcher::execute(const ClientIdent& client, F&& work) const {
 
 	boost::asio::post(*service, [&, client, work = std::move(work)] {
 		if(auto handler = locate_handler(client)) {
-			work();
-		} else {
-			LOG_DEBUG(logger_, "Client disconnected, work discarded");
-		}
-	});
-}
-
-template<typename F>
-requires std::invocable<F, const Client&>
-void EventDispatcher::execute(const ClientIdent& client, F&& work) const {
-	auto service = pool_.get_if(client.service());
-
-	// bad service index encoded in the UUID
-	if(service == nullptr) {
-		LOG_ERROR(logger_, "Invalid service index, {}", client.service());
-		return;
-	}
-
-	boost::asio::post(*service, [&, client, work = std::move(work)] {
-		if(auto handler = locate_handler(client)) {
-			work(*handler);
+			if constexpr(std::invocable<decltype(work), const Client&>) {
+				work(*handler);
+			} else {
+				work();
+			}
 		} else {
 			LOG_DEBUG(logger_, "Client disconnected, work discarded");
 		}
