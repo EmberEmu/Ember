@@ -21,6 +21,7 @@
 #include <mutex>
 #include <span>
 #include <string>
+#include <string_view>
 #include <typeinfo>
 #include <vector>
 #include <cstddef>
@@ -30,6 +31,7 @@ namespace ember::commands {
 class Command;
 
 using Handler = std::function<void(const Arguments&)>;
+using Autocomplete = std::function<Suggestions(std::span<const std::string>)>;
 
 class Command : public std::enable_shared_from_this<Command> {
 	struct _constructor_tag {
@@ -42,6 +44,7 @@ class Command : public std::enable_shared_from_this<Command> {
 	std::string name_;
 	std::vector<Argument> args_;
 	std::shared_ptr<Handler> handler_;
+	Autocomplete autocomplete_;
 	CommandMap commands_;
 	Flags flags_;
 
@@ -67,8 +70,9 @@ public:
 	void insert(std::shared_ptr<Command> command);
 	std::shared_ptr<Command> insert(std::string name);
 	std::shared_ptr<Command> description(std::string description);
-	std::shared_ptr<Command> handler(Handler handler);
+	std::shared_ptr<Command> handler(Handler&& handler);
 	std::shared_ptr<Command> flags(const Flags& flags);
+	std::shared_ptr<Command> autocomplete(Autocomplete&& handler);
 	ScopedCommand scoped_insert(std::string name);
 	ScopedCommand scoped_insert(std::shared_ptr<Command> command);
 
@@ -87,6 +91,7 @@ public:
 	std::shared_ptr<Command> erase(const std::string_view name);
 	bool erase(const std::shared_ptr<const Command>& command);
 	void clear_commands();
+	std::optional<Suggestions> autocomplete(std::span<const std::string> tokens) const;
 
 	const std::string& name() const;
 	const std::string& description() const;
@@ -95,6 +100,7 @@ public:
 	CommandMap commands() const;
 	std::size_t argument_count() const;
 	const Flags& flags() const;
+	bool has_autocomplete() const;
 
 	Suggestions autocomplete(const std::string_view query) const;
 	SearchResult find(const std::string_view query) const;

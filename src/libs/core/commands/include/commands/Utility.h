@@ -11,6 +11,7 @@
 #include <commands/CommandMap.h>
 #include <commands/Exception.h>
 #include <commands/Suggestions.h>
+#include <optional>
 #include <span>
 #include <string>
 #include <string_view>
@@ -19,6 +20,17 @@
 namespace ember::commands {
 
 namespace impl {
+
+struct AutocompleteMatch {
+	AutocompleteMatch(const Command& command, std::span<const std::string> tokens, unsigned int depth)
+		: command(command)
+		, tokens(tokens)
+		, depth(depth) {}
+
+	const Command& command;
+	const std::span<const std::string> tokens;
+	const unsigned int depth;
+};
 
 Suggestions autocomplete_recurse(const CommandMap& commands, std::span<const std::string> tokens);
 std::string longest_prefix(std::span<const Suggestions::Record> matches);
