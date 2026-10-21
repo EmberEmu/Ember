@@ -269,6 +269,8 @@ const Flags& Command::flags() const {
 }
 
 Suggestions Command::autocomplete(const std::string_view query) const {
+	std::lock_guard guard(mutex_);
+
 	auto tokens = parse_input(query, false);
 	auto results = impl::autocomplete_recurse(commands_, tokens);
 
@@ -280,6 +282,8 @@ Suggestions Command::autocomplete(const std::string_view query) const {
 }
 
 std::optional<Suggestions> Command::autocomplete(const std::span<const std::string> tokens) const {
+	std::lock_guard guard(mutex_);
+
 	if(!autocomplete_) {
 		return std::nullopt;
 	}
@@ -299,6 +303,8 @@ SearchResult Command::find(const std::string_view query) const {
 // this is really inefficient due to the registry copies (must be copied from subcommands for safety)
 // but it's not even remotely performance sensitive, so it'll do
 SearchResult Command::find(std::span<const std::string> tokens) const {
+	std::lock_guard guard(mutex_);
+
 	// we need go as deep as possible into the subcommand chain
 	SearchResult search;
 	auto registry = commands_;
