@@ -32,11 +32,6 @@ struct AutocompleteMatch {
 	const unsigned int depth;
 };
 
-std::optional<AutocompleteMatch> autocomplete_command(const CommandMap& commands,
-                                                      std::span<const std::string> tokens,
-                                                      const Command* previous = nullptr,
-                                                      unsigned int depth = 0);
-
 Suggestions autocomplete_recurse(const CommandMap& commands, std::span<const std::string> tokens);
 std::string longest_prefix(std::span<const Suggestions::Record> matches);
 

@@ -161,29 +161,6 @@ Suggestions autocomplete_recurse(const CommandMap& commands, std::span<const std
 	return result;
 }
 
-std::optional<AutocompleteMatch> autocomplete_command(const CommandMap& commands,
-                                                      std::span<const std::string> tokens,
-                                                      const Command* previous,
-                                                      unsigned int depth) {
-	if(tokens.empty()) {
-		return std::nullopt;
-	}
-
-	if(const auto it = commands.find(tokens.front()); it != commands.end()) {
-		const auto& command = it->second;
-
-		return autocomplete_command(
-			command->commands(), tokens.subspan(1), command.get(), depth + 1
-		);
-	}
-
-	if(previous) {
-		return AutocompleteMatch(*previous, tokens, depth);
-	}
-
-	return std::nullopt;
-}
-
 } // impl
 
 } // commands, ember
