@@ -140,7 +140,7 @@ void EventDispatcher::remove_client(const ClientType* client) {
 #ifndef DISABLE_FAST_DISPATCH_TABLE
 	if(auto slot = client->ident().extract_slot(); slot != slot_npos) {
 		cache_[slot].set_zero();
-	}  else {
+	} else {
 		handlers_.erase(client->ident());
 	}
 #else
