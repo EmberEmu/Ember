@@ -114,7 +114,7 @@ Suggestions autocomplete_recurse(const CommandMap& commands, std::span<const std
 
 	if(!commands.contains(tokens.front())) {
 		if(auto it = commands.find(result.substring); it != commands.end() &&
-		   !it->second->commands().empty()) {
+		   (!it->second->commands().empty() || it->second->has_autocomplete())) {
 			result.substring += ' ';
 		}
 
@@ -122,23 +122,66 @@ Suggestions autocomplete_recurse(const CommandMap& commands, std::span<const std
 	}
 
 	const auto& command = commands.at(tokens.front());
+	const auto remaining = tokens.subspan<1>();
 
-	if(command->commands().empty()) {
-		return tokens.size() == 1? result : Suggestions{};
+	if(!remaining.empty() && !command->commands().empty()) {
+		auto recurse_res = autocomplete_recurse(command->commands(), remaining);
+
+		if(!recurse_res.records.empty() || !recurse_res.substring.empty()) {
+			result.substring += ' ';
+			result.substring += recurse_res.substring;
+			result.records = std::move(recurse_res.records);
+
+			return result;
+		}
 	}
 
-	const auto remaining = tokens.subspan<1>();
-	auto recurse_res = autocomplete_recurse(command->commands(), remaining);
+	if(command->has_autocomplete()) {
+		if(auto autocomplete_res = command->autocomplete(remaining)) {
+			result.substring += ' ';
+			result.substring += autocomplete_res->substring;
+			result.records = std::move(autocomplete_res->records);
 
-	if(!remaining.empty() && recurse_res.records.empty()) {
+			return result;
+		}
+	}
+
+	if(!remaining.empty()) {
 		return {};
 	}
 
-	result.substring += ' ';
-	result.substring += recurse_res.substring;
-	result.records = std::move(recurse_res.records);
+	if(!command->commands().empty()) {
+		auto recurse_res = autocomplete_recurse(command->commands(), remaining);
+
+		result.substring += ' ';
+		result.substring += recurse_res.substring;
+		result.records = std::move(recurse_res.records);
+	}
 
 	return result;
+}
+
+std::optional<AutocompleteMatch> autocomplete_command(const CommandMap& commands,
+                                                      std::span<const std::string> tokens,
+                                                      const Command* previous,
+                                                      unsigned int depth) {
+	if(tokens.empty()) {
+		return std::nullopt;
+	}
+
+	if(const auto it = commands.find(tokens.front()); it != commands.end()) {
+		const auto& command = it->second;
+
+		return autocomplete_command(
+			command->commands(), tokens.subspan(1), command.get(), depth + 1
+		);
+	}
+
+	if(previous) {
+		return AutocompleteMatch(*previous, tokens, depth);
+	}
+
+	return std::nullopt;
 }
 
 } // impl

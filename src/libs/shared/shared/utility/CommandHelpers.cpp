@@ -231,6 +231,27 @@ void handle_theme_list_command(log::Logger& logger) {
 	}
 }
 
+commands::Suggestions handle_theme_list_autocomplete(std::span<const std::string> tokens) {
+	if(tokens.size() > 1) {
+		return {};
+	}
+
+	commands::Suggestions results;
+
+	for(const auto& theme : log::posix::builtin_themes()) {
+		if(tokens.empty() || theme.name.starts_with(tokens.front())) {
+			results.records.emplace_back(
+				std::string(theme.name),
+				std::string(theme.desc)
+			);
+		}
+	}
+
+	// todo, move out of impl or another approach?
+	results.substring = commands::impl::longest_prefix(results.records);
+	return results;
+}
+
 void handle_theme_set_command(const commands::Arguments& arguments, log::Logger& logger) try {
 	const auto sink = logger.fetch_sink(log::posix::CommandSink::name());
 
@@ -307,6 +328,9 @@ void register_common_commands(std::shared_ptr<commands::Command> root, log::Logg
 		->argument<std::string>("name")
 		->handler([&](const auto& arguments) {
 			handle_theme_set_command(arguments, logger);
+		})
+		->autocomplete([&](const auto& tokens) {
+			return handle_theme_list_autocomplete(tokens);
 		});
 	
 	theme_cmd->insert("list")

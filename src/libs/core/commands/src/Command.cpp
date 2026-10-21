@@ -119,13 +119,20 @@ std::shared_ptr<Command> Command::description(std::string description) {
 	return this->shared_from_this();
 }
 
-std::shared_ptr<Command> Command::handler(Handler handler) {
+std::shared_ptr<Command> Command::handler(Handler&& handler) {
 	std::lock_guard guard(mutex_);
 
 	// shared_ptr to avoid having to copy a potentially heavyweight handler
 	// during invocation for thread safety reasons - guaranteeing the lifetime
 	// of the handler rather than copying is sufficient
-	handler_ = std::make_shared<Handler>(handler);
+	handler_ = std::make_shared<Handler>(std::move(handler));
+	return this->shared_from_this();
+}
+
+std::shared_ptr<Command> Command::autocomplete(Autocomplete&& handler) {
+	std::lock_guard guard(mutex_);
+
+	autocomplete_ = std::move(handler);
 	return this->shared_from_this();
 }
 
@@ -270,6 +277,18 @@ Suggestions Command::autocomplete(const std::string_view query) const {
 	});
 	
 	return results;
+}
+
+std::optional<Suggestions> Command::autocomplete(const std::span<const std::string> tokens) const {
+	if(!autocomplete_) {
+		return std::nullopt;
+	}
+
+	return autocomplete_(tokens);
+}
+
+bool Command::has_autocomplete() const {
+	return !!autocomplete_;
 }
 
 SearchResult Command::find(const std::string_view query) const {
