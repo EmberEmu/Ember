@@ -266,9 +266,11 @@ commands::Suggestions handle_theme_set_autocomplete(std::span<const std::string>
 
 	// custom theme files
 	for(const auto& file : theme_file_list(path)) {
-		results.records.emplace_back(
-			file.string(), "custom theme file"
-		);
+		if(tokens.empty() || file.filename().string().starts_with(tokens.front())) {
+			results.records.emplace_back(
+				file.string(), "custom theme file"
+			);
+		}
 	}
 
 	// todo, move out of impl or another approach?
