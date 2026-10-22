@@ -20,6 +20,9 @@ inline void forward_log_callback(ports::Severity severity, const std::string_vie
 	constexpr std::string_view fmt = "[ports] {}";
 
 	switch(severity) {
+		case ports::Severity::trace:
+			LOG_TRACE(logger, fmt, message);
+			break;
 		case ports::Severity::debug:
 			LOG_DEBUG(logger, fmt, message);
 			break;
