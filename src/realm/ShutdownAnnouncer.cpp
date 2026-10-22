@@ -132,7 +132,7 @@ void ShutdownAnnouncer::stop() {
 			broadcast("Shutdown cancelled");
 		}
 
-		auto result = journal_.remove();
+		const auto result = journal_.remove();
 
 		if(!result) {
 			LOG_ERROR(logger_, "Unable to remove journal entry");

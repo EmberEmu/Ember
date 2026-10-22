@@ -26,6 +26,8 @@ namespace ember::dal {
 using namespace std::chrono_literals;
 using namespace std::string_view_literals;
 
+static constexpr auto any_realm{static_cast<std::uint32_t>(-1)};
+
 template<typename T>
 class MySQLCharacterDAO final : public CharacterDAO {
 	T& pool_;
@@ -115,7 +117,7 @@ public:
 		throw exception(e.what());
 	}
 
-	std::vector<Character> characters(std::uint32_t account_id, std::uint32_t realm_id = 0) const override try {
+	std::vector<Character> characters(std::uint32_t account_id, std::uint32_t realm_id = any_realm) const override try {
 		constexpr std::string_view full_query =
 			"SELECT c.name, c.internal_name, c.id, c.account_id, c.realm_id, c.race, c.class, "
 			"c.gender, c.skin, c.face, c.hairstyle, c.haircolour, c.facialhair, c.level, c.zone, "
@@ -132,7 +134,7 @@ public:
 		static_assert(pos != std::string_view::npos);
 		auto query = full_query;
 
-		if(!realm_id) {
+		if(any_realm) {
 			query = query.substr(0, pos);
 		}
 
