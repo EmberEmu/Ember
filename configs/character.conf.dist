@@ -53,6 +53,7 @@ verbosity = trace   # trace, debug, info, warning, error, fatal or none to disab
 colours = true      # colourise the output
 filter_mask = 0
 theme = abyssal     # use 'theme list' command to view themes
+theme_path = @CMAKE_INSTALL_PREFIX@
 no_bg = false       # disables theme bg colours, uses terminal default
 win_ansi = true     # Windows: use ANSI output rather than WinAPI (falls back if unsupported)
 timestamp = on      # enable/disable timestamping log records

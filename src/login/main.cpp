@@ -24,6 +24,7 @@
 #include <mimalloc/mimalloc-new-delete.h>
 #endif
 #include <exception>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <ranges>
@@ -129,6 +130,7 @@ opts::variables_map parse_arguments(const int argc, const char* argv[]) {
 		("console_log.suggestions", opts::value<bool>()->required())
 		("console_log.no_bg", opts::value<bool>()->required())
 		("console_log.theme", opts::value<log::posix::Theme>()->required())
+		("console_log.theme_path", opts::value<std::filesystem::path>()->required())
 		("console_log.win_ansi", opts::value<bool>()->required())
 		("console_log.timestamp", opts::value<bool>()->required())
 		("console_log.timestamp_format", opts::value<std::string>()->required())
