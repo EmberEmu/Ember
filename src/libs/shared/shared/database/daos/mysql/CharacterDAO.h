@@ -148,6 +148,7 @@ public:
 
 		std::unique_ptr<sql::ResultSet> res(stmt->executeQuery());
 		std::vector<Character> characters;
+		characters.reserve(res->rowsCount());
 
 		while(res->next()) {
 			characters.emplace_back(result_to_character(res.get()));
