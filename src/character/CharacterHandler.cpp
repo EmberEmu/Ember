@@ -337,7 +337,7 @@ void CharacterHandler::do_restore(std::uint64_t id, const ResultCB& callback) co
 		return;
 	}
 
-	auto characters = dao_.characters(character->account_id, dal::CharacterDAO::any_realm);
+	const auto characters = dao_.characters(character->account_id, dal::CharacterDAO::any_realm);
 
 	if(characters.size() >= config_.max_chars_slots_account) {
 		LOG_WARN(logger_, "Cannot restore character - would exceed max account slots");
