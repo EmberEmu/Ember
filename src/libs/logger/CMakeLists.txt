@@ -15,6 +15,7 @@ set(builtin_themes
     include/logger/posix/themes/Sahara.h
     include/logger/posix/themes/Regalia.h
     include/logger/posix/themes/Midnight.h
+    include/logger/posix/themes/Frost.h
 )
 
 add_library(${LIBRARY_NAME} STATIC
