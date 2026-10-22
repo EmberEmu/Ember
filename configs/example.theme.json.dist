@@ -1,0 +1,30 @@
+{
+  "name": "Example Theme",
+  "desc": "Example custom console theme - place in server directory, rename to *.theme.json, load by filename",
+  "tag": {
+	"trace":  "\u001b[90m",
+	"debug":  "\u001b[36m",
+	"info":   "\u001b[32m",
+	"warn":   "\u001b[33;1m",
+	"error":  "\u001b[31;1m",
+	"fatal":  "\u001b[97;41;1m",
+	"con":    "\u001b[35m",
+	"conerr": "\u001b[31m"
+  },
+  "text": {
+	"trace":  "\u001b[90m",
+	"debug":  "\u001b[0m",
+	"info":   "\u001b[0m",
+	"warn":   "\u001b[33m",
+	"error":  "\u001b[31m",
+	"fatal":  "\u001b[97;41;1m",
+	"con":    "\u001b[0m",
+	"conerr": "\u001b[31m"
+  },
+  "prompt":     "\u001b[36;1m",
+  "input":      "\u001b[97m",
+  "suggestion": "\u001b[90;3m",
+  "bg":         "\u001b[40m",
+  "timestamp":  "\u001b[90m",
+  "reset":      "\u001b[0m"
+}

@@ -10,6 +10,7 @@
 
 #include <commands/Command.h>
 #include <any>
+#include <filesystem>
 #include <memory>
 #include <typeinfo>
 
@@ -25,6 +26,7 @@ namespace ember::utility {
 
 std::any convert_type(const std::type_info& type, std::string_view token);
 void register_common_commands(std::shared_ptr<commands::Command> root, log::Logger& logger);
+void register_theme_commands(std::shared_ptr<commands::Command> root, log::Logger& logger, std::filesystem::path theme_path);
 void register_command_handlers(std::shared_ptr<commands::Command> root, log::Logger& logger, bool suggestions);
 
 } // commands, ember

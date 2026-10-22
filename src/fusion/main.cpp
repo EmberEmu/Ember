@@ -26,6 +26,7 @@
 #ifdef WITH_MIMALLOC
 #include <mimalloc/mimalloc-new-delete.h>
 #endif
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <utility>
@@ -70,6 +71,10 @@ int main(int argc, const char* argv[]) try {
 	create_service_subcommands(*root);
 	utility::register_command_handlers(root, logger, true);
 	utility::register_common_commands(root, logger);
+
+	auto theme_path = args["console_log.theme_path"].as<std::filesystem::path>();
+	utility::register_theme_commands(root, logger, std::move(theme_path));
+
 	register_service_commands(*root, logger);
 
 	glob_params = Params {
@@ -267,6 +272,7 @@ opts::variables_map parse_arguments(const int argc, const char* argv[]) {
 		("console_log.suggestions", opts::value<bool>()->required())
 		("console_log.no_bg", opts::value<bool>()->required())
 		("console_log.theme", opts::value<log::posix::Theme>()->required())
+		("console_log.theme_path", opts::value<std::filesystem::path>()->required())
 		("console_log.win_ansi", opts::value<bool>()->required())
 		("console_log.timestamp", opts::value<bool>()->required())
 		("console_log.timestamp_format", opts::value<std::string>()->required())

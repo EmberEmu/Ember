@@ -16,6 +16,7 @@
 #include <bprinter/table_printer.h>
 #include <boost/lexical_cast.hpp>
 #include <chrono>
+#include <filesystem>
 #include <ranges>
 #include <span>
 #include <sstream>
@@ -231,13 +232,29 @@ void handle_theme_list_command(log::Logger& logger) {
 	}
 }
 
-commands::Suggestions handle_theme_set_autocomplete(std::span<const std::string> tokens) {
+std::vector<std::filesystem::path> theme_file_list(const std::filesystem::path& path) {
+	std::vector<std::filesystem::path> files;
+
+	if(std::filesystem::is_directory(path)) {
+		for(auto& file : std::filesystem::directory_iterator(path)) {
+			if(file.path().string().ends_with(".theme.json")) {
+				files.emplace_back(file.path().filename());
+			}
+		}
+	}
+
+	return files;
+}
+
+commands::Suggestions handle_theme_set_autocomplete(std::span<const std::string> tokens,
+                                                    const std::filesystem::path& path) {
 	if(tokens.size() > 1) {
 		return {};
 	}
 
 	commands::Suggestions results;
 
+	// built-in themes
 	for(const auto& theme : log::posix::builtin_themes()) {
 		if(tokens.empty() || theme.name.starts_with(tokens.front())) {
 			results.records.emplace_back(
@@ -247,12 +264,20 @@ commands::Suggestions handle_theme_set_autocomplete(std::span<const std::string>
 		}
 	}
 
+	// custom theme files
+	for(const auto& file : theme_file_list(path)) {
+		results.records.emplace_back(
+			file.string(), "custom theme file"
+		);
+	}
+
 	// todo, move out of impl or another approach?
 	results.substring = commands::impl::longest_prefix(results.records);
 	return results;
 }
 
-void handle_theme_set_command(const commands::Arguments& arguments, log::Logger& logger) try {
+void handle_theme_set_command(const commands::Arguments& arguments, log::Logger& logger,
+                              const std::filesystem::path& path) try {
 	const auto sink = logger.fetch_sink(log::posix::CommandSink::name());
 
 	if(!sink) {
@@ -266,12 +291,14 @@ void handle_theme_set_command(const commands::Arguments& arguments, log::Logger&
 	}
 
 	const auto name = arguments["name"].as<std::string>();
+
 	log::posix::Theme theme;
 	
 	if(log::posix::has_builtin_theme(name)) {
 		theme = log::posix::builtin_theme(name);
 	} else {
-		theme = log::posix::load_theme(name);
+		const auto absolute = path / name;
+		theme = log::posix::load_theme(absolute);
 	}
 
 	const std::string theme_name(theme.name);
@@ -319,18 +346,20 @@ void register_common_commands(std::shared_ptr<commands::Command> root, log::Logg
 		->handler([&](const auto&) {
 			handle_cls_command(logger);
 		});
+}
 
+void register_theme_commands(std::shared_ptr<commands::Command> root, log::Logger& logger, std::filesystem::path theme_path) {
 	auto theme_cmd = root->insert("theme")
 		->description("Console theme options");
 
 	theme_cmd->insert("set")
 		->description("Change the console's current theme")
 		->argument<std::string>("name")
-		->handler([&](const auto& arguments) {
-			handle_theme_set_command(arguments, logger);
+		->handler([&, theme_path](const auto& arguments) {
+			handle_theme_set_command(arguments, logger, theme_path);
 		})
-		->autocomplete([&](const auto& tokens) {
-			return handle_theme_set_autocomplete(tokens);
+		->autocomplete([theme_path](const auto& tokens) {
+			return handle_theme_set_autocomplete(tokens, theme_path);
 		});
 	
 	theme_cmd->insert("list")
