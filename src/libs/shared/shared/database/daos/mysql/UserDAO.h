@@ -137,8 +137,11 @@ public:
 
 		std::unordered_map<std::uint32_t, std::uint32_t> counts;
 
-		if(res->next()) {
-			counts.emplace(res->getUInt("realm_id"), res->getUInt("count"));
+		while(res->next()) {
+			counts.emplace(
+				res->getUInt("realm_id"),
+				res->getUInt("count")
+			);
 		}
 
 		return counts;

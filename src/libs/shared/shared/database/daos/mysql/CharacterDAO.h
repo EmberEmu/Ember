@@ -132,7 +132,7 @@ public:
 		static_assert(pos != std::string_view::npos);
 		auto query = full_query;
 
-		if(any_realm) {
+		if(realm_id == any_realm) {
 			query = query.substr(0, pos);
 		}
 
