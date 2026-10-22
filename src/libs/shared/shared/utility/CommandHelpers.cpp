@@ -218,7 +218,7 @@ void print_themes(log::Logger& logger) {
 	}
 
 	printer.PrintFooter();
-	LOG_CONSOLE(logger, stream.str());
+	LOG_CONSOLE(logger, stream.view());
 }
 
 void handle_theme_list_command(log::Logger& logger) {
