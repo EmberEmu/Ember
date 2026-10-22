@@ -112,8 +112,6 @@ void CommandSink::do_batch_write(const std::span<std::pair<RecordDetail, std::st
 
 	std::span<char> timestamp(ts_buffer.data(), ts_size);
 
-	const bool prefix = !prefix_.empty();
-
 	for(auto&& [detail, data] : records) {
 		if(sink_sev <= detail.severity && !(sink_filter & detail.type)) {
 			std::string_view severity = severity_string(detail.severity);
@@ -123,8 +121,7 @@ void CommandSink::do_batch_write(const std::span<std::pair<RecordDetail, std::st
 				= cur_sz
 				+ timestamp.size()
 				+ severity.size()
-				+ data.size()
-				+ prefix_.size();
+				+ data.size();
 
 			out_buf_.resize(req_buf_size, boost::container::default_init);
 			auto write_ptr = out_buf_.data() + cur_sz;
@@ -132,9 +129,6 @@ void CommandSink::do_batch_write(const std::span<std::pair<RecordDetail, std::st
 
 			std::memcpy(write_ptr + offset, timestamp.data(), timestamp.size());
 			offset += timestamp.size();
-		
-			std::memcpy(write_ptr + offset, prefix_.data(), prefix_.size());
-			offset += prefix_.size();
 
 			std::memcpy(write_ptr + offset, severity.data(), severity.size());
 			offset += severity.size();
@@ -169,7 +163,6 @@ void CommandSink::write(Severity severity, Filter type, std::string_view record,
 
 	const auto buff_req_size
 		= timestamp.size()
-		+ prefix_.size()
 		+ record.size()
 		+ sevsv.size();
 
@@ -187,7 +180,6 @@ void CommandSink::write(Severity severity, Filter type, std::string_view record,
 	};
 
 	append(timestamp);
-	append(prefix_);
 	append(sevsv);
 	append(record);
 

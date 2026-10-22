@@ -112,8 +112,7 @@ void CommandSink::do_batch_write(const std::span<std::pair<RecordDetail, std::st
 				= cur_sz
 				+ timestamp.size()
 				+ severity.size()
-				+ data.size()
-				+ prefix_.size();
+				+ data.size();
 
 			out_buf_.resize(req_buf_size, boost::container::default_init);
 			auto write_ptr = out_buf_.data() + cur_sz;
@@ -121,9 +120,6 @@ void CommandSink::do_batch_write(const std::span<std::pair<RecordDetail, std::st
 
 			std::memcpy(write_ptr + offset, timestamp.data(), timestamp.size());
 			offset += timestamp.size();
-
-			std::memcpy(write_ptr + offset, prefix_.data(), prefix_.size());
-			offset += prefix_.size();
 
 			std::memcpy(write_ptr + offset, severity.data(), severity.size());
 			offset += severity.size();
@@ -165,7 +161,6 @@ void CommandSink::write(Severity severity, Filter type,	std::string_view record,
 	// calculate the precise size of the buffer in advance to avoid reallocations
 	std::size_t buff_req_size
 		= timestamp.size()
-		+ prefix_.size()
 		+ record.size()
 		+ sevsv.size();
 
@@ -220,7 +215,6 @@ void CommandSink::write(Severity severity, Filter type,	std::string_view record,
 		}
 
 		append(tag_style);
-		append(prefix_);
 		append(sevsv);
 		append(text_style);
 		append(record);
@@ -234,7 +228,6 @@ void CommandSink::write(Severity severity, Filter type,	std::string_view record,
 		}
 	} else {
 		append(timestamp);
-		append(prefix_);
 		append(sevsv);
 		append(record);
 	}

@@ -79,11 +79,6 @@ std::shared_ptr<log::Sink> init_console_sink(const opts::variables_map& args, lo
 	sink->colourise(colourise);
 	sink->log_timestamp(args["console_log.timestamp"].as<bool>());
 	sink->timestamp_format(args["console_log.timestamp_format"].as<std::string>());
-
-	if(args.count("console_log.prefix")) {
-		sink->prefix(args["console_log.prefix"].as<std::string>());
-	}
-
 	return sink;
 }
 
@@ -122,11 +117,6 @@ std::shared_ptr<log::Sink> init_command_sink(const opts::variables_map& args, lo
 	sink->colourise(colourise);
 	sink->log_timestamp(args["console_log.timestamp"].as<bool>());
 	sink->timestamp_format(args["console_log.timestamp_format"].as<std::string>());
-
-	if(args.count("console_log.prefix")) {
-		sink->prefix(args["console_log.prefix"].as<std::string>());
-	}
-
 	return sink;
 }
 

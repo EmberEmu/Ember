@@ -31,7 +31,6 @@ public:
 	void batch_write(const std::span<std::pair<RecordDetail, std::string>>& records) override = 0;
 
 	virtual void colourise(bool colourise) = 0;
-	virtual void prefix(std::string prefix) = 0;
 	virtual void log_timestamp(bool enable) = 0;
 	virtual void timestamp_format(std::string format) = 0;
 
