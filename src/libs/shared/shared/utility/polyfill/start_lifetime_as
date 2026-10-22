@@ -8,7 +8,7 @@
 
 #pragma once
 
-// Basic polyfill for std::start_lifetime_as - not currently availble
+// Basic polyfill for std::start_lifetime_as - not currently available
 // This is not intended to be a proper implementation*, just enough to
 // allow the polyfill to be removed without the call sites being
 // changed in the future
