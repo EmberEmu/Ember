@@ -115,7 +115,7 @@ public:
 		throw exception(e.what());
 	}
 
-	std::vector<Character> characters(std::uint32_t account_id, std::uint32_t realm_id = any_realm) const override try {
+	std::vector<Character> characters(std::uint32_t account_id, std::uint32_t realm_id) const override try {
 		constexpr std::string_view full_query =
 			"SELECT c.name, c.internal_name, c.id, c.account_id, c.realm_id, c.race, c.class, "
 			"c.gender, c.skin, c.face, c.hairstyle, c.haircolour, c.facialhair, c.level, c.zone, "
@@ -140,7 +140,7 @@ public:
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
 		stmt->setUInt(1, account_id);
 
-		if(realm_id) {
+		if(realm_id != any_realm) {
 			stmt->setUInt(2, realm_id);
 		}
 
@@ -284,7 +284,7 @@ public:
 		static_assert(pos != std::string_view::npos);
 		auto query = full_query;
 
-		if(!realm_id) {
+		if(realm_id == any_realm) {
 			query = query.substr(0, pos);
 		}
 
@@ -292,7 +292,7 @@ public:
 		sql::PreparedStatement* stmt = driver_->prepare_cached(*conn, query);
 		stmt->setUInt(1, account_id);
 
-		if(realm_id) {
+		if(realm_id != any_realm) {
 			stmt->setUInt(2, realm_id);
 		}
 		

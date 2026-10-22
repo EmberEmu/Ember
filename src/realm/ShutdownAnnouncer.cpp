@@ -22,7 +22,7 @@ ShutdownAnnouncer::ShutdownAnnouncer(boost::asio::io_context& ioc, ShutdownFn ca
 	, timer_(ioc)
 	, logger_(logger)
 	, active_(false)
-	, announce_(false),
+	, announce_(false)
 	, callback_(std::move(callback)) {
 	assert(callback_);
 }
