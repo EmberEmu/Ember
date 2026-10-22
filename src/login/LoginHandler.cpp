@@ -588,9 +588,9 @@ void LoginHandler::send_realm_list(const grunt::Packet& packet) {
 	}
 
 	// look the client's locale up for sending the correct realm category
-	auto it = locale_map.find(challenge_.locale);
+	const auto it = locale_map.find(challenge_.locale);
 
-	if(it == locale_map.end()) {
+	if(it == locale_map.end() && opts_.locales) {
 		return;
 	}
 
