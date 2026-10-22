@@ -52,7 +52,7 @@ We have a Discord server over at [https://discord.gg/WpPJzQS](https://discord.gg
 Ember supports most platforms and architectures. Any compiler version equal or greater than the supported version should be capable of compiling Ember.
 |       |  Supported  |   Minimum   |
 |-------|:-----------:|:-----------:|
-| MSVC  | 19.30 (VS2022)+ | 19.30 (VS2022) |
+| MSVC  | 19.36 (VS2022)+ | 19.36 (VS2022) |
 | Clang |     21+     |     21     |
 | GCC   |     15+     |     15     |
 
