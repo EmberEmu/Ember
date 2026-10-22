@@ -33,7 +33,6 @@ struct Params {
 	std::shared_ptr<commands::Command> registry;
 	opts::variables_map* args;
 	log::Logger* logger;
-	bool share_logger;
 };
 
 template<typename func_type>
@@ -157,12 +156,19 @@ inline std::unique_ptr<log::Logger> configure_logger(const std::string_view name
 		opts.insert_or_assign("file_log.path", opts.at(option));
 	}
 
-	// disable console input
-	opts.insert_or_assign("console_log.enable_input", opts::variable_value(boost::any(false), false));
+	auto logger = std::make_unique<log::Logger>();
 
-	auto service_logger = std::make_unique<log::Logger>();
-	utility::configure_logger(*service_logger, opts);
-	return service_logger;
+	// suppress sink creation
+	opts.insert_or_assign("console_log.enable_input", opts::variable_value(boost::any(false), false));
+	utility::configure_logger(*logger, opts);
+
+	auto cmd_sink = params.logger->fetch_unique("CommandSink");
+
+	if(cmd_sink) {
+		logger->add_sink(cmd_sink);
+	}
+
+	return logger;
 }
 
 opts::variables_map load_options(const std::string& config_path, const opts::options_description& opt_desc) {
@@ -198,14 +204,8 @@ ServiceRunner create_runner(const ServiceIndex idx, const Params& params,
 	const auto& conf_path = params.args->at(conf_section).as<std::string>();
 	auto opts = load_options(conf_path, descs);
 
-	// if we're allowing the service to create its own logger, set it up
-	std::unique_ptr<log::Logger> service_logger;
+	auto service_logger = configure_logger(lib_props[idx].name, params);
 	log::Logger* logger_handle = params.logger;
-
-	if(!params.share_logger) {
-		service_logger = configure_logger(lib_props[idx].name, params);
-		logger_handle = service_logger.get();
-	}
 
 	// finally, create the service and assign it to a runner wrapper (coroutines when?)
 	auto service = create_service<fn>(idx, *logger_handle, *params.registry);
