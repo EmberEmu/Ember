@@ -26,8 +26,6 @@ namespace ember::dal {
 using namespace std::chrono_literals;
 using namespace std::string_view_literals;
 
-static constexpr auto any_realm{static_cast<std::uint32_t>(-1)};
-
 template<typename T>
 class MySQLCharacterDAO final : public CharacterDAO {
 	T& pool_;
