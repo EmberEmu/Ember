@@ -19,7 +19,7 @@ namespace {
 
 void initiate_shutdown(const commands::Arguments& args, ShutdownAnnouncer& spa, log::Logger& logger) {
 	const auto time = args["time"].as<utility::DurationString>();
-	auto announce = false;
+	auto announce = true;
 
 	if(args.contains("announce")) {
 		announce = args["announce"].as<bool>();
