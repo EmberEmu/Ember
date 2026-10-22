@@ -22,6 +22,7 @@ ShutdownAnnouncer::ShutdownAnnouncer(boost::asio::io_context& ioc, ShutdownFn ca
 	, timer_(ioc)
 	, logger_(logger)
 	, active_(false)
+	, announce_(false),
 	, callback_(std::move(callback)) {
 	assert(callback_);
 }
@@ -49,6 +50,7 @@ void ShutdownAnnouncer::set_after(std::chrono::seconds expiry, bool announce) {
 	}
 
 	active_ = true;
+	announce_ = announce;
 	expires_ = std::chrono::steady_clock::now() + expiry;
 	write_journal_entry(expiry, announce);
 	run_timer(expiry);
@@ -126,7 +128,10 @@ void ShutdownAnnouncer::reset() {
 
 void ShutdownAnnouncer::stop() {
 	if(active_) {
-		broadcast("Shutdown cancelled");
+		if(announce_) {
+			broadcast("Shutdown cancelled");
+		}
+
 		auto result = journal_.remove();
 
 		if(!result) {

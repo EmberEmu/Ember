@@ -42,6 +42,7 @@ private:
 	boost::asio::steady_timer timer_;
 	log::Logger& logger_;
 	bool active_;
+	bool announce_;
 	ShutdownFn callback_;
 	std::chrono::steady_clock::time_point expires_;
 
