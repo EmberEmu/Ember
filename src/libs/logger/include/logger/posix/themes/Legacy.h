@@ -14,7 +14,7 @@ namespace ember::log::posix::themes {
 
 inline constexpr ThemeView Legacy {
 	.name = "legacy",
-	.desc = "original high-contrast logging theme, a touch of nostalgia",
+	.desc = "Original high-contrast logging theme for a touch of nostalgia",
 	.tag {
 		.trace  = "\033[01;30m",
 		.debug  = "\033[01;36m",

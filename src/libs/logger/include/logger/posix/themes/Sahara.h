@@ -14,7 +14,7 @@ namespace ember::log::posix::themes {
 
 inline constexpr ThemeView Sahara {
 	.name = "sahara",
-	.desc = "sand spills across your terminal, shimmering dunes during a glorious sunset",
+	.desc = "Sand spills across your terminal, shimmering dunes reflect a sanguine sunset",
 	.tag {
 		.trace  = "\033[38;2;165;161;191m",
 		.debug  = "\033[38;2;165;182;232m",

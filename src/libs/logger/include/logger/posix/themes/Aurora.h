@@ -14,7 +14,7 @@ namespace ember::log::posix::themes {
 
 inline constexpr ThemeView Aurora {
 	.name = "aurora",
-	.desc = "aurora borealis but localised entirely within your terminal",
+	.desc = "Aurora borealis, localised entirely within your terminal",
 	.tag {
 		.trace  = "\033[38;2;132;145;168m",
 		.debug  = "\033[38;2;130;170;255m",

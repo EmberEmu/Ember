@@ -14,7 +14,7 @@ namespace ember::log::posix::themes {
 
 inline constexpr ThemeView Daybreak {
 	.name = "daybreak",
-	.desc = "first light, it's time to go to bed",
+	.desc = "First light, it's time to go to bed",
 	.tag {
 		.trace  = "\033[38;2;162;172;168m",
 		.debug  = "\033[38;2;157;187;224m",
