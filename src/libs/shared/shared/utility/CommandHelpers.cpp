@@ -231,7 +231,7 @@ void handle_theme_list_command(log::Logger& logger) {
 	}
 }
 
-commands::Suggestions handle_theme_list_autocomplete(std::span<const std::string> tokens) {
+commands::Suggestions handle_theme_set_autocomplete(std::span<const std::string> tokens) {
 	if(tokens.size() > 1) {
 		return {};
 	}
@@ -330,7 +330,7 @@ void register_common_commands(std::shared_ptr<commands::Command> root, log::Logg
 			handle_theme_set_command(arguments, logger);
 		})
 		->autocomplete([&](const auto& tokens) {
-			return handle_theme_list_autocomplete(tokens);
+			return handle_theme_set_autocomplete(tokens);
 		});
 	
 	theme_cmd->insert("list")
