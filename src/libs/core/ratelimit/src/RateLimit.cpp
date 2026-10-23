@@ -10,6 +10,7 @@
 #include <shared/utility/TickCount.h>
 #include <algorithm>
 #include <cassert>
+#include <utility>
 
 using namespace std::chrono_literals;
 
@@ -75,11 +76,11 @@ std::size_t RateLimit::capacity() const noexcept {
 std::chrono::nanoseconds RateLimit::time_until_available(const std::size_t cost) const noexcept {
 	refill();
 
-	if (cost <= tokens_) {
+	if(cost <= tokens_) {
 		return std::chrono::nanoseconds::zero();
 	}
 
-	if (cost > options_.max_tokens) {
+	if(cost > options_.max_tokens) {
 		return std::chrono::nanoseconds::max();
 	}
 
@@ -87,7 +88,6 @@ std::chrono::nanoseconds RateLimit::time_until_available(const std::size_t cost)
 	const auto intervals = (needed + options_.refill_count - 1) / options_.refill_count;
 	const auto elapsed = utility::get_tick_count(utility::as_chrono) - previous_tick_;
 	const auto remainder = elapsed % options_.refill_rate;
-
 	return options_.refill_rate * intervals - remainder;
 }
 
