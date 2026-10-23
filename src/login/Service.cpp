@@ -221,7 +221,7 @@ void Service::initialise(const opts::variables_map& args) {
 	const RateLimitOptions rate_limit_opts {
 		.start_tokens = args["rate_limit.tokens"].as<std::size_t>(),
 		.max_tokens = args["rate_limit.max_tokens"].as<std::size_t>(),
-		.refill_rate = args["rate_limit.refill_rate"].as<std::chrono::milliseconds>(),
+		.refill_rate = std::chrono::milliseconds(args["rate_limit.refill_rate"].as<unsigned int>()),
 		.refill_count = args["rate_limit.refill_count"].as<std::size_t>()
 	};
 
@@ -429,7 +429,7 @@ opts::options_description Service::options() {
 		("monitor.port", opts::value<std::uint16_t>()->required())
 		("rate_limit.tokens", opts::value<std::size_t>()->required())
 		("rate_limit.max_tokens", opts::value<std::size_t>()->required())
-		("rate_limit.refill_rate", opts::value<std::chrono::milliseconds>()->required())
+		("rate_limit.refill_rate", opts::value<unsigned int>()->required())
 		("rate_limit.refill_count", opts::value<std::size_t>()->required());
 
 	return opts;
