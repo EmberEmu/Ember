@@ -9,8 +9,8 @@
 #include <ratelimit/RateLimit.h>
 #include <shared/utility/TickCount.h>
 #include <algorithm>
-#include <cassert>
 #include <utility>
+#include <cassert>
 
 using namespace std::chrono_literals;
 
