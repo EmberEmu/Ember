@@ -589,6 +589,7 @@ void LoginHandler::send_realm_list(const grunt::Packet& packet) {
 
 	if(!rate_limit_.try_consume(realm_list_cost)) {
 		LOG_DEBUG(logger_, "Throttling {}: too many realm list requests", user_->username());
+		update_state(LoginState::closed);
 		return;
 	}
 
