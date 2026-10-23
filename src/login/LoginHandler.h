@@ -10,12 +10,13 @@
 
 #include "Actions.h"
 #include "Authenticator.h"
-#include "LoginHandlerFwd.h"
-#include "LoginState.h"
-#include "PINAuthenticator.h"
 #include "grunt/PacketFwd.h"
 #include "grunt/client/LoginChallenge.h"
 #include "grunt/ResultCodes.h"
+#include "LoginHandlerFwd.h"
+#include "LoginState.h"
+#include "PINAuthenticator.h"
+#include "TokenCosts.h"
 #include <logger/LoggerFwd.h>
 #include <ratelimit/RateLimit.h>
 #include <botan/bigint.h>
@@ -31,8 +32,6 @@
 #include <variant>
 
 namespace ember {
-
-constexpr auto realm_list_cost = 1u;
 
 struct TransferState {
 	std::ifstream file;

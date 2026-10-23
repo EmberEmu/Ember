@@ -69,6 +69,7 @@ set(LIBRARY_HDR
     ServiceContextImpl.h
     DBCRequired.h
     StreamTypes.h
+    TokenCosts.h
 )
 
 set(LIBRARY_SRC
