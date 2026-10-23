@@ -22,6 +22,12 @@ bin_path = ""  # path to patch files
 id = 0            # 0 = disabled, should be bumped for each new survey
 path = @CMAKE_INSTALL_PREFIX@/Survey.mpq # path to survey MPQ file
 
+[rate_limit]
+tokens = 10         # initial token count
+max_tokens = 10     # maximum bucketed tokens
+refill_rate = 5000  # bucket refill rate, in milliseconds
+refill_count = 1    # number of tokens to add per refill
+
 [network]
 interface = 0.0.0.0  # IPv4 or IPv6 bind interface - use 0.0.0.0 for all IPv4 interfaces
 port = 3724          # Port for the server to listen for client connections on

@@ -17,6 +17,7 @@
 #include "grunt/client/LoginChallenge.h"
 #include "grunt/ResultCodes.h"
 #include <logger/LoggerFwd.h>
+#include <ratelimit/RateLimit.h>
 #include <botan/bigint.h>
 #include <array>
 #include <fstream>
@@ -30,6 +31,8 @@
 #include <variant>
 
 namespace ember {
+
+constexpr auto realm_list_cost = 1u;
 
 struct TransferState {
 	std::ifstream file;
@@ -76,6 +79,7 @@ private:
 	grunt::client::LoginChallenge challenge_;
 	TransferState transfer_state_;
 	const Options opts_;
+	RateLimit rate_limit_;
 
 	void initiate_file_transfer(const FileMeta& meta);
 
@@ -133,7 +137,8 @@ public:
 
 	LoginHandler(const dal::UserDAO& users, const AccountClient& acct_svc, const Patcher& patcher,
 	             const IntegrityData& bin_data, const Survey& survey, log::Logger& logger,
-	             const RealmList& realm_list, Metrics& metrics, std::string identifier, Options opts)
+	             const RealmList& realm_list, Metrics& metrics, std::string identifier, Options opts,
+	             RateLimitOptions rate_limit_opts)
 		: user_src_(users)
 		, patcher_(patcher)
 		, logger_(logger)
@@ -145,7 +150,8 @@ public:
 		, transfer_state_{}
 		, identifier_(std::move(identifier))
 		, opts_(std::move(opts))
-		, pin_grid_seed_(0) { }
+		, pin_grid_seed_(0)
+		, rate_limit_(std::move(rate_limit_opts)) { }
 };
 
 } // ember
