@@ -218,9 +218,16 @@ void Service::initialise(const opts::variables_map& args) {
 		.verified_email = args["misc.verified_emails"].as<bool>()
 	};
 
+	const RateLimitOptions rate_limit_opts {
+		.start_tokens = args["rate_limit.tokens"].as<std::size_t>(),
+		.max_tokens = args["rate_limit.max_tokens"].as<std::size_t>(),
+		.refill_rate = std::chrono::milliseconds(args["rate_limit.refill_rate"].as<unsigned int>()),
+		.refill_count = args["rate_limit.refill_count"].as<std::size_t>()
+	};
+
 	ctx->login_handler_builder = std::make_unique<LoginHandlerBuilder>(
 		logger, *ctx->patcher, *ctx->survey, *ctx->integrity_data, *ctx->user_dao,
-	    *ctx->rpc_account, *ctx->realm_list, *ctx->metrics, config
+	    *ctx->rpc_account, *ctx->realm_list, *ctx->metrics, config, rate_limit_opts
 	);
 
 	ctx->login_session_builder = std::make_unique<LoginSessionBuilder>(
@@ -419,7 +426,11 @@ opts::options_description Service::options() {
 		("metrics.statsd_port", opts::value<std::uint16_t>()->required())
 		("monitor.enabled", opts::value<bool>()->required())
 		("monitor.interface", opts::value<std::string>()->required())
-		("monitor.port", opts::value<std::uint16_t>()->required());
+		("monitor.port", opts::value<std::uint16_t>()->required())
+		("rate_limit.tokens", opts::value<std::size_t>()->required())
+		("rate_limit.max_tokens", opts::value<std::size_t>()->required())
+		("rate_limit.refill_rate", opts::value<unsigned int>()->required())
+		("rate_limit.refill_count", opts::value<std::size_t>()->required());
 
 	return opts;
 }

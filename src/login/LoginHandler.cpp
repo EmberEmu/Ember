@@ -587,6 +587,12 @@ void LoginHandler::send_realm_list(const grunt::Packet& packet) {
 		return;
 	}
 
+	if(!rate_limit_.try_consume(realm_list_cost)) {
+		LOG_DEBUG(logger_, "Throttling {}: too many realm list requests", user_->username());
+		update_state(LoginState::closed);
+		return;
+	}
+
 	// look the client's locale up for sending the correct realm category
 	const auto it = locale_map.find(challenge_.locale);
 
