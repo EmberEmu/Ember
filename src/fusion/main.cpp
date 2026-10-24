@@ -54,12 +54,6 @@ int main(int argc, const char* argv[]) try {
 	utility::set_window_title(app_name);
 
 	auto args = parse_arguments(argc, argv);
-	const bool share_logger = args["console_log.enable_input"].as<bool>();
-
-	if(share_logger) {
-		boost::any prefix(std::string(""));
-		args.insert_or_assign("console_log.prefix", opts::variable_value(prefix, false));
-	}
 
 	log::Logger logger;
 	utility::configure_logger(logger, args);
@@ -80,7 +74,6 @@ int main(int argc, const char* argv[]) try {
 	glob_params = Params {
 		.args = &args,
 		.logger = &logger,
-		.share_logger = share_logger,
 	};
 
 	const auto ret = launch(args, logger);
@@ -105,7 +98,6 @@ Params create_params(std::shared_ptr<commands::Command> registry) {
 		.registry = std::move(registry),
 		.args = glob_params.args,
 		.logger = glob_params.logger,
-		.share_logger = glob_params.share_logger
 	};
 }
 
