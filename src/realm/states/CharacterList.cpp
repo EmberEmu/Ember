@@ -60,6 +60,18 @@ void send_character_list(ClientContext& ctx, std::vector<Character> characters) 
 	ctx.send(response);
 }
 
+bool rate_limit_character_rename(ClientContext& ctx) {
+	if(ctx.rate_limit().try_consume(rename_character_cost)) {
+		return false;
+	}
+
+	CLIENT_DEBUG(ctx, "rate limit hit: cannot rename character");
+	protocol::smsg_char_rename response;
+	response->result = protocol::Result::char_name_reserved;
+	ctx.send(response);
+	return true;
+}
+
 void send_character_rename(ClientContext& ctx, const CharRenameResponse& res) {
 	LOG_TRACE(ctx.logger, log_func);
 
@@ -73,12 +85,8 @@ void send_character_rename(ClientContext& ctx, const CharRenameResponse& res) {
 void character_rename(ClientContext& ctx) {
 	LOG_TRACE(ctx.logger, log_func);
 
-	if(!ctx.rate_limit().try_consume(rename_character_cost)) {
-		CLIENT_DEBUG(ctx, "rate limit hit: cannot rename character");
-
-		protocol::smsg_char_rename response;
-		response->result = protocol::Result::char_name_reserved;
-		return ctx.send(response);
+	if(rate_limit_character_rename(ctx)) {
+		return;
 	}
 
 	protocol::cmsg_char_rename packet;
@@ -97,12 +105,21 @@ void character_rename(ClientContext& ctx) {
 	});
 }
 
+bool rate_limit_character_enumerate(ClientContext& ctx) {
+	if(ctx.rate_limit().try_consume(enumerate_characters_cost)) {
+		return false;
+	}
+
+	CLIENT_DEBUG(ctx, "rate limit hit: cannot enumerate characters");
+	send_character_list_fail(ctx);
+	return true;
+}
+
 void character_enumerate(ClientContext& ctx) {
 	LOG_TRACE(ctx.logger, log_func);
 
-	if(!ctx.rate_limit().try_consume(enumerate_characters_cost)) {
-		CLIENT_DEBUG(ctx, "rate limit hit: cannot enumerate characters");
-		return send_character_list_fail(ctx);
+	if(rate_limit_character_enumerate(ctx)) {
+		return;
 	}
 
 	const auto& ident = ctx.handler().ident();
@@ -142,14 +159,23 @@ void send_character_create(ClientContext& ctx, const CharCreateResponse& res) {
 	ctx.send(response);
 }
 
+bool rate_limit_character_create(ClientContext& ctx) {
+	if(ctx.rate_limit().try_consume(create_character_cost)) {
+		return false;
+	}
+
+	CLIENT_DEBUG(ctx, "rate limit hit: cannot create character");
+	protocol::smsg_char_create response;
+	response->result = protocol::Result::char_create_failed;
+	ctx.send(response);
+	return true;
+}
+
 void character_create(ClientContext& ctx) {
 	LOG_TRACE(ctx.logger, log_func);
 
-	if(!ctx.rate_limit().try_consume(create_character_cost)) {
-		CLIENT_DEBUG(ctx, "rate limit hit: cannot create character");
-		protocol::smsg_char_create response;
-		response->result = protocol::Result::char_create_failed;
-		return ctx.send(response);
+	if(rate_limit_character_create(ctx)) {
+		return;
 	}
 
 	protocol::cmsg_char_create packet;
@@ -166,14 +192,23 @@ void character_create(ClientContext& ctx) {
 	});
 }
 
+bool rate_limit_character_delete(ClientContext& ctx) {
+	if(ctx.rate_limit().try_consume(delete_character_cost)) {
+		return false;
+	}
+
+	CLIENT_DEBUG(ctx, "rate limit hit: cannot delete character");
+	protocol::smsg_char_delete response;
+	response->result = protocol::Result::char_delete_failed;
+	ctx.send(response);
+	return true;
+}
+
 void character_delete(ClientContext& ctx) {
 	LOG_TRACE(ctx.logger, log_func);
 
-	if(!ctx.rate_limit().try_consume(delete_character_cost)) {
-		CLIENT_DEBUG(ctx, "rate limit hit: cannot delete character");
-		protocol::smsg_char_delete response;
-		response->result = protocol::Result::char_delete_failed;
-		return ctx.send(response);
+	if(rate_limit_character_delete(ctx)) {
+		return;
 	}
 
 	protocol::cmsg_char_delete packet;
