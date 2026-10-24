@@ -99,7 +99,7 @@ void character_rename(ClientContext& ctx) {
 	auto& dispatcher = ctx.dispatcher;
 
 	ctx.character_rpc.rename_character(ctx.account->id, packet->id, packet->name,
-	                                [dispatcher, ident](auto result, auto id, const auto& name) {
+	                                   [dispatcher, ident](auto result, auto id, const auto& name) {
 		CharRenameResponse event(result, id, name);
 		dispatcher.post(ident, std::move(event));
 	});
