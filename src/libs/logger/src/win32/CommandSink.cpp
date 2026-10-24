@@ -41,12 +41,6 @@ CommandSink::CommandSink(Severity severity, Filter filter, std::string prompt)
 	, timestamp_(false)
 	, history_idx_(0)
 	, max_cols_(table_max_cols) {
-	bool expected = false;
-
-	if(!exists_.compare_exchange_strong(expected, true)) {
-		throw std::runtime_error("A process cannot have multiple CommandSinks!");
-	}
-
 	semaphore_ = CreateSemaphore(NULL, 0, 1, NULL);
 
 	if(!semaphore_) {
@@ -61,7 +55,6 @@ CommandSink::CommandSink(Severity severity, Filter filter, std::string prompt)
 
 CommandSink::~CommandSink() {
 	stop();
-	exists_ = false;
 
 	if(input_reader_.joinable()) {
 		input_reader_.join();

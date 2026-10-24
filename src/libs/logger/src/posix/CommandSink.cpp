@@ -37,12 +37,6 @@ CommandSink::CommandSink(Severity severity, Filter filter, std::string prompt, T
 	, max_cols_(table_max_cols)
 	, theme_(std::move(theme))
 	, no_bg_(no_bg) {
-	bool expected = false;
-
-	if(!exists_.compare_exchange_strong(expected, true)) {
-		throw std::runtime_error("A process cannot have multiple CommandSinks!");
-	}
-
 	const auto [rows, _] = terminal_.get_size();
 	terminal_.set_log_region(rows);
 
@@ -58,8 +52,6 @@ CommandSink::~CommandSink() {
 	if(input_reader_.joinable()) {
 		input_reader_.join();
 	}
-
-	exists_ = false;
 }
 
 void CommandSink::stop() {
