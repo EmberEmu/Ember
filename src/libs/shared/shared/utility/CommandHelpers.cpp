@@ -218,13 +218,13 @@ void handle_theme_list_command(log::Logger& logger) {
 	}
 }
 
-std::vector<std::filesystem::path> theme_file_list(const std::filesystem::path& path) {
-	std::vector<std::filesystem::path> files;
+std::vector<std::string> theme_file_list_relative(const std::filesystem::path& path) {
+	std::vector<std::string> files;
 
 	if(std::filesystem::is_directory(path)) {
 		for(auto& file : std::filesystem::directory_iterator(path)) {
 			if(file.path().string().ends_with(".theme.json")) {
-				files.emplace_back(file.path().filename());
+				files.emplace_back(file.path().filename().string());
 			}
 		}
 	}
@@ -251,10 +251,10 @@ commands::Suggestions handle_theme_set_autocomplete(std::span<const std::string>
 	}
 
 	// custom theme files
-	for(const auto& file : theme_file_list(path)) {
-		if(tokens.empty() || file.filename().string().starts_with(tokens.front())) {
+	for(const auto& file : theme_file_list_relative(path)) {
+		if(tokens.empty() || file.starts_with(tokens.front())) {
 			results.records.emplace_back(
-				file.string(), "custom theme file"
+				file, "custom theme file"
 			);
 		}
 	}

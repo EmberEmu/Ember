@@ -14,7 +14,6 @@
 #include <logger/posix/Themes.h>
 #include <logger/posix/TerminalCtl.h>
 #include <boost/container/small_vector.hpp>
-#include <atomic>
 #include <deque>
 #include <functional>
 #include <memory>
@@ -44,7 +43,6 @@ class CommandSink final : public log::CommandSink {
 		start, end
 	};
 
-	inline static std::atomic_bool exists_ = false;
 	static constexpr auto sv_reserve = 256u;
 	static constexpr auto max_buf_size = 4096u;
 	static constexpr auto reserve_buf_size = 512u;
