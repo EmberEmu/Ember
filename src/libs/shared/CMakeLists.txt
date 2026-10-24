@@ -84,6 +84,7 @@ set(UTIL_SRC
     shared/utility/shutdown/Shutdown.cpp
     shared/utility/shutdown/Install.h
     shared/utility/UncheckedBackInserter.h
+    shared/utility/Truncate.h
 )
 
 set(METRICS_SRC

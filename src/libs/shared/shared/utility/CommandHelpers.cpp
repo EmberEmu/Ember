@@ -13,6 +13,7 @@
 #include <logger/posix/CommandSink.h>
 #include <logger/Logger.h>
 #include <shared/utility/DurationString.h>
+#include <shared/utility/Truncate.h>
 #include <bprinter/table_printer.h>
 #include <boost/lexical_cast.hpp>
 #include <chrono>
@@ -185,21 +186,6 @@ void handle_help_command(const commands::Arguments& arguments, const commands::C
 	}
 }
 
-std::string truncate_output(const std::size_t cols, const std::string_view string) {
-	if(string.size() <= cols) {
-		return std::string(string);
-	}
-
-	constexpr std::string_view ellipsis { "..." };
-
-	if(cols <= ellipsis.size()) {
-		return std::string(ellipsis.substr(0, cols));
-	}
-
-	const auto ellipsis_space = cols - ellipsis.size();
-	return std::string(string.substr(0, ellipsis_space)) + "...";
-}
-
 void print_themes(log::Logger& logger) {
 	constexpr auto max_name_len = 20u; // todo, size_t literals on bump
 	constexpr auto max_desc_len = 80u;
@@ -214,8 +200,8 @@ void print_themes(log::Logger& logger) {
 	printer.PrintHeader();
 
 	for(const auto& theme : log::posix::builtin_themes()) {
-		printer << truncate_output(max_name_len, theme.name);
-		printer << truncate_output(max_desc_len, theme.desc);
+		utility::write_pretty_truncate(printer, theme.name, max_name_len);
+		utility::write_pretty_truncate(printer, theme.desc, max_desc_len);
 	}
 
 	printer.PrintFooter();

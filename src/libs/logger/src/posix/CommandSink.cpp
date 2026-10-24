@@ -11,6 +11,7 @@
 #include <logger/detail/StreamBuffer.h>
 #include <logger/posix/CommandSink.h>
 #include <logger/detail/PlatformColour.h>
+#include <shared/utility/Truncate.h>
 #include <bprinter/table_printer.h>
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/container/small_vector.hpp>
@@ -577,21 +578,6 @@ void CommandSink::autocomplete() {
 	redraw_prompt();
 }
 
-std::string CommandSink::truncate_description(const std::size_t cols, const std::string_view description) {
-	if(description.size() <= cols) {
-		return std::string(description);
-	}
-
-	constexpr std::string_view ellipsis { "..." };
-
-	if(cols <= ellipsis.size()) {
-		return std::string(ellipsis.substr(0, cols));
-	}
-
-	const auto ellipsis_space = cols - ellipsis.size();
-	return std::string(description.substr(0, ellipsis_space)) + "...";
-}
-
 void CommandSink::print_command_table(std::span<const commands::Suggestions::Record> matches) {
 	boost::container::small_vector<char, max_buf_size> buffer;
 	detail::StreamBuffer stream_buffer(buffer);
@@ -613,8 +599,8 @@ void CommandSink::print_command_table(std::span<const commands::Suggestions::Rec
 	printer.PrintHeader();
 
 	for(const auto& match : matches) {
-		printer << match.name;
-		printer << truncate_description(desc_cols, match.desc);
+		utility::write_pretty_truncate(printer, match.name, name_cols);
+		utility::write_pretty_truncate(printer, match.desc, desc_cols);
 	}
 
 	printer.PrintFooter();

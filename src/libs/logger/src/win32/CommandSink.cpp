@@ -10,6 +10,7 @@
 #include <logger/Exception.h>
 #include <logger/Utility.h>
 #include <logger/detail/StreamBuffer.h>
+#include <shared/utility/Truncate.h>
 #include <bprinter/table_printer.h>
 #include <gsl/narrow>
 #include <boost/algorithm/string.hpp>
@@ -544,21 +545,6 @@ void CommandSink::autocomplete() {
 	redraw_prompt();
 }
 
-std::string CommandSink::truncate_description(const std::size_t cols, const std::string_view description) {
-	if(description.size() <= cols) {
-		return std::string(description);
-	}
-
-	constexpr std::string_view ellipsis { "..." };
-
-	if(cols <= ellipsis.size()) {
-		return std::string(ellipsis.substr(0, cols));
-	}
-
-	const auto ellipsis_space = cols - ellipsis.size();
-	return std::string(description.substr(0, ellipsis_space)) + "...";
-}
-
 void CommandSink::print_command_table(std::span<const commands::Suggestions::Record> matches) {
 	boost::container::small_vector<char, max_buf_size> buffer;
 	detail::StreamBuffer stream_buffer(buffer);
@@ -578,15 +564,9 @@ void CommandSink::print_command_table(std::span<const commands::Suggestions::Rec
 	printer.PrintHeader();
 
 	for(const auto& match : matches) {
-		printer << match.name;
+		utility::write_pretty_truncate(printer, match.name, table_name_cols);
+		utility::write_pretty_truncate(printer, match.desc, table_desc_cols);
 
-		if(match.desc.size() > table_desc_cols) {
-			printer << truncate_description(
-				static_cast<std::size_t>(table_desc_cols), match.desc
-			);
-		} else {
-			printer << match.desc;
-		}
 	}
 
 	printer.PrintFooter();
