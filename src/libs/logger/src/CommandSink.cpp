@@ -7,6 +7,7 @@
  */
 
 #include <logger/CommandSink.h>
+#include <exception>
 #include <stdexcept>
 
 namespace ember::log {
