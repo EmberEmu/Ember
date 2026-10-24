@@ -13,7 +13,7 @@
 
 namespace ember::login {
 
-inline const std::array<std::string_view, 1> dbcs_required {
+inline constexpr std::array<std::string_view, 1> dbcs_required {
 	"Cfg_Categories"
 };
 
