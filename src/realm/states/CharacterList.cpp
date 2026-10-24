@@ -19,6 +19,7 @@
 #include "../FilterTypes.h"
 #include "../RealmService.h"
 #include "../RealmQueue.h"
+#include "../TokenCosts.h"
 #include <logger/Logger.h>
 #include <protocol/Deserialise.h>
 #include <protocol/client/CharEnum.h>
@@ -72,6 +73,14 @@ void send_character_rename(ClientContext& ctx, const CharRenameResponse& res) {
 void character_rename(ClientContext& ctx) {
 	LOG_TRACE(ctx.logger, log_func);
 
+	if(!ctx.rate_limit().try_consume(rename_character_cost)) {
+		CLIENT_DEBUG(ctx, "rate limit hit: cannot rename character");
+
+		protocol::smsg_char_rename response;
+		response->result = protocol::Result::char_name_reserved;
+		return ctx.send(response);
+	}
+
 	protocol::cmsg_char_rename packet;
 
 	if(auto result = protocol::deserialise(packet, ctx.stream()); !result) {
@@ -82,14 +91,19 @@ void character_rename(ClientContext& ctx) {
 	auto& dispatcher = ctx.dispatcher;
 
 	ctx.character_rpc.rename_character(ctx.account->id, packet->id, packet->name,
-	                                  [dispatcher, ident](auto result, auto id, const auto& name) {
+	                                [dispatcher, ident](auto result, auto id, const auto& name) {
 		CharRenameResponse event(result, id, name);
 		dispatcher.post(ident, std::move(event));
 	});
 }
 
-void character_enumerate(const ClientContext& ctx) {
+void character_enumerate(ClientContext& ctx) {
 	LOG_TRACE(ctx.logger, log_func);
+
+	if(!ctx.rate_limit().try_consume(enumerate_characters_cost)) {
+		CLIENT_DEBUG(ctx, "rate limit hit: cannot enumerate characters");
+		return send_character_list_fail(ctx);
+	}
 
 	const auto& ident = ctx.handler().ident();
 	auto& dispatcher = ctx.dispatcher;
@@ -131,6 +145,13 @@ void send_character_create(ClientContext& ctx, const CharCreateResponse& res) {
 void character_create(ClientContext& ctx) {
 	LOG_TRACE(ctx.logger, log_func);
 
+	if(!ctx.rate_limit().try_consume(create_character_cost)) {
+		CLIENT_DEBUG(ctx, "rate limit hit: cannot create character");
+		protocol::smsg_char_create response;
+		response->result = protocol::Result::char_create_failed;
+		return ctx.send(response);
+	}
+
 	protocol::cmsg_char_create packet;
 
 	if(auto result = protocol::deserialise(packet, ctx.stream()); !result) {
@@ -147,6 +168,13 @@ void character_create(ClientContext& ctx) {
 
 void character_delete(ClientContext& ctx) {
 	LOG_TRACE(ctx.logger, log_func);
+
+	if(!ctx.rate_limit().try_consume(delete_character_cost)) {
+		CLIENT_DEBUG(ctx, "rate limit hit: cannot delete character");
+		protocol::smsg_char_delete response;
+		response->result = protocol::Result::char_delete_failed;
+		return ctx.send(response);
+	}
 
 	protocol::cmsg_char_delete packet;
 

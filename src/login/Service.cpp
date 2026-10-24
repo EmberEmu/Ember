@@ -15,6 +15,7 @@
 #include <dbcreader/DiskLoader.h>
 #include <logger/Logger.h>
 #include <ports/Utility.h>
+#include <ratelimit/RateLimit.h>
 #include <shared/database/daos/IPBanDAO.h>
 #include <shared/database/daos/PatchDAO.h>
 #include <shared/database/daos/RealmDAO.h>

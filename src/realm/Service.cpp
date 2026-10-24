@@ -23,6 +23,7 @@
 #include <logger/Logger.h>
 #include <nsd/NSD.h>
 #include <ports/Utility.h>
+#include <ratelimit/RateLimit.h>
 #include <shared/utility/EnumHelper.h>
 #include <shared/database/daos/RealmDAO.h>
 #include <shared/database/daos/UserDAO.h>
@@ -253,9 +254,16 @@ void Service::initialise(const opts::variables_map& args) try {
 	const auto buckets = args["realm.max_slots"].as<std::size_t>();
 	ctx->sessions = std::make_unique<SessionManager>(service, buckets, logger);
 
+	const RateLimitOptions rate_limit_opts {
+		.start_tokens = args["rate_limit.tokens"].as<std::size_t>(),
+		.max_tokens = args["rate_limit.max_tokens"].as<std::size_t>(),
+		.refill_rate = std::chrono::milliseconds(args["rate_limit.refill_rate"].as<unsigned int>()),
+		.refill_count = args["rate_limit.refill_count"].as<std::size_t>()
+	};
+
 	ClientContextBuilder ctx_builder(
 		*ctx->config_store, *ctx->dispatcher, *ctx->queue, *ctx->rpc_account,
-		*ctx->rpc_character, *ctx->rpc_realm, logger
+		*ctx->rpc_character, *ctx->rpc_realm, rate_limit_opts, logger
 	);
 
 	ClientConnectionBuilder cc_builder(*ctx->alloc_provider, *ctx->dispatcher, logger);
@@ -543,7 +551,11 @@ opts::options_description Service::options() {
 		("monitor.port", opts::value<std::uint16_t>()->required())
 		("memory.clients", opts::value<std::size_t>()->required())
 		("memory.nodes", opts::value<std::size_t>()->required())
-		("journal.path", opts::value<std::filesystem::path>()->required());
+		("journal.path", opts::value<std::filesystem::path>()->required())
+		("rate_limit.tokens", opts::value<std::size_t>()->required())
+		("rate_limit.max_tokens", opts::value<std::size_t>()->required())
+		("rate_limit.refill_rate", opts::value<unsigned int>()->required())
+		("rate_limit.refill_count", opts::value<std::size_t>()->required());
 
 	return opts;
 }
