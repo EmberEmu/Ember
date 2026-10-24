@@ -7,10 +7,31 @@
  */
 
 #include <logger/CommandSink.h>
+#include <stdexcept>
 
 namespace ember::log {
 
 CommandSink::CommandSink(std::string name, Severity severity, Filter filter)
-	: Sink(std::move(name), std::string(type()), severity, filter) {}
+	: Sink(std::move(name), std::string(type()), severity, filter) {
+	bool expected = false;
+
+	if(!initialised.compare_exchange_strong(expected, true)) {
+		throw std::runtime_error(
+			"command sinks are globally unique - attempted to create multiple instances"
+		);
+	}
+
+	singular_instance = true;
+}
+
+CommandSink::~CommandSink() {
+	if(!singular_instance) {
+		return;
+	}
+
+	if(!initialised.exchange(false)) {
+		std::terminate();
+	}
+}
 
 } // log, ember

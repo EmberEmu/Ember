@@ -10,6 +10,7 @@
 
 #include <logger/Sink.h>
 #include <commands/Suggestions.h>
+#include <atomic>
 #include <functional>
 #include <string>
 #include <string_view>
@@ -18,6 +19,8 @@ namespace ember::log {
 
 class CommandSink : public Sink {
 	static constexpr std::string_view sink_type { "CommandSink" };
+	static inline std::atomic_bool initialised { false };
+	bool singular_instance { false };
 
 public:
 	using CommandHandler = std::function<void(const std::string_view)>;
@@ -25,7 +28,7 @@ public:
 	using Suggestion = std::function<std::string(const std::string_view)>;
 
 	CommandSink(std::string name, Severity severity, Filter filter);
-	~CommandSink() = default;
+	~CommandSink();
 
 	void write(Severity severity, Filter type, std::string_view record, bool flush) override = 0;
 	void batch_write(const std::span<std::pair<RecordDetail, std::string>>& records) override = 0;
