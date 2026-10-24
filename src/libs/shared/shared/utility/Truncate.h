@@ -26,7 +26,7 @@ inline std::string pretty_truncate(const std::string_view string, const std::siz
 	}
 
 	const auto ellipsis_space = length - ellipsis.size();
-	return std::string(string.substr(0, ellipsis_space)) + "...";
+	return std::string(string.substr(0, ellipsis_space)) += ellipsis;
 }
 
 template<typename Stream>
