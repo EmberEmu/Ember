@@ -71,8 +71,8 @@ std::size_t max_consecutive(const std::string_view name, const bool case_insensi
 void set_window_title(cstring_view title) {
 #ifdef _WIN32
     SetConsoleTitle(title.c_str());
-#elif defined __linux__ || defined __unix__ // todo, test
-  	std::cout << "\033]0;" << title << "}\007";
+#elif defined __linux__ || defined __unix__ || defined TARGET_OS_MAC
+	std::cout << "\033]0;" << title << "\007" << std::flush;
 #endif
 }
 
