@@ -11,9 +11,7 @@
 #include <shared/utility/FNVHash.h>
 #include <shared/utility/xoroshiro128plus.h>
 #include <array>
-#include <iomanip>
 #include <span>
-#include <sstream>
 #include <string>
 #include <cassert>
 #include <cstddef>
@@ -127,18 +125,20 @@ public:
 		return data_[0] >> 56;
 	}
 
-	// don't really care about efficiency here, it's for debugging
 	inline std::string to_string() const {
-		std::stringstream stream;
-		stream << std::hex << std::setfill('0');
-
+		constexpr char hex[] { "0123456789abcdef" };
 		const auto bytes = std::as_bytes(std::span(data_));
 
-		for(auto byte : bytes) {
-			stream << std::setw(2) << static_cast<int>(byte);
+		std::string result;
+		result.resize(bytes.size() * 2);
+
+		for(std::size_t i = 0; i < bytes.size(); ++i) {
+			const auto byte = std::to_integer<unsigned char>(bytes[i]);
+			result[2 * i]     = hex[byte >> 4];
+			result[2 * i + 1] = hex[byte & 0x0f];
 		}
 
-		return stream.str();
+		return result;
 	}
 
 	void set_zero() {
