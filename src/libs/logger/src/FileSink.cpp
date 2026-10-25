@@ -72,8 +72,8 @@ void FileSink::set_initial_rotation() {
 	}
 }
 
-void FileSink::time_format(cstring_view format) {
-	time_format_ = format;
+void FileSink::time_format(std::string format) {
+	time_format_ = std::move(format);
 }
 
 void FileSink::format_file_name() {

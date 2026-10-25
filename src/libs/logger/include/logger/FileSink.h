@@ -44,7 +44,7 @@ private:
 	bool log_date_ = false;
 	bool midnight_rotate_ = false;
 	int last_mday_ = detail::current_time().tm_mday;
-	cstring_view time_format_ = "[%d/%m/%Y %H:%M:%S] ";
+	std::string time_format_ = "[%d/%m/%Y %H:%M:%S] ";
 	boost::container::small_vector<char, sv_reserve> out_buf_;
 
 	void open(Mode mode = Mode::truncate);
@@ -63,7 +63,7 @@ public:
 	void log_date(bool enable) { log_date_ = enable;  }
 	void midnight_rotate(bool enable) { midnight_rotate_ = enable; }
 	void size_limit(std::uintmax_t megabytes);
-	void time_format(cstring_view format);
+	void time_format(std::string format);
 	void write(Severity severity, Filter type, std::string_view record, bool flush) override;
 	void batch_write(const std::span<std::pair<RecordDetail, std::string>>& records) override;
 
