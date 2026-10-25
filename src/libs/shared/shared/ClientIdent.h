@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include <shared/utility/FNVHash.h>
 #include <shared/utility/xoroshiro128plus.h>
+#include <xxhash/xxh3.h>
 #include <array>
 #include <span>
 #include <string>
@@ -110,15 +110,11 @@ public:
 			return hash_;
 		}
 
-		FNVHash hasher;
 		auto bytes = std::as_bytes(std::span(data_));
-
-		for(auto byte : bytes) {
-			hasher.update_byte(byte);
-		}
+		hash_ = XXH3_64bits(bytes.data(), bytes.size_bytes());
 
 		hashed_ = true;
-		return hash_ = hasher.finalise();
+		return hash_;
 	}
 
 	inline std::uint8_t service() const {
