@@ -47,7 +47,7 @@ class ClientIdent final {
 	static constexpr std::size_t uuid_size = 16;
 
 	std::array<std::uint64_t, uuid_size / sizeof(std::uint64_t)> data_;
-	mutable std::size_t hash_ = 0;
+	mutable std::uint64_t hash_ = 0;
 	mutable bool hashed_ = false;
 
 	void generate(const std::size_t service_index) {
@@ -105,7 +105,7 @@ public:
 		return ((data_[0] & 0xff) << 4) | (data_[1] & 0xf);
 	}
 
-	inline std::size_t hash() const {
+	inline std::uint64_t hash() const {
 		if(hashed_) {
 			return hash_;
 		}
@@ -172,6 +172,6 @@ inline std::size_t hash_value(const ClientIdent& uuid) {
 template<>
 struct std::hash<ember::ClientIdent> {
 	std::size_t operator()(const ember::ClientIdent& uuid) const {
-		return uuid.hash();
+		return static_cast<std::size_t>(uuid.hash());
 	}
 };
