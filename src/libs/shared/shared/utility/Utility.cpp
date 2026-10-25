@@ -100,7 +100,7 @@ std::string max_sockets_desc() {
 	const auto max = max_sockets();
 
 	if(!max) {
-		return std::format("unable to retrieve value, error {}", max.error());;
+		return std::format("unable to retrieve value, error {}", max.error());
 	}
 
 	if(*max == RLIM_INFINITY) {
