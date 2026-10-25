@@ -49,8 +49,8 @@ class ClientIdent final {
 	static constexpr std::size_t uuid_size = 16;
 
 	std::array<std::uint64_t, uuid_size / sizeof(std::uint64_t)> data_;
-	mutable std::size_t hash_;
-	mutable bool hashed_;
+	mutable std::size_t hash_ = 0;
+	mutable bool hashed_ = false;
 
 	void generate(const std::size_t service_index) {
 		assert(service_index < 256);
@@ -72,18 +72,13 @@ public:
 	constexpr static auto max_slot_value = 0xfffu; // todo, sz literal when compiler bump
 	static_assert(max_slot_value < 0x1000, "Slot count exceeds bits assigned for encoding");
 
-	ClientIdent()
-		: data_{}
-		, hash_(0)
-		, hashed_(false) {};
+	ClientIdent() : data_{} {};
 
-	explicit ClientIdent(std::size_t service_index)
-		: ClientIdent() {
+	explicit ClientIdent(std::size_t service_index) {
 		generate(service_index);
 	}
 
-	explicit ClientIdent(std::span<const std::uint8_t, uuid_size> data)
-		: ClientIdent() {
+	explicit ClientIdent(std::span<const std::uint8_t, uuid_size> data) {
 		std::memcpy(data_.data(), data.data(), uuid_size);
 	}
 
