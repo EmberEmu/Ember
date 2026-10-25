@@ -37,7 +37,7 @@ namespace smart_enum {
  * If an error occurs, the return value is undefined 
  * and err is set.
  */
-int char_to_int(char c, int base, bool& err) {
+int char_to_int(unsigned char c, int base, bool& err) {
 	err = false;
 
 	if(c >= '0' && c <= '9') {

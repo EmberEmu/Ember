@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Ember
+ * Copyright (c) 2024 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -70,19 +70,19 @@ std::string snake_case(const std::string_view val) {
 	std::string result;
 	bool first = true;
 
-	for(auto ch : val) {
+	for(const unsigned char ch : val) {
 		if(std::isupper(ch)) { 
 			if(!first) {
 				result = result + '_';
 			}
 
-			result += std::tolower(ch);
+			result += static_cast<char>(std::tolower(ch));
 		} else { 
-			result = result + ch; 
+			result = result + static_cast<char>(ch); 
 		}
 
 		first = false;
-	} 
+	}
 
 	return result; 
 }

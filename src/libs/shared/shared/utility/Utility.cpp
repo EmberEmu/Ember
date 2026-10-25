@@ -47,9 +47,9 @@ namespace ember::utility {
 std::size_t max_consecutive(const std::string_view name, const bool case_insensitive) {
 	std::size_t current_run = 0;
 	std::size_t longest_run = 0;
-	char last = 0;
+	unsigned char last = 0;
 
-	for(auto c : name) {
+	for(unsigned char c : name) {
 		if(case_insensitive) {
 			c = std::tolower(c);
 		}

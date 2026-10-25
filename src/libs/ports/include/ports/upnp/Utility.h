@@ -20,7 +20,7 @@ struct CaseInsensitive {
 	struct Comparator {
 		bool operator() (const std::string_view lhs, std::string_view rhs) const {
 			return std::ranges::equal(lhs, rhs,
-				[](char lhs, char rhs) {
+				[](const unsigned char lhs, const unsigned char rhs) {
 					return std::tolower(lhs) == std::tolower(rhs);
 				}
 			);
