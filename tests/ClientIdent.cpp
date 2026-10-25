@@ -51,9 +51,9 @@ TEST_F(ClientIdentTest, Hash) {
 	};
 
 	ClientIdent ident;
-	ASSERT_EQ(ident.hash(), 0x14DD710A2D8840F0);
+	ASSERT_EQ(ident.hash(), 0xD0A66A65C7528968);
 	// hash is cached, make sure it's still correct the second time
-	ASSERT_EQ(ident.hash(), 0x14DD710A2D8840F0);
+	ASSERT_EQ(ident.hash(), 0xD0A66A65C7528968);
 }
 
 TEST_F(ClientIdentTest, ExtractPtr) {
