@@ -9,8 +9,10 @@
 #include "Utility.h"
 #include <shared/CompilerWarn.h>
 #include <botan/bigint.h>
+#include <expected>
 #include <format>
 #include <cassert>
+#include <cerrno>
 
 using namespace std::chrono_literals;
 
@@ -76,29 +78,36 @@ void set_window_title(cstring_view title) {
 #endif
 }
 
-int max_sockets() {
 #if defined __linux__ || defined __unix__ || defined TARGET_OS_MAC
+std::expected<rlim_t, int> max_sockets() {
 	rlimit limit{};
 	const int res = getrlimit(RLIMIT_NOFILE, &limit);
 	
 	if(res == -1) {
-		return -1;
+		return std::unexpected(errno);
 	}
 
 	return limit.rlim_cur;
-#endif
+}
+#else
+int max_sockets() {
 	return 0;
 }
+#endif
 
 std::string max_sockets_desc() {
 #if defined __linux__ || defined __unix__ || defined TARGET_OS_MAC
 	const auto max = max_sockets();
 
-	if(max == -1) {
-		return  "unable to retrieve value";
-	} else {
-		return  std::to_string(max);
+	if(!max) {
+		return std::format("unable to retrieve value, error {}", max.error());;
 	}
+
+	if(*max == RLIM_INFINITY) {
+		return "unlimited";
+	}
+
+	return std::to_string(*max);
 #else
 	return "no known limits";
 #endif
