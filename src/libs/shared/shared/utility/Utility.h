@@ -13,6 +13,7 @@
 #include <string>
 #include <string_view>
 #include <cstddef>
+#include <cstdint>
 
 // fwd decl
 namespace Botan { class BigInt; }
