@@ -68,6 +68,10 @@ class ClientIdent final {
 		data_[0] |= static_cast<std::uint64_t>(index) << 56;
 	}
 
+	void invalidate_hash() {
+		hashed_ = false;
+	}
+
 public:
 	constexpr static auto max_slot_value = 0xfffu; // todo, sz literal when compiler bump
 	static_assert(max_slot_value < 0x1000, "Slot count exceeds bits assigned for encoding");
@@ -91,6 +95,7 @@ public:
 		const std::uint8_t slot_lo = slot & 0xf;
 		data_[0] = (data_[0] & (0xffull << 56)) | (ptr_val << 8ull) | slot_hi;
 		data_[1] = (data_[1] & ~0xfull) | slot_lo;
+		invalidate_hash();
 	}
 
 	template<typename T>
@@ -139,6 +144,7 @@ public:
 	void set_zero() {
 		data_[0] = 0;
 		data_[1] = 0;
+		invalidate_hash();
 	}
 
 	bool is_zero() const {
