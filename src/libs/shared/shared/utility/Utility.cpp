@@ -89,10 +89,6 @@ std::expected<rlim_t, int> max_sockets() {
 
 	return limit.rlim_cur;
 }
-#else
-int max_sockets() {
-	return 0;
-}
 #endif
 
 std::string max_sockets_desc() {
