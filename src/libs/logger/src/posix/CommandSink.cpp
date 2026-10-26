@@ -101,6 +101,8 @@ void CommandSink::do_batch_write(const std::span<std::tuple<RecordDetail, std::s
 	}
 
 	const std::span<char> timestamp(ts_buffer.data(), ts_size);
+
+	std::lock_guard guard(console_lock_);
 	out_buf_.reserve(size + (10 * records.size()));
 
 	for(auto&& [detail, prefix, data] : records) {
@@ -161,10 +163,11 @@ void CommandSink::write(Severity severity, Filter type,	std::string_view prefix,
 	// calculate the precise size of the buffer in advance to avoid reallocations
 	std::size_t buff_req_size
 		= timestamp.size()
+		+ prefix.size()
 		+ record.size()
 		+ sevsv.size();
 
-	std::lock_guard guard(console_lock_); // only protecting theme
+	std::lock_guard guard(console_lock_);
 
 	const auto tag_style = theme_colour(theme_, severity, StyleSegment::tag);
 	const auto text_style = theme_colour(theme_, severity, StyleSegment::text);
@@ -214,6 +217,7 @@ void CommandSink::write(Severity severity, Filter type,	std::string_view prefix,
 			append(timestamp);
 		}
 
+		append(prefix);
 		append(tag_style);
 		append(sevsv);
 		append(text_style);

@@ -51,6 +51,7 @@ class Logger::impl final {
 			return;
 		}
 #endif
+		std::get<std::string_view>(buffer_) = prefix_;
 		std::get<std::string>(buffer_).push_back('\n');
 		worker_.queue_.enqueue(std::move(buffer_));
 #ifndef LOG_PRODUCER_LOW_LATENCY

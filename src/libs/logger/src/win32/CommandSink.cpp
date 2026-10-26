@@ -101,6 +101,7 @@ void CommandSink::do_batch_write(const std::span<std::tuple<RecordDetail, std::s
 		return;
 	}
 
+	std::lock_guard guard(console_lock_);
 	out_buf_.reserve(size + (10 * records.size()));
 
 	[[indeterminate]] std::array<char, timestamp_buf_size> ts_buffer;
@@ -120,6 +121,7 @@ void CommandSink::do_batch_write(const std::span<std::tuple<RecordDetail, std::s
 			const auto req_buf_size
 				= cur_sz
 				+ timestamp.size()
+				+ prefix.size()
 				+ severity.size()
 				+ data.size();
 
@@ -129,6 +131,9 @@ void CommandSink::do_batch_write(const std::span<std::tuple<RecordDetail, std::s
 
 			std::memcpy(write_ptr + offset, timestamp.data(), timestamp.size());
 			offset += timestamp.size();
+
+			std::memcpy(write_ptr + offset, prefix.data(), prefix.size());
+			offset += prefix.size();
 
 			std::memcpy(write_ptr + offset, severity.data(), severity.size());
 			offset += severity.size();
@@ -151,6 +156,8 @@ void CommandSink::write(Severity severity, Filter type, std::string_view prefix,
 		return;
 	}
 
+	std::lock_guard guard(console_lock_);
+
 	[[indeterminate]] std::array<char, timestamp_buf_size> ts_buffer;
 	std::size_t ts_size = 0;
 
@@ -163,6 +170,7 @@ void CommandSink::write(Severity severity, Filter type, std::string_view prefix,
 
 	const auto buff_req_size
 		= timestamp.size()
+		+ prefix.size()
 		+ record.size()
 		+ sevsv.size();
 
@@ -180,6 +188,7 @@ void CommandSink::write(Severity severity, Filter type, std::string_view prefix,
 	};
 
 	append(timestamp);
+	append(prefix);
 	append(sevsv);
 	append(record);
 

@@ -260,6 +260,7 @@ opts::variables_map parse_arguments(const int argc, const char* argv[]) {
 		("console_log.verbosity", opts::value<log::Severity>()->required())
 		("console_log.filter_mask", opts::value<std::uint32_t>()->required())
 		("console_log.colours", opts::value<bool>()->required())
+		("console_log.prefixes", opts::value<bool>()->required())
 		("console_log.prefix", opts::value<std::string>()->required())
 		("console_log.suggestions", opts::value<bool>()->required())
 		("console_log.no_bg", opts::value<bool>()->required())

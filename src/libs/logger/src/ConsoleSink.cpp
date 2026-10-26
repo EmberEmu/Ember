@@ -63,6 +63,7 @@ void ConsoleSink::do_batch_write(const std::span<std::tuple<RecordDetail, std::s
 			const auto req_buf_size
 				= cur_sz
 				+ timestamp.size()
+				+ prefix.size()
 				+ severity.size()
 				+ data.size();
 
@@ -72,6 +73,9 @@ void ConsoleSink::do_batch_write(const std::span<std::tuple<RecordDetail, std::s
 			
 			std::memcpy(write_ptr + offset, timestamp.data(), timestamp.size());
 			offset += timestamp.size();
+
+			std::memcpy(write_ptr + offset, prefix.data(), prefix.size());
+			offset += prefix.size();
 
 			std::memcpy(write_ptr + offset, severity.data(), severity.size());
 			offset += severity.size();
@@ -106,6 +110,7 @@ void ConsoleSink::write(Severity severity, Filter type, std::string_view prefix,
 
 	const std::size_t req_buf_size
 		= timestamp.size()
+		+ prefix.size()
 		+ record.size()
 		+ sevsv.size();
 
@@ -119,6 +124,7 @@ void ConsoleSink::write(Severity severity, Filter type, std::string_view prefix,
 	};
 
 	append(timestamp);
+	append(prefix);
 	append(sevsv);
 	append(record);
 
