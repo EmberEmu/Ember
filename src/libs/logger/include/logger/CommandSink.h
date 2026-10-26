@@ -27,8 +27,8 @@ public:
 	CommandSink(std::string name, Severity severity, Filter filter);
 	~CommandSink() = default;
 
-	void write(Severity severity, Filter type, std::string_view record, bool flush) override = 0;
-	void batch_write(const std::span<std::pair<RecordDetail, std::string>>& records) override = 0;
+	void write(Severity severity, Filter type, std::string_view prefix, std::string_view record, bool flush) override = 0;
+	void batch_write(const std::span<std::tuple<RecordDetail, std::string_view, std::string>>& records) override = 0;
 
 	virtual void colourise(bool colourise) = 0;
 	virtual void log_timestamp(bool enable) = 0;

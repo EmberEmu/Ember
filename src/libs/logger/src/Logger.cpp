@@ -11,7 +11,12 @@
 
 namespace ember::log {
 
-Logger::Logger() : pimpl_(std::make_unique<impl>()) {}
+Logger::Logger()
+	: pimpl_(std::make_unique<impl>()) {}
+
+Logger::Logger(std::string prefix)
+	: pimpl_(std::make_unique<impl>(std::move(prefix))) {}
+
 Logger::~Logger() = default;
 
 std::string& Logger::get_buffer() {

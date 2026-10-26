@@ -153,14 +153,14 @@ void FileSink::rotate_check(std::size_t buffer_size, const std::tm& curr_time) {
 	}
 }
 
-void FileSink::batch_write(const std::span<std::pair<RecordDetail, std::string>>& records) {
+void FileSink::batch_write(const std::span<std::tuple<RecordDetail, std::string_view, std::string>>& records) {
 	std::tm curr_time = detail::current_time();
 	std::size_t size = 0;
 	Severity severity = this->severity();
 	Filter filter = this->filter();
 	bool matches = false;
 
-	for(auto&& [detail, data] : records) {
+	for(auto&& [detail, prefix, data] : records) {
 		if(severity <= detail.severity && !(filter & detail.type)) {
 			size += data.size();
 			matches = true;
@@ -175,7 +175,7 @@ void FileSink::batch_write(const std::span<std::pair<RecordDetail, std::string>>
 	out_buf_.reserve(size + (20 * records.size()));
 	[[indeterminate]] std::array<std::string, std::to_underlying(Severity::severity_max) + 1> cache;
 
-	for(auto&& [detail, data] : records) {
+	for(auto&& [detail, prefix, data] : records) {
 		if(severity <= detail.severity && !(filter & detail.type)) {
 			// only generate new record detail strings when necessary
 			auto& prepend = cache[std::to_underlying(detail.severity)];
@@ -208,7 +208,7 @@ void FileSink::batch_write(const std::span<std::pair<RecordDetail, std::string>>
 	}
 }
 
-void FileSink::write(Severity severity, Filter type, std::string_view record, bool flush) {
+void FileSink::write(Severity severity, Filter type, std::string_view prefix, std::string_view record, bool flush) {
 	if(this->severity() > severity || (this->filter() & type)) {
 		return;
 	}

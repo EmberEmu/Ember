@@ -39,8 +39,8 @@ public:
 	           std::string host, unsigned int port, Facility facility, std::string tag);
 	~SyslogSink();
 
-	void write(log::Severity severity, Filter type, std::string_view record, bool flush) override;
-	void batch_write(const std::span<std::pair<RecordDetail, std::string>>& records) override;
+	void write(log::Severity severity, Filter type, std::string_view prefix, std::string_view record, bool flush) override;
+	void batch_write(const std::span<std::tuple<RecordDetail, std::string_view, std::string>>& records) override;
 
 	static constexpr std::string_view type() { return sink_type; }
 };

@@ -39,8 +39,9 @@ class Logger::impl final {
 	std::vector<std::shared_ptr<Sink>> sinks_;
 	std::mutex sink_lock_;
 	Worker worker_;
+	const std::string prefix_;
 
-	static inline thread_local std::pair<RecordDetail, std::string> buffer_;
+	static inline thread_local std::tuple<RecordDetail, std::string_view, std::string> buffer_;
 	static inline thread_local std::binary_semaphore sem_{0};
 
 	void finalise() {
@@ -50,34 +51,40 @@ class Logger::impl final {
 			return;
 		}
 #endif
-		buffer_.second.push_back('\n');
+		std::get<std::string>(buffer_).push_back('\n');
 		worker_.queue_.enqueue(std::move(buffer_));
 #ifndef LOG_PRODUCER_LOW_LATENCY
 		worker_.signal();
 #endif
 		buffer_ = {};
-		buffer_.second.reserve(buffer_reserve);
+		std::get<std::string>(buffer_).reserve(buffer_reserve);
 	}
 
 	void finalise_sync() {
-		buffer_.second.push_back('\n');
+		std::get<std::string>(buffer_).push_back('\n');
 
-		auto r = std::make_tuple<RecordDetail, std::string, std::binary_semaphore*>(
-			std::move(buffer_.first), std::move(buffer_.second), &sem_
+		auto r = std::make_tuple<RecordDetail, std::string_view, std::string, std::binary_semaphore*>(
+			std::move(std::get<RecordDetail>(buffer_)), prefix_, std::move(std::get<std::string>(buffer_)), &sem_
 		);
 
 		worker_.queue_sync_.enqueue(std::move(r));
 		worker_.signal();
 		buffer_ = {};
-		buffer_.second.reserve(buffer_reserve);
+		std::get<std::string>(buffer_).reserve(buffer_reserve);
 		sem_.acquire();
 	}
 
 	std::string& get_buffer() {
-		return buffer_.second;
+		return std::get<std::string>(buffer_);
 	}
 
 public:
+	impl(std::string prefix) : 
+		prefix_(std::move(prefix))
+		, worker_(sinks_, sink_lock_) {
+		worker_.start();
+	}
+
 	impl() : worker_(sinks_, sink_lock_) {
 		worker_.start();
 	}
@@ -88,24 +95,25 @@ public:
 
 	void copy_to_stream(auto& data) {
 		const std::string conv { std::to_string(data) };
-		const auto size = buffer_.second.size();
-		buffer_.second.resize(size + conv.size());
-		std::ranges::copy(conv, buffer_.second.data() + size);
+		auto& message = std::get<std::string>(buffer_);
+		const auto size = message.size();
+		message.resize(size + conv.size());
+		std::ranges::copy(conv, message.data() + size);
 	}
 
 	impl& operator <<(impl& (*m)(impl&)) {
-		buffer_.first.type = 1; // first bit represents the misc. record type
+		std::get<RecordDetail>(buffer_).type = 1; // first bit represents the misc. record type
 		return (*m)(*this);
 	}
 
 	impl& operator <<(Severity severity) {
-		buffer_.first.type = 1; // first bit represents the misc. record type
-		buffer_.first.severity = severity;
+		std::get<RecordDetail>(buffer_).type = 1; // first bit represents the misc. record type
+		std::get<RecordDetail>(buffer_).severity = severity;
 		return *this;
 	}
 
 	impl& operator <<(Filter type) {
-		buffer_.first.type = type;
+		std::get<RecordDetail>(buffer_).type = type;
 		return *this;
 	}
 
@@ -155,9 +163,10 @@ public:
 	}
 
 	impl& operator <<(const std::string_view data) {
-		const auto size = buffer_.second.size();
-		buffer_.second.resize(size + data.size());
-		std::ranges::copy(data, buffer_.second.data() + size);
+		auto& message = std::get<std::string>(buffer_);
+		const auto size = message.size();
+		message.resize(size + data.size());
+		std::ranges::copy(data, message.data() + size);
 		return *this;
 	}
 

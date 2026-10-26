@@ -18,23 +18,23 @@
 
 namespace ember::log {
 
-void ConsoleSink::batch_write(const std::span<std::pair<RecordDetail, std::string>>& records) {
+void ConsoleSink::batch_write(const std::span<std::tuple<RecordDetail, std::string_view, std::string>>& records) {
 	if(!colour_) [[unlikely]] {
 		do_batch_write(records);
 	} else { // we can't do batch output if we need to colour each individual log record
-		for(auto& [detail, data] : records) {
-			write(detail.severity, detail.type, data, false);
+		for(const auto& [detail, prefix, data] : records) {
+			write(detail.severity, detail.type, prefix, data, false);
 		}
 	}
 }
 
-void ConsoleSink::do_batch_write(const std::span<std::pair<RecordDetail, std::string>>& records) {
+void ConsoleSink::do_batch_write(const std::span<std::tuple<RecordDetail, std::string_view, std::string>>& records) {
 	std::size_t size = 0;
 	Severity sink_sev = this->severity();
 	Filter sink_filter = this->filter();
 	bool matches = false;
 
-	for(auto&& [detail, data] : records) {
+	for(auto&& [detail, prefix, data] : records) {
 		if(sink_sev <= detail.severity && !(sink_filter &detail.type)) {
 			size += data.size();
 			matches = true;
@@ -55,7 +55,7 @@ void ConsoleSink::do_batch_write(const std::span<std::pair<RecordDetail, std::st
 	const std::span<char> timestamp(ts_buffer.data(), ts_size);
 	out_buf_.reserve(size + (10 * records.size()));
 
-	for(auto&& [detail, data] : records) {
+	for(auto&& [detail, prefix, data] : records) {
 		if(sink_sev <= detail.severity && !(sink_filter & detail.type)) {
 			std::string_view severity = severity_string(detail.severity);
 			const auto cur_sz = out_buf_.size();
@@ -89,7 +89,7 @@ void ConsoleSink::do_batch_write(const std::span<std::pair<RecordDetail, std::st
 	}
 }
 
-void ConsoleSink::write(Severity severity, Filter type, std::string_view record, bool flush) {
+void ConsoleSink::write(Severity severity, Filter type, std::string_view prefix, std::string_view record, bool flush) {
 	if(this->severity() > severity || (this->filter() & type)) {
 		return;
 	}

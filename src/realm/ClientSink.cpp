@@ -31,7 +31,7 @@ inline bool ClientSink::filter(log::Severity severity, log::Filter type) const {
 	return severity < severity_ || filter_ & type;
 }
 
-void ClientSink::write(log::Severity severity, log::Filter type, std::string_view record, bool) {
+void ClientSink::write(log::Severity severity, log::Filter type, std::string_view prefix, std::string_view record, bool) {
 	if(filter(severity, type)) {
 		return;
 	}
@@ -49,11 +49,11 @@ void ClientSink::write(log::Severity severity, log::Filter type, std::string_vie
 	dispatch(std::move(message));
 }
 
-void ClientSink::batch_write(const std::span<std::pair<log::RecordDetail, std::string>>& records) {
+void ClientSink::batch_write(const std::span<std::tuple<log::RecordDetail, std::string_view, std::string>>& records) {
 	std::string messages;
 	messages.reserve(reserve_size * records.size());
 
-	for(auto& [detail, data] : records) {
+	for(auto& [detail, prefix, data] : records) {
 		if(filter(detail.severity, detail.type)) {
 			return;
 		}

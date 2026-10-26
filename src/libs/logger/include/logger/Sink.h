@@ -14,6 +14,7 @@
 #include <span>
 #include <string>
 #include <string_view>
+#include <tuple>
 
 namespace ember::log {
 
@@ -38,8 +39,8 @@ public:
 	void severity(Severity severity) { severity_ = severity; }
 	void filter(const Filter& filter) { filter_ = filter; }
 	virtual bool unique() { return false;  }
-	virtual void write(Severity severity, Filter type, std::string_view record, bool flush) = 0;
-	virtual void batch_write(const std::span<std::pair<RecordDetail, std::string>>& records) = 0;
+	virtual void write(Severity severity, Filter type, std::string_view prefix, std::string_view record, bool flush) = 0;
+	virtual void batch_write(const std::span<std::tuple<RecordDetail, std::string_view, std::string>>& records) = 0;
 	virtual ~Sink() = default;
 };
 

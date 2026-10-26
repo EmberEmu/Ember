@@ -107,7 +107,7 @@ class CommandSink final : public log::CommandSink {
 	void dispatch_command();
 
 	void write_buffer(std::span<const char> buffer, bool redraw = true);
-	void do_batch_write(const std::span<std::pair<RecordDetail, std::string>>& records);
+	void do_batch_write(const std::span<std::tuple<RecordDetail, std::string_view, std::string>>& records);
 
 	void autocomplete();
 	bool invoke_handler(std::string_view command);
@@ -121,8 +121,8 @@ public:
 
 	void stop();
 
-	void write(Severity severity, Filter type, std::string_view record, bool flush) override;
-	void batch_write(const std::span<std::pair<RecordDetail, std::string>>& records) override;
+	void write(Severity severity, Filter type, std::string_view prefix, std::string_view record, bool flush) override;
+	void batch_write(const std::span<std::tuple<RecordDetail, std::string_view, std::string>>& records) override;
 
 	void colourise(bool colourise) override { colour_ = colourise; }
 	void log_timestamp(bool enable) override { timestamp_ = enable; }

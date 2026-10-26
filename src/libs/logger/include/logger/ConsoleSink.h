@@ -36,7 +36,7 @@ class ConsoleSink final : public Sink {
 	boost::container::small_vector<char, sv_reserve> out_buf_;
 
 	std::size_t generate_timestamp(std::span<char> buffer);
-	void do_batch_write(const std::span<std::pair<RecordDetail, std::string>>& records);
+	void do_batch_write(const std::span<std::tuple<RecordDetail, std::string_view, std::string>>& records);
 
 public:
 	ConsoleSink(std::string name, Severity severity, Filter filter)
@@ -44,8 +44,8 @@ public:
 		, colour_(false)
 		, timestamp_(false) {}
 
-	void write(Severity severity, Filter type, std::string_view record, bool flush) override;
-	void batch_write(const std::span<std::pair<RecordDetail, std::string>>& records) override;
+	void write(Severity severity, Filter type, std::string_view prefix, std::string_view record, bool flush) override;
+	void batch_write(const std::span<std::tuple<RecordDetail, std::string_view, std::string>>& records) override;
 	void colourise(bool colourise) { colour_ = colourise; }
 	void log_timestamp(bool enable) { timestamp_ = enable; }
 	void timestamp_format(std::string format) { timestamp_fmt_ = format; }
