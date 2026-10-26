@@ -28,7 +28,7 @@
 
 namespace ember::utility {
 
-void log_subcommands(log::Logger& logger, const std::string& path, const commands::CommandMap& subcommands) {
+void log_subcommands(const std::string& path, const commands::CommandMap& subcommands, log::Logger& logger) {
 	LOG_CONSOLE(logger, R"(Available subcomands for "{}": )", path);
 
 	for(auto& subcommand : subcommands | std::views::values) {
@@ -49,7 +49,7 @@ void handle_command_result(commands::Result result,
 			LOG_CONERR(logger, "Usage: {} {}", path, command.usage_string());
             break;
         case subcommands:
-			log_subcommands(logger, path, command.commands());
+			log_subcommands(path, command.commands(), logger);
             break;
         case unavailable:
 			LOG_CONERR(logger, R"(Command "{}" is currently unavailable.)", path);
@@ -229,7 +229,7 @@ std::vector<std::string> theme_file_list_relative(const std::filesystem::path& p
 	return files;
 }
 
-void handle_theme_list_command(log::Logger& logger, const std::filesystem::path& path) {
+void handle_theme_list_command(const std::filesystem::path& path, log::Logger& logger) {
 	const auto themes = log::posix::builtin_themes();
 	const auto files = theme_file_list_relative(path);
 
@@ -272,8 +272,9 @@ commands::Suggestions handle_theme_set_autocomplete(std::span<const std::string>
 	return results;
 }
 
-void handle_theme_set_command(const commands::Arguments& arguments, log::Logger& logger,
-                              const std::filesystem::path& path) try {
+void handle_theme_set_command(const commands::Arguments& arguments,
+                              const std::filesystem::path& path,
+                              log::Logger& logger) try {
 	const auto sink = logger.fetch_sink(log::posix::CommandSink::name());
 
 	if(!sink) {
@@ -352,7 +353,7 @@ void register_theme_commands(std::shared_ptr<commands::Command> root, log::Logge
 		->description("Change the console's current theme")
 		->argument<std::string>("name")
 		->handler([&, theme_path](const auto& arguments) {
-			handle_theme_set_command(arguments, logger, theme_path);
+			handle_theme_set_command(arguments, theme_path, logger);
 		})
 		->autocomplete([theme_path](const auto& tokens) {
 			return handle_theme_set_autocomplete(tokens, theme_path);
@@ -361,7 +362,7 @@ void register_theme_commands(std::shared_ptr<commands::Command> root, log::Logge
 	theme_cmd->insert("list")
 		->description("Display available console themes")
 		->handler([&, theme_path](const auto&) {
-			handle_theme_list_command(logger, theme_path);
+			handle_theme_list_command(theme_path, logger);
 		});
 }
 
