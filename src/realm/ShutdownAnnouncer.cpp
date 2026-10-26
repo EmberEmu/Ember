@@ -118,7 +118,10 @@ std::string ShutdownAnnouncer::time_remaining_fmt(std::chrono::seconds remaining
 }
 
 void ShutdownAnnouncer::broadcast(std::string message) {
-	SystemMessage event(std::move(message), SystemMessage::Type::message);
+	SystemMessage event(
+		std::move(message), SystemMessage::Type::message
+	);
+
 	dispatcher_.broadcast(event);
 }
 
@@ -127,20 +130,20 @@ void ShutdownAnnouncer::reset() {
 }
 
 void ShutdownAnnouncer::stop() {
-	if(active_) {
-		if(announce_) {
-			broadcast("Shutdown cancelled");
-		}
-
-		const auto result = journal_.remove();
-
-		if(!result) {
-			LOG_ERROR(logger_, "Unable to remove journal entry");
-		}
+	if(!active_) {
+		return;
 	}
 
 	timer_.cancel();
 	active_ = false;
+
+	if(announce_) {
+		broadcast("Shutdown cancelled");
+	}
+
+	if(!journal_.remove()) {
+		LOG_ERROR(logger_, "Unable to remove journal entry");
+	}
 }
 
 std::chrono::steady_clock::time_point ShutdownAnnouncer::expires() const {
