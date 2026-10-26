@@ -186,7 +186,9 @@ void handle_help_command(const commands::Arguments& arguments, const commands::C
 	}
 }
 
-void print_themes(log::Logger& logger) {
+void print_themes(std::span<const log::posix::ThemeView> themes,
+                  std::span<const std::string> files,
+                  log::Logger& logger) {
 	constexpr auto max_name_len = 20u; // todo, size_t literals on bump
 	constexpr auto max_desc_len = 80u;
 
@@ -199,23 +201,18 @@ void print_themes(log::Logger& logger) {
 	printer.AddColumn("Description", max_desc_len);
 	printer.PrintHeader();
 
-	for(const auto& theme : log::posix::builtin_themes()) {
+	for(const auto& theme : themes) {
 		utility::write_pretty_truncate(printer, theme.name, max_name_len);
 		utility::write_pretty_truncate(printer, theme.desc, max_desc_len);
 	}
 
+	for(const auto& file : files) {
+		utility::write_pretty_truncate(printer, file, max_name_len);
+		utility::write_pretty_truncate(printer, "Custom theme file", max_desc_len);
+	}
+
 	printer.PrintFooter();
 	LOG_CONSOLE(logger, stream.view());
-}
-
-void handle_theme_list_command(log::Logger& logger) {
-	const auto themes = log::posix::builtin_themes();
-
-	if(themes.empty()) {
-		LOG_CONSOLE(logger, "No themes available");
-	} else {
-		print_themes(logger);
-	}
 }
 
 std::vector<std::string> theme_file_list_relative(const std::filesystem::path& path) {
@@ -230,6 +227,17 @@ std::vector<std::string> theme_file_list_relative(const std::filesystem::path& p
 	}
 
 	return files;
+}
+
+void handle_theme_list_command(log::Logger& logger, const std::filesystem::path& path) {
+	const auto themes = log::posix::builtin_themes();
+	const auto files = theme_file_list_relative(path);
+
+	if(themes.empty() && files.empty()) {
+		LOG_CONSOLE(logger, "No themes available");
+	} else {
+		print_themes(themes, files, logger);
+	}
 }
 
 commands::Suggestions handle_theme_set_autocomplete(std::span<const std::string> tokens,
@@ -254,7 +262,7 @@ commands::Suggestions handle_theme_set_autocomplete(std::span<const std::string>
 	for(const auto& file : theme_file_list_relative(path)) {
 		if(tokens.empty() || file.starts_with(tokens.front())) {
 			results.records.emplace_back(
-				file, "custom theme file"
+				file, "Custom theme file"
 			);
 		}
 	}
@@ -352,8 +360,8 @@ void register_theme_commands(std::shared_ptr<commands::Command> root, log::Logge
 	
 	theme_cmd->insert("list")
 		->description("Display available console themes")
-		->handler([&](const auto&) {
-			handle_theme_list_command(logger);
+		->handler([&, theme_path](const auto&) {
+			handle_theme_list_command(logger, theme_path);
 		});
 }
 
