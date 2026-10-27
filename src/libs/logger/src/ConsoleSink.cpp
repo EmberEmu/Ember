@@ -56,42 +56,44 @@ void ConsoleSink::do_batch_write(const std::span<std::tuple<RecordDetail, std::s
 	out_buf_.reserve(size + (10 * records.size()));
 
 	for(auto&& [detail, prefix, data] : records) {
-		if(sink_sev <= detail.severity && !(sink_filter & detail.type)) {
-			std::string_view severity = severity_string(detail.severity);
-
-			// todo, size_t literal on bump
-			const auto padding = !prefix.empty()?
-				std::max<std::size_t>(1u, prefix_pad_.size() > prefix.size()?
-					prefix_pad_.size() - prefix.size() : 0u) : 0u;
-
-			const auto cur_sz = out_buf_.size();
-
-			const auto req_buf_size
-				= cur_sz
-				+ timestamp.size()
-				+ prefix.size()
-				+ padding
-				+ severity.size()
-				+ data.size();
-
-			out_buf_.resize(req_buf_size, boost::container::default_init);
-			auto write_ptr = out_buf_.data() + cur_sz;
-			std::size_t offset = 0;
-			
-			std::memcpy(write_ptr + offset, timestamp.data(), timestamp.size());
-			offset += timestamp.size();
-
-			std::memcpy(write_ptr + offset, prefix.data(), prefix.size());
-			offset += prefix.size();
-
-			std::memcpy(write_ptr + offset, prefix_pad_.data(), padding);
-			offset += padding;
-
-			std::memcpy(write_ptr + offset, severity.data(), severity.size());
-			offset += severity.size();
-
-			std::memcpy(write_ptr + offset, data.data(), data.size());
+		if(sink_sev > detail.severity || (sink_filter & detail.type)) {
+			continue;
 		}
+
+		std::string_view severity = severity_string(detail.severity);
+
+		// todo, size_t literal on bump
+		const auto padding = !prefix.empty()?
+			std::max<std::size_t>(1u, prefix_pad_.size() > prefix.size()?
+				prefix_pad_.size() - prefix.size() : 0u) : 0u;
+
+		const auto cur_sz = out_buf_.size();
+
+		const auto req_buf_size
+			= cur_sz
+			+ timestamp.size()
+			+ prefix.size()
+			+ padding
+			+ severity.size()
+			+ data.size();
+
+		out_buf_.resize(req_buf_size, boost::container::default_init);
+		auto write_ptr = out_buf_.data() + cur_sz;
+		std::size_t offset = 0;
+		
+		std::memcpy(write_ptr + offset, timestamp.data(), timestamp.size());
+		offset += timestamp.size();
+
+		std::memcpy(write_ptr + offset, prefix.data(), prefix.size());
+		offset += prefix.size();
+
+		std::memcpy(write_ptr + offset, prefix_pad_.data(), padding);
+		offset += padding;
+
+		std::memcpy(write_ptr + offset, severity.data(), severity.size());
+		offset += severity.size();
+
+		std::memcpy(write_ptr + offset, data.data(), data.size());
 	}
 
 	std::fwrite(out_buf_.data(), out_buf_.size(), 1, stdout);
