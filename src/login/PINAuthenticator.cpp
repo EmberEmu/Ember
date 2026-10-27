@@ -144,7 +144,7 @@ std::uint32_t PINAuthenticator::generate_totp_pin(const std::string_view secret,
 	HashBytes hmac_result;
 	auto hmac = Botan::MessageAuthenticationCode::create_or_throw("HMAC(SHA-1)");
 	BOOST_ASSERT_MSG(hmac->output_length() == hmac_result.size(), "Bad hash size");
-	hmac->set_key(decoded_key);
+	hmac->set_key(std::span(decoded_key.data(), key_size));
 	hmac->update_be(step);
 	hmac->final(hmac_result);
 
