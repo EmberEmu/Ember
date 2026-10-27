@@ -9,7 +9,6 @@
 #pragma once
 
 #include <array>
-#include <type_traits>
 #include <cstdint>
 
 // Thanks to https://www.zezula.net/en/mpq/techinfo.html for these time-savers
@@ -17,8 +16,10 @@
 
 namespace ember::mpq {
 
+constexpr auto crypt_table_size { 1280u }; 
+
 [[nodiscard]] static consteval auto generate_crypt_table() {
-    std::array<std::uint32_t, 1280> table{};
+    std::array<std::uint32_t, crypt_table_size> table{};
     std::uint32_t seed = 0x00100001;
 
     for(std::uint32_t index1 = 0; index1 < 0x100; ++index1) { 
@@ -34,7 +35,7 @@ namespace ember::mpq {
     return table;
 }
 
-extern const std::invoke_result<decltype(&generate_crypt_table)>::type crypt_table;
+extern const std::array<std::uint32_t, crypt_table_size> crypt_table;
 extern const std::array<char, 256> toupper_table;
 
 } // mpq, ember

@@ -10,7 +10,7 @@
 
 namespace ember::mpq {
 
-constexpr std::invoke_result<decltype(&generate_crypt_table)>::type crypt_table = generate_crypt_table();
+constexpr std::array<std::uint32_t, crypt_table_size> crypt_table = generate_crypt_table();
 
 constexpr std::array<char, 256> toupper_table {
 	'\x00', '\x01', '\x02', '\x03', '\x04', '\x05', '\x06', '\x07',
