@@ -15,6 +15,16 @@ namespace ember::log::posix::themes {
 inline constexpr ThemeView Frost {
     .name = "frost",
     .desc = "A theme fit for a fictional prince. A very cold, copyrighted prince.",
+	.prefix {
+        .trace  = "\033[38;2;82;107;143m",
+        .debug  = "\033[38;2;82;107;143m",
+        .info   = "\033[38;2;82;107;143m",
+        .warn   = "\033[38;2;82;107;143m",
+        .error  = "\033[38;2;82;107;143m",
+        .fatal  = "\033[38;2;82;107;143m",
+        .con    = "\033[38;2;82;107;143m",
+        .conerr = "\033[38;2;82;107;143m",
+    },
     .tag {
         .trace  = "\033[38;2;138;171;204m",
         .debug  = "\033[38;2;61;155;255m",

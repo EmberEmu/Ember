@@ -14,10 +14,7 @@ namespace ember::log::posix::themes {
 
 inline constexpr ThemeView Regalia {
 	.name = "regalia",
-<<<<<<< HEAD
 	.desc = "Fit for a king, enchanting your log messages with +5 opulence",
-=======
-	.desc = "fit for a king, enchanting your log messages with +5 opulence",
 	.prefix {
 		.trace  = "\033[38;2;129;116;156m",
 		.debug  = "\033[38;2;129;116;156m",
@@ -28,7 +25,6 @@ inline constexpr ThemeView Regalia {
 		.con    = "\033[38;2;129;116;156m",
 		.conerr = "\033[38;2;129;116;156m",
 	},
->>>>>>> fdd0e2e4 (Add theming section for prefixes)
 	.tag {
 		.trace  = "\033[38;2;182;162;217m",
 		.debug  = "\033[38;2;96;165;250m",

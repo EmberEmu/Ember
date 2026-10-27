@@ -14,10 +14,7 @@ namespace ember::log::posix::themes {
 
 inline constexpr ThemeView Smoky {
 	.name = "smoky",
-<<<<<<< HEAD
 	.desc = "Comfy theme, evoking wooden cabins and smoky fires",
-=======
-	.desc = "comfiest of themes, evoking wooden cabins and smoky, cosy fires",
 	.prefix {
 		.trace  = "\033[38;2;136;121;107m",
 		.debug  = "\033[38;2;136;121;107m",
@@ -28,7 +25,6 @@ inline constexpr ThemeView Smoky {
 		.con    = "\033[38;2;136;121;107m",
 		.conerr = "\033[38;2;136;121;107m",
 	},
->>>>>>> fdd0e2e4 (Add theming section for prefixes)
 	.tag {
 		.trace  = "\033[38;2;163;148;133m",
 		.debug  = "\033[38;2;209;154;106m",

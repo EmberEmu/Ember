@@ -14,10 +14,7 @@ namespace ember::log::posix::themes {
 
 inline constexpr ThemeView Abyssal {
 	.name = "abyssal",
-<<<<<<< HEAD
 	.desc = "In the depths of the terminal, mysterious log messages dwell",
-=======
-	.desc = "in the depths of the ocean, mysterious log messages dwell",
 	.prefix {
 		.trace  =  "\033[38;2;96;119;130m",
 		.debug  =  "\033[38;2;96;119;130m",
@@ -28,7 +25,6 @@ inline constexpr ThemeView Abyssal {
 		.con    =  "\033[38;2;96;119;130m",
 		.conerr =  "\033[38;2;96;119;130m",
 	},
->>>>>>> fdd0e2e4 (Add theming section for prefixes)
 	.tag {
 		.trace  = "\033[38;2;113;137;149m",
 		.debug  = "\033[38;2;124;184;217m",
