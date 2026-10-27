@@ -71,6 +71,11 @@ std::shared_ptr<log::Sink> init_file_sink(const opts::variables_map& args, log::
 std::shared_ptr<log::Sink> init_console_sink(const opts::variables_map& args, log::Severity severity) {
 	auto filter = args["console_log.filter_mask"].as<std::uint32_t>();
 	auto colourise = args["console_log.colours"].as<bool>();
+	unsigned int prefix_width = 0;
+
+	if(args.contains("console_log.prefix_width")) {
+		prefix_width = args["console_log.prefix_width"].as<unsigned int>();
+	}
 
 	auto sink = std::make_shared<log::ConsoleSink>(
 		"console_sink_0", severity, log::Filter(filter)
@@ -79,12 +84,19 @@ std::shared_ptr<log::Sink> init_console_sink(const opts::variables_map& args, lo
 	sink->colourise(colourise);
 	sink->log_timestamp(args["console_log.timestamp"].as<bool>());
 	sink->timestamp_format(args["console_log.timestamp_format"].as<std::string>());
+	sink->prefix_width(prefix_width);
 	return sink;
 }
 
 std::shared_ptr<log::Sink> init_command_sink(const opts::variables_map& args, log::Severity severity) {
 	const auto filter = args["console_log.filter_mask"].as<std::uint32_t>();
 	const auto colourise = args["console_log.colours"].as<bool>();
+	unsigned int prefix_width = 0;
+
+	if(args.contains("console_log.prefix_width")) {
+		prefix_width = args["console_log.prefix_width"].as<unsigned int>();
+	}
+
 	std::shared_ptr<log::CommandSink> sink;
 
 #ifdef _WIN32
@@ -96,20 +108,29 @@ std::shared_ptr<log::Sink> init_command_sink(const opts::variables_map& args, lo
 			auto theme = args["console_log.theme"].as<log::posix::Theme>();
 			const auto no_bg = args["console_log.no_bg"].as<bool>();
 
-			sink = std::make_shared<log::posix::CommandSink>(
+			auto cmd_sink = std::make_shared<log::posix::CommandSink>(
 				severity, log::Filter(filter), "ember( ", std::move(theme), no_bg
 			);
+
+			cmd_sink->prefix_width(prefix_width);
+			sink = cmd_sink;
 #ifdef _WIN32
 		} catch(std::exception&) {
 			// fall back to WinAPI impl. if we're running in a terminal that doesn't support ANSI VT
-			sink = std::make_shared<log::win32::CommandSink>(
+			auto cmd_sink = std::make_shared<log::win32::CommandSink>(
 				severity, log::Filter(filter), "ember( "
 			);
+
+			cmd_sink->prefix_width(prefix_width);
+			sink = cmd_sink;
 		}
 	} else {
-		sink = std::make_shared<log::win32::CommandSink>(
+		auto cmd_sink = std::make_shared<log::win32::CommandSink>(
 			severity, log::Filter(filter), "ember( "
 		);
+
+		cmd_sink->prefix_width(prefix_width);
+		sink = cmd_sink;
 	}
 
 #endif

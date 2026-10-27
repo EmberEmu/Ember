@@ -32,6 +32,7 @@ class ConsoleSink final : public Sink {
 	bool timestamp_;
 
 	std::string timestamp_fmt_;
+	std::string prefix_pad_;
 
 	boost::container::small_vector<char, sv_reserve> out_buf_;
 
@@ -49,6 +50,7 @@ public:
 	void colourise(bool colourise) { colour_ = colourise; }
 	void log_timestamp(bool enable) { timestamp_ = enable; }
 	void timestamp_format(std::string format) { timestamp_fmt_ = format; }
+	void prefix_width(unsigned int width) { prefix_pad_ = std::string(width, ' '); }
 
 	static constexpr std::string_view type() { return sink_type; }
 };

@@ -55,7 +55,13 @@ int main(int argc, const char* argv[]) try {
 
 	auto args = parse_arguments(argc, argv);
 
-	log::Logger logger;
+	std::string prefix;
+
+	if(args["console_log.prefixes"].as<bool>()) {
+		prefix = args["console_log.prefix"].as<std::string>();
+	}
+
+	log::Logger logger(prefix);
 	utility::configure_logger(logger, args);
 	log::global_logger(logger);
 
@@ -262,6 +268,7 @@ opts::variables_map parse_arguments(const int argc, const char* argv[]) {
 		("console_log.colours", opts::value<bool>()->required())
 		("console_log.prefixes", opts::value<bool>()->required())
 		("console_log.prefix", opts::value<std::string>()->required())
+		("console_log.prefix_width", opts::value<unsigned int>()->required())
 		("console_log.suggestions", opts::value<bool>()->required())
 		("console_log.no_bg", opts::value<bool>()->required())
 		("console_log.theme", opts::value<log::posix::Theme>()->required())

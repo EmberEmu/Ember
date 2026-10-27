@@ -108,10 +108,16 @@ void CommandSink::do_batch_write(const std::span<std::tuple<RecordDetail, std::s
 	for(auto&& [detail, prefix, data] : records) {
 		if(sink_sev <= detail.severity && !(sink_filter & detail.type)) {
 			std::string_view severity = severity_string(detail.severity);
+
+			const auto padding = !prefix.empty() && prefix_pad_.size() > prefix.size()?
+				prefix_pad_.size() - prefix.size() : 0;
+
 			const auto cur_sz = out_buf_.size();
 
 			const auto req_buf_size
 				= cur_sz
+				+ prefix.size()
+				+ padding
 				+ timestamp.size()
 				+ severity.size()
 				+ data.size();
@@ -123,6 +129,12 @@ void CommandSink::do_batch_write(const std::span<std::tuple<RecordDetail, std::s
 			std::memcpy(write_ptr + offset, timestamp.data(), timestamp.size());
 			offset += timestamp.size();
 
+			std::memcpy(write_ptr + offset, prefix.data(), prefix.size());
+			offset += prefix.size();
+
+			std::memcpy(write_ptr + offset, prefix_pad_.data(), padding);
+			offset += padding;
+	
 			std::memcpy(write_ptr + offset, severity.data(), severity.size());
 			offset += severity.size();
 
@@ -155,6 +167,9 @@ void CommandSink::write(Severity severity, Filter type,	std::string_view prefix,
 	const std::string_view sevsv = severity_string(severity);
 	const std::string_view recordsv = record;
 
+	const auto padding = !prefix.empty() && prefix_pad_.size() > prefix.size()?
+		prefix_pad_.size() - prefix.size() : 0;
+
 	// hack, need to make newline handling more consistent rather than... this
 	if(record.ends_with('\n')) {
 		record.remove_suffix(1);
@@ -164,6 +179,7 @@ void CommandSink::write(Severity severity, Filter type,	std::string_view prefix,
 	std::size_t buff_req_size
 		= timestamp.size()
 		+ prefix.size()
+		+ padding
 		+ record.size()
 		+ sevsv.size();
 
@@ -197,7 +213,7 @@ void CommandSink::write(Severity severity, Filter type,	std::string_view prefix,
 
 	std::size_t offset = 0;
 
-	const auto append = [&](const auto& fragment) {
+	const auto append = [&](auto&& fragment) {
 		if(fragment.size() > out_buf_.size() - offset) {
 			throw std::runtime_error("output buffer size != offset, bad calculation");
 		}
@@ -218,6 +234,11 @@ void CommandSink::write(Severity severity, Filter type,	std::string_view prefix,
 		}
 
 		append(prefix);
+
+		if(padding) {
+			append(std::string_view(prefix_pad_.data(), padding));
+		}
+
 		append(tag_style);
 		append(sevsv);
 		append(text_style);

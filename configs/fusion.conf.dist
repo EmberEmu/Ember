@@ -4,37 +4,37 @@
 [mdns]
 active = true
 config = @CMAKE_INSTALL_PREFIX@/mdns.conf
-prefix = [mdns]
+prefix = mdns
 file = @CMAKE_INSTALL_PREFIX@/logs/mdns_fusion_%d_%m_%Y.log
 
 [account]
 active = true
 config = @CMAKE_INSTALL_PREFIX@/account.conf
-prefix = [account]
+prefix = account
 file = @CMAKE_INSTALL_PREFIX@/logs/fusion_account_%d_%m_%Y.log
 
 [character]
 active = true
 config = @CMAKE_INSTALL_PREFIX@/character.conf
-prefix = [character]
+prefix = character
 file = @CMAKE_INSTALL_PREFIX@/logs/fusion_character_%d_%m_%Y.log
 
 [login]
 active = true
 config = @CMAKE_INSTALL_PREFIX@/login.conf
-prefix = [login]
+prefix = login
 file = @CMAKE_INSTALL_PREFIX@/logs/fusion_login_%d_%m_%Y.log
 
 [realm]
 active = true
 config = @CMAKE_INSTALL_PREFIX@/realm.conf
-prefix = [realm]
+prefix = realm
 file = @CMAKE_INSTALL_PREFIX@/logs/fusion_realm_%d_%m_%Y.log
 
 [world]
 active = true
 config = @CMAKE_INSTALL_PREFIX@/world.conf
-prefix = [world]
+prefix = world
 file = @CMAKE_INSTALL_PREFIX@/logs/fusion_world_%d_%m_%Y.log
 
 [remote_log]
@@ -61,8 +61,9 @@ suggestions = true  # enables tab completion suggestions (only applicable when i
 verbosity = trace   # trace, debug, info, warning, error, fatal or none to disable
 colours = true      # colourise the output
 filter_mask = 0
-prefixes = true     # whether to print the service name before each log message
-prefix = [fusion]
+prefixes = false    # whether to print the service name before each log message
+prefix = fusion
+prefix_width = 10   # prefixes will be padded up to this size, for alignment
 theme = abyssal     # use 'theme list' command to view themes
 theme_path = @CMAKE_INSTALL_PREFIX@
 no_bg = false       # disables theme bg colours, uses terminal default

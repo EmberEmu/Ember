@@ -75,9 +75,8 @@ class CommandSink final : public log::CommandSink {
 	bool log_line_used_ = false;
 	Theme theme_;
 	const bool no_bg_ = false;
-
+	std::string prefix_pad_;
 	unsigned int max_cols_ = table_max_cols;
-
 	std::size_t cursor_pos_ = 0;
 
 	std::deque<std::string> cmd_history_;
@@ -127,6 +126,7 @@ public:
 	void colourise(bool colourise) override { colour_ = colourise; }
 	void log_timestamp(bool enable) override { timestamp_ = enable; }
 	void timestamp_format(std::string format) override { timestamp_fmt_ = format; }
+	void prefix_width(unsigned int width) { prefix_pad_ = std::string(width, ' '); }
 	void set_theme(Theme theme);
 
 	void register_handler(CommandHandler handler) override;

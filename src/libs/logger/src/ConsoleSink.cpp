@@ -58,12 +58,17 @@ void ConsoleSink::do_batch_write(const std::span<std::tuple<RecordDetail, std::s
 	for(auto&& [detail, prefix, data] : records) {
 		if(sink_sev <= detail.severity && !(sink_filter & detail.type)) {
 			std::string_view severity = severity_string(detail.severity);
+
+			const auto padding = !prefix.empty() && prefix_pad_.size() > prefix.size()?
+				prefix_pad_.size() - prefix.size() : 0;
+
 			const auto cur_sz = out_buf_.size();
 
 			const auto req_buf_size
 				= cur_sz
 				+ timestamp.size()
 				+ prefix.size()
+				+ padding
 				+ severity.size()
 				+ data.size();
 
@@ -76,6 +81,9 @@ void ConsoleSink::do_batch_write(const std::span<std::tuple<RecordDetail, std::s
 
 			std::memcpy(write_ptr + offset, prefix.data(), prefix.size());
 			offset += prefix.size();
+
+			std::memcpy(write_ptr + offset, prefix_pad_.data(), padding);
+			offset += padding;
 
 			std::memcpy(write_ptr + offset, severity.data(), severity.size());
 			offset += severity.size();
@@ -106,11 +114,16 @@ void ConsoleSink::write(Severity severity, Filter type, std::string_view prefix,
 	}
 
 	const std::span<char> timestamp(ts_buffer.data(), ts_size);
+
+	const auto padding = !prefix.empty() && prefix_pad_.size() > prefix.size()?
+		prefix_pad_.size() - prefix.size() : 0;
+
 	std::string_view sevsv = severity_string(severity);
 
 	const std::size_t req_buf_size
 		= timestamp.size()
 		+ prefix.size()
+		+ padding
 		+ record.size()
 		+ sevsv.size();
 
@@ -118,13 +131,18 @@ void ConsoleSink::write(Severity severity, Filter type, std::string_view prefix,
 
 	std::size_t offset = 0;
 
-	const auto append = [&](auto& fragment) {
+	const auto append = [&](auto&& fragment) {
 		std::copy(fragment.begin(), fragment.end(), out_buf_.begin() + offset);
 		offset += fragment.size();
 	};
 
 	append(timestamp);
 	append(prefix);
+
+	if(padding) {
+		append(std::string_view(prefix_pad_.data(), padding));
+	}
+
 	append(sevsv);
 	append(record);
 

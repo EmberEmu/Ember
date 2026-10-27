@@ -72,6 +72,7 @@ class CommandSink final : public log::CommandSink {
 	bool timestamp_;
 	unsigned int max_cols_;
 	void* semaphore_;
+	std::string prefix_pad_;
 
 	std::deque<std::string> cmd_history_;
 	std::size_t history_idx_;
@@ -108,6 +109,7 @@ public:
 	void colourise(bool colourise) override { colour_ = colourise; }
 	void log_timestamp(bool enable) override { timestamp_ = enable; }
 	void timestamp_format(std::string format) override { timestamp_fmt_ = format; }
+	void prefix_width(unsigned int width) { prefix_pad_ = std::string(width, ' '); }
 
 	void register_handler(CommandHandler handler) override;
 	void register_autocomplete(Autocomplete handler) override;
