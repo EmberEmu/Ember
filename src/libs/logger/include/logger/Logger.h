@@ -46,6 +46,8 @@ class Logger final {
 
 public:
 	Logger();
+	Logger(std::string prefix);
+
 	~Logger();
 
 	void fmt_write(const Severity severity, std::string_view fmt) {

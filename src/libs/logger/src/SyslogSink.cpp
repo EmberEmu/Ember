@@ -51,8 +51,8 @@ class SyslogSink::impl final : public Sink {
 public:
 	impl(std::string name, Severity severity, Filter filter, const std::string& host, unsigned int port,
 	     Facility facility, std::string tag);
-	void write(Severity severity, Filter type, const std::string_view record, bool flush) override;
-	void batch_write(const std::span<std::pair<RecordDetail, std::string>>& records) override;
+	void write(Severity severity, Filter type, std::string_view tuple, std::string_view record, bool flush) override;
+	void batch_write(const std::span<std::tuple<RecordDetail, std::string_view, std::string>>& records) override;
 };
 
 SyslogSink::impl::impl(std::string name, Severity severity, Filter filter, const std::string& host,
@@ -93,12 +93,12 @@ auto SyslogSink::impl::severity_map(Severity severity) -> SyslogSeverity {
 	}
 }
 
-void SyslogSink::impl::write(Severity severity, Filter type, std::string_view record, bool flush) {
+void SyslogSink::impl::write(Severity severity, Filter type, std::string_view prefix, std::string_view record, bool flush) {
 	if(this->severity() >= severity || (this->filter() & type)) {
 		return;
 	}
 
-	const int priority_val = (static_cast<int>(facility_) * 8)
+	const auto priority_val = (static_cast<int>(facility_) * 8)
 		+ static_cast<std::uint8_t>(severity_map(severity));
 	boost::container::small_vector<char, 8> prio_fmt;
 	std::format_to(std::back_inserter(prio_fmt), "<{}>", priority_val);
@@ -107,21 +107,24 @@ void SyslogSink::impl::write(Severity severity, Filter type, std::string_view re
 	boost::container::small_vector<char, 128> time_fmt;
 	std::format_to(std::back_inserter(time_fmt), "{:%b %e %H:%M:%S} {} ", time, host_);
 
-	const std::array<asio::const_buffer, 5> segments {{
+	boost::container::small_vector<char, 512> record_fmt;
+	std::format_to(std::back_inserter(time_fmt), "{} {}", prefix, record);
+
+	const std::array<asio::const_buffer, 6> segments {{
 		{ std::span(prio_fmt) },
 		{ std::span(time_fmt) },
 		{ std::span(tag_) },
 		{ ": ", 2 },
-		{ std::span(record) }
+		{ std::span(record_fmt) }
 	}};
 
 	boost::system::error_code err; // ignoring any send errors
 	socket_.send(segments, 0, err);
 }
 
-void SyslogSink::impl::batch_write(const std::span<std::pair<RecordDetail, std::string>>& records) {
-	for(auto& [detail, data] : records) {
-		write(detail.severity, detail.type, data, false);
+void SyslogSink::impl::batch_write(const std::span<std::tuple<RecordDetail, std::string_view, std::string>>& records) {
+	for(auto& [detail, prefix, data] : records) {
+		write(detail.severity, detail.type, prefix, data, false);
 	}
 }
 
@@ -132,11 +135,11 @@ SyslogSink::SyslogSink(std::string name, Severity severity, Filter filter, std::
 
 SyslogSink::~SyslogSink() = default;
 
-void SyslogSink::write(Severity severity, Filter type, std::string_view record, bool flush) {
-	pimpl_->write(severity, type, record, flush);
+void SyslogSink::write(Severity severity, Filter type, std::string_view prefix, std::string_view record, bool flush) {
+	pimpl_->write(severity, type, prefix, record, flush);
 }
 
-void SyslogSink::batch_write(const std::span<std::pair<RecordDetail, std::string>>& records) {
+void SyslogSink::batch_write(const std::span<std::tuple<RecordDetail, std::string_view, std::string>>& records) {
 	pimpl_->batch_write(records);
 }
 

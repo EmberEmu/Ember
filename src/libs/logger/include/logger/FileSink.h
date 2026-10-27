@@ -63,9 +63,9 @@ public:
 	void log_date(bool enable) { log_date_ = enable;  }
 	void midnight_rotate(bool enable) { midnight_rotate_ = enable; }
 	void size_limit(std::uintmax_t megabytes);
-	void time_format(std::string format);
-	void write(Severity severity, Filter type, std::string_view record, bool flush) override;
-	void batch_write(const std::span<std::pair<RecordDetail, std::string>>& records) override;
+ 	void time_format(std::string format);
+	void write(Severity severity, Filter type, std::string_view prefix, std::string_view record, bool flush) override;
+	void batch_write(const std::span<std::tuple<RecordDetail, std::string_view, std::string>>& records) override;
 
 	static constexpr std::string_view type() { return sink_type; }
 };

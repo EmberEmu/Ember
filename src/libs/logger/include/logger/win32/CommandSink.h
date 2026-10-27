@@ -65,13 +65,13 @@ class CommandSink final : public log::CommandSink {
 	std::string command_;
 	std::string suggested_;
 	std::string prompt_;
-	std::string prefix_;
 	std::string timestamp_fmt_;
 	std::jthread input_reader_;
 	bool colour_;
 	bool timestamp_;
 	unsigned int max_cols_;
 	void* semaphore_;
+	std::string prefix_pad_;
 
 	std::deque<std::string> cmd_history_;
 	std::size_t history_idx_;
@@ -94,7 +94,7 @@ class CommandSink final : public log::CommandSink {
 	void read_console_input(const std::stop_token stop);
 	void dispatch_command();
 	void write_buffer(std::span<const char> buffer, bool redraw = true);
-	void do_batch_write(const std::span<std::pair<RecordDetail, std::string>>& records);
+	void do_batch_write(const std::span<std::tuple<RecordDetail, std::string_view, std::string>>& records);
 	void autocomplete();
 	bool invoke_handler(const std::string_view command);
 
@@ -103,12 +103,12 @@ public:
 	~CommandSink();
 
 	void stop();
-	void write(Severity severity, Filter type, std::string_view record, bool flush) override;
-	void batch_write(const std::span<std::pair<RecordDetail, std::string>>& records) override;
+	void write(Severity severity, Filter type, std::string_view prefix, std::string_view record, bool flush) override;
+	void batch_write(const std::span<std::tuple<RecordDetail, std::string_view, std::string>>& records) override;
 	void colourise(bool colourise) override { colour_ = colourise; }
-	void prefix(std::string prefix) override { prefix_ = std::move(prefix); }
 	void log_timestamp(bool enable) override { timestamp_ = enable; }
 	void timestamp_format(std::string format) override { timestamp_fmt_ = format; }
+	void prefix_width(unsigned int width) { prefix_pad_ = std::string(width, ' '); }
 
 	void register_handler(CommandHandler handler) override;
 	void register_autocomplete(Autocomplete handler) override;

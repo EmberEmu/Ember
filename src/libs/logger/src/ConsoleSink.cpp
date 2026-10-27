@@ -18,23 +18,23 @@
 
 namespace ember::log {
 
-void ConsoleSink::batch_write(const std::span<std::pair<RecordDetail, std::string>>& records) {
+void ConsoleSink::batch_write(const std::span<std::tuple<RecordDetail, std::string_view, std::string>>& records) {
 	if(!colour_) [[unlikely]] {
 		do_batch_write(records);
 	} else { // we can't do batch output if we need to colour each individual log record
-		for(auto& [detail, data] : records) {
-			write(detail.severity, detail.type, data, false);
+		for(const auto& [detail, prefix, data] : records) {
+			write(detail.severity, detail.type, prefix, data, false);
 		}
 	}
 }
 
-void ConsoleSink::do_batch_write(const std::span<std::pair<RecordDetail, std::string>>& records) {
+void ConsoleSink::do_batch_write(const std::span<std::tuple<RecordDetail, std::string_view, std::string>>& records) {
 	std::size_t size = 0;
 	Severity sink_sev = this->severity();
 	Filter sink_filter = this->filter();
 	bool matches = false;
 
-	for(auto&& [detail, data] : records) {
+	for(auto&& [detail, prefix, data] : records) {
 		if(sink_sev <= detail.severity && !(sink_filter &detail.type)) {
 			size += data.size();
 			matches = true;
@@ -55,17 +55,22 @@ void ConsoleSink::do_batch_write(const std::span<std::pair<RecordDetail, std::st
 	const std::span<char> timestamp(ts_buffer.data(), ts_size);
 	out_buf_.reserve(size + (10 * records.size()));
 
-	for(auto&& [detail, data] : records) {
+	for(auto&& [detail, prefix, data] : records) {
 		if(sink_sev <= detail.severity && !(sink_filter & detail.type)) {
 			std::string_view severity = severity_string(detail.severity);
+
+			const auto padding = !prefix.empty() && prefix_pad_.size() > prefix.size()?
+				prefix_pad_.size() - prefix.size() : 0;
+
 			const auto cur_sz = out_buf_.size();
 
 			const auto req_buf_size
 				= cur_sz
 				+ timestamp.size()
+				+ prefix.size()
+				+ padding
 				+ severity.size()
-				+ data.size()
-				+ prefix_.size();
+				+ data.size();
 
 			out_buf_.resize(req_buf_size, boost::container::default_init);
 			auto write_ptr = out_buf_.data() + cur_sz;
@@ -74,9 +79,12 @@ void ConsoleSink::do_batch_write(const std::span<std::pair<RecordDetail, std::st
 			std::memcpy(write_ptr + offset, timestamp.data(), timestamp.size());
 			offset += timestamp.size();
 
-			std::memcpy(write_ptr + offset, prefix_.data(), prefix_.size());
-			offset += prefix_.size();
-	
+			std::memcpy(write_ptr + offset, prefix.data(), prefix.size());
+			offset += prefix.size();
+
+			std::memcpy(write_ptr + offset, prefix_pad_.data(), padding);
+			offset += padding;
+
 			std::memcpy(write_ptr + offset, severity.data(), severity.size());
 			offset += severity.size();
 
@@ -93,7 +101,7 @@ void ConsoleSink::do_batch_write(const std::span<std::pair<RecordDetail, std::st
 	}
 }
 
-void ConsoleSink::write(Severity severity, Filter type, std::string_view record, bool flush) {
+void ConsoleSink::write(Severity severity, Filter type, std::string_view prefix, std::string_view record, bool flush) {
 	if(this->severity() > severity || (this->filter() & type)) {
 		return;
 	}
@@ -106,11 +114,16 @@ void ConsoleSink::write(Severity severity, Filter type, std::string_view record,
 	}
 
 	const std::span<char> timestamp(ts_buffer.data(), ts_size);
+
+	const auto padding = !prefix.empty() && prefix_pad_.size() > prefix.size()?
+		prefix_pad_.size() - prefix.size() : 0;
+
 	std::string_view sevsv = severity_string(severity);
 
 	const std::size_t req_buf_size
 		= timestamp.size()
-		+ prefix_.size()
+		+ prefix.size()
+		+ padding
 		+ record.size()
 		+ sevsv.size();
 
@@ -118,13 +131,14 @@ void ConsoleSink::write(Severity severity, Filter type, std::string_view record,
 
 	std::size_t offset = 0;
 
-	const auto append = [&](auto& fragment) {
+	const auto append = [&](auto&& fragment) {
 		std::copy(fragment.begin(), fragment.end(), out_buf_.begin() + offset);
 		offset += fragment.size();
 	};
 
 	append(timestamp);
-	append(prefix_);
+	append(prefix);
+	append(std::string_view(prefix_pad_.data(), padding));
 	append(sevsv);
 	append(record);
 

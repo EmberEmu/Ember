@@ -15,6 +15,16 @@ namespace ember::log::posix::themes {
 inline constexpr ThemeView Regalia {
 	.name = "regalia",
 	.desc = "Fit for a king, enchanting your log messages with +5 opulence",
+	.prefix {
+		.trace  = "\033[38;2;129;116;156m",
+		.debug  = "\033[38;2;129;116;156m",
+		.info   = "\033[38;2;129;116;156m",
+		.warn   = "\033[38;2;129;116;156m",
+		.error  = "\033[38;2;129;116;156m",
+		.fatal  = "\033[38;2;129;116;156m",
+		.con    = "\033[38;2;129;116;156m",
+		.conerr = "\033[38;2;129;116;156m",
+	},
 	.tag {
 		.trace  = "\033[38;2;182;162;217m",
 		.debug  = "\033[38;2;96;165;250m",

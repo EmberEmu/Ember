@@ -1,6 +1,16 @@
 {
   "name": "Example Theme",
   "desc": "Example custom console theme - place in server directory, rename to *.theme.json, load by filename",
+  "prefix": {
+	"trace":  "\u001b[90m",
+	"debug":  "\u001b[90m",
+	"info":   "\u001b[90m",
+	"warn":   "\u001b[90m",
+	"error":  "\u001b[90m",
+	"fatal":  "\u001b[90m",
+	"con":    "\u001b[90m",
+	"conerr": "\u001b[90m",
+  },
   "tag": {
 	"trace":  "\u001b[90m",
 	"debug":  "\u001b[36m",

@@ -15,6 +15,16 @@ namespace ember::log::posix::themes {
 inline constexpr ThemeView Smoky {
 	.name = "smoky",
 	.desc = "Comfy theme, evoking wooden cabins and smoky fires",
+	.prefix {
+		.trace  = "\033[38;2;136;121;107m",
+		.debug  = "\033[38;2;136;121;107m",
+		.info   = "\033[38;2;136;121;107m",
+		.warn   = "\033[38;2;136;121;107m",
+		.error  = "\033[38;2;136;121;107m",
+		.fatal  = "\033[38;2;136;121;107m",
+		.con    = "\033[38;2;136;121;107m",
+		.conerr = "\033[38;2;136;121;107m",
+	},
 	.tag {
 		.trace  = "\033[38;2;163;148;133m",
 		.debug  = "\033[38;2;209;154;106m",

@@ -68,23 +68,23 @@ void CommandSink::stop() {
 	ReleaseSemaphore(semaphore_, 1, NULL);
 }
 
-void CommandSink::batch_write(const std::span<std::pair<RecordDetail, std::string>>& records) {
+void CommandSink::batch_write(const std::span<std::tuple<RecordDetail, std::string_view, std::string>>& records) {
 	if(!colour_) [[unlikely]] {
 		do_batch_write(records);
 	} else { // we can't do batch output if we need to colour each individual log record
-		for(auto& [detail, data] : records) {
-			write(detail.severity, detail.type, data, false);
+		for(auto& [detail, prefix, data] : records) {
+			write(detail.severity, detail.type, prefix, data, false);
 		}
 	}
 }
 
-void CommandSink::do_batch_write(const std::span<std::pair<RecordDetail, std::string>>& records) {
+void CommandSink::do_batch_write(const std::span<std::tuple<RecordDetail, std::string_view, std::string>>& records) {
 	std::size_t size = 0;
 	Severity sink_sev = this->severity();
 	Filter sink_filter = this->filter();
 	bool matches = false;
 
-	for(auto&& [detail, data] : records) {
+	for(auto&& [detail, prefix, data] : records) {
 		if(sink_sev <= detail.severity && !(sink_filter & detail.type)) {
 			size += data.size();
 			matches = true;
@@ -95,6 +95,7 @@ void CommandSink::do_batch_write(const std::span<std::pair<RecordDetail, std::st
 		return;
 	}
 
+	std::lock_guard guard(console_lock_);
 	out_buf_.reserve(size + (10 * records.size()));
 
 	[[indeterminate]] std::array<char, timestamp_buf_size> ts_buffer;
@@ -106,19 +107,21 @@ void CommandSink::do_batch_write(const std::span<std::pair<RecordDetail, std::st
 
 	std::span<char> timestamp(ts_buffer.data(), ts_size);
 
-	const bool prefix = !prefix_.empty();
-
-	for(auto&& [detail, data] : records) {
+	for(auto&& [detail, prefix, data] : records) {
 		if(sink_sev <= detail.severity && !(sink_filter & detail.type)) {
 			std::string_view severity = severity_string(detail.severity);
 			const auto cur_sz = out_buf_.size();
 
+			const auto padding = !prefix.empty() && prefix_pad_.size() > prefix.size()?
+				prefix_pad_.size() - prefix.size() : 0;
+
 			const auto req_buf_size
 				= cur_sz
 				+ timestamp.size()
+				+ prefix.size()
+				+ padding
 				+ severity.size()
-				+ data.size()
-				+ prefix_.size();
+				+ data.size();
 
 			out_buf_.resize(req_buf_size, boost::container::default_init);
 			auto write_ptr = out_buf_.data() + cur_sz;
@@ -126,9 +129,12 @@ void CommandSink::do_batch_write(const std::span<std::pair<RecordDetail, std::st
 
 			std::memcpy(write_ptr + offset, timestamp.data(), timestamp.size());
 			offset += timestamp.size();
-		
-			std::memcpy(write_ptr + offset, prefix_.data(), prefix_.size());
-			offset += prefix_.size();
+
+			std::memcpy(write_ptr + offset, prefix.data(), prefix.size());
+			offset += prefix.size();
+
+			std::memcpy(write_ptr + offset, prefix_pad_.data(), padding);
+			offset += padding;
 
 			std::memcpy(write_ptr + offset, severity.data(), severity.size());
 			offset += severity.size();
@@ -146,10 +152,12 @@ void CommandSink::do_batch_write(const std::span<std::pair<RecordDetail, std::st
 	}
 }
 
-void CommandSink::write(Severity severity, Filter type, std::string_view record, bool flush) {
+void CommandSink::write(Severity severity, Filter type, std::string_view prefix, std::string_view record, bool flush) {
 	if(this->severity() > severity || (this->filter() & type)) {
 		return;
 	}
+
+	std::lock_guard guard(console_lock_);
 
 	[[indeterminate]] std::array<char, timestamp_buf_size> ts_buffer;
 	std::size_t ts_size = 0;
@@ -161,9 +169,13 @@ void CommandSink::write(Severity severity, Filter type, std::string_view record,
 	std::span<char> timestamp(ts_buffer.data(), ts_size);
 	std::string_view sevsv = severity_string(severity);
 
+	const auto padding = !prefix.empty() && prefix_pad_.size() > prefix.size()?
+		prefix_pad_.size() - prefix.size() : 0;
+
 	const auto buff_req_size
 		= timestamp.size()
-		+ prefix_.size()
+		+ prefix.size()
+		+ padding
 		+ record.size()
 		+ sevsv.size();
 
@@ -171,7 +183,7 @@ void CommandSink::write(Severity severity, Filter type, std::string_view record,
 
 	std::size_t offset = 0;
 
-	const auto append = [&](auto& fragment) {
+	const auto append = [&](auto&& fragment) {
 		if(fragment.size() > out_buf_.size() - offset) {
 			throw std::runtime_error("output buffer full, bad calculation");
 		}
@@ -181,7 +193,8 @@ void CommandSink::write(Severity severity, Filter type, std::string_view record,
 	};
 
 	append(timestamp);
-	append(prefix_);
+	append(prefix);
+	append(std::string_view(prefix_pad_.data(), padding));
 	append(sevsv);
 	append(record);
 

@@ -16,6 +16,7 @@
 #include <mutex>
 #include <semaphore>
 #include <string>
+#include <string_view>
 #include <thread>
 #include <tuple>
 #include <vector>
@@ -26,11 +27,11 @@ class Worker final {
 	static const std::size_t batch_write_threshold = 10;
 	static const std::size_t max_dequed_capacity   = 100;
 
-	moodycamel::ConcurrentQueue<std::pair<RecordDetail, std::string>> queue_;
-	moodycamel::ConcurrentQueue<std::tuple<RecordDetail, std::string, std::binary_semaphore*>> queue_sync_;
+	moodycamel::ConcurrentQueue<std::tuple<RecordDetail, std::string_view, std::string>> queue_;
+	moodycamel::ConcurrentQueue<std::tuple<RecordDetail, std::string_view, std::string, std::binary_semaphore*>> queue_sync_;
 	moodycamel::ConsumerToken queue_tok_;
 	moodycamel::ConsumerToken squeue_tok_;
-	std::vector<std::pair<RecordDetail, std::string>> dequeued_;
+	std::vector<std::tuple<RecordDetail, std::string_view, std::string>> dequeued_;
 	std::vector<std::shared_ptr<Sink>>& sinks_;
 	std::mutex& sink_lock_;
 	std::counting_semaphore<> sem_;

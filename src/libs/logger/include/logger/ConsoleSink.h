@@ -31,25 +31,26 @@ class ConsoleSink final : public Sink {
 	bool colour_;
 	bool timestamp_;
 
-	std::string prefix_;
 	std::string timestamp_fmt_;
+	std::string prefix_pad_;
 
 	boost::container::small_vector<char, sv_reserve> out_buf_;
 
 	std::size_t generate_timestamp(std::span<char> buffer);
-	void do_batch_write(const std::span<std::pair<RecordDetail, std::string>>& records);
+	void do_batch_write(const std::span<std::tuple<RecordDetail, std::string_view, std::string>>& records);
+
 public:
 	ConsoleSink(std::string name, Severity severity, Filter filter)
 		: Sink(std::move(name), std::string(type()), severity, filter)
 		, colour_(false)
 		, timestamp_(false) {}
 
-	void write(Severity severity, Filter type, std::string_view record, bool flush) override;
-	void batch_write(const std::span<std::pair<RecordDetail, std::string>>& records) override;
+	void write(Severity severity, Filter type, std::string_view prefix, std::string_view record, bool flush) override;
+	void batch_write(const std::span<std::tuple<RecordDetail, std::string_view, std::string>>& records) override;
 	void colourise(bool colourise) { colour_ = colourise; }
-	void prefix(std::string prefix) { prefix_ = std::move(prefix); }
 	void log_timestamp(bool enable) { timestamp_ = enable; }
 	void timestamp_format(std::string format) { timestamp_fmt_ = format; }
+	void prefix_width(unsigned int width) { prefix_pad_ = std::string(width, ' '); }
 
 	static constexpr std::string_view type() { return sink_type; }
 };

@@ -15,6 +15,16 @@ namespace ember::log::posix::themes {
 inline constexpr ThemeView Abyssal {
 	.name = "abyssal",
 	.desc = "In the depths of the terminal, mysterious log messages dwell",
+	.prefix {
+		.trace  =  "\033[38;2;96;119;130m",
+		.debug  =  "\033[38;2;96;119;130m",
+		.info   =  "\033[38;2;96;119;130m",
+		.warn   =  "\033[38;2;96;119;130m",
+		.error  =  "\033[38;2;96;119;130m",
+		.fatal  =  "\033[38;2;96;119;130m",
+		.con    =  "\033[38;2;96;119;130m",
+		.conerr =  "\033[38;2;96;119;130m",
+	},
 	.tag {
 		.trace  = "\033[38;2;113;137;149m",
 		.debug  = "\033[38;2;124;184;217m",

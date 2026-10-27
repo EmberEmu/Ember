@@ -15,6 +15,16 @@ namespace ember::log::posix::themes {
 inline constexpr ThemeView Sahara {
 	.name = "sahara",
 	.desc = "Sand spills across your terminal, shimmering dunes reflect a sanguine sunset",
+	.prefix {
+		.trace  = "\033[38;2;119;114;143m",
+		.debug  = "\033[38;2;119;114;143m",
+		.info   = "\033[38;2;119;114;143m",
+		.warn   = "\033[38;2;119;114;143m",
+		.error  = "\033[38;2;119;114;143m",
+		.fatal  = "\033[38;2;119;114;143m",
+		.con    = "\033[38;2;119;114;143m",
+		.conerr = "\033[38;2;119;114;143m",
+	},
 	.tag {
 		.trace  = "\033[38;2;165;161;191m",
 		.debug  = "\033[38;2;165;182;232m",

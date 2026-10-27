@@ -54,7 +54,7 @@ void Worker::apply_hard_backpressure(const std::size_t size_approx) {
 
 	const auto discard_count = size_approx - hard_queue_limit;
 
-	std::vector<std::pair<RecordDetail, std::string>> item;
+	std::vector<std::tuple<RecordDetail, std::string_view, std::string>> item;
 	item.resize(discard_count);
 	discarded_ += queue_.try_dequeue_bulk(queue_tok_, std::back_inserter(item), discard_count);
 
@@ -71,7 +71,7 @@ void Worker::apply_soft_backpressure(const std::size_t size) {
 	auto discard_count = size - soft_queue_limit;
 
 	discarded_ += std::erase_if(dequeued_, [&](const auto& elem) {
-		const auto severity = elem.first.severity;
+		const auto severity = std::get<RecordDetail>(elem).severity;
 		
 		if(discard_count && (severity == Severity::trace || severity == Severity::debug)) {
 			--discard_count;
@@ -88,21 +88,24 @@ void Worker::write_discard_log() {
 	const auto msg = std::format("Logger discarded {} entries due to pressure", discarded_);
 
 	for(auto& s : sinks_) {
-		s->write(Severity::warn, Filter{0}, msg, true);
+		s->write(Severity::warn, Filter{0}, "", msg, true); // todo, move prefix to worker? eh...
 	}
 }
 
 void Worker::process_outstanding_sync() {
-	std::tuple<RecordDetail, std::string, std::binary_semaphore*> item;
+	std::tuple<RecordDetail, std::string_view, std::string, std::binary_semaphore*> item;
 
 	std::lock_guard lock(sink_lock_);
 
 	while(queue_sync_.try_dequeue(squeue_tok_, item)) {
 		for(auto& s : sinks_) {
-			s->write(std::get<0>(item).severity, std::get<0>(item).type, std::get<1>(item), true);
+			const auto& detail = std::get<RecordDetail>(item);
+			const auto& prefix = std::get<std::string_view>(item);
+			const auto& message = std::get<std::string>(item);
+			s->write(detail.severity, detail.type, prefix, message, true);
 		}
 
-		std::get<2>(item)->release();
+		std::get<std::binary_semaphore*>(item)->release();
 	}
 }
 
@@ -118,8 +121,8 @@ void Worker::process_dequeued() {
 
 	if(records < batch_write_threshold) {
 		for(auto& s : sinks_) {
-			for(auto& [detail, data] : dequeued_) {
-				s->write(detail.severity, detail.type, data, false);
+			for(auto& [detail, prefix, data] : dequeued_) {
+				s->write(detail.severity, detail.type, prefix, data, false);
 			}
 		}
 	} else {

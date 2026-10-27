@@ -59,23 +59,23 @@ void CommandSink::stop() {
 	terminal_.wake();
 }
 
-void CommandSink::batch_write(const std::span<std::pair<RecordDetail, std::string>>& records) {
+void CommandSink::batch_write(const std::span<std::tuple<RecordDetail, std::string_view, std::string>>& records) {
 	if(!colour_) [[unlikely]] {
 		do_batch_write(records);
 	} else { // we can't do batch output if we need to colour each individual log record - todo, we can in this sink, actually
-		for(auto& [detail, data] : records) {
-			write(detail.severity, detail.type, data, false);
+		for(auto& [detail, prefix, data] : records) {
+			write(detail.severity, detail.type, prefix, data, false);
 		}
 	}
 }
 
-void CommandSink::do_batch_write(const std::span<std::pair<RecordDetail, std::string>>& records) {
+void CommandSink::do_batch_write(const std::span<std::tuple<RecordDetail, std::string_view, std::string>>& records) {
 	std::size_t size = 0;
 	Severity sink_sev = this->severity();
 	Filter sink_filter = this->filter();
 	bool matches = false;
 
-	for(auto&& [detail, data] : records) {
+	for(auto&& [detail, prefix, data] : records) {
 		if(sink_sev <= detail.severity && !(sink_filter & detail.type)) {
 			size += data.size();
 			matches = true;
@@ -94,19 +94,26 @@ void CommandSink::do_batch_write(const std::span<std::pair<RecordDetail, std::st
 	}
 
 	const std::span<char> timestamp(ts_buffer.data(), ts_size);
+
+	std::lock_guard guard(console_lock_);
 	out_buf_.reserve(size + (10 * records.size()));
 
-	for(auto&& [detail, data] : records) {
+	for(auto&& [detail, prefix, data] : records) {
 		if(sink_sev <= detail.severity && !(sink_filter & detail.type)) {
 			std::string_view severity = severity_string(detail.severity);
+
+			const auto padding = !prefix.empty() && prefix_pad_.size() > prefix.size()?
+				prefix_pad_.size() - prefix.size() : 0;
+
 			const auto cur_sz = out_buf_.size();
 
 			const auto req_buf_size
 				= cur_sz
+				+ prefix.size()
+				+ padding
 				+ timestamp.size()
 				+ severity.size()
-				+ data.size()
-				+ prefix_.size();
+				+ data.size();
 
 			out_buf_.resize(req_buf_size, boost::container::default_init);
 			auto write_ptr = out_buf_.data() + cur_sz;
@@ -115,9 +122,12 @@ void CommandSink::do_batch_write(const std::span<std::pair<RecordDetail, std::st
 			std::memcpy(write_ptr + offset, timestamp.data(), timestamp.size());
 			offset += timestamp.size();
 
-			std::memcpy(write_ptr + offset, prefix_.data(), prefix_.size());
-			offset += prefix_.size();
+			std::memcpy(write_ptr + offset, prefix.data(), prefix.size());
+			offset += prefix.size();
 
+			std::memcpy(write_ptr + offset, prefix_pad_.data(), padding);
+			offset += padding;
+	
 			std::memcpy(write_ptr + offset, severity.data(), severity.size());
 			offset += severity.size();
 
@@ -134,7 +144,7 @@ void CommandSink::do_batch_write(const std::span<std::pair<RecordDetail, std::st
 	}
 }
 
-void CommandSink::write(Severity severity, Filter type,	std::string_view record, bool flush) {
+void CommandSink::write(Severity severity, Filter type,	std::string_view prefix, std::string_view record, bool flush) {
 	if(this->severity() > severity || (this->filter() & type)) {
 		return;
 	}
@@ -150,6 +160,9 @@ void CommandSink::write(Severity severity, Filter type,	std::string_view record,
 	const std::string_view sevsv = severity_string(severity);
 	const std::string_view recordsv = record;
 
+	const auto padding = !prefix.empty() && prefix_pad_.size() > prefix.size()?
+		prefix_pad_.size() - prefix.size() : 0;
+
 	// hack, need to make newline handling more consistent rather than... this
 	if(record.ends_with('\n')) {
 		record.remove_suffix(1);
@@ -158,12 +171,14 @@ void CommandSink::write(Severity severity, Filter type,	std::string_view record,
 	// calculate the precise size of the buffer in advance to avoid reallocations
 	std::size_t buff_req_size
 		= timestamp.size()
-		+ prefix_.size()
+		+ prefix.size()
+		+ padding
 		+ record.size()
 		+ sevsv.size();
 
-	std::lock_guard guard(console_lock_); // only protecting theme
+	std::lock_guard guard(console_lock_);
 
+	const auto prefix_style = theme_colour(theme_, severity, StyleSegment::prefix);
 	const auto tag_style = theme_colour(theme_, severity, StyleSegment::tag);
 	const auto text_style = theme_colour(theme_, severity, StyleSegment::text);
 
@@ -176,6 +191,7 @@ void CommandSink::write(Severity severity, Filter type,	std::string_view record,
 			buff_req_size += theme_.timestamp.size();
 		}
 
+		buff_req_size += prefix_style.size();
 		buff_req_size += tag_style.size();
 		buff_req_size += text_style.size();
 		buff_req_size += ansi_erase.size();
@@ -192,7 +208,7 @@ void CommandSink::write(Severity severity, Filter type,	std::string_view record,
 
 	std::size_t offset = 0;
 
-	const auto append = [&](const auto& fragment) {
+	const auto append = [&](auto&& fragment) {
 		if(fragment.size() > out_buf_.size() - offset) {
 			throw std::runtime_error("output buffer size != offset, bad calculation");
 		}
@@ -212,8 +228,10 @@ void CommandSink::write(Severity severity, Filter type,	std::string_view record,
 			append(timestamp);
 		}
 
+		append(prefix_style);
+		append(prefix);
+		append(std::string_view(prefix_pad_.data(), padding));
 		append(tag_style);
-		append(prefix_);
 		append(sevsv);
 		append(text_style);
 		append(record);
@@ -227,7 +245,6 @@ void CommandSink::write(Severity severity, Filter type,	std::string_view record,
 		}
 	} else {
 		append(timestamp);
-		append(prefix_);
 		append(sevsv);
 		append(record);
 	}
