@@ -44,7 +44,7 @@ void PINAuthenticator::pin_to_bytes(std::uint32_t pin) {
 		pin /= 10;
 	}
 	
-	if(pin_bytes_.size() < MIN_PIN_LENGTH) {
+	if(pin_bytes_.size() < min_pin_length) {
 		throw std::invalid_argument("Provided PIN was too short");
 	}
 
@@ -59,7 +59,7 @@ void PINAuthenticator::pin_to_bytes(std::uint32_t pin) {
  * '0, 4, 1, 6, 2, 3' then the expected input sequence becomes '245'.
  */
 void PINAuthenticator::remap_pin_grid(std::uint32_t grid_seed) {
-	std::array<std::uint8_t, GRID_SIZE> grid { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+	std::array<std::uint8_t, grid_size> grid { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
 
 	for(std::size_t i = grid.size(), j = 0; i > 0; --i, ++j) {
 		const auto remainder = grid_seed % i;

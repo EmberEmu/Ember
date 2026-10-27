@@ -20,18 +20,18 @@ namespace ember {
 
 class PINAuthenticator final {
 public:
-	static constexpr int MIN_PIN_LENGTH =  4;
-	static constexpr int MAX_PIN_LENGTH = 10;
-	static constexpr int GRID_SIZE      = 10;
-	static constexpr int key_length     = 10;
-	static constexpr int SALT_LENGTH    = 16;
+	static constexpr auto min_pin_length =  4u;
+	static constexpr auto max_pin_length = 10u;
+	static constexpr auto grid_size      = 10u;
+	static constexpr auto key_length     = 10u;
+	static constexpr auto salt_length    = 16u;
 	
-	using SaltBytes = std::array<std::uint8_t, SALT_LENGTH>;
+	using SaltBytes = std::array<std::uint8_t, salt_length>;
 	using HashBytes = std::array<std::uint8_t, hash_sizes::sha160>;
 
 private:
-	std::array<std::uint8_t, GRID_SIZE> remapped_grid;
-	std::inplace_vector<std::uint8_t, MAX_PIN_LENGTH> pin_bytes_;
+	std::array<std::uint8_t, grid_size> remapped_grid;
+	std::inplace_vector<std::uint8_t, max_pin_length> pin_bytes_;
 
 	void pin_to_ascii();
 	void remap_pin_grid(std::uint32_t seed);
