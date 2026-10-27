@@ -52,7 +52,7 @@ public:
 	string_type name;
 	string_type desc;
 
-	StyleBody tag, text;
+	StyleBody prefix, tag, text;
 
 	// input styling
 	string_type prompt;
@@ -151,7 +151,7 @@ NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(
 
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(
 	ThemeStorage,
-	name, desc, tag, text,
+	name, desc, prefix, tag, text,
 	prompt, input, suggestion,
 	bg, timestamp, reset
 )
@@ -169,7 +169,7 @@ inline Theme load_theme(const std::filesystem::path& path) {
 }
 
 enum class StyleSegment {
-	tag, text
+	prefix, tag, text
 };
 
 constexpr std::string_view severity_colour(const Theme::StyleBody& style, Severity severity) {
@@ -201,6 +201,8 @@ constexpr std::string_view theme_colour(const Theme& theme, Severity severity, S
 	using enum StyleSegment;
 
 	switch(segment) {
+		case prefix:
+			return severity_colour(theme.prefix, severity);
 		case tag:
 			return severity_colour(theme.tag, severity);
 		case text:

@@ -178,6 +178,7 @@ void CommandSink::write(Severity severity, Filter type,	std::string_view prefix,
 
 	std::lock_guard guard(console_lock_);
 
+	const auto prefix_style = theme_colour(theme_, severity, StyleSegment::prefix);
 	const auto tag_style = theme_colour(theme_, severity, StyleSegment::tag);
 	const auto text_style = theme_colour(theme_, severity, StyleSegment::text);
 
@@ -190,6 +191,7 @@ void CommandSink::write(Severity severity, Filter type,	std::string_view prefix,
 			buff_req_size += theme_.timestamp.size();
 		}
 
+		buff_req_size += prefix_style.size();
 		buff_req_size += tag_style.size();
 		buff_req_size += text_style.size();
 		buff_req_size += ansi_erase.size();
@@ -226,6 +228,7 @@ void CommandSink::write(Severity severity, Filter type,	std::string_view prefix,
 			append(timestamp);
 		}
 
+		append(prefix_style);
 		append(prefix);
 		append(std::string_view(prefix_pad_.data(), padding));
 		append(tag_style);

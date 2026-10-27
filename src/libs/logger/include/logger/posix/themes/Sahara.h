@@ -14,7 +14,21 @@ namespace ember::log::posix::themes {
 
 inline constexpr ThemeView Sahara {
 	.name = "sahara",
+<<<<<<< HEAD
 	.desc = "Sand spills across your terminal, shimmering dunes reflect a sanguine sunset",
+=======
+	.desc = "sand spills across your terminal, shimmering dunes during a glorious sunset",
+	.prefix {
+		.trace  = "\033[38;2;119;114;143m",
+		.debug  = "\033[38;2;119;114;143m",
+		.info   = "\033[38;2;119;114;143m",
+		.warn   = "\033[38;2;119;114;143m",
+		.error  = "\033[38;2;119;114;143m",
+		.fatal  = "\033[38;2;119;114;143m",
+		.con    = "\033[38;2;119;114;143m",
+		.conerr = "\033[38;2;119;114;143m",
+	},
+>>>>>>> fdd0e2e4 (Add theming section for prefixes)
 	.tag {
 		.trace  = "\033[38;2;165;161;191m",
 		.debug  = "\033[38;2;165;182;232m",

@@ -14,7 +14,21 @@ namespace ember::log::posix::themes {
 
 inline constexpr ThemeView Daybreak {
 	.name = "daybreak",
+<<<<<<< HEAD
 	.desc = "First light, it's time to go to bed",
+=======
+	.desc = "first light, it's time to go to bed",
+	.prefix {
+		.trace  = "\033[38;2;133;150;140m",
+		.debug  = "\033[38;2;133;150;140m",
+		.info   = "\033[38;2;133;150;140m",
+		.warn   = "\033[38;2;133;150;140m",
+		.error  = "\033[38;2;133;150;140m",
+		.fatal  = "\033[38;2;133;150;140m",
+		.con    = "\033[38;2;133;150;140m",
+		.conerr = "\033[38;2;133;150;140m",
+	},
+>>>>>>> fdd0e2e4 (Add theming section for prefixes)
 	.tag {
 		.trace  = "\033[38;2;162;172;168m",
 		.debug  = "\033[38;2;157;187;224m",

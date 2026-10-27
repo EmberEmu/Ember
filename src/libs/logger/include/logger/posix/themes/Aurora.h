@@ -14,7 +14,21 @@ namespace ember::log::posix::themes {
 
 inline constexpr ThemeView Aurora {
 	.name = "aurora",
+<<<<<<< HEAD
 	.desc = "Aurora borealis, localised entirely within your terminal",
+=======
+	.desc = "aurora borealis but localised entirely within your terminal",
+	.prefix {
+		.trace  = "\033[38;2;100;113;138m",
+		.debug  = "\033[38;2;100;113;138m",
+		.info   = "\033[38;2;100;113;138m",
+		.warn   = "\033[38;2;100;113;138m",
+		.error  = "\033[38;2;100;113;138m",
+		.fatal  = "\033[38;2;100;113;138m",
+		.con    = "\033[38;2;100;113;138m",
+		.conerr = "\033[38;2;100;113;138m",
+	},
+>>>>>>> fdd0e2e4 (Add theming section for prefixes)
 	.tag {
 		.trace  = "\033[38;2;132;145;168m",
 		.debug  = "\033[38;2;130;170;255m",

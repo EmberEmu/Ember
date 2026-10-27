@@ -14,7 +14,21 @@ namespace ember::log::posix::themes {
 
 inline constexpr ThemeView Midnight {
 	.name = "midnight",
+<<<<<<< HEAD
 	.desc = "Easy on weary eyes, staring at debug logs as the night slips away, once again",
+=======
+	.desc = "easy on weary eyes, staring at debug logs as the night slips away, once again",
+	.prefix {
+		.trace  = "\033[38;2;53;64;87m",
+		.debug  = "\033[38;2;53;64;87m",
+		.info   = "\033[38;2;53;64;87m",
+		.warn   = "\033[38;2;53;64;87m",
+		.error  = "\033[38;2;53;64;87m",
+		.fatal  = "\033[38;2;53;64;87m",
+		.con    = "\033[38;2;53;64;87m",
+		.conerr = "\033[38;2;53;64;87m",
+	},
+>>>>>>> fdd0e2e4 (Add theming section for prefixes)
 	.tag {
 		.trace  = "\033[1;38;2;105;117;145m",
 		.debug  = "\033[1;38;2;137;180;250m",
