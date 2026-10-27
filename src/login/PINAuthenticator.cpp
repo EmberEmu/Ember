@@ -10,7 +10,6 @@
 #include <shared/utility/xoroshiro128plus.h>
 #include <shared/utility/polyfill/inplace_vector>
 #include <boost/assert.hpp>
-#include <boost/endian/conversion.hpp>
 #include <botan/base32.h>
 #include <botan/hash.h>
 #include <botan/mac.h>
@@ -22,8 +21,6 @@
 #include <utility>
 #include <cstddef>
 #include <ctime>
-
-namespace be = boost::endian;
 
 namespace ember {
 
