@@ -200,11 +200,7 @@ void CommandSink::write(Severity severity, Filter type, std::string_view prefix,
 
 	append(timestamp);
 	append(prefix);
-
-	if(padding) {
-		append(std::string_view(prefix_pad_.data(), padding));
-	}
-
+	append(std::string_view(prefix_pad_.data(), padding));
 	append(sevsv);
 	append(record);
 

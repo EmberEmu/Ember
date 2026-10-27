@@ -234,11 +234,7 @@ void CommandSink::write(Severity severity, Filter type,	std::string_view prefix,
 		}
 
 		append(prefix);
-
-		if(padding) {
-			append(std::string_view(prefix_pad_.data(), padding));
-		}
-
+		append(std::string_view(prefix_pad_.data(), padding));
 		append(tag_style);
 		append(sevsv);
 		append(text_style);
