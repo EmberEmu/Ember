@@ -130,9 +130,12 @@ bool PINAuthenticator::validate_pin(const SaltBytes& server_salt,
 std::uint32_t PINAuthenticator::generate_totp_pin(const std::string_view secret,
                                                   const int interval,
                                                   const utility::ClockBase& clock) {
-	std::inplace_vector<std::uint8_t, key_length> decoded_key((secret.size() + 7) / 8 * 5);
-	const auto key_size = Botan::base32_decode(decoded_key.data(), secret);
+	std::inplace_vector<std::uint8_t, key_length> decoded_key(
+		Botan::base32_decode_max_output(secret.size())
+	);
 
+	const auto key_size = Botan::base32_decode(decoded_key.data(), secret);
+	
 	// not guaranteed by the standard to be the UNIX epoch but it is on all supported platforms
 	const auto time = clock.now();
 	const auto now = std::chrono::time_point_cast<std::chrono::seconds>(time).time_since_epoch().count();
