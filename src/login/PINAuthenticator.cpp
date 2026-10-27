@@ -8,10 +8,10 @@
 
 #include "PINAuthenticator.h"
 #include <shared/utility/xoroshiro128plus.h>
-#include <shared/utility/base32.h>
 #include <shared/utility/polyfill/inplace_vector>
 #include <boost/assert.hpp>
 #include <boost/endian/conversion.hpp>
+#include <botan/base32.h>
 #include <botan/hash.h>
 #include <botan/mac.h>
 #include <gsl/narrow>
@@ -130,12 +130,8 @@ bool PINAuthenticator::validate_pin(const SaltBytes& server_salt,
 std::uint32_t PINAuthenticator::generate_totp_pin(const std::string_view secret,
                                                   const int interval,
                                                   const utility::ClockBase& clock) {
-	std::inplace_vector<std::uint8_t, KEY_LENGTH> decoded_key((secret.size() + 7) / 8 * 5);
-	const int key_size = base32_decode(secret.data(), decoded_key.data(), decoded_key.size());
-
-	if(key_size == -1) {
-		throw std::invalid_argument(std::format("Unable to base32 decode TOTP key, {}", secret));
-	}
+	std::inplace_vector<std::uint8_t, key_length> decoded_key((secret.size() + 7) / 8 * 5);
+	const auto key_size = Botan::base32_decode(decoded_key.data(), secret);
 
 	// not guaranteed by the standard to be the UNIX epoch but it is on all supported platforms
 	const auto time = clock.now();

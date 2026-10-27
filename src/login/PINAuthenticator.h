@@ -23,7 +23,7 @@ public:
 	static constexpr int MIN_PIN_LENGTH =  4;
 	static constexpr int MAX_PIN_LENGTH = 10;
 	static constexpr int GRID_SIZE      = 10;
-	static constexpr int KEY_LENGTH     = 10;
+	static constexpr int key_length     = 10;
 	static constexpr int SALT_LENGTH    = 16;
 	
 	using SaltBytes = std::array<std::uint8_t, SALT_LENGTH>;

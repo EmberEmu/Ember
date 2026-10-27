@@ -56,8 +56,6 @@ set(UTIL_SRC
     shared/utility/FormatPacket.h
     shared/utility/LogConfig.cpp
     shared/utility/LogConfig.h
-    shared/utility/base32.h
-    shared/utility/base32.cpp
     shared/utility/FileMD5.h
     shared/utility/FileMD5.cpp
     shared/utility/FNVHash.h
