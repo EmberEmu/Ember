@@ -112,8 +112,10 @@ void CommandSink::do_batch_write(const std::span<std::tuple<RecordDetail, std::s
 			std::string_view severity = severity_string(detail.severity);
 			const auto cur_sz = out_buf_.size();
 
-			const auto padding = !prefix.empty() && prefix_pad_.size() > prefix.size()?
-				prefix_pad_.size() - prefix.size() : 0;
+			// todo, size_t literal on bump
+			const auto padding = !prefix.empty()?
+				std::max<std::size_t>(1u, prefix_pad_.size() > prefix.size()?
+					prefix_pad_.size() - prefix.size() : 0u) : 0u;
 
 			const auto req_buf_size
 				= cur_sz
@@ -169,8 +171,10 @@ void CommandSink::write(Severity severity, Filter type, std::string_view prefix,
 	std::span<char> timestamp(ts_buffer.data(), ts_size);
 	std::string_view sevsv = severity_string(severity);
 
-	const auto padding = !prefix.empty() && prefix_pad_.size() > prefix.size()?
-		prefix_pad_.size() - prefix.size() : 0;
+	// todo, size_t literal on bump
+	const auto padding = !prefix.empty()?
+		std::max<std::size_t>(1u, prefix_pad_.size() > prefix.size()?
+			prefix_pad_.size() - prefix.size() : 0u) : 0u;
 
 	const auto buff_req_size
 		= timestamp.size()

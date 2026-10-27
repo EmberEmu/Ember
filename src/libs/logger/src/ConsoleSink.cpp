@@ -59,8 +59,10 @@ void ConsoleSink::do_batch_write(const std::span<std::tuple<RecordDetail, std::s
 		if(sink_sev <= detail.severity && !(sink_filter & detail.type)) {
 			std::string_view severity = severity_string(detail.severity);
 
-			const auto padding = !prefix.empty() && prefix_pad_.size() > prefix.size()?
-				prefix_pad_.size() - prefix.size() : 0;
+			// todo, size_t literal on bump
+			const auto padding = !prefix.empty()?
+				std::max<std::size_t>(1u, prefix_pad_.size() > prefix.size()?
+					prefix_pad_.size() - prefix.size() : 0u) : 0u;
 
 			const auto cur_sz = out_buf_.size();
 
@@ -115,8 +117,10 @@ void ConsoleSink::write(Severity severity, Filter type, std::string_view prefix,
 
 	const std::span<char> timestamp(ts_buffer.data(), ts_size);
 
-	const auto padding = !prefix.empty() && prefix_pad_.size() > prefix.size()?
-		prefix_pad_.size() - prefix.size() : 0;
+	// todo, size_t literal on bump
+	const auto padding = !prefix.empty()?
+		std::max<std::size_t>(1u, prefix_pad_.size() > prefix.size()?
+			prefix_pad_.size() - prefix.size() : 0u) : 0u;
 
 	std::string_view sevsv = severity_string(severity);
 

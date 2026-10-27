@@ -102,8 +102,10 @@ void CommandSink::do_batch_write(const std::span<std::tuple<RecordDetail, std::s
 		if(sink_sev <= detail.severity && !(sink_filter & detail.type)) {
 			std::string_view severity = severity_string(detail.severity);
 
-			const auto padding = !prefix.empty() && prefix_pad_.size() > prefix.size()?
-				prefix_pad_.size() - prefix.size() : 0;
+			// todo, size_t literal on bump
+			const auto padding = !prefix.empty()?
+				std::max<std::size_t>(1u, prefix_pad_.size() > prefix.size()?
+					prefix_pad_.size() - prefix.size() : 0u) : 0u;
 
 			const auto cur_sz = out_buf_.size();
 
@@ -160,8 +162,10 @@ void CommandSink::write(Severity severity, Filter type,	std::string_view prefix,
 	const std::string_view sevsv = severity_string(severity);
 	const std::string_view recordsv = record;
 
-	const auto padding = !prefix.empty() && prefix_pad_.size() > prefix.size()?
-		prefix_pad_.size() - prefix.size() : 0;
+	// todo, size_t literal on bump
+	const auto padding = !prefix.empty()?
+		std::max<std::size_t>(1u, prefix_pad_.size() > prefix.size()?
+			prefix_pad_.size() - prefix.size() : 0u) : 0u;
 
 	// hack, need to make newline handling more consistent rather than... this
 	if(record.ends_with('\n')) {
