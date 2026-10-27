@@ -9,7 +9,12 @@
 #pragma once
 
 #include <shared/utility/xoroshiro128plus.h>
-#include <xxhash/xxh3.h>
+#if defined(_M_IX86) || defined(_M_X64) || defined(__i386__) || defined(__x86_64__) \
+	|| defined(__amd64__) || defined(_M_AMD64)
+	#include <xxhash/xxh_x86dispatch.h>
+#else
+	#include <xxhash/xxhash.h>
+#endif
 #include <array>
 #include <span>
 #include <string>

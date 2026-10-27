@@ -7,21 +7,20 @@
 include(CheckCSourceCompiles)
 
 check_c_source_compiles("
-#if !defined(__i386__) && !defined(__x86_64__) && \\
-    !defined(_M_IX86) && !defined(_M_X64)
+#if defined(_M_IX86) || defined(_M_X64) || defined(__i386__) \
+	|| defined(__x86_64__) || defined(__amd64__) || defined(_M_AMD64)
+int main(void) { return 0; }
+#else
 #error Not an x86/x64 target
 #endif
-int main(void) { return 0; }
 " XXHASH_TARGET_IS_X86_X64)
 
 set(LIBRARY_NAME xxhash)
 
 set(LIBRARY_SOURCES
-    xxh3.h
     xxhash.c
     xxhash.h
 )
-
 if(XXHASH_TARGET_IS_X86_X64)
     list(APPEND LIBRARY_SOURCES
         xxh_x86dispatch.c
@@ -30,4 +29,5 @@ if(XXHASH_TARGET_IS_X86_X64)
 endif()
 
 add_library(${LIBRARY_NAME} STATIC ${LIBRARY_SOURCES})
+
 set_target_properties(${LIBRARY_NAME} PROPERTIES FOLDER "Dependencies")
