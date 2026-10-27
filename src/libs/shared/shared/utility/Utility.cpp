@@ -9,8 +9,10 @@
 #include "Utility.h"
 #include <shared/CompilerWarn.h>
 #include <botan/bigint.h>
+#include <expected>
 #include <format>
 #include <cassert>
+#include <cerrno>
 
 using namespace std::chrono_literals;
 
@@ -45,9 +47,9 @@ namespace ember::utility {
 std::size_t max_consecutive(const std::string_view name, const bool case_insensitive) {
 	std::size_t current_run = 0;
 	std::size_t longest_run = 0;
-	char last = 0;
+	unsigned char last = 0;
 
-	for(auto c : name) {
+	for(unsigned char c : name) {
 		if(case_insensitive) {
 			c = std::tolower(c);
 		}
@@ -71,34 +73,37 @@ std::size_t max_consecutive(const std::string_view name, const bool case_insensi
 void set_window_title(cstring_view title) {
 #ifdef _WIN32
     SetConsoleTitle(title.c_str());
-#elif defined __linux__ || defined __unix__ // todo, test
-  	std::cout << "\033]0;" << title << "}\007";
+#elif defined __linux__ || defined __unix__ || defined TARGET_OS_MAC
+	std::cout << "\033]0;" << title << "\007" << std::flush;
 #endif
 }
 
-int max_sockets() {
 #if defined __linux__ || defined __unix__ || defined TARGET_OS_MAC
+std::expected<rlim_t, int> max_sockets() {
 	rlimit limit{};
 	const int res = getrlimit(RLIMIT_NOFILE, &limit);
 	
 	if(res == -1) {
-		return -1;
+		return std::unexpected(errno);
 	}
 
 	return limit.rlim_cur;
-#endif
-	return 0;
 }
+#endif
 
 std::string max_sockets_desc() {
 #if defined __linux__ || defined __unix__ || defined TARGET_OS_MAC
 	const auto max = max_sockets();
 
-	if(max == -1) {
-		return  "unable to retrieve value";
-	} else {
-		return  std::to_string(max);
+	if(!max) {
+		return std::format("unable to retrieve value, error {}", max.error());
 	}
+
+	if(*max == RLIM_INFINITY) {
+		return "unlimited";
+	}
+
+	return std::to_string(*max);
 #else
 	return "no known limits";
 #endif

@@ -14,7 +14,7 @@ namespace ember::log::posix::themes {
 
 inline constexpr ThemeView Midnight {
 	.name = "midnight",
-	.desc = "easy on weary eyes, staring at debug logs as the night slips away, once again",
+	.desc = "Easy on weary eyes, staring at debug logs as the night slips away, once again",
 	.tag {
 		.trace  = "\033[1;38;2;105;117;145m",
 		.debug  = "\033[1;38;2;137;180;250m",

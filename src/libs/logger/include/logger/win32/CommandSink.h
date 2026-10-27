@@ -45,7 +45,6 @@ class CommandSink final : public log::CommandSink {
 	using Autocomplete = std::function<commands::Suggestions(const std::string&)>;
 	using Suggestion = std::function<std::string(const std::string_view)>;
 
-	inline static std::atomic_bool exists_ = false;
 	static constexpr auto sv_reserve = 256u;
 	static constexpr auto max_buf_size = 4096u;
 	static constexpr auto reserve_buf_size = 512u;

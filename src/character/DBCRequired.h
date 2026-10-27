@@ -13,7 +13,7 @@
 
 namespace ember::character {
 
-inline const std::array<std::string_view, 18> dbcs_required {
+inline constexpr std::array<std::string_view, 18> dbcs_required {
 	"ChrClasses",
 	"ChrRaces",
 	"CharBaseInfo",

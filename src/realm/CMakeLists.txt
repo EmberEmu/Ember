@@ -85,6 +85,7 @@ set(LIBRARY_HDR
     BuildDefines.h
     AllocationProvider.h
     ClientSlots.h
+    TokenCosts.h
 )
 
 set(LIBRARY_SRC
@@ -139,7 +140,7 @@ add_dependencies(${LIBRARY_NAME}
     SPARK_RPC_GENERATE
 )
 
-target_link_libraries(${LIBRARY_NAME} PRIVATE banner journal protocol thread nsd conpool stun ports dbcreader spark allocators ${ZLIB_LIBRARY} Threads::Threads PUBLIC service logger commands shared Boost::container Boost::program_options)
+target_link_libraries(${LIBRARY_NAME} PRIVATE banner journal protocol thread nsd conpool stun ports dbcreader spark allocators ratelimit ${ZLIB_LIBRARY} Threads::Threads PUBLIC service logger commands shared Boost::container Boost::program_options)
 
 if(BUILD_SHARED)
     target_compile_definitions(${LIBRARY_NAME} PUBLIC EXPORT_SERVICE)

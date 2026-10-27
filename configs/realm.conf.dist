@@ -20,6 +20,12 @@ path = @CMAKE_INSTALL_PREFIX@/realm.journal
 [dbc]
 path = @CMAKE_INSTALL_PREFIX@/dbcs/
 
+[rate_limit]
+tokens = 20          # initial token count
+max_tokens = 20      # maximum bucketed tokens
+refill_rate = 1000   # bucket refill rate, in milliseconds
+refill_count = 1     # number of tokens to add per refill
+
 [misc]
 concurrency = 0 # zero will allow the server to decide
 

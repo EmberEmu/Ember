@@ -17,6 +17,7 @@
 #include "Forwards.h"
 #include <protocol/Concepts.h>
 #include <protocol/StreamResult.h>
+#include <ratelimit/RateLimit.h>
 #include <logger/Logger.h>
 #include <shared/utility/UTF8String.h>
 #include <boost/asio/steady_timer.hpp>
@@ -51,6 +52,8 @@ class ClientContext {
 	ClientConnection* connection_ = nullptr;
 	ClientHandler* handler_ = nullptr;
 
+	RateLimit rate_limit_;
+
 	boost::asio::steady_timer timer_;
 	mutable std::string client_id_str_;
 	mutable std::string client_id_ext_;
@@ -69,8 +72,9 @@ class ClientContext {
 
 public:
 	ClientContext(executor& executor, const ConfigStore& cfg_store, EventDispatcher& dispatcher,
-	              RealmQueue& queue, AccountClient& account_rpc, CharacterClient& character_rpc,
-	              const RealmService& realm_rpc, log::Logger& logger);
+				  RealmQueue& queue, AccountClient& account_rpc, CharacterClient& character_rpc,
+				  const RealmService& realm_rpc, RateLimitOptions rate_limit_opts,
+				  log::Logger& logger);
 
 	std::string_view whoami() const;
 
@@ -98,6 +102,10 @@ public:
 	inline void send(protocol::is_packet auto& packet) {
 		PACKET_TRACE((*this), "<- {}", packet.opcode);
 		connection_->send(packet);
+	}
+
+	RateLimit& rate_limit() {
+		return rate_limit_;
 	}
 
 	// if the client is occupying a slot

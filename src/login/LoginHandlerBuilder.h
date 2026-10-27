@@ -23,6 +23,7 @@ class LoginHandlerBuilder final {
 	const IntegrityData& bin_data_;
 	Metrics& metrics_;
 	LoginHandler::Options opts_;
+	RateLimitOptions rate_limit_opts_;
 
 public:
 	LoginHandlerBuilder(log::Logger& logger,
@@ -33,7 +34,8 @@ public:
 	                    const AccountClient& acct_svc,
 						const RealmList& realm_list,
 	                    Metrics& metrics,
-						LoginHandler::Options opts)
+						LoginHandler::Options opts,
+	                    RateLimitOptions rate_limit_opts)
 	                    : logger_(logger)
 						, patcher_(patcher)
 						, user_dao_(user_dao)
@@ -42,12 +44,13 @@ public:
 						, metrics_(metrics)
 						, survey_(survey)
 						, bin_data_(exe_data)
-						, opts_(opts) {}
+						, opts_(opts)
+	                    , rate_limit_opts_(rate_limit_opts) {}
 
 	LoginHandler create(std::string client_identifier) const {
 		return {
-			user_dao_, acct_svc_, patcher_, bin_data_, survey_, logger_,
-			realm_list_, metrics_, std::move(client_identifier), opts_
+			user_dao_, acct_svc_, patcher_, bin_data_, survey_, logger_, realm_list_,
+			metrics_, std::move(client_identifier), opts_, rate_limit_opts_
 		};
 	}
 };

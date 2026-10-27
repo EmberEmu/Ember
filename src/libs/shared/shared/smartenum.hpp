@@ -35,7 +35,7 @@ SOFTWARE.
 
 namespace smart_enum {
 
-int char_to_int(char c, int base, bool& err);
+int char_to_int(unsigned char c, int base, bool& err);
 std::expected<unsigned long long, bool> svtoull(const std::string_view string, int base = 0);
 std::string_view trim_whitespace(const std::string_view str);
 std::string_view extract_entry(const std::string_view values);

@@ -9,7 +9,9 @@
 #pragma once
 
 #include "ClientContext.h"
+#include <ratelimit/RateLimit.h>
 #include "Forwards.h"
+#include <utility>
 
 namespace ember::realm {
 
@@ -20,23 +22,25 @@ class ClientContextBuilder final {
 	AccountClient& account_rpc_;
 	CharacterClient& character_rpc_;
 	const RealmService& realm_rpc_;
+	const RateLimitOptions rate_limit_opts_;
 	log::Logger& logger_;
 
 public:
 	ClientContextBuilder(const ConfigStore& cfg_store, EventDispatcher& dispatcher, RealmQueue& queue,
 	                     AccountClient& account_rpc, CharacterClient& character_rpc,
-	                     const RealmService& realm_rpc, log::Logger& logger)
+	                     const RealmService& realm_rpc, RateLimitOptions rate_limit_opts, log::Logger& logger)
 		: cfg_store_(cfg_store)
 		, dispatcher_(dispatcher)
 		, queue_(queue)
 		, account_rpc_(account_rpc)
 		, character_rpc_(character_rpc)
 		, realm_rpc_(realm_rpc)
+		, rate_limit_opts_(std::move(rate_limit_opts))
 		, logger_(logger) {}
 
 	ClientContext create(executor& executor) const {
 		return ClientContext(
-			executor, cfg_store_, dispatcher_, queue_, account_rpc_, character_rpc_, realm_rpc_, logger_
+			executor, cfg_store_, dispatcher_, queue_, account_rpc_, character_rpc_, realm_rpc_, rate_limit_opts_, logger_
 		);
 	}
 };

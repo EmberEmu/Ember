@@ -17,6 +17,7 @@
 #include <logger/posix/themes/Regalia.h>
 #include <logger/posix/themes/Sahara.h>
 #include <logger/posix/themes/Smoky.h>
+#include <logger/posix/themes/Frost.h>
 #include <array>
 #include <span>
 #include <stdexcept>
@@ -31,7 +32,8 @@ inline constexpr std::array builtins {
 	themes::Smoky,
 	themes::Sahara,
 	themes::Regalia,
-	themes::Midnight
+	themes::Midnight,
+	themes::Frost
 };
 
 inline Theme builtin_theme(std::string_view name) {

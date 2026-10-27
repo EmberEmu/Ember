@@ -13,7 +13,7 @@
 
 namespace ember::realm {
 
-inline const std::array<std::string_view, 2> dbcs_required {
+inline constexpr std::array<std::string_view, 2> dbcs_required {
 	"AddonData",
 	"Cfg_Categories"
 };

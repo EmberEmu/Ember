@@ -13,6 +13,7 @@
 #include <string>
 #include <string_view>
 #include <cstddef>
+#include <cstdint>
 
 // fwd decl
 namespace Botan { class BigInt; }
@@ -26,12 +27,6 @@ namespace ember::utility {
 std::size_t max_consecutive(const std::string_view name, bool case_insensitive = false);
 
 void set_window_title(cstring_view title);
-
-/*
- * Attempts to determine the maximum number of sockets
- * the process is allowed to open.
- */
-int max_sockets();
 
 /*
  * Produces a string describing the maximum number of

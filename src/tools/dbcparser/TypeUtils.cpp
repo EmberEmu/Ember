@@ -118,7 +118,7 @@ std::string pascal_to_underscore(const std::string_view name) {
 	bool next_capitalised = false;
 
 	while(found != std::string::npos) {
-		adjusted[found] = std::tolower(adjusted[found]);
+		adjusted[found] = std::tolower(static_cast<unsigned char>(adjusted[found]));
 
 		/* Bounds check to ensure we don't go over the string length when looking
 		   ahead, although this isn't strictly needed as of C++11 given that
@@ -126,7 +126,7 @@ std::string pascal_to_underscore(const std::string_view name) {
 		   that the loop will exit after the final match */
 		if(found + 1 < adjusted.length()) {
 			char next = adjusted[found + 1];
-			next_capitalised = next != std::tolower(adjusted[found + 1]);
+			next_capitalised = next != std::tolower(static_cast<unsigned char>(adjusted[found + 1]));
 		} else {
 			next_capitalised = false;
 		}

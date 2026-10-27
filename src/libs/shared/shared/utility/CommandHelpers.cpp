@@ -13,6 +13,7 @@
 #include <logger/posix/CommandSink.h>
 #include <logger/Logger.h>
 #include <shared/utility/DurationString.h>
+#include <shared/utility/Truncate.h>
 #include <bprinter/table_printer.h>
 #include <boost/lexical_cast.hpp>
 #include <chrono>
@@ -27,7 +28,7 @@
 
 namespace ember::utility {
 
-void log_subcommands(log::Logger& logger, const std::string& path, const commands::CommandMap& subcommands) {
+void log_subcommands(const std::string& path, const commands::CommandMap& subcommands, log::Logger& logger) {
 	LOG_CONSOLE(logger, R"(Available subcomands for "{}": )", path);
 
 	for(auto& subcommand : subcommands | std::views::values) {
@@ -48,7 +49,7 @@ void handle_command_result(commands::Result result,
 			LOG_CONERR(logger, "Usage: {} {}", path, command.usage_string());
             break;
         case subcommands:
-			log_subcommands(logger, path, command.commands());
+			log_subcommands(path, command.commands(), logger);
             break;
         case unavailable:
 			LOG_CONERR(logger, R"(Command "{}" is currently unavailable.)", path);
@@ -185,22 +186,9 @@ void handle_help_command(const commands::Arguments& arguments, const commands::C
 	}
 }
 
-std::string truncate_output(const std::size_t cols, const std::string_view string) {
-	if(string.size() <= cols) {
-		return std::string(string);
-	}
-
-	constexpr std::string_view ellipsis { "..." };
-
-	if(cols <= ellipsis.size()) {
-		return std::string(ellipsis.substr(0, cols));
-	}
-
-	const auto ellipsis_space = cols - ellipsis.size();
-	return std::string(string.substr(0, ellipsis_space)) + "...";
-}
-
-void print_themes(log::Logger& logger) {
+void print_themes(std::span<const log::posix::ThemeView> themes,
+                  std::span<const std::string> files,
+                  log::Logger& logger) {
 	constexpr auto max_name_len = 20u; // todo, size_t literals on bump
 	constexpr auto max_desc_len = 80u;
 
@@ -213,37 +201,43 @@ void print_themes(log::Logger& logger) {
 	printer.AddColumn("Description", max_desc_len);
 	printer.PrintHeader();
 
-	for(const auto& theme : log::posix::builtin_themes()) {
-		printer << truncate_output(max_name_len, theme.name);
-		printer << truncate_output(max_desc_len, theme.desc);
+	for(const auto& theme : themes) {
+		utility::write_pretty_truncate(printer, theme.name, max_name_len);
+		utility::write_pretty_truncate(printer, theme.desc, max_desc_len);
+	}
+
+	for(const auto& file : files) {
+		utility::write_pretty_truncate(printer, file, max_name_len);
+		utility::write_pretty_truncate(printer, "Custom theme file", max_desc_len);
 	}
 
 	printer.PrintFooter();
 	LOG_CONSOLE(logger, stream.view());
 }
 
-void handle_theme_list_command(log::Logger& logger) {
-	const auto themes = log::posix::builtin_themes();
-
-	if(themes.empty()) {
-		LOG_CONSOLE(logger, "No themes available");
-	} else {
-		print_themes(logger);
-	}
-}
-
-std::vector<std::filesystem::path> theme_file_list(const std::filesystem::path& path) {
-	std::vector<std::filesystem::path> files;
+std::vector<std::string> theme_file_list_relative(const std::filesystem::path& path) {
+	std::vector<std::string> files;
 
 	if(std::filesystem::is_directory(path)) {
 		for(auto& file : std::filesystem::directory_iterator(path)) {
 			if(file.path().string().ends_with(".theme.json")) {
-				files.emplace_back(file.path().filename());
+				files.emplace_back(file.path().filename().string());
 			}
 		}
 	}
 
 	return files;
+}
+
+void handle_theme_list_command(const std::filesystem::path& path, log::Logger& logger) {
+	const auto themes = log::posix::builtin_themes();
+	const auto files = theme_file_list_relative(path);
+
+	if(themes.empty() && files.empty()) {
+		LOG_CONSOLE(logger, "No themes available");
+	} else {
+		print_themes(themes, files, logger);
+	}
 }
 
 commands::Suggestions handle_theme_set_autocomplete(std::span<const std::string> tokens,
@@ -265,10 +259,10 @@ commands::Suggestions handle_theme_set_autocomplete(std::span<const std::string>
 	}
 
 	// custom theme files
-	for(const auto& file : theme_file_list(path)) {
-		if(tokens.empty() || file.filename().string().starts_with(tokens.front())) {
+	for(const auto& file : theme_file_list_relative(path)) {
+		if(tokens.empty() || file.starts_with(tokens.front())) {
 			results.records.emplace_back(
-				file.string(), "custom theme file"
+				file, "Custom theme file"
 			);
 		}
 	}
@@ -278,8 +272,9 @@ commands::Suggestions handle_theme_set_autocomplete(std::span<const std::string>
 	return results;
 }
 
-void handle_theme_set_command(const commands::Arguments& arguments, log::Logger& logger,
-                              const std::filesystem::path& path) try {
+void handle_theme_set_command(const commands::Arguments& arguments,
+                              const std::filesystem::path& path,
+                              log::Logger& logger) try {
 	const auto sink = logger.fetch_sink(log::posix::CommandSink::name());
 
 	if(!sink) {
@@ -358,7 +353,7 @@ void register_theme_commands(std::shared_ptr<commands::Command> root, log::Logge
 		->description("Change the console's current theme")
 		->argument<std::string>("name")
 		->handler([&, theme_path](const auto& arguments) {
-			handle_theme_set_command(arguments, logger, theme_path);
+			handle_theme_set_command(arguments, theme_path, logger);
 		})
 		->autocomplete([theme_path](const auto& tokens) {
 			return handle_theme_set_autocomplete(tokens, theme_path);
@@ -366,8 +361,8 @@ void register_theme_commands(std::shared_ptr<commands::Command> root, log::Logge
 	
 	theme_cmd->insert("list")
 		->description("Display available console themes")
-		->handler([&](const auto&) {
-			handle_theme_list_command(logger);
+		->handler([&, theme_path](const auto&) {
+			handle_theme_list_command(theme_path, logger);
 		});
 }
 

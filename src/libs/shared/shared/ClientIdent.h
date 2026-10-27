@@ -8,12 +8,10 @@
 
 #pragma once
 
-#include <shared/utility/FNVHash.h>
 #include <shared/utility/xoroshiro128plus.h>
+#include <xxhash/xxh3.h>
 #include <array>
-#include <iomanip>
 #include <span>
-#include <sstream>
 #include <string>
 #include <cassert>
 #include <cstddef>
@@ -49,8 +47,8 @@ class ClientIdent final {
 	static constexpr std::size_t uuid_size = 16;
 
 	std::array<std::uint64_t, uuid_size / sizeof(std::uint64_t)> data_;
-	mutable std::size_t hash_;
-	mutable bool hashed_;
+	mutable std::uint64_t hash_ = 0;
+	mutable bool hashed_ = false;
 
 	void generate(const std::size_t service_index) {
 		assert(service_index < 256);
@@ -68,22 +66,21 @@ class ClientIdent final {
 		data_[0] |= static_cast<std::uint64_t>(index) << 56;
 	}
 
+	void invalidate_hash() {
+		hashed_ = false;
+	}
+
 public:
 	constexpr static auto max_slot_value = 0xfffu; // todo, sz literal when compiler bump
 	static_assert(max_slot_value < 0x1000, "Slot count exceeds bits assigned for encoding");
 
-	ClientIdent()
-		: data_{}
-		, hash_(0)
-		, hashed_(false) {};
+	ClientIdent() : data_{} {};
 
-	explicit ClientIdent(std::size_t service_index)
-		: ClientIdent() {
+	explicit ClientIdent(std::size_t service_index) {
 		generate(service_index);
 	}
 
-	explicit ClientIdent(std::span<const std::uint8_t, uuid_size> data)
-		: ClientIdent() {
+	explicit ClientIdent(std::span<const std::uint8_t, uuid_size> data) {
 		std::memcpy(data_.data(), data.data(), uuid_size);
 	}
 
@@ -96,6 +93,7 @@ public:
 		const std::uint8_t slot_lo = slot & 0xf;
 		data_[0] = (data_[0] & (0xffull << 56)) | (ptr_val << 8ull) | slot_hi;
 		data_[1] = (data_[1] & ~0xfull) | slot_lo;
+		invalidate_hash();
 	}
 
 	template<typename T>
@@ -107,43 +105,42 @@ public:
 		return ((data_[0] & 0xff) << 4) | (data_[1] & 0xf);
 	}
 
-	inline std::size_t hash() const {
+	inline std::uint64_t hash() const {
 		if(hashed_) {
 			return hash_;
 		}
 
-		FNVHash hasher;
 		auto bytes = std::as_bytes(std::span(data_));
-
-		for(auto byte : bytes) {
-			hasher.update_byte(byte);
-		}
+		hash_ = XXH3_64bits(bytes.data(), bytes.size_bytes());
 
 		hashed_ = true;
-		return hash_ = hasher.finalise();
+		return hash_;
 	}
 
 	inline std::uint8_t service() const {
 		return data_[0] >> 56;
 	}
 
-	// don't really care about efficiency here, it's for debugging
 	inline std::string to_string() const {
-		std::stringstream stream;
-		stream << std::hex << std::setfill('0');
-
+		constexpr char hex[] { "0123456789abcdef" };
 		const auto bytes = std::as_bytes(std::span(data_));
 
-		for(auto byte : bytes) {
-			stream << std::setw(2) << static_cast<int>(byte);
+		std::string result;
+		result.resize(bytes.size() * 2);
+
+		for(std::size_t i = 0; i < bytes.size(); ++i) {
+			const auto byte = std::to_integer<unsigned char>(bytes[i]);
+			result[2 * i]     = hex[byte >> 4];
+			result[2 * i + 1] = hex[byte & 0x0f];
 		}
 
-		return stream.str();
+		return result;
 	}
 
 	void set_zero() {
 		data_[0] = 0;
 		data_[1] = 0;
+		invalidate_hash();
 	}
 
 	bool is_zero() const {
@@ -175,6 +172,6 @@ inline std::size_t hash_value(const ClientIdent& uuid) {
 template<>
 struct std::hash<ember::ClientIdent> {
 	std::size_t operator()(const ember::ClientIdent& uuid) const {
-		return uuid.hash();
+		return static_cast<std::size_t>(uuid.hash());
 	}
 };

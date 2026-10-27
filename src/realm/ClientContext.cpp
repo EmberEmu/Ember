@@ -16,7 +16,8 @@ namespace ember::realm {
 
 ClientContext::ClientContext(executor& executor, const ConfigStore& cfg_store, EventDispatcher& dispatcher,
                              RealmQueue& queue, AccountClient& account_rpc, CharacterClient& character_rpc,
-                             const RealmService& realm_rpc, log::Logger& logger)
+                             const RealmService& realm_rpc, RateLimitOptions rate_limit_opts,
+                             log::Logger& logger)
 	: timer_(executor)
 	, cfg_store(cfg_store)
 	, dispatcher(dispatcher)
@@ -24,6 +25,7 @@ ClientContext::ClientContext(executor& executor, const ConfigStore& cfg_store, E
 	, account_rpc(account_rpc)
 	, character_rpc(character_rpc)
 	, realm_rpc(realm_rpc)
+	, rate_limit_(std::move(rate_limit_opts))
 	, logger(logger)
 	, active(false) {}
 
