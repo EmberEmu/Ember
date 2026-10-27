@@ -163,6 +163,7 @@ void FileSink::batch_write(const std::span<std::tuple<RecordDetail, std::string_
 	for(auto&& [detail, prefix, data] : records) {
 		if(severity <= detail.severity && !(filter & detail.type)) {
 			size += data.size();
+			size += prefix.size();
 			matches = true;
 		}
 	}
@@ -185,11 +186,15 @@ void FileSink::batch_write(const std::span<std::tuple<RecordDetail, std::string_
 			}
 			
 			const auto cur_sz = out_buf_.size();
-			const auto new_sz = cur_sz + prepend.size() + data.size();
+			const auto new_sz = cur_sz + prefix.size() + prepend.size() + data.size();
 			out_buf_.resize(new_sz, boost::container::default_init);
+
 			auto write_ptr = out_buf_.data() + cur_sz;
+			std::memcpy(write_ptr, prefix.data(), prefix.size());
+			write_ptr += prefix.size();
 			std::memcpy(write_ptr, prepend.data(), prepend.size());
-			std::memcpy(write_ptr + prepend.size(), data.data(), data.size());
+			write_ptr += prepend.size();
+			std::memcpy(write_ptr, data.data(), data.size());
 		}
 	}
 
@@ -215,12 +220,17 @@ void FileSink::write(Severity severity, Filter type, std::string_view prefix, st
 
 	std::tm curr_time = detail::current_time();
 	std::string prepend = generate_record_detail(severity, curr_time);
+	std::size_t prefix_size = prefix.size();
 	std::size_t prep_size = prepend.size();
 	std::size_t rec_size = record.size();
 
-	rotate_check(prep_size + rec_size, curr_time);
+	rotate_check(prep_size + prefix_size + rec_size, curr_time);
 
 	std::size_t count = 0;
+
+	if(prefix_size) {
+		count += std::fwrite(prefix.data(), prep_size, 1, file_);
+	}
 
 	if(prep_size) {
 		count += std::fwrite(prepend.c_str(), prep_size, 1, file_);
