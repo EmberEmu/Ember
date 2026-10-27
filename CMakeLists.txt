@@ -120,8 +120,16 @@ if(PGO STREQUAL "use")
     endif()
 endif()
 
-set(allocator "default" CACHE STRING "Allocator selection")
-set_property(CACHE allocator PROPERTY STRINGS "default" "mimalloc" "jemalloc")
+set(allocator_options "system" "mimalloc" "jemalloc")
+set(allocator "system" CACHE STRING "Allocator selection")
+set_property(CACHE allocator PROPERTY STRINGS ${allocator_options})
+
+if(NOT allocator IN_LIST allocator_options)
+    message(FATAL_ERROR
+        "Invalid allocator '${allocator}'. "
+        "Must be one of: ${allocator_options}"
+    )
+endif()
 
 if(ALLOCATOR_TRACKING)
     add_compile_definitions(EMBER_DEBUG_ALLOCATOR_TRACKING)
