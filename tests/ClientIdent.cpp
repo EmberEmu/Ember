@@ -119,3 +119,27 @@ TEST_F(ClientIdentTest, CtorEquality) {
 	ClientIdent ident2(data);
 	ASSERT_EQ(ident, ident2);
 }
+
+TEST_F(ClientIdentTest, HashInvalidateSetZero) {
+	const std::array<std::uint8_t, 16> data {
+		0xf1, 0xb9, 0xa0, 0x02, 0x21, 0xe6, 0xb9, 0x7c,
+		0x81, 0x5d, 0x1a, 0xd6, 0x98, 0xc1, 0xc3, 0x0a
+	};
+
+	ClientIdent ident(data);
+	ASSERT_EQ(ident.hash(), 0x91D8C5F0837DBF0C);
+	ident.set_zero(); // invalidate
+	ASSERT_EQ(ident.hash(), 0xD0A66A65C7528968);
+}
+
+TEST_F(ClientIdentTest, HashInvalidateEncode) {
+	const std::array<std::uint8_t, 16> data {
+		0xf1, 0xb9, 0xa0, 0x02, 0x21, 0xe6, 0xb9, 0x7c,
+		0x81, 0x5d, 0x1a, 0xd6, 0x98, 0xc1, 0xc3, 0x0a
+	};
+
+	ClientIdent ident(data);
+	ASSERT_EQ(ident.hash(), 0x91D8C5F0837DBF0C);
+	ident.encode(reinterpret_cast<void*>(0x00FED00F), 1); // invalidate
+	ASSERT_EQ(ident.hash(), 0x58C96F972275FB96);
+}
