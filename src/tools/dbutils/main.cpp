@@ -88,7 +88,8 @@ void configure_logger(log::Logger& logger, const opts::variables_map& args) {
 	log::ConsoleSinkOptions options {
 		.name = "console_sink_0",
 		.severity = con_verbosity,
-		.colours = true
+		.colours = true,
+		.timestamp = false
 	};
 
 	auto consink = std::make_shared<log::ConsoleSink>(std::move(options));
