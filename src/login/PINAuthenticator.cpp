@@ -55,6 +55,9 @@ void PINAuthenticator::pin_to_bytes(std::uint32_t pin) {
  * client in order to calculate the expected input sequence from the
  * client. For example, if the user's PIN is '123' and the pad layout is
  * '0, 4, 1, 6, 2, 3' then the expected input sequence becomes '245'.
+ * 
+ * inverted_grid is used to enable O(1) lookups rather than needing to
+ * scan the entire grid for every PIN digit.
  */
 void PINAuthenticator::remap_pin_grid(std::uint32_t grid_seed) {
 	std::array<std::uint8_t, grid_size> grid { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
@@ -68,6 +71,10 @@ void PINAuthenticator::remap_pin_grid(std::uint32_t grid_seed) {
 			grid[k] = grid[k + 1];
 		}
 	}
+
+	for(std::size_t i = 0u; i < remapped_grid.size(); ++i) {
+		inverted_grid[remapped_grid[i]] = static_cast<std::uint8_t>(i);
+	}
 }
 
 /* 
@@ -77,8 +84,7 @@ void PINAuthenticator::remap_pin_grid(std::uint32_t grid_seed) {
  */
 void PINAuthenticator::remap_pin() {
 	for(auto& pin_byte : pin_bytes_) {
-		const auto index = std::ranges::find(remapped_grid, pin_byte);
-		pin_byte = std::distance(remapped_grid.begin(), index);
+		pin_byte = inverted_grid[pin_byte];
 	}
 }
 

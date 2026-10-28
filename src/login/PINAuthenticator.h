@@ -33,6 +33,7 @@ public:
 
 private:
 	std::array<std::uint8_t, grid_size> remapped_grid;
+	std::array<std::uint8_t, grid_size> inverted_grid;
 	std::inplace_vector<std::uint8_t, max_pin_length> pin_bytes_;
 
 	void pin_to_ascii();
