@@ -15,7 +15,6 @@
 namespace ember::log::posix {
 
 struct CommandSinkOptions {
-	std::string name;
 	std::string prompt        { "> "};
 	Severity severity         { Severity::trace };
 	Filter filter             { 0 };
