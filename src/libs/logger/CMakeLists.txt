@@ -56,6 +56,8 @@ add_library(${LIBRARY_NAME} STATIC
     include/logger/detail/StreamBuffer.h
     include/logger/detail/PlatformColour.h
     include/logger/ConsoleSinkOptions.h
+    include/logger/posix/CommandSinkOptions.h
+    include/logger/win32/CommandSinkOptions.h
 )
 
 if(WIN32)

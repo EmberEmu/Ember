@@ -33,12 +33,10 @@ using namespace detail;
 static constexpr auto text_white = FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
 static constexpr auto text_grey = FOREGROUND_INTENSITY;
 
-CommandSink::CommandSink(Severity severity, Filter filter, std::string prompt)
-	: log::CommandSink(std::string(name()), severity, filter)
-	, prompt_(std::move(prompt))
-	, timestamp_fmt_(default_timestamp_fmt)
-	, colour_(false)
-	, timestamp_(false)
+CommandSink::CommandSink(CommandSinkOptions options)
+	: log::CommandSink(options.name, options.severity, options.filter)
+	, opts_(std::move(options))
+	, prefix_pad_(std::string(' ', opts_.prefix_width))
 	, history_idx_(0)
 	, max_cols_(table_max_cols) {
 	semaphore_ = CreateSemaphore(NULL, 0, 1, NULL);
@@ -69,7 +67,7 @@ void CommandSink::stop() {
 }
 
 void CommandSink::batch_write(const std::span<std::tuple<RecordDetail, std::string_view, std::string>>& records) {
-	if(!colour_) [[unlikely]] {
+	if(!opts_.colours) [[unlikely]] {
 		do_batch_write(records);
 	} else { // we can't do batch output if we need to colour each individual log record
 		for(auto& [detail, prefix, data] : records) {
@@ -101,7 +99,7 @@ void CommandSink::do_batch_write(const std::span<std::tuple<RecordDetail, std::s
 	[[indeterminate]] std::array<char, timestamp_buf_size> ts_buffer;
 	std::size_t ts_size = 0;
 
-	if(timestamp_) {
+	if(opts_.timestamp) {
 		ts_size = generate_timestamp(ts_buffer);
 	}
 
@@ -166,7 +164,7 @@ void CommandSink::write(Severity severity, Filter type, std::string_view prefix,
 	[[indeterminate]] std::array<char, timestamp_buf_size> ts_buffer;
 	std::size_t ts_size = 0;
 
-	if(timestamp_) {
+	if(opts_.timestamp) {
 		ts_size = generate_timestamp(ts_buffer);
 	}
 
@@ -208,7 +206,7 @@ void CommandSink::write(Severity severity, Filter type, std::string_view prefix,
 		throw std::runtime_error("output buffer size != offset, bad calculation");
 	}
 
-	if(colour_) [[likely]] {
+	if(opts_.colours) [[likely]] {
 		std::lock_guard guard(console_lock_);
 		ConsoleColour concol(detail::severity_colour(severity));
 		write_buffer(out_buf_, false);
@@ -293,9 +291,9 @@ void CommandSink::redraw_prompt(bool update_cursor) {
 
 	// process command
 	const auto suggested = suggestion_substring();
-	const auto clamp = min(width - prompt_.size() - 1, command_.size());
+	const auto clamp = min(width - opts_.prompt.size() - 1, command_.size());
 	const auto user_input = std::format("{}{}", command_, suggested);
-    const std::string full_input = std::format("{}{}", prompt_, user_input);
+    const std::string full_input = std::format("{}{}", opts_.prompt, user_input);
 
 	[[indeterminate]] boost::container::small_vector<CHAR_INFO, reserve_buf_size> buffer(
 		width, boost::container::default_init
@@ -309,10 +307,10 @@ void CommandSink::redraw_prompt(bool update_cursor) {
 	for(std::size_t i = 0; i < full_input.size() && i < width; ++i) {
 		buffer[i].Char.AsciiChar = full_input[i];
 	
-		if(colour_) {
-			if(i < prompt_.size()) {
+		if(opts_.colours) {
+			if(i < opts_.prompt.size()) {
 				buffer[i].Attributes = text_grey;
-			} else if(i < prompt_.size() + command_.size()) {
+			} else if(i < opts_.prompt.size() + command_.size()) {
 				buffer[i].Attributes = text_white;
 			} else {
 				buffer[i].Attributes = text_grey;
@@ -340,7 +338,7 @@ void CommandSink::redraw_prompt(bool update_cursor) {
 
 	if(update_cursor) {
 		COORD cursor{
-			.X = gsl::narrow_cast<SHORT>(prompt_.size() + clamp),
+			.X = gsl::narrow_cast<SHORT>(opts_.prompt.size() + clamp),
 			.Y = bottom
 		};
 
@@ -375,7 +373,7 @@ void CommandSink::dispatch_command() {
 	if(!invoke_handler(command_)) {
 		std::string_view msg = "Unable to execute command, no command handler has been registered";
 
-		if(colour_) {
+		if(opts_.colours) {
 			ConsoleColour concol(Colour::white_on_red_bg);
 			write_buffer(msg, true);
 		} else {
@@ -417,7 +415,7 @@ void CommandSink::delete_character(const bool current) {
 	CONSOLE_SCREEN_BUFFER_INFO info{};
 	GetConsoleScreenBufferInfo(handle, &info);
 
-	auto rel_pos = info.dwCursorPosition.X - prompt_.size();
+	auto rel_pos = info.dwCursorPosition.X - opts_.prompt.size();
 
 	if(current) {
 		command_.erase(rel_pos, 1);
@@ -427,7 +425,7 @@ void CommandSink::delete_character(const bool current) {
 
 	update_suggestion();
 	redraw_prompt();
-	info.dwCursorPosition.X = gsl::narrow_cast<SHORT>(prompt_.size() + rel_pos);
+	info.dwCursorPosition.X = gsl::narrow_cast<SHORT>(opts_.prompt.size() + rel_pos);
 	SetConsoleCursorPosition(handle, info.dwCursorPosition);
 }
 
@@ -436,11 +434,11 @@ void CommandSink::buffer_scroll(CursorDirection dir) {
 	CONSOLE_SCREEN_BUFFER_INFO info{};
 	GetConsoleScreenBufferInfo(handle, &info);
 
-	if(info.dwCursorPosition.X < prompt_.size()) {
+	if(info.dwCursorPosition.X < opts_.prompt.size()) {
 		return;
 	}
 
-	auto rel_pos = info.dwCursorPosition.X - prompt_.size();
+	auto rel_pos = info.dwCursorPosition.X - opts_.prompt.size();
 
 	if(dir == CursorDirection::back && rel_pos) {
 		--rel_pos;
@@ -454,7 +452,7 @@ void CommandSink::buffer_scroll(CursorDirection dir) {
 	}
 
 	// back to absolute position
-	info.dwCursorPosition.X = gsl::narrow_cast<SHORT>(prompt_.size() + rel_pos);
+	info.dwCursorPosition.X = gsl::narrow_cast<SHORT>(opts_.prompt.size() + rel_pos);
 	SetConsoleCursorPosition(handle, info.dwCursorPosition);
 }
 
@@ -463,7 +461,7 @@ void CommandSink::insert_character(char ch) {
 	CONSOLE_SCREEN_BUFFER_INFO info{};
 	GetConsoleScreenBufferInfo(handle, &info);
 
-	auto rel_pos = info.dwCursorPosition.X - prompt_.size();
+	auto rel_pos = info.dwCursorPosition.X - opts_.prompt.size();
 
 	if(rel_pos != command_.size()) {
 		command_.insert(rel_pos, &ch, 1);
@@ -485,7 +483,7 @@ void CommandSink::insert_character(char ch) {
 
 	redraw_prompt();
 
-	info.dwCursorPosition.X = gsl::narrow_cast<SHORT>(prompt_.size() + rel_pos);
+	info.dwCursorPosition.X = gsl::narrow_cast<SHORT>(opts_.prompt.size() + rel_pos);
 	SetConsoleCursorPosition(handle, info.dwCursorPosition);
 }
 
@@ -591,9 +589,9 @@ void CommandSink::cursor_reposition(const CursorPosition position) {
 	GetConsoleScreenBufferInfo(handle, &info);
 
 	if(position == CursorPosition::start) {
-		info.dwCursorPosition.X = gsl::narrow_cast<SHORT>(prompt_.size());
+		info.dwCursorPosition.X = gsl::narrow_cast<SHORT>(opts_.prompt.size());
 	} else if(position == CursorPosition::end) {
-		info.dwCursorPosition.X = gsl::narrow_cast<SHORT>(prompt_.size() + command_.size());
+		info.dwCursorPosition.X = gsl::narrow_cast<SHORT>(opts_.prompt.size() + command_.size());
 	}
 
 	SetConsoleCursorPosition(handle, info.dwCursorPosition);

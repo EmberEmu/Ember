@@ -28,15 +28,10 @@ namespace ember::log::posix {
 constexpr std::string_view ansi_reset = "\x1b[0m"; // clears all attributes
 constexpr std::string_view ansi_erase = "\033[K";  // erase to end of line
 
-CommandSink::CommandSink(Severity severity, Filter filter, std::string prompt, Theme theme, bool no_bg)
-	: log::CommandSink(std::string(name()), severity, filter)
-	, prompt_(std::move(prompt))
-	, timestamp_fmt_(default_timestamp_fmt)
-	, colour_(false)
-	, timestamp_(false)
-	, max_cols_(table_max_cols)
-	, theme_(std::move(theme))
-	, no_bg_(no_bg) {
+CommandSink::CommandSink(CommandSinkOptions options)
+	: log::CommandSink(options.name, options.severity, options.filter)
+	, opts_(std::move(options))
+	, prefix_pad_(std::string(' ', opts_.prefix_width)) {
 	const auto [rows, _] = terminal_.get_size();
 	terminal_.set_log_region(rows);
 
@@ -60,7 +55,7 @@ void CommandSink::stop() {
 }
 
 void CommandSink::batch_write(const std::span<std::tuple<RecordDetail, std::string_view, std::string>>& records) {
-	if(!colour_) [[unlikely]] {
+	if(!opts_.colours) [[unlikely]] {
 		do_batch_write(records);
 	} else { // we can't do batch output if we need to colour each individual log record - todo, we can in this sink, actually
 		for(auto& [detail, prefix, data] : records) {
@@ -89,7 +84,7 @@ void CommandSink::do_batch_write(const std::span<std::tuple<RecordDetail, std::s
 	[[indeterminate]] std::array<char, timestamp_buf_size> ts_buffer;
 	std::size_t ts_size = 0;
 
-	if(timestamp_) {
+	if(opts_.timestamp) {
 		ts_size = generate_timestamp(ts_buffer);
 	}
 
@@ -156,7 +151,7 @@ void CommandSink::write(Severity severity, Filter type,	std::string_view prefix,
 	[[indeterminate]] std::array<char, timestamp_buf_size> ts_buffer;
 	std::size_t ts_size = 0;
 
-	if(timestamp_) {
+	if(opts_.timestamp) {
 		ts_size = generate_timestamp(ts_buffer);
 	}
 
@@ -183,28 +178,29 @@ void CommandSink::write(Severity severity, Filter type,	std::string_view prefix,
 		+ sevsv.size();
 
 	std::lock_guard guard(console_lock_);
+	const auto& theme = opts_.theme;
 
-	const auto prefix_style = theme_colour(theme_, severity, StyleSegment::prefix);
-	const auto tag_style = theme_colour(theme_, severity, StyleSegment::tag);
-	const auto text_style = theme_colour(theme_, severity, StyleSegment::text);
+	const auto prefix_style = theme_colour(theme, severity, StyleSegment::prefix);
+	const auto tag_style = theme_colour(theme, severity, StyleSegment::tag);
+	const auto text_style = theme_colour(theme, severity, StyleSegment::text);
 
-	if(colour_) {
-		if(!no_bg_) {
-			buff_req_size += theme_.bg.size();
+	if(opts_.colours) {
+		if(!opts_.no_background) {
+			buff_req_size += theme.bg.size();
 		}
 
-		if(timestamp_) {
-			buff_req_size += theme_.timestamp.size();
+		if(opts_.timestamp) {
+			buff_req_size += theme.timestamp.size();
 		}
 
 		buff_req_size += prefix_style.size();
 		buff_req_size += tag_style.size();
 		buff_req_size += text_style.size();
 		buff_req_size += ansi_erase.size();
-		buff_req_size += theme_.reset.size();
+		buff_req_size += theme.reset.size();
 
-		if(!no_bg_) {
-			buff_req_size += theme_.bg.size();
+		if(!opts_.no_background) {
+			buff_req_size += theme.bg.size();
 		} else {
 			buff_req_size += ansi_reset.size();
 		}
@@ -224,13 +220,13 @@ void CommandSink::write(Severity severity, Filter type,	std::string_view prefix,
 	};
 
 	// generate output
-	if(colour_) [[likely]] {
-		if(!no_bg_) {
-			append(theme_.bg);
+	if(opts_.colours) [[likely]] {
+		if(!opts_.no_background) {
+			append(theme.bg);
 		}
 
-		if(timestamp_) {
-			append(theme_.timestamp);
+		if(opts_.timestamp) {
+			append(theme.timestamp);
 			append(timestamp);
 		}
 
@@ -242,10 +238,10 @@ void CommandSink::write(Severity severity, Filter type,	std::string_view prefix,
 		append(text_style);
 		append(record);
 		append(ansi_erase);
-		append(theme_.reset);
+		append(theme.reset);
 
-		if(!no_bg_) {
-			append(theme_.bg);
+		if(!opts_.no_background) {
+			append(theme.bg);
 		} else {
 			append(ansi_reset);
 		}
@@ -353,30 +349,32 @@ void CommandSink::redraw_prompt() {
 		offset += fragment.size();
 	};
 
+	const auto& theme = opts_.theme;
+
     append("\x1b[?25l"); // hide cursor
 	append("\x1b[");
 	append(std::to_string(rows));
 	append(";1H"); // move
     append("\x1b[2K"); // erase line
 
-    if(colour_) {
-        append(theme_.prompt);
+    if(opts_.colours) {
+        append(theme.prompt);
     }
 
-	append(prompt_);
+	append(opts_.prompt);
 
-    if(colour_) {
-		append(theme_.input);
+    if(opts_.colours) {
+		append(theme.input);
     }
 
 	append(visible_command);
 
-    if(colour_) {
-		append(theme_.suggestion);
+    if(opts_.colours) {
+		append(theme.suggestion);
     }
 
 	append(visible_suggestion);
-	append(theme_.reset);
+	append(theme.reset);
 	append("\x1b[");
 	append(std::to_string(rows));
 	append(";");
@@ -414,11 +412,11 @@ void CommandSink::dispatch_command() {
 		constexpr std::string_view message =
 			"Unable to execute command, no command handler has been registered\n";
 
-		if(colour_) {
+		if(opts_.colours) {
 			std::lock_guard guard(console_lock_);
-			terminal_.write(theme_.text.conerr);
+			terminal_.write(opts_.theme.text.conerr);
 			write_buffer(std::span(message.data(), message.size()), false);
-			terminal_.write(theme_.reset);
+			terminal_.write(opts_.theme.reset);
 		} else {
 			write_buffer(std::span(message.data(), message.size()), false);
 		}
@@ -715,10 +713,10 @@ bool CommandSink::invoke(const std::string_view command) {
 
 void CommandSink::set_theme(Theme theme) {
 	std::lock_guard guard(console_lock_);
-	theme_ = std::move(theme);
+	opts_.theme = std::move(theme);
 
-	if(colour_ && !no_bg_) {
-		terminal_.write(theme_.bg);
+	if(opts_.colours && !opts_.no_background) {
+		terminal_.write(opts_.theme.bg);
 	}
 }
 

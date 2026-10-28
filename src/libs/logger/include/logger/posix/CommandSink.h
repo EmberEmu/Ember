@@ -11,6 +11,7 @@
 #include <commands/Suggestions.h>
 #include <logger/CommandSink.h>
 #include <logger/ConsoleColour.h>
+#include <logger/posix/CommandSinkOptions.h>
 #include <logger/posix/Themes.h>
 #include <logger/posix/TerminalCtl.h>
 #include <boost/container/small_vector.hpp>
@@ -29,7 +30,6 @@ namespace ember::log::posix {
 
 class CommandSink final : public log::CommandSink {
 	static constexpr std::string_view sink_name { "PosixCommandSink" };
-	static constexpr std::string_view default_timestamp_fmt { "%d/%m/%Y %H:%M:%S " };
 
 	enum class ScrollDirection {
 		up, down
@@ -55,6 +55,8 @@ class CommandSink final : public log::CommandSink {
 	static constexpr auto timestamp_buf_size = 64u;
 	static constexpr auto max_command_length = 256u;
 
+	CommandSinkOptions opts_;
+
 	CommandHandler handler_;
 	Autocomplete autocomplete_;
 	Suggestion suggestion_;
@@ -68,11 +70,7 @@ class CommandSink final : public log::CommandSink {
 	std::string timestamp_fmt_;
 	std::jthread input_reader_;
 	TerminalCtl terminal_;
-	bool colour_;
-	bool timestamp_;
 	bool log_line_used_ = false;
-	Theme theme_;
-	const bool no_bg_ = false;
 	std::string prefix_pad_;
 	unsigned int max_cols_ = table_max_cols;
 	std::size_t cursor_pos_ = 0;
@@ -110,7 +108,7 @@ class CommandSink final : public log::CommandSink {
 	bool invoke_handler(std::string_view command);
 
 public:
-	CommandSink(Severity severity, Filter filter, std::string prompt, Theme theme, bool no_bg);
+	CommandSink(CommandSinkOptions options);
 	~CommandSink();
 
 	CommandSink(const CommandSink&) = delete;
@@ -121,10 +119,7 @@ public:
 	void write(Severity severity, Filter type, std::string_view prefix, std::string_view record, bool flush) override;
 	void batch_write(const std::span<std::tuple<RecordDetail, std::string_view, std::string>>& records) override;
 
-	void colourise(bool colourise) override { colour_ = colourise; }
-	void log_timestamp(bool enable) override { timestamp_ = enable; }
-	void timestamp_format(std::string format) override { timestamp_fmt_ = format; }
-	void prefix_width(unsigned int width) { prefix_pad_ = std::string(width, ' '); }
+	// void prefix_width(unsigned int width) { prefix_pad_ = std::string(width, ' '); } - todo
 	void set_theme(Theme theme);
 
 	void register_handler(CommandHandler handler) override;

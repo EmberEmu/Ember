@@ -12,6 +12,7 @@
 #include <logger/Sink.h>
 #include <logger/CommandSink.h>
 #include <logger/ConsoleColour.h>
+#include <logger/win32/CommandSinkOptions.h>
 #include <boost/container/small_vector.hpp>
 #include <deque>
 #include <functional>
@@ -27,7 +28,6 @@ namespace ember::log::win32 {
 
 class CommandSink final : public log::CommandSink {
 	static constexpr std::string_view sink_name { "WinCommandSink" };
-	static constexpr std::string_view default_timestamp_fmt { "%d/%m/%Y %H:%M:%S " };
 
 	enum class ScrollDirection {
 		up, down
@@ -56,6 +56,8 @@ class CommandSink final : public log::CommandSink {
 	static constexpr auto table_padding = 3u;
 	static constexpr auto timestamp_buf_size = 64u;
 
+	CommandSinkOptions opts_;
+
 	CommandHandler handler_;
 	Autocomplete autocomplete_;
 	Suggestion suggestion_;
@@ -64,11 +66,9 @@ class CommandSink final : public log::CommandSink {
 	std::recursive_mutex console_lock_;
 	std::string command_;
 	std::string suggested_;
-	std::string prompt_;
 	std::string timestamp_fmt_;
 	std::jthread input_reader_;
-	bool colour_;
-	bool timestamp_;
+
 	unsigned int max_cols_;
 	void* semaphore_;
 	std::string prefix_pad_;
@@ -99,16 +99,12 @@ class CommandSink final : public log::CommandSink {
 	bool invoke_handler(const std::string_view command);
 
 public:
-	CommandSink(Severity severity, Filter filter, std::string prompt);
+	CommandSink(CommandSinkOptions options);
 	~CommandSink();
 
 	void stop();
 	void write(Severity severity, Filter type, std::string_view prefix, std::string_view record, bool flush) override;
 	void batch_write(const std::span<std::tuple<RecordDetail, std::string_view, std::string>>& records) override;
-	void colourise(bool colourise) override { colour_ = colourise; }
-	void log_timestamp(bool enable) override { timestamp_ = enable; }
-	void timestamp_format(std::string format) override { timestamp_fmt_ = format; }
-	void prefix_width(unsigned int width) { prefix_pad_ = std::string(width, ' '); }
 
 	void register_handler(CommandHandler handler) override;
 	void register_autocomplete(Autocomplete handler) override;

@@ -85,6 +85,44 @@ std::shared_ptr<log::Sink> init_console_sink(const opts::variables_map& args, lo
 	return std::make_shared<log::ConsoleSink>(std::move(options));
 }
 
+std::shared_ptr<log::posix::CommandSink> init_posix_command_sink(const opts::variables_map& args, log::Severity severity) {
+	log::posix::CommandSinkOptions options {
+		.prompt = "ember( ",
+		.severity = severity,
+		.filter = log::Filter(args["console_log.filter_mask"].as<std::uint32_t>()),
+		.colours = args["console_log.colours"].as<bool>(),
+		.timestamp = args["console_log.timestamp"].as<bool>(),
+		.timestamp_fmt = args["console_log.timestamp_format"].as<std::string>(),
+		.no_background = args["console_log.no_bg"].as<bool>(),
+		.theme = args["console_log.theme"].as<log::posix::Theme>(),
+	};
+
+	if(args.contains("console_log.prefix_width")) {
+		options.prefix_width = args["console_log.prefix_width"].as<unsigned int>();
+	}
+
+	return std::make_shared<log::posix::CommandSink>(std::move(options));
+}
+
+#ifdef _WIN32
+std::shared_ptr<log::win32::CommandSink> init_win_command_sink(const opts::variables_map& args, log::Severity severity) {
+		log::win32::CommandSinkOptions options {
+		.prompt = "ember( ",
+		.severity = severity,
+		.filter = log::Filter(args["console_log.filter_mask"].as<std::uint32_t>()),
+		.colours = args["console_log.colours"].as<bool>(),
+		.timestamp = args["console_log.timestamp"].as<bool>(),
+		.timestamp_fmt = args["console_log.timestamp_format"].as<std::string>()
+	};
+
+	if(args.contains("console_log.prefix_width")) {
+		options.prefix_width = args["console_log.prefix_width"].as<unsigned int>();
+	}
+
+	return std::make_shared<log::win32::CommandSink>(std::move(options));
+}
+#endif
+
 std::shared_ptr<log::Sink> init_command_sink(const opts::variables_map& args, log::Severity severity) {
 	const auto filter = args["console_log.filter_mask"].as<std::uint32_t>();
 	const auto colourise = args["console_log.colours"].as<bool>();
@@ -102,39 +140,17 @@ std::shared_ptr<log::Sink> init_command_sink(const opts::variables_map& args, lo
 	if(ansi) {
 		try {
 #endif
-			auto theme = args["console_log.theme"].as<log::posix::Theme>();
-			const auto no_bg = args["console_log.no_bg"].as<bool>();
-
-			auto cmd_sink = std::make_shared<log::posix::CommandSink>(
-				severity, log::Filter(filter), "ember( ", std::move(theme), no_bg
-			);
-
-			cmd_sink->prefix_width(prefix_width);
-			sink = cmd_sink;
+			sink = init_posix_command_sink(args, severity);
 #ifdef _WIN32
 		} catch(std::exception&) {
 			// fall back to WinAPI impl. if we're running in a terminal that doesn't support ANSI VT
-			auto cmd_sink = std::make_shared<log::win32::CommandSink>(
-				severity, log::Filter(filter), "ember( "
-			);
-
-			cmd_sink->prefix_width(prefix_width);
-			sink = cmd_sink;
+			sink = init_win_command_sink(args, severity);
 		}
 	} else {
-		auto cmd_sink = std::make_shared<log::win32::CommandSink>(
-			severity, log::Filter(filter), "ember( "
-		);
-
-		cmd_sink->prefix_width(prefix_width);
-		sink = cmd_sink;
+		sink = init_win_command_sink(args, severity);
 	}
 
 #endif
-
-	sink->colourise(colourise);
-	sink->log_timestamp(args["console_log.timestamp"].as<bool>());
-	sink->timestamp_format(args["console_log.timestamp_format"].as<std::string>());
 	return sink;
 }
 

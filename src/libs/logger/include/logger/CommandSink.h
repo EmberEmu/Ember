@@ -33,10 +33,6 @@ public:
 	void write(Severity severity, Filter type, std::string_view prefix, std::string_view record, bool flush) override = 0;
 	void batch_write(const std::span<std::tuple<RecordDetail, std::string_view, std::string>>& records) override = 0;
 
-	virtual void colourise(bool colourise) = 0;
-	virtual void log_timestamp(bool enable) = 0;
-	virtual void timestamp_format(std::string format) = 0;
-
 	virtual void register_handler(CommandHandler handler) = 0;
 	virtual void register_autocomplete(Autocomplete handler) = 0;
 	virtual void register_suggestion(Suggestion handler) = 0;
