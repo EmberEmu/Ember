@@ -53,11 +53,15 @@ void ClientSink::batch_write(const std::span<std::tuple<log::RecordDetail, std::
 
 	for(auto& [detail, prefix, data] : records) {
 		if(filter(detail.severity, detail.type)) {
-			return;
+			continue;
 		}
 
 		std::string_view record(data);
 		messages.append(format(prefix, record, detail.severity));
+	}
+
+	if(messages.empty()) {
+		return;
 	}
 
 	// see comment in 'write'
