@@ -37,7 +37,7 @@ std::shared_ptr<log::Sink> init_remote_sink(const opts::variables_map& args, log
 	const auto& service = args["remote_log.service_name"].as<std::string>();
 	auto port = args["remote_log.port"].as<std::uint16_t>();
 	auto facility = log::SyslogSink::Facility::local_use_0;
-	auto filter = args["remote_log.filter_mask"].as<std::uint32_t>();
+	auto filter = args["remote_log.filter_mask"].as<log::Filter>();
 
 	return std::make_shared<log::SyslogSink>(
 		"remote_sink_0", severity, log::Filter(filter), host, port, facility, service
@@ -47,7 +47,7 @@ std::shared_ptr<log::Sink> init_remote_sink(const opts::variables_map& args, log
 std::shared_ptr<log::Sink> init_file_sink(const opts::variables_map& args, log::Severity severity) {
 	const auto& mode_str = args["file_log.mode"].as<std::string>();
 	const auto& path = args["file_log.path"].as<std::string>();
-	auto filter = args["file_log.filter_mask"].as<std::uint32_t>();
+	auto filter = args["file_log.filter_mask"].as<log::Filter>();
 
 	if(mode_str != "append" && mode_str != "truncate") {
 		throw std::runtime_error("Invalid file logging mode supplied");
@@ -72,7 +72,7 @@ std::shared_ptr<log::Sink> init_console_sink(const opts::variables_map& args, lo
 	log::ConsoleSinkOptions options {
 		.name = "console_sink_0",
 		.severity = severity,
-		.filter = log::Filter(args["console_log.filter_mask"].as<std::uint32_t>()),
+		.filter = args["console_log.filter_mask"].as<log::Filter>(),
 		.colours = args["console_log.colours"].as<bool>(),
 		.timestamp = args["console_log.timestamp"].as<bool>(),
 		.timestamp_fmt = args["console_log.timestamp_format"].as<std::string>()
@@ -89,7 +89,7 @@ std::shared_ptr<log::posix::CommandSink> init_posix_command_sink(const opts::var
 	log::posix::CommandSinkOptions options {
 		.prompt = "ember( ",
 		.severity = severity,
-		.filter = log::Filter(args["console_log.filter_mask"].as<std::uint32_t>()),
+		.filter = args["console_log.filter_mask"].as<log::Filter>(),
 		.colours = args["console_log.colours"].as<bool>(),
 		.timestamp = args["console_log.timestamp"].as<bool>(),
 		.timestamp_fmt = args["console_log.timestamp_format"].as<std::string>(),
@@ -109,7 +109,7 @@ std::shared_ptr<log::win32::CommandSink> init_win_command_sink(const opts::varia
 	log::win32::CommandSinkOptions options {
 		.prompt = "ember( ",
 		.severity = severity,
-		.filter = log::Filter(args["console_log.filter_mask"].as<std::uint32_t>()),
+		.filter = args["console_log.filter_mask"].as<log::Filter>(),
 		.colours = args["console_log.colours"].as<bool>(),
 		.timestamp = args["console_log.timestamp"].as<bool>(),
 		.timestamp_fmt = args["console_log.timestamp_format"].as<std::string>()
