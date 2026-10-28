@@ -11,7 +11,9 @@
 #include <shared/utility/Clock.h>
 #include <shared/utility/HashDefines.h>
 #include <shared/utility/polyfill/inplace_vector>
+#include <botan/mac.h>
 #include <array>
+#include <memory>
 #include <span>
 #include <string_view>
 #include <cstdint>
@@ -39,6 +41,16 @@ private:
 	void remap_pin();
 
 public:
+	class PreparedAuthenticator {
+		std::unique_ptr<Botan::MessageAuthenticationCode> hmac;
+		const utility::ClockBase& clock;
+
+	public:
+		explicit PreparedAuthenticator(std::string_view secret, const utility::ClockBase& clock);
+
+		std::uint32_t generate_totp_pin(int interval);
+	};
+
 	explicit PINAuthenticator(std::uint32_t seed);
 
 	HashBytes calculate_hash(const SaltBytes& server_salt,
@@ -50,9 +62,11 @@ public:
 	                  std::span<const std::uint8_t> hash,
 	                  std::uint32_t pin);
 
+	static PreparedAuthenticator prepare(std::string_view secret, const utility::ClockBase& clock = utility::Clock());
+
 	static SaltBytes generate_salt();
 	static std::uint32_t generate_seed();
-	static std::uint32_t generate_totp_pin(const std::string_view secret,
+	static std::uint32_t generate_totp_pin(std::string_view secret,
 	                                       int interval,
 	                                       const utility::ClockBase& clock = utility::Clock());
 };

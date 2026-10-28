@@ -29,7 +29,7 @@ public:
 
 		cmd->insert("root_nested_1");
 		cmd->insert("root_nested_2")
-			->insert("root_nested_2_1");
+		   ->insert("root_nested_2_1");
 
 		registry->insert("root_1"); // error: unavailable
 		registry->insert("root_2")->insert("root_2_1"); // error: subcommands only
