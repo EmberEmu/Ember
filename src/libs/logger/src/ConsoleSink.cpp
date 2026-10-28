@@ -21,7 +21,7 @@ namespace ember::log {
 ConsoleSink::ConsoleSink(ConsoleSinkOptions options)
 	: Sink(options.name, std::string(type()), options.severity, options.filter)
 	, opts_(std::move(options))
-	, prefix_pad_(std::string(' ', opts_.prefix_width)) {}
+	, prefix_pad_(std::string(opts_.prefix_width, ' ')) {}
 
 void ConsoleSink::batch_write(const std::span<std::tuple<RecordDetail, std::string_view, std::string>>& records) {
 	if(!opts_.colours) [[unlikely]] {

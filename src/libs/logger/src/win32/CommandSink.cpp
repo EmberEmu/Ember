@@ -36,7 +36,7 @@ static constexpr auto text_grey = FOREGROUND_INTENSITY;
 CommandSink::CommandSink(CommandSinkOptions options)
 	: log::CommandSink(std::string(sink_name), options.severity, options.filter)
 	, opts_(std::move(options))
-	, prefix_pad_(std::string(' ', opts_.prefix_width))
+	, prefix_pad_(std::string(opts_.prefix_width, ' '))
 	, history_idx_(0)
 	, max_cols_(table_max_cols) {
 	semaphore_ = CreateSemaphore(NULL, 0, 1, NULL);

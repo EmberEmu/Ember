@@ -31,7 +31,7 @@ constexpr std::string_view ansi_erase = "\033[K";  // erase to end of line
 CommandSink::CommandSink(CommandSinkOptions options)
 	: log::CommandSink(std::string(sink_name), options.severity, options.filter)
 	, opts_(std::move(options))
-	, prefix_pad_(std::string(' ', opts_.prefix_width)) {
+	, prefix_pad_(std::string(opts_.prefix_width, ' ')) {
 	const auto [rows, _] = terminal_.get_size();
 	terminal_.set_log_region(rows);
 
