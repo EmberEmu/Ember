@@ -47,15 +47,13 @@ class ClientSink final : public log::Sink {
 	};
 
 	const ClientIdent client_;
-	const log::Severity severity_;
-	const log::Filter filter_;
 	const LogRedirect::Type type_;
 	EventDispatcher& dispatcher_;
 
 	Colour severity_rgb(log::Severity severity) const;
 	std::string format(std::string_view prefix, std::string_view message, log::Severity severity) const;
 	void dispatch(std::string message);
-	bool filter(log::Severity severity, log::Filter type) const;
+	bool filtered(log::Severity severity, log::Filter type) const;
 
 public:
 	ClientSink(std::string name, EventDispatcher& dispatcher, ClientIdent client,

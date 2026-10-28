@@ -17,8 +17,6 @@ ClientSink::ClientSink(std::string name, EventDispatcher& dispatcher, ClientIden
                        log::Severity severity, LogRedirect::Type type, log::Filter filter)
 	: log::Sink(std::move(name), std::string(sink_type), severity, filter)
 	, dispatcher_(dispatcher)
-	, severity_(severity)
-	, filter_(filter)
 	, client_(client)
 	, type_(type) {}
 
@@ -27,12 +25,12 @@ void ClientSink::dispatch(std::string message) {
 	dispatcher_.post(client_, std::move(event));
 }
 
-inline bool ClientSink::filter(log::Severity severity, log::Filter type) const {
-	return severity < severity_ || filter_ & type;
+inline bool ClientSink::filtered(log::Severity severity, log::Filter type) const {
+	return severity < this->severity() || this->filter() & type;
 }
 
 void ClientSink::write(log::Severity severity, log::Filter type, std::string_view prefix, std::string_view record, bool) {
-	if(filter(severity, type)) {
+	if(filtered(severity, type)) {
 		return;
 	}
 
@@ -52,7 +50,7 @@ void ClientSink::batch_write(const std::span<std::tuple<log::RecordDetail, std::
 	messages.reserve(reserve_size * records.size());
 
 	for(auto& [detail, prefix, data] : records) {
-		if(filter(detail.severity, detail.type)) {
+		if(filtered(detail.severity, detail.type)) {
 			continue;
 		}
 

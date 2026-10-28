@@ -78,12 +78,10 @@ void CommandSink::batch_write(const std::span<std::tuple<RecordDetail, std::stri
 
 void CommandSink::do_batch_write(const std::span<std::tuple<RecordDetail, std::string_view, std::string>>& records) {
 	std::size_t size = 0;
-	Severity sink_sev = this->severity();
-	Filter sink_filter = this->filter();
 	bool matches = false;
 
 	for(auto&& [detail, prefix, data] : records) {
-		if(sink_sev <= detail.severity && !(sink_filter & detail.type)) {
+		if(severity() <= detail.severity && !(filter() & detail.type)) {
 			size += data.size();
 			matches = true;
 		}
@@ -106,7 +104,7 @@ void CommandSink::do_batch_write(const std::span<std::tuple<RecordDetail, std::s
 	std::span<char> timestamp(ts_buffer.data(), ts_size);
 
 	for(auto&& [detail, prefix, data] : records) {
-		if(sink_sev > detail.severity || (sink_filter & detail.type)) {
+		if(severity() > detail.severity || (filter() & detail.type)) {
 			continue;
 		}
 
