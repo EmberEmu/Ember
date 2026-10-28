@@ -85,11 +85,14 @@ void configure_logger(log::Logger& logger, const opts::variables_map& args) {
 		"file_sink_0", file_verbosity, log::Filter(0), "dbmanage.log", log::FileSink::Mode::append
 	);
 
-	auto consink = std::make_shared<log::ConsoleSink>(
-		"console_sink_0", con_verbosity, log::Filter(0)
-	);
+	log::ConsoleSinkOptions options {
+		.name = "console_sink_0",
+		.severity = con_verbosity,
+		.colours = true
+	};
 
-	consink->colourise(true);
+	auto consink = std::make_shared<log::ConsoleSink>(std::move(options));
+
 	logger.add_sink(std::move(consink));
 	logger.add_sink(std::move(fsink));
 	log::global_logger(logger);
@@ -124,8 +127,8 @@ int launch(const opts::variables_map& args, log::Logger& logger) try {
 
 		if(clean && !args["shutup"].as<bool>()) {
 			SLOG_WARN(logger, "You are performing an installation with --clean.\n"
-			                      "This will drop any existing databases and users specified in the arguments!\n"
-			                      "Proceeding in {} seconds...", update_backout_period.count());
+			                  "This will drop any existing databases and users specified in the arguments!\n"
+			                  "Proceeding in {} seconds...", update_backout_period.count());
 			std::this_thread::sleep_for(update_backout_period);
 		}
 
@@ -140,7 +143,7 @@ int launch(const opts::variables_map& args, log::Logger& logger) try {
 			}
 
 			SLOG_INFO(logger, "Testing connection {} @ {}:{} for {}",
-			              details.username, details.hostname, details.port, db);
+			          details.username, details.hostname, details.port, db);
 
 			if(executor->test_connection()) {
 				SLOG_INFO(logger, "Successfully established connection");

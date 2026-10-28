@@ -69,23 +69,20 @@ std::shared_ptr<log::Sink> init_file_sink(const opts::variables_map& args, log::
 }
 
 std::shared_ptr<log::Sink> init_console_sink(const opts::variables_map& args, log::Severity severity) {
-	auto filter = args["console_log.filter_mask"].as<std::uint32_t>();
-	auto colourise = args["console_log.colours"].as<bool>();
-	unsigned int prefix_width = 0;
+	log::ConsoleSinkOptions options {
+		.name = "console_sink_0",
+		.severity = severity,
+		.filter = log::Filter(args["console_log.filter_mask"].as<std::uint32_t>()),
+		.colours = args["console_log.colours"].as<bool>(),
+		.timestamp = args["console_log.timestamp"].as<bool>(),
+		.timestamp_fmt = args["console_log.timestamp_format"].as<std::string>()
+	};
 
 	if(args.contains("console_log.prefix_width")) {
-		prefix_width = args["console_log.prefix_width"].as<unsigned int>();
+		options.prefix_width = args["console_log.prefix_width"].as<unsigned int>();
 	}
 
-	auto sink = std::make_shared<log::ConsoleSink>(
-		"console_sink_0", severity, log::Filter(filter)
-	);
-
-	sink->colourise(colourise);
-	sink->log_timestamp(args["console_log.timestamp"].as<bool>());
-	sink->timestamp_format(args["console_log.timestamp_format"].as<std::string>());
-	sink->prefix_width(prefix_width);
-	return sink;
+	return std::make_shared<log::ConsoleSink>(std::move(options));
 }
 
 std::shared_ptr<log::Sink> init_command_sink(const opts::variables_map& args, log::Severity severity) {

@@ -18,8 +18,12 @@
 
 namespace ember::log {
 
+ConsoleSink::ConsoleSink(ConsoleSinkOptions options)
+	: Sink(options.name, std::string(type()), options.severity, options.filter)
+	, opts_(std::move(options)) {}
+
 void ConsoleSink::batch_write(const std::span<std::tuple<RecordDetail, std::string_view, std::string>>& records) {
-	if(!colour_) [[unlikely]] {
+	if(!opts_.colours) [[unlikely]] {
 		do_batch_write(records);
 	} else { // we can't do batch output if we need to colour each individual log record
 		for(const auto& [detail, prefix, data] : records) {
@@ -48,7 +52,7 @@ void ConsoleSink::do_batch_write(const std::span<std::tuple<RecordDetail, std::s
 	[[indeterminate]] std::array<char, timestamp_buf_size> ts_buffer;
 	std::size_t ts_size = 0;
 
-	if(timestamp_) {
+	if(opts_.timestamp) {
 		ts_size = generate_timestamp(ts_buffer);
 	}
 
@@ -113,7 +117,7 @@ void ConsoleSink::write(Severity severity, Filter type, std::string_view prefix,
 	[[indeterminate]] std::array<char, timestamp_buf_size> ts_buffer;
 	std::size_t ts_size = 0;
 
-	if(timestamp_) {
+	if(opts_.timestamp) {
 		ts_size = generate_timestamp(ts_buffer);
 	}
 
@@ -148,7 +152,7 @@ void ConsoleSink::write(Severity severity, Filter type, std::string_view prefix,
 	append(sevsv);
 	append(record);
 
-	if(colour_) [[likely]] {
+	if(opts_.colours) [[likely]] {
 		std::lock_guard guard(colour_lock);
 		ConsoleColour concol(detail::severity_colour(severity));
 		std::fwrite(out_buf_.data(), out_buf_.size(), 1, stdout);
@@ -171,7 +175,7 @@ void ConsoleSink::write(Severity severity, Filter type, std::string_view prefix,
 
 std::size_t ConsoleSink::generate_timestamp(std::span<char> buffer) {
 	const auto curr_time = detail::current_time();
-	const auto size = detail::put_time(curr_time, timestamp_fmt_, buffer);
+	const auto size = detail::put_time(curr_time, opts_.timestamp_fmt, buffer);
 
 	if(!size) [[unlikely]] {
 		throw std::runtime_error("timestamp formatting failed");

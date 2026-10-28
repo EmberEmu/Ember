@@ -55,6 +55,7 @@ add_library(${LIBRARY_NAME} STATIC
     include/logger/Colour.h
     include/logger/detail/StreamBuffer.h
     include/logger/detail/PlatformColour.h
+    include/logger/ConsoleSinkOptions.h
 )
 
 if(WIN32)
