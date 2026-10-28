@@ -79,7 +79,6 @@ class CommandSink final : public log::CommandSink {
 	std::string_view suggestion_substring();
 	boost::container::small_vector<char, sv_reserve> out_buf_;
 	void print_command_table(std::span<const commands::Suggestions::Record> matches);
-	std::string truncate_description(std::size_t cols, const std::string_view description);
 	std::size_t generate_timestamp(std::span<char> buffer);
 
 	void clear_line();
