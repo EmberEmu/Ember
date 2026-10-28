@@ -106,7 +106,7 @@ std::shared_ptr<log::posix::CommandSink> init_posix_command_sink(const opts::var
 
 #ifdef _WIN32
 std::shared_ptr<log::win32::CommandSink> init_win_command_sink(const opts::variables_map& args, log::Severity severity) {
-		log::win32::CommandSinkOptions options {
+	log::win32::CommandSinkOptions options {
 		.prompt = "ember( ",
 		.severity = severity,
 		.filter = log::Filter(args["console_log.filter_mask"].as<std::uint32_t>()),
@@ -124,34 +124,20 @@ std::shared_ptr<log::win32::CommandSink> init_win_command_sink(const opts::varia
 #endif
 
 std::shared_ptr<log::Sink> init_command_sink(const opts::variables_map& args, log::Severity severity) {
-	const auto filter = args["console_log.filter_mask"].as<std::uint32_t>();
-	const auto colourise = args["console_log.colours"].as<bool>();
-	unsigned int prefix_width = 0;
-
-	if(args.contains("console_log.prefix_width")) {
-		prefix_width = args["console_log.prefix_width"].as<unsigned int>();
+#ifdef _WIN32
+	if(!args["console_log.win_ansi"].as<bool>()) {
+		return init_win_command_sink(args, severity);
 	}
 
-	std::shared_ptr<log::CommandSink> sink;
-
-#ifdef _WIN32
-	const auto ansi = args["console_log.win_ansi"].as<bool>();
-
-	if(ansi) {
-		try {
+	try {
 #endif
-			sink = init_posix_command_sink(args, severity);
+		return init_posix_command_sink(args, severity);
 #ifdef _WIN32
-		} catch(std::exception&) {
-			// fall back to WinAPI impl. if we're running in a terminal that doesn't support ANSI VT
-			sink = init_win_command_sink(args, severity);
-		}
-	} else {
-		sink = init_win_command_sink(args, severity);
+	} catch(const std::exception&) {
+		// fall back to WinAPI impl. if we're running in a terminal that doesn't support ANSI VT
+		return init_win_command_sink(args, severity);
 	}
-
 #endif
-	return sink;
 }
 
 bool isatty() {
