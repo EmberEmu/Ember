@@ -53,7 +53,7 @@ class ClientSink final : public log::Sink {
 	EventDispatcher& dispatcher_;
 
 	Colour severity_rgb(log::Severity severity) const;
-	std::string format(const std::string_view input, log::Severity severity) const;
+	std::string format(std::string_view prefix, std::string_view message, log::Severity severity) const;
 	void dispatch(std::string message);
 	bool filter(log::Severity severity, log::Filter type) const;
 

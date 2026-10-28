@@ -43,7 +43,7 @@ void ClientSink::write(log::Severity severity, log::Filter type, std::string_vie
 		record.remove_suffix(1);
 	}
 
-	auto message = format(record, severity);
+	auto message = format(prefix, record, severity);
 	dispatch(std::move(message));
 }
 
@@ -57,7 +57,7 @@ void ClientSink::batch_write(const std::span<std::tuple<log::RecordDetail, std::
 		}
 
 		std::string_view record(data);
-		messages.append(format(record, detail.severity));
+		messages.append(format(prefix, record, detail.severity));
 	}
 
 	// see comment in 'write'
@@ -93,10 +93,15 @@ auto ClientSink::severity_rgb(log::Severity severity) const -> Colour {
 	}
 }
 
-std::string ClientSink::format(const std::string_view input, log::Severity severity) const {
+std::string ClientSink::format(const std::string_view prefix, const std::string_view message, log::Severity severity) const {
 	const auto colour = std::to_underlying(severity_rgb(severity));
 	const auto sev_str = log::severity_string(severity);
-	return std::format("{} |c{:x}{}|r", sev_str, colour, input);
+
+	if(prefix.empty()) {
+		return std::format("{} |c{:x}{}|r", sev_str, colour, message);
+	} else {
+		return std::format("{} {} |c{:x}{}|r", sev_str, prefix, colour, message);
+	}
 }
 
 } // realm, ember
