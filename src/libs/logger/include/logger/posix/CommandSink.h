@@ -106,7 +106,7 @@ class CommandSink final : public log::CommandSink {
 	bool invoke_handler(std::string_view command);
 
 public:
-	CommandSink(CommandSinkOptions options);
+	explicit CommandSink(CommandSinkOptions options);
 	~CommandSink();
 
 	CommandSink(const CommandSink&) = delete;

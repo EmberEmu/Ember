@@ -37,7 +37,7 @@ class ConsoleSink final : public Sink {
 	void do_batch_write(const std::span<std::tuple<RecordDetail, std::string_view, std::string>>& records);
 
 public:
-	ConsoleSink(ConsoleSinkOptions options);
+	explicit ConsoleSink(ConsoleSinkOptions options);
 
 	void write(Severity severity, Filter type, std::string_view prefix, std::string_view record, bool flush) override;
 	void batch_write(const std::span<std::tuple<RecordDetail, std::string_view, std::string>>& records) override;
