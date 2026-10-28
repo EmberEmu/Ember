@@ -70,6 +70,14 @@ Ember currently targets C++26. The use of future language additions is permitted
 | GitHub   | [![Docker Image CI](https://github.com/EmberEmu/Ember/actions/workflows/docker-image.yml/badge.svg?branch=master)](https://github.com/EmberEmu/Ember/actions/workflows/docker-image.yml)| [![Docker Image CI](https://github.com/EmberEmu/Ember/actions/workflows/docker-image.yml/badge.svg?branch=development)](https://github.com/EmberEmu/Ember/actions/workflows/docker-image.yml) |
 | Coverity | [![Coverity Scan Status](https://scan.coverity.com/projects/5653/badge.svg)](https://scan.coverity.com/projects/5653) | [![Coverity Scan Status](https://scan.coverity.com/projects/5653/badge.svg)](https://scan.coverity.com/projects/5653) |
 
+##  🤖 LLM contributions policy
+
+As an educational project, Ember's development is about the journey, not the destination. Both the design and the implementation are a labour of love, offering opportunities for its contributors to learn and improve in the domains with which the codebase intersects.
+
+With that in mind, Ember will continue to be driven by human software engineering. That is not to say that LLMs cannot benefit the development process - they can (e.g. code review), but they will not be the driver behind the project's progress.
+
+Pull requests from contributors using LLMs are broadly welcome, but large-scale feature implementations will be rejected (i.e. entire subsystems) and they will face the same degree of scrutiny as human-authored contributions.
+
 ##  💤 License
 
 This project is licensed under the Mozilla Public License Version 2.0. A full copy of the license can be found in LICENSE or [by clicking here](http://mozilla.org/MPL/2.0/).
