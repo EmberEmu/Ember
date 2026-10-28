@@ -42,8 +42,8 @@ private:
 
 public:
 	class PreparedAuthenticator {
-		std::unique_ptr<Botan::MessageAuthenticationCode> hmac;
 		const utility::ClockBase& clock;
+		std::unique_ptr<Botan::MessageAuthenticationCode> hmac;
 
 	public:
 		explicit PreparedAuthenticator(std::string_view secret, const utility::ClockBase& clock);

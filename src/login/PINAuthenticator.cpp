@@ -16,7 +16,6 @@
 #include <algorithm>
 #include <bit>
 #include <format>
-#include <memory>
 #include <utility>
 #include <cstddef>
 #include <ctime>
