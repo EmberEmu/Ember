@@ -11,6 +11,7 @@
 #include <logger/Severity.h>
 #include <string_view>
 #include <utility>
+#include <stdexcept>
 #include <span>
 #include <string>
 #include <string_view>
@@ -29,7 +30,11 @@ protected:
 		: severity_(severity)
 		, filter_(filter)
 		, name_(std::move(name))
-		, type_(std::move(type)) {}
+		, type_(std::move(type)) {
+		if(name_.empty()) {
+			throw std::runtime_error("sink name cannot be empty");
+		}
+	}
 
 public:
 	Severity severity() const { return severity_; }
