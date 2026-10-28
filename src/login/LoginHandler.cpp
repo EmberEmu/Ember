@@ -361,8 +361,10 @@ bool LoginHandler::validate_pin(const grunt::client::LoginProof& packet) const {
 	bool result = false;
 
 	if(user_->pin_method() == PINMethod::totp) {
+		const auto prepared = pin_auth.prepare(user_->totp_token());
+
 		for(const auto interval : { 0, -1, 1 }) { // try time intervals -1 to +1
-			const auto pin = PINAuthenticator::generate_totp_pin(user_->totp_token(), interval);
+			const auto pin = prepared.generate_totp_pin(interval);
 
 			if(pin_auth.validate_pin(pin_salt_, packet.pin_salt, packet.pin_hash, pin)) {
 				result = true;

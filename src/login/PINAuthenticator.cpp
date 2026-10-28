@@ -154,7 +154,7 @@ auto PINAuthenticator::prepare(std::string_view secret, const utility::ClockBase
 PINAuthenticator::PreparedAuthenticator::PreparedAuthenticator(std::string_view secret, const utility::ClockBase& clock)
 	: clock(clock)
 	, hmac(Botan::MessageAuthenticationCode::create_or_throw("HMAC(SHA-1)")) {
-	BOOST_ASSERT_MSG(hmac->output_length() == HashBytes::size(), "Bad hash size");
+	BOOST_ASSERT_MSG(hmac->output_length() == HashBytes{}.size(), "Bad hash size");
 
 	std::inplace_vector<std::uint8_t, key_length> buffer(
 		Botan::base32_decode_max_output(secret.size())
@@ -165,7 +165,7 @@ PINAuthenticator::PreparedAuthenticator::PreparedAuthenticator(std::string_view 
 	hmac->set_key(decoded_key);
 }
 
-std::uint32_t PINAuthenticator::PreparedAuthenticator::generate_totp_pin(int interval) {
+std::uint32_t PINAuthenticator::PreparedAuthenticator::generate_totp_pin(int interval) const {
 	BOOST_ASSERT_MSG(hmac->has_keying_material(), "Missing HMAC key");
 
 	// not guaranteed by the standard to be the UNIX epoch but it is on all supported platforms

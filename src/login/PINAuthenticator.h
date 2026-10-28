@@ -48,7 +48,7 @@ public:
 	public:
 		explicit PreparedAuthenticator(std::string_view secret, const utility::ClockBase& clock);
 
-		std::uint32_t generate_totp_pin(int interval);
+		std::uint32_t generate_totp_pin(int interval) const;
 	};
 
 	explicit PINAuthenticator(std::uint32_t seed);
