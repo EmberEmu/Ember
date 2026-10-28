@@ -265,7 +265,7 @@ std::string_view CommandSink::suggestion_substring() {
 
 std::size_t CommandSink::generate_timestamp(std::span<char> buffer) {
 	const auto curr_time = detail::current_time();
-	const auto size = detail::put_time(curr_time, timestamp_fmt_, buffer);
+	const auto size = detail::put_time(curr_time, opts_.timestamp_fmt, buffer);
 
 	if(!size) [[unlikely]] {
 		throw std::runtime_error("timestamp formatting failed");

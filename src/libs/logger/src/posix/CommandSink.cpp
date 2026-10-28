@@ -274,7 +274,7 @@ void CommandSink::write(Severity severity, Filter type,	std::string_view prefix,
 
 std::size_t CommandSink::generate_timestamp(std::span<char> buffer) {
 	const auto curr_time = detail::current_time();
-	const auto size = detail::put_time(curr_time, timestamp_fmt_, buffer);
+	const auto size = detail::put_time(curr_time, opts_.timestamp_fmt, buffer);
 
 	if(!size) [[unlikely]] {
 		throw std::runtime_error("timestamp formatting failed");
@@ -314,8 +314,8 @@ void CommandSink::redraw_prompt() {
 
     const auto [rows, cols] = terminal_.get_size();
 	
-    const auto available = cols > prompt_.size() + 1?
-		static_cast<std::size_t>(cols) - prompt_.size() - 1 : 0u; // todo, size_t literal
+    const auto available = cols > opts_.prompt.size() + 1?
+		static_cast<std::size_t>(cols) - opts_.prompt.size() - 1 : 0u; // todo, size_t literal
 
     const auto visible_command = command_.substr(0, available);
     const auto suggestion = suggestion_substring();
@@ -327,7 +327,7 @@ void CommandSink::redraw_prompt() {
     const auto visible_cursor = std::min(cursor_pos_, command_.size());
 
     const auto cursor_col = std::min(
-		prompt_.size() + visible_cursor + 1, static_cast<std::size_t>(cols)
+		opts_.prompt.size() + visible_cursor + 1, static_cast<std::size_t>(cols)
 	);
 
 	std::size_t offset = 0;

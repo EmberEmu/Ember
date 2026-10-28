@@ -66,12 +66,11 @@ class CommandSink final : public log::CommandSink {
 	std::recursive_mutex console_lock_;
 	std::string command_;
 	std::string suggested_;
-	std::string timestamp_fmt_;
+	std::string prefix_pad_;
 	std::jthread input_reader_;
 
 	unsigned int max_cols_;
 	void* semaphore_;
-	std::string prefix_pad_;
 
 	std::deque<std::string> cmd_history_;
 	std::size_t history_idx_;

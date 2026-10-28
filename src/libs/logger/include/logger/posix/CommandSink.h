@@ -66,8 +66,6 @@ class CommandSink final : public log::CommandSink {
 
 	std::string command_;
 	std::string suggested_;
-	std::string prompt_;
-	std::string timestamp_fmt_;
 	std::jthread input_reader_;
 	TerminalCtl terminal_;
 	bool log_line_used_ = false;
