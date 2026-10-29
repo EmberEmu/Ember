@@ -174,11 +174,7 @@ inline Theme load_theme(const std::filesystem::path& path) {
 	return Theme(std::move(storage));
 }
 
-enum class StyleSegment {
-	prefix, tag, text
-};
-
-constexpr std::string_view severity_colour(const Theme::StyleBody& style, Severity severity) {
+constexpr std::string_view severity_style(const Theme::StyleBody& style, Severity severity) {
 	using enum Severity;
 
 	switch(severity) {
@@ -201,21 +197,6 @@ constexpr std::string_view severity_colour(const Theme::StyleBody& style, Severi
 		default:
 			return {};
 	}
-}
-
-constexpr std::string_view theme_colour(const Theme& theme, Severity severity, StyleSegment segment) {
-	using enum StyleSegment;
-
-	switch(segment) {
-		case prefix:
-			return severity_colour(theme.prefix, severity);
-		case tag:
-			return severity_colour(theme.tag, severity);
-		case text:
-			return severity_colour(theme.text, severity);
-	}
-
-	std::unreachable();
 }
 
 } // posix, log, ember

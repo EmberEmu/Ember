@@ -169,9 +169,9 @@ void CommandSink::write(Severity severity, Filter type,	std::string_view prefix,
 	std::lock_guard guard(console_lock_);
 	const auto& theme = opts_.theme;
 
-	const auto prefix_style = theme_colour(theme, severity, StyleSegment::prefix);
-	const auto tag_style = theme_colour(theme, severity, StyleSegment::tag);
-	const auto text_style = theme_colour(theme, severity, StyleSegment::text);
+	const auto prefix_style = severity_style(theme.prefix, severity);
+	const auto tag_style = severity_style(theme.tag, severity);
+	const auto text_style = severity_style(theme.text, severity);
 
 	if(opts_.colours) {
 		if(!opts_.no_background) {
