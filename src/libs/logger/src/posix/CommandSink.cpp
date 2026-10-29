@@ -269,9 +269,9 @@ std::size_t CommandSink::generate_timestamp(std::span<char> buffer) {
 		throw std::runtime_error("timestamp formatting failed");
 	}
 
-		if(size >= buffer.size()) [[unlikely]] {
-			throw std::runtime_error("timestamp buffer out of space");
-		}
+	if(size >= buffer.size()) [[unlikely]] {
+		throw std::runtime_error("timestamp buffer out of space");
+	}
 
 	buffer[size] = ' '; // add a trailing space
 	return size + 1;    // we don't need the null terminator

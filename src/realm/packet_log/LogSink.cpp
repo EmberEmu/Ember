@@ -45,11 +45,20 @@ void LogSink::log(std::span<const std::uint8_t> buffer, const std::time_t& time,
 	localtime_r(&time, &tm);
 #endif
 
-	std::array<char, 32> time_buf{};
-	log::detail::put_time(tm, fmt, std::span(time_buf));
+	std::array<char, 64> time_buf{};
+	const auto size = log::detail::put_time(tm, fmt, std::span(time_buf));
 
+	if(!size) [[unlikely]] {
+		throw std::runtime_error("timestamp formatting failed");
+	}
+
+	if(size >= time_buf.size()) [[unlikely]] {
+		throw std::runtime_error("timestamp buffer out of space");
+	}
+
+	const std::string_view timestamp(time_buf.data(), size);
 	const auto direction = dir == PacketDirection::inbound? "inbound"sv : "outbound"sv;
-	auto msg = std::format("[{}] {}, {}:\n{}", time_buf.data(), remote_host_, direction, output);
+	auto msg = std::format("[{}] {}, {}:\n{}", timestamp, remote_host_, direction, output);
 	logger_ << severity_ << log::Filter(lf_packet_log) << msg << log::flush;
 }
 
