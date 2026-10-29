@@ -88,7 +88,7 @@ public:
 using ThemeView    = BasicLogTheme<std::string_view>;
 using ThemeStorage = BasicLogTheme<std::string>;
 
-class Theme : public ThemeView {
+class Theme final : public ThemeView {
 	std::unique_ptr<ThemeStorage> storage;
 
 	void rebind() noexcept {

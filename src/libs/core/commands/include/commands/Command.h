@@ -34,7 +34,7 @@ class Command;
 using Handler = std::function<void(const Arguments&)>;
 using Autocomplete = std::function<Suggestions(std::span<const std::string>)>;
 
-class Command : public std::enable_shared_from_this<Command> {
+class Command final : public std::enable_shared_from_this<Command> {
 	struct _constructor_tag {
 		explicit _constructor_tag() = default;
 	};
