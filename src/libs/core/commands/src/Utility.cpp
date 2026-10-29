@@ -123,9 +123,10 @@ Suggestions autocomplete_recurse(const CommandsView& commands, std::span<const s
 
 	const auto& command = commands->at(tokens.front());
 	const auto remaining = tokens.subspan<1>();
+	const auto view = command->view();
 
-	if(!remaining.empty() && !command->view()->empty()) {
-		auto recurse_res = autocomplete_recurse(command->view(), remaining);
+	if(!remaining.empty() && !view->empty()) {
+		auto recurse_res = autocomplete_recurse(view, remaining);
 
 		if(!recurse_res.records.empty() || !recurse_res.substring.empty()) {
 			result.substring += ' ';
