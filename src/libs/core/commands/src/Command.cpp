@@ -164,9 +164,8 @@ std::size_t Command::optional_arg_count() const {
 		[](const auto& arg){ return !arg.required; });
 }
 
-CommandMap Command::commands() const {
-	std::lock_guard guard(mutex_);
-	return commands_;
+CommandsView Command::view() const {
+	return CommandsView(commands_, mutex_);
 }
 
 std::string Command::usage_string() const {
@@ -269,10 +268,8 @@ const Flags& Command::flags() const {
 }
 
 Suggestions Command::autocomplete(const std::string_view query) const {
-	std::lock_guard guard(mutex_);
-
 	auto tokens = parse_input(query, false);
-	auto results = impl::autocomplete_recurse(commands_, tokens);
+	auto results = impl::autocomplete_recurse(view(), tokens);
 
 	std::ranges::sort(results.records, [&](const auto& a, const auto& b) {
 		return a.name < b.name;
@@ -300,23 +297,19 @@ SearchResult Command::find(const std::string_view query) const {
 	return find(tokens);
 }
 
-// this is really inefficient due to the registry copies (must be copied from subcommands for safety)
-// but it's not even remotely performance sensitive, so it'll do
 SearchResult Command::find(std::span<const std::string> tokens) const {
-	std::lock_guard guard(mutex_);
-
 	// we need go as deep as possible into the subcommand chain
 	SearchResult search;
-	auto registry = commands_;
+	auto registry = view();
 
 	for(auto& token : tokens) {
 		const auto& command_name = token;
-		const auto result = registry.find(command_name);
+		const auto result = registry->find(command_name);
 
-		if(result != registry.end()) {
+		if(result != registry->end()) {
 			++search.depth;
 			search.command = result->second;
-			registry = search.command->commands();
+			registry = search.command->view();
 		} else {
 			break;
 		}

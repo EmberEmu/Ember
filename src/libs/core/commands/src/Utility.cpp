@@ -89,7 +89,7 @@ std::string longest_prefix(std::span<const Suggestions::Record> matches) {
 	return prefix;
 }
 
-Suggestions autocomplete_recurse(const CommandMap& commands, std::span<const std::string> tokens) {
+Suggestions autocomplete_recurse(const CommandsView& commands, std::span<const std::string> tokens) {
 	Suggestions result;
 
 	if(tokens.empty()) {
@@ -112,20 +112,20 @@ Suggestions autocomplete_recurse(const CommandMap& commands, std::span<const std
 
 	result.substring = longest_prefix(result.records);
 
-	if(!commands.contains(tokens.front())) {
-		if(auto it = commands.find(result.substring); it != commands.end() &&
-		   (!it->second->commands().empty() || it->second->has_autocomplete())) {
+	if(!commands->contains(tokens.front())) {
+		if(auto it = commands->find(result.substring); it != commands->end() &&
+		   (!it->second->view()->empty() || it->second->has_autocomplete())) {
 			result.substring += ' ';
 		}
 
 		return result;
 	}
 
-	const auto& command = commands.at(tokens.front());
+	const auto& command = commands->at(tokens.front());
 	const auto remaining = tokens.subspan<1>();
 
-	if(!remaining.empty() && !command->commands().empty()) {
-		auto recurse_res = autocomplete_recurse(command->commands(), remaining);
+	if(!remaining.empty() && !command->view()->empty()) {
+		auto recurse_res = autocomplete_recurse(command->view(), remaining);
 
 		if(!recurse_res.records.empty() || !recurse_res.substring.empty()) {
 			result.substring += ' ';
@@ -150,8 +150,8 @@ Suggestions autocomplete_recurse(const CommandMap& commands, std::span<const std
 		return {};
 	}
 
-	if(!command->commands().empty()) {
-		auto recurse_res = autocomplete_recurse(command->commands(), remaining);
+	if(!command->view()->empty()) {
+		auto recurse_res = autocomplete_recurse(command->view(), remaining);
 
 		result.substring += ' ';
 		result.substring += recurse_res.substring;

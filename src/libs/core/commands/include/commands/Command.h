@@ -12,6 +12,7 @@
 #include <commands/Arguments.h>
 #include <commands/ArgumentMap.h>
 #include <commands/CommandMap.h>
+#include <commands/CommandsView.h>
 #include <commands/Flags.h>
 #include <commands/Result.h>
 #include <commands/SearchResult.h>
@@ -97,7 +98,7 @@ public:
 	const std::string& description() const;
 	std::vector<Argument> arguments() const;
 	std::string usage_string() const;
-	CommandMap commands() const;
+	CommandsView view() const;
 	std::size_t argument_count() const;
 	const Flags& flags() const;
 	bool has_autocomplete() const;

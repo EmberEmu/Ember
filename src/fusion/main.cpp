@@ -124,7 +124,7 @@ void service_start(const std::string& service, log::Logger& logger) {
 		}
 	}
 
-	const auto params = create_params(root->commands().at(service));
+	const auto params = create_params(root->view()->at(service));
 	auto runner = create_runner(idx, params);
 
 	LOG_CONSOLE(logger, "Starting {} service...", service);
@@ -196,9 +196,9 @@ int launch(const opts::variables_map& args, log::Logger& logger) try {
 				continue;
 			}
 
-			const auto commands = root->commands();
+			const auto commands = root->view();
 
-			if(auto registry = commands.find(service.name); registry != commands.end()) {
+			if(auto registry = commands->find(service.name); registry != commands->end()) {
 				const auto params = create_params(registry->second);
 				auto runner = create_runner(string_to_idx(service.name), params);
 				runners.emplace(service.name, std::move(runner));

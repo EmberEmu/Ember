@@ -25,6 +25,7 @@ add_library(${LIBRARY_NAME} STATIC
     include/commands/UserData.h
     include/commands/Flags.h
     include/commands/SearchResult.h
+    include/commands/CommandsView.h
     include/commands/impl/StringHash.h
 )
 

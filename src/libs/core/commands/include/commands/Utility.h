@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <commands/CommandMap.h>
+#include <commands/CommandsView.h>
 #include <commands/Exception.h>
 #include <commands/Suggestions.h>
 #include <optional>
@@ -32,7 +32,7 @@ struct AutocompleteMatch {
 	const unsigned int depth;
 };
 
-Suggestions autocomplete_recurse(const CommandMap& commands, std::span<const std::string> tokens);
+Suggestions autocomplete_recurse(const CommandsView& commands, std::span<const std::string> tokens);
 std::string longest_prefix(std::span<const Suggestions::Record> matches);
 
 } // impl

@@ -157,22 +157,22 @@ TEST_F(Registry, PathFragment) {
 TEST_F(Commands, InsertCommand) {
 	auto cmd = registry->find("root").command;
 	cmd->insert("subcommand")->description("It's a subcommand");
-	auto subcommands = cmd->commands();
-	ASSERT_EQ(subcommands.size(), 3);
-	ASSERT_EQ(subcommands.contains("subcommand"), 1);
-	ASSERT_EQ(subcommands["subcommand"]->description(), "It's a subcommand");
+	auto subcommands = cmd->view();
+	ASSERT_EQ(subcommands->size(), 3);
+	ASSERT_EQ(subcommands->contains("subcommand"), 1);
+	ASSERT_EQ(subcommands->at("subcommand")->description(), "It's a subcommand");
 }
 
 TEST_F(Commands, EraseCommand) {
 	auto cmd = registry->find("root").command;
 	cmd->erase("root_nested_1");
-	ASSERT_FALSE(cmd->commands().contains("root_nested_1"));
+	ASSERT_FALSE(cmd->view()->contains("root_nested_1"));
 }
 
 TEST_F(Commands, ClearCommands) {
 	auto cmd = registry->find("root").command;
 	cmd->clear_commands();
-	ASSERT_TRUE(cmd->commands().empty());
+	ASSERT_TRUE(cmd->view()->empty());
 }
 
 TEST_F(Commands, UpdateDescription) {

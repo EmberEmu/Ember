@@ -28,7 +28,7 @@
 
 namespace ember::utility {
 
-void log_subcommands(const std::string& path, const commands::CommandMap& subcommands, log::Logger& logger) {
+void log_subcommands(const std::string& path, const commands::CommandsView& subcommands, log::Logger& logger) {
 	LOG_CONSOLE(logger, R"(Available subcomands for "{}": )", path);
 
 	for(auto& subcommand : subcommands | std::views::values) {
@@ -49,7 +49,7 @@ void handle_command_result(commands::Result result,
 			LOG_CONERR(logger, "Usage: {} {}", path, command.usage_string());
             break;
         case subcommands:
-			log_subcommands(path, command.commands(), logger);
+			log_subcommands(path, command.view(), logger);
             break;
         case unavailable:
 			LOG_CONERR(logger, R"(Command "{}" is currently unavailable.)", path);
