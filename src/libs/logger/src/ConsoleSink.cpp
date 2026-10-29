@@ -57,7 +57,7 @@ void ConsoleSink::do_batch_write(const std::span<std::tuple<RecordDetail, std::s
 		ts_size = generate_timestamp(ts_buffer);
 	}
 
-	const const std::string_view timestamp(ts_buffer.data(), ts_size);
+	const std::string_view timestamp(ts_buffer.data(), ts_size);
 	out_buf_.reserve(size + (10 * records.size()));
 
 	for(auto&& [detail, prefix, data] : records) {
@@ -117,7 +117,7 @@ void ConsoleSink::write(Severity severity, Filter type, std::string_view prefix,
 		ts_size = generate_timestamp(ts_buffer);
 	}
 
-	const const std::string_view timestamp(ts_buffer.data(), ts_size);
+	const std::string_view timestamp(ts_buffer.data(), ts_size);
 	const auto pad_sz = detail::calculate_prefix_padding(prefix, prefix_pad_);
 	const std::string_view sevsv = severity_string(severity);
 

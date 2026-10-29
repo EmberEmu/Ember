@@ -86,7 +86,7 @@ void CommandSink::do_batch_write(const std::span<std::tuple<RecordDetail, std::s
 		ts_size = generate_timestamp(ts_buffer);
 	}
 
-	const const std::string_view timestamp(ts_buffer.data(), ts_size);
+	const std::string_view timestamp(ts_buffer.data(), ts_size);
 
 	std::lock_guard guard(console_lock_);
 	out_buf_.reserve(size + (10 * records.size()));
@@ -148,7 +148,7 @@ void CommandSink::write(Severity severity, Filter type,	std::string_view prefix,
 		ts_size = generate_timestamp(ts_buffer);
 	}
 
-	const const std::string_view timestamp(ts_buffer.data(), ts_size);
+	const std::string_view timestamp(ts_buffer.data(), ts_size);
 	const std::string_view sevsv = severity_string(severity);
 	const std::string_view recordsv = record;
 	const auto pad_sz = detail::calculate_prefix_padding(prefix, prefix_pad_);
