@@ -73,7 +73,7 @@ void PINAuthenticator::remap_pin_grid(std::uint32_t grid_seed) {
 	}
 
 	for(std::size_t i = 0u; i < remapped_grid.size(); ++i) {
-		inverted_grid[remapped_grid[i]] = static_cast<std::uint8_t>(i);
+		inverted_grid[remapped_grid[i]] = gsl::narrow_cast<std::uint8_t>(i);
 	}
 }
 
