@@ -107,17 +107,20 @@ public:
 	explicit Theme(std::unique_ptr<ThemeStorage> storage)
 		: storage(std::move(storage)) {
 		assert(storage);
-		bind_from(*this->storage);
+		rebind();
 	}
 
 	Theme(Theme&& other) noexcept
 		: ThemeView(other)
-		, storage(std::move(other.storage)) {}
+		, storage(std::move(other.storage)) {
+		other = Theme{};
+	}
 
 	Theme& operator=(Theme&& other) noexcept {
 		if(this != &other) {
 			ThemeView::operator=(other);
 			storage = std::move(other.storage);
+			other = Theme{};
 		}
 
 		return *this;
