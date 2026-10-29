@@ -13,6 +13,16 @@
 
 namespace ember::commands {
 
+/**
+ * @brief Provides locked access to the command map
+ *
+ * The commamd map remains locked for the lifetime of this view.
+ * Calling any function which accesses the map to which this view is bound
+ * will invoke undefined behaviour nasal demons, so don't do it.
+ * 
+ * This does not apply to accessing maps owned by commands further down
+ * the hierarchy. Feel free to do that.
+ */
 class CommandsView {
 	std::unique_lock<std::mutex> guard_;
 	const CommandMap* map_;

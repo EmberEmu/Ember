@@ -69,8 +69,6 @@ public:
 	Command& operator=(Command&) = delete;
 	Command& operator=(Command&&) = delete;
 
-	void insert(std::shared_ptr<Command> command);
-	std::shared_ptr<Command> insert(std::string name);
 	std::shared_ptr<Command> description(std::string description);
 	std::shared_ptr<Command> handler(Handler&& handler);
 	std::shared_ptr<Command> flags(const Flags& flags);
@@ -90,19 +88,53 @@ public:
 
 	bool erase_argument(const std::string& argument);
 	void clear_arguments();
-	std::shared_ptr<Command> erase(const std::string_view name);
-	bool erase(const std::shared_ptr<const Command>& command);
-	void clear_commands();
 	std::optional<Suggestions> autocomplete(std::span<const std::string> tokens) const;
 
 	const std::string& name() const;
 	const std::string& description() const;
 	std::vector<Argument> arguments() const;
 	std::string usage_string() const;
-	CommandsView view() const;
 	std::size_t argument_count() const;
 	const Flags& flags() const;
 	bool has_autocomplete() const;
+
+	/**
+	 * @brief Returns a locked view of the current command map
+	 *
+	 * While the view is held, you must not call any functions
+	 * that interact with the map from the same thread
+	 */
+	CommandsView view() const;
+
+	/**
+	 * @brief Inserts a command
+	 * @pre The calling thread must not hold a CommandsView
+	 */
+	void insert(std::shared_ptr<Command> command);
+
+	/**
+	 * @brief Inserts a command
+	 * @pre The calling thread must not hold a CommandsView
+	 */
+	std::shared_ptr<Command> insert(std::string name);
+
+	/**
+	 * @brief Erases a command
+	 * @pre The calling thread must not hold a CommandsView
+	 */
+	std::shared_ptr<Command> erase(const std::string_view name);
+
+	/**
+	 * @brief Erases a command
+	 * @pre The calling thread must not hold a CommandsView
+	 */
+	bool erase(const std::shared_ptr<const Command>& command);
+
+	/**
+	 * @brief Clears all commands
+	 * @pre The calling thread must not hold a CommandsView
+	 */
+	void clear_commands();
 
 	Suggestions autocomplete(const std::string_view query) const;
 	SearchResult find(const std::string_view query) const;

@@ -260,10 +260,12 @@ bool Command::validate_type(const std::type_info& type, const std::any& value) c
 }
 
 std::size_t Command::argument_count() const {
+	std::lock_guard guard(mutex_);
 	return args_.size();
 }
 
 const Flags& Command::flags() const {
+	std::lock_guard guard(mutex_);
 	return flags_;
 }
 
@@ -289,6 +291,7 @@ std::optional<Suggestions> Command::autocomplete(const std::span<const std::stri
 }
 
 bool Command::has_autocomplete() const {
+	std::lock_guard guard(mutex_);
 	return !!autocomplete_;
 }
 
