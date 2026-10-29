@@ -9,6 +9,7 @@
 #pragma once
 
 #include <logger/posix/Theme.h>
+#include <logger/posix/ThemeUtility.h>
 #include <logger/posix/themes/Abyssal.h>
 #include <logger/posix/themes/Aurora.h>
 #include <logger/posix/themes/Daybreak.h>
