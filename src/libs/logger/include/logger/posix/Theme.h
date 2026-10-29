@@ -138,6 +138,8 @@ public:
 		if(this != &other) {
 			if(other.storage) {
 				storage = std::make_unique<ThemeStorage>(*other.storage);
+			} else {
+				storage.reset();
 			}
 
 			static_cast<ThemeView&>(*this) = static_cast<const ThemeView&>(other);
