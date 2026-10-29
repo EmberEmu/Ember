@@ -27,7 +27,7 @@ add_library(${LIBRARY_NAME} STATIC
     src/Worker.cpp
     src/ConsoleSink.cpp
     src/CommandSink.cpp
-    src/posix/TerminalCtl.cpp
+    src/posix/TerminalControl.cpp
     src/posix/CommandSink.cpp
     src/GlobalLogger.cpp
     src/ConsoleColour.cpp
@@ -44,7 +44,7 @@ add_library(${LIBRARY_NAME} STATIC
     include/logger/CommandSink.h
     include/logger/win32/CommandSink.h
     include/logger/posix/CommandSink.h
-    include/logger/posix/TerminalCtl.h
+    include/logger/posix/TerminalControl.h
     include/logger/posix/Theme.h
     include/logger/posix/Themes.h
     include/logger/Exception.h

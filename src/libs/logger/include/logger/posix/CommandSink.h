@@ -13,7 +13,7 @@
 #include <logger/ConsoleColour.h>
 #include <logger/posix/CommandSinkOptions.h>
 #include <logger/posix/Themes.h>
-#include <logger/posix/TerminalCtl.h>
+#include <logger/posix/TerminalControl.h>
 #include <boost/container/small_vector.hpp>
 #include <deque>
 #include <functional>
@@ -67,7 +67,7 @@ class CommandSink final : public log::CommandSink {
 	std::string command_;
 	std::string suggested_;
 	std::jthread input_reader_;
-	TerminalCtl terminal_;
+	TerminalControl terminal_;
 	bool log_line_used_ = false;
 	std::string prefix_pad_;
 	unsigned int max_cols_ = table_max_cols;

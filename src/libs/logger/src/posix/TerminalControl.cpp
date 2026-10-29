@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include <logger/posix/TerminalCtl.h>
+#include <logger/posix/TerminalControl.h>
 #include <algorithm>
 #include <array>
 #include <string>
@@ -15,7 +15,7 @@ namespace ember::log::posix {
 
 #ifdef _WIN32
 
-TerminalCtl::TerminalCtl() {
+TerminalControl::TerminalControl() {
 	input_handle_ = GetStdHandle(STD_INPUT_HANDLE);
 	output_handle_ = GetStdHandle(STD_OUTPUT_HANDLE);
 
@@ -87,7 +87,7 @@ TerminalCtl::TerminalCtl() {
 
 #else
 
-TerminalCtl::TerminalCtl() {
+TerminalControl::TerminalControl() {
 	if(!isatty(STDIN_FILENO) || !isatty(STDOUT_FILENO)) {
 		throw std::runtime_error("CommandSink requires a TTY");
 	}
@@ -135,7 +135,7 @@ TerminalCtl::TerminalCtl() {
 
 #endif
 
-TerminalCtl::~TerminalCtl() {
+TerminalControl::~TerminalControl() {
 	restore();
 
 #ifdef _WIN32
@@ -156,7 +156,7 @@ TerminalCtl::~TerminalCtl() {
 
 #ifdef _WIN32
 
-void TerminalCtl::write(std::string_view text) {
+void TerminalControl::write(std::string_view text) {
 	auto data = text.data();
 	auto remaining = text.size();
 
@@ -186,7 +186,7 @@ void TerminalCtl::write(std::string_view text) {
 
 #else
 
-void TerminalCtl::write(std::string_view text) {
+void TerminalControl::write(std::string_view text) {
 	const char* data = text.data();
 	std::size_t left = text.size();
 
@@ -206,22 +206,22 @@ void TerminalCtl::write(std::string_view text) {
 
 #endif
 
-void TerminalCtl::move_to(int row, int col) {
+void TerminalControl::move_to(int row, int col) {
 	write("\x1b[" + std::to_string(std::max(1, row)) + ";" +
 		  std::to_string(std::max(1, col)) + "H");
 }
 
-void TerminalCtl::clear_line() {
+void TerminalControl::clear_line() {
 	write("\x1b[2K");
 }
 
-void TerminalCtl::clear_screen() {
+void TerminalControl::clear_screen() {
 	write("\x1b[2J\x1b[H");
 }
 
 #ifdef _WIN32
 
-std::pair<unsigned int, unsigned int> TerminalCtl::get_size() {
+std::pair<unsigned int, unsigned int> TerminalControl::get_size() {
 	CONSOLE_SCREEN_BUFFER_INFO info{};
 
 	if(!GetConsoleScreenBufferInfo(output_handle_, &info)) {
@@ -242,7 +242,7 @@ std::pair<unsigned int, unsigned int> TerminalCtl::get_size() {
 }
 #else
 
-std::pair<unsigned int, unsigned int> TerminalCtl::get_size() {
+std::pair<unsigned int, unsigned int> TerminalControl::get_size() {
 	winsize ws{};
 
 	if(ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws) == 0 && ws.ws_row > 0 && ws.ws_col > 0) {
@@ -254,7 +254,7 @@ std::pair<unsigned int, unsigned int> TerminalCtl::get_size() {
 
 #endif
 
-void TerminalCtl::set_log_region(int rows) {
+void TerminalControl::set_log_region(int rows) {
 	if(rows >= 2) {
 		write("\x1b[1;" + std::to_string(rows - 1) + "r");
 	} else {
@@ -264,7 +264,7 @@ void TerminalCtl::set_log_region(int rows) {
 
 #ifdef _WIN32
 
-void TerminalCtl::wake() {
+void TerminalControl::wake() {
 	if(wake_event_) {
 		SetEvent(wake_event_);
 	}
@@ -272,7 +272,7 @@ void TerminalCtl::wake() {
 
 #else
 
-void TerminalCtl::wake() {
+void TerminalControl::wake() {
 	const char byte = 1;
 	auto res = ::write(wake_write_, &byte, 1);
 	(void)res; // todo, temp
@@ -282,7 +282,7 @@ void TerminalCtl::wake() {
 
 #ifdef _WIN32
 
-auto TerminalCtl::read_key() -> KeyEvent {
+auto TerminalControl::read_key() -> KeyEvent {
 	const std::array<HANDLE, 2> handles {
 		input_handle_, wake_event_
 	};
@@ -358,7 +358,7 @@ auto TerminalCtl::read_key() -> KeyEvent {
 
 #else
 
-auto TerminalCtl::read_key() -> KeyEvent {
+auto TerminalControl::read_key() -> KeyEvent {
 	unsigned char ch{};
 	const int first = read_byte(ch);
 
@@ -390,14 +390,14 @@ auto TerminalCtl::read_key() -> KeyEvent {
 
 #endif
 
-[[noreturn]] void TerminalCtl::fail(const char* operation) {
+[[noreturn]] void TerminalControl::fail(const char* operation) {
 	throw std::system_error(errno, std::generic_category(), operation);
 }
 
 #ifndef _WIN32
 
 // 1 = byte read, 0 = wake pipe, -1 = eof/error.
-int TerminalCtl::read_byte(unsigned char& ch, int timeout_ms) {
+int TerminalControl::read_byte(unsigned char& ch, int timeout_ms) {
 	std::array<pollfd, 2> fds {
 		pollfd { STDIN_FILENO, POLLIN, 0 },
 		pollfd { wake_read_,   POLLIN, 0 }
@@ -442,7 +442,7 @@ int TerminalCtl::read_byte(unsigned char& ch, int timeout_ms) {
 	}
 }
 
-auto TerminalCtl::read_escape_sequence() -> KeyEvent {
+auto TerminalControl::read_escape_sequence() -> KeyEvent {
 	unsigned char byte{};
 
 	if(read_byte(byte, 35) != 1) {
@@ -522,7 +522,7 @@ auto TerminalCtl::read_escape_sequence() -> KeyEvent {
 
 #ifdef _WIN32
 
-void TerminalCtl::restore() {
+void TerminalControl::restore() {
 	if(!active_) {
 		return;
 	}
@@ -544,7 +544,7 @@ void TerminalCtl::restore() {
 
 #else
 
-void TerminalCtl::restore() {
+void TerminalControl::restore() {
 	if(!active_) {
 		return;
 	}

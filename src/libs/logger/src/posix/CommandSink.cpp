@@ -492,7 +492,7 @@ void CommandSink::insert_character(char ch) {
 }
 
 void CommandSink::read_console_input(std::stop_token stop) {
-	using Key = TerminalCtl::Key;
+	using Key = TerminalControl::Key;
 
 	while(!stop.stop_requested()) {
 		const auto event = terminal_.read_key();

@@ -26,7 +26,7 @@
 
 namespace ember::log::posix {
 
-class TerminalCtl {
+class TerminalControl {
 	constexpr static auto default_rows = 24u;
 	constexpr static auto default_cols = 80u;
 
@@ -77,11 +77,11 @@ private:
 	bool active_ = false;
 
 public:
-	TerminalCtl();
-	~TerminalCtl();
+	TerminalControl();
+	~TerminalControl();
 
-    TerminalCtl(const TerminalCtl&) = delete;
-    TerminalCtl& operator=(const TerminalCtl&) = delete;
+    TerminalControl(const TerminalControl&) = delete;
+    TerminalControl& operator=(const TerminalControl&) = delete;
 
 	void write(std::string_view text);
 	void move_to(int row, int col);
