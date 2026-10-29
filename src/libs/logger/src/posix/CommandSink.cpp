@@ -31,7 +31,7 @@ constexpr std::string_view ansi_erase = "\033[K";  // erase to end of line
 CommandSink::CommandSink(CommandSinkOptions options)
 	: log::CommandSink(std::string(sink_name), options.severity, options.filter)
 	, opts_(std::move(options))
-	, prefix_pad_(std::string(opts_.prefix_width, ' ')) {
+	, prefix_pad_(detail::generate_prefix_padding(opts_.prefix_width)) {
 	const auto [rows, _] = terminal_.get_size();
 	terminal_.set_log_region(rows);
 
@@ -97,18 +97,13 @@ void CommandSink::do_batch_write(const std::span<std::tuple<RecordDetail, std::s
 		}
 
 		std::string_view severity = severity_string(detail.severity);
-
-		// todo, size_t literal on bump
-		const auto padding = !prefix.empty()?
-			std::max<std::size_t>(1u, prefix_pad_.size() > prefix.size()?
-				prefix_pad_.size() - prefix.size() : 0u) : 0u;
-
+		const auto pad_sz = detail::calculate_prefix_padding(prefix, prefix_pad_);
 		const auto cur_sz = out_buf_.size();
 
 		const auto req_buf_size
 			= cur_sz
 			+ prefix.size()
-			+ padding
+			+ pad_sz
 			+ timestamp.size()
 			+ severity.size()
 			+ data.size();
@@ -123,8 +118,8 @@ void CommandSink::do_batch_write(const std::span<std::tuple<RecordDetail, std::s
 		std::memcpy(write_ptr + offset, prefix.data(), prefix.size());
 		offset += prefix.size();
 
-		std::memcpy(write_ptr + offset, prefix_pad_.data(), padding);
-		offset += padding;
+		std::memcpy(write_ptr + offset, prefix_pad_.data(), pad_sz);
+		offset += pad_sz;
 	
 		std::memcpy(write_ptr + offset, severity.data(), severity.size());
 		offset += severity.size();
@@ -156,11 +151,7 @@ void CommandSink::write(Severity severity, Filter type,	std::string_view prefix,
 	const std::span<char> timestamp(ts_buffer.data(), ts_size);
 	const std::string_view sevsv = severity_string(severity);
 	const std::string_view recordsv = record;
-
-	// todo, size_t literal on bump
-	const auto padding = !prefix.empty()?
-		std::max<std::size_t>(1u, prefix_pad_.size() > prefix.size()?
-			prefix_pad_.size() - prefix.size() : 0u) : 0u;
+	const auto pad_sz = detail::calculate_prefix_padding(prefix, prefix_pad_);
 
 	// hack, need to make newline handling more consistent rather than... this
 	if(record.ends_with('\n')) {
@@ -171,7 +162,7 @@ void CommandSink::write(Severity severity, Filter type,	std::string_view prefix,
 	std::size_t buff_req_size
 		= timestamp.size()
 		+ prefix.size()
-		+ padding
+		+ pad_sz
 		+ record.size()
 		+ sevsv.size();
 
@@ -230,7 +221,7 @@ void CommandSink::write(Severity severity, Filter type,	std::string_view prefix,
 
 		append(prefix_style);
 		append(prefix);
-		append(std::string_view(prefix_pad_.data(), padding));
+		append(std::string_view(prefix_pad_.data(), pad_sz));
 		append(tag_style);
 		append(sevsv);
 		append(text_style);

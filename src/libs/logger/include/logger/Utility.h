@@ -38,9 +38,11 @@ std::ostream& operator<<(std::ostream& stream, const Theme& theme);
 
 namespace detail {
 
-std::tm current_time();
-std::string put_time(const std::tm& time, cstring_view format);
-std::size_t put_time(const std::tm& time, cstring_view format, std::span<char> buffer);
-Colour severity_colour(Severity severity);
+[[nodiscard]] std::tm current_time();
+[[nodiscard]] std::string put_time(const std::tm& time, cstring_view format);
+[[nodiscard]] std::size_t put_time(const std::tm& time, cstring_view format, std::span<char> buffer);
+[[nodiscard]] Colour severity_colour(Severity severity);
+[[nodiscard]] std::string generate_prefix_padding(std::size_t padding_width);
+[[nodiscard]] std::size_t calculate_prefix_padding(std::string_view prefix, std::string_view padding);
 
 }} // detail, log, ember

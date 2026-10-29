@@ -7,6 +7,7 @@
  */
 
 #include <logger/Utility.h>
+#include <algorithm>
 #include <chrono>
 #include <iomanip>
 #include <stdexcept>
@@ -85,6 +86,16 @@ Colour severity_colour(Severity severity) {
 		default:
 			return Colour::default_colour;
 	}
+}
+
+std::string generate_prefix_padding(std::size_t padding_width) {
+	return std::string(std::max<std::size_t>(1, padding_width), ' ');
+}
+
+std::size_t calculate_prefix_padding(std::string_view prefix, std::string_view padding) {
+	return !prefix.empty()?
+		std::max<std::size_t>(1u, padding.size() > prefix.size()?
+			padding.size() - prefix.size() : 0u) : 0u;
 }
 
 } // detail
