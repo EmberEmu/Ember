@@ -69,7 +69,8 @@ int main(int argc, const char* argv[]) try {
 
 	root = commands::create("root");
 	create_service_subcommands(*root);
-	utility::register_command_handlers(root, logger, true);
+	const auto suggestions = args["console_log.suggestions"].as<bool>();
+	utility::register_command_handlers(root, logger, suggestions);
 	utility::register_common_commands(root, logger);
 
 	auto theme_path = args["console_log.theme_path"].as<std::filesystem::path>();
