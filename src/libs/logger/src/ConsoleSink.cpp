@@ -57,7 +57,7 @@ void ConsoleSink::do_batch_write(const std::span<std::tuple<RecordDetail, std::s
 		ts_size = generate_timestamp(ts_buffer);
 	}
 
-	const std::span<char> timestamp(ts_buffer.data(), ts_size);
+	const const std::string_view timestamp(ts_buffer.data(), ts_size);
 	out_buf_.reserve(size + (10 * records.size()));
 
 	for(auto&& [detail, prefix, data] : records) {
@@ -117,14 +117,14 @@ void ConsoleSink::write(Severity severity, Filter type, std::string_view prefix,
 		ts_size = generate_timestamp(ts_buffer);
 	}
 
-	const std::span<char> timestamp(ts_buffer.data(), ts_size);
-	const auto pad_len = detail::calculate_prefix_padding(prefix, prefix_pad_);
-	std::string_view sevsv = severity_string(severity);
+	const const std::string_view timestamp(ts_buffer.data(), ts_size);
+	const auto pad_sz = detail::calculate_prefix_padding(prefix, prefix_pad_);
+	const std::string_view sevsv = severity_string(severity);
 
 	const std::size_t req_buf_size
 		= timestamp.size()
 		+ prefix.size()
-		+ pad_len
+		+ pad_sz
 		+ record.size()
 		+ sevsv.size();
 
@@ -139,7 +139,7 @@ void ConsoleSink::write(Severity severity, Filter type, std::string_view prefix,
 
 	append(timestamp);
 	append(prefix);
-	append(std::string_view(prefix_pad_.data(), pad_len));
+	append(std::string_view(prefix_pad_.data(), pad_sz));
 	append(sevsv);
 	append(record);
 
