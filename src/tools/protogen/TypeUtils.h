@@ -16,7 +16,8 @@ namespace ember::protogen {
 enum class TypeInfo {
 	integral,
 	floating_point,
-	boolean
+	boolean,
+	string
 };
 
 extern const std::unordered_map<std::string_view, std::pair<std::string_view, TypeInfo>> type_map;

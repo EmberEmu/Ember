@@ -13,19 +13,28 @@ namespace ember::protogen {
 using enum TypeInfo;
 
 const std::unordered_map<std::string_view, std::pair<std::string_view, TypeInfo>> type_map {
-	// type              // real type
-	{ "uint8",          { "std::uint8_t",    integral       }},
-	{ "uint16",         { "std::uint16_t",   integral       }},
-	{ "uint32",         { "std::uint32_t",   integral       }},
-	{ "uint64",         { "std::uint64_t",   integral       }},
-	{ "int8",           { "std::int8_t",     integral       }},
-	{ "int16",          { "std::int16_t",    integral       }},
-	{ "int32",          { "std::int32_t",    integral       }},
-	{ "int64",          { "std::int64_t",    integral       }},
-	{ "float",          { "float",           floating_point }},
-	{ "double",         { "double",          floating_point }},
-	{ "bool",           { "bool",            boolean        }},
-	{ "bool32",         { "std::uint32_t",   boolean        }},
+	// type                  // real type
+	{ "uint8",               { "std::uint8_t",    integral       }},
+	{ "uint16",              { "std::uint16_t",   integral       }},
+	{ "uint32",              { "std::uint32_t",   integral       }},
+	{ "uint64",              { "std::uint64_t",   integral       }},
+	{ "int8",                { "std::int8_t",     integral       }},
+	{ "int16",               { "std::int16_t",    integral       }},
+	{ "int32",               { "std::int32_t",    integral       }},
+	{ "int64",               { "std::int64_t",    integral       }},
+	{ "float",               { "float",           floating_point }},
+	{ "double",              { "double",          floating_point }},
+	{ "bool",                { "bool",            boolean        }},
+	{ "bool32",              { "std::uint32_t",   boolean        }},
+	{ "CString",             { "string",          string         }},
+	{ "u8CString",           { "u8string",        string         }},
+	{ "u16CString",          { "u16string",       string         }},
+	{ "u32CString",          { "u32string",       string         }},
+	{ "PrefixedString32",    { "string",          string         }},
+	{ "u8PrefixedString32",  { "u8string",        string         }},
+	{ "u16PrefixedString32", { "u16string",       string         }},
+	{ "u32PrefixedString32", { "u32string",       string         }}
+		
 };
 
 bool is_primitive(std::string_view type) {
