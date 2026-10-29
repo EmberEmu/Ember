@@ -111,14 +111,18 @@ public:
 	Theme(Theme&& other) noexcept
 		: ThemeView(other)
 		, storage(std::move(other.storage)) {
-		other = Theme{};
+		rebind();
+		static_cast<ThemeView&>(other) = ThemeView{};
 	}
 
 	Theme& operator=(Theme&& other) noexcept {
 		if(this != &other) {
-			ThemeView::operator=(other);
 			storage = std::move(other.storage);
-			other = Theme{};
+			static_cast<ThemeView&>(*this) =
+				static_cast<const ThemeView&>(other);
+
+			rebind();
+			static_cast<ThemeView&>(other) = ThemeView{};
 		}
 
 		return *this;
