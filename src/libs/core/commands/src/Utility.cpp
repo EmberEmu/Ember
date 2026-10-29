@@ -151,8 +151,8 @@ Suggestions autocomplete_recurse(const CommandsView& commands, std::span<const s
 		return {};
 	}
 
-	if(!command->view()->empty()) {
-		auto recurse_res = autocomplete_recurse(command->view(), remaining);
+	if(!view->empty()) {
+		auto recurse_res = autocomplete_recurse(view, remaining);
 
 		result.substring += ' ';
 		result.substring += recurse_res.substring;
