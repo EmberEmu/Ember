@@ -165,7 +165,7 @@ std::size_t Command::optional_arg_count() const {
 }
 
 CommandsView Command::view() const {
-	return CommandsView(commands_, mutex_);
+	return CommandsView(commands_, map_mutex_);
 }
 
 std::string Command::usage_string() const {
@@ -185,7 +185,7 @@ std::string Command::usage_string() const {
 }
 
 std::shared_ptr<Command> Command::insert(std::string name) {
-	std::lock_guard guard(mutex_);
+	std::lock_guard guard(map_mutex_);
 
 	auto [entry, _] = commands_.insert_or_assign(
 		name, create(name)
@@ -204,7 +204,7 @@ ScopedCommand Command::scoped_insert(std::shared_ptr<Command> command) {
 }
 
 void Command::insert(std::shared_ptr<Command> command) {
-	std::lock_guard guard(mutex_);
+	std::lock_guard guard(map_mutex_);
 	const auto& name = command->name(); // avoid issues if right-to-left evaluation
 	commands_.insert_or_assign(name, std::move(command));
 }
@@ -226,7 +226,7 @@ void Command::clear_arguments() {
 }
 
 auto Command::erase(const std::string_view name) -> std::shared_ptr<Command> {
-	std::lock_guard guard(mutex_);
+	std::lock_guard guard(map_mutex_);
 
 	auto it = commands_.find(name);
 
@@ -238,7 +238,7 @@ auto Command::erase(const std::string_view name) -> std::shared_ptr<Command> {
 }
 
 bool Command::erase(const std::shared_ptr<const Command>& command) {
-	std::lock_guard guard(mutex_);
+	std::lock_guard guard(map_mutex_);
 
 	if(auto it = commands_.find(command->name()); it != commands_.end()) {
 		if(it->second == command) {
@@ -251,7 +251,7 @@ bool Command::erase(const std::shared_ptr<const Command>& command) {
 }
 
 void Command::clear_commands() {
-	std::lock_guard guard(mutex_);
+	std::lock_guard guard(map_mutex_);
 	commands_.clear();
 }
 

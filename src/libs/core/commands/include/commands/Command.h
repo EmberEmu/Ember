@@ -39,6 +39,7 @@ class Command : public std::enable_shared_from_this<Command> {
 		explicit _constructor_tag() = default;
 	};
 
+	mutable std::mutex map_mutex_;
 	mutable std::mutex mutex_;
 
 	std::string description_;
