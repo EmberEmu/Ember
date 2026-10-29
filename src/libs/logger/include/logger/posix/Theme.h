@@ -70,6 +70,7 @@ public:
 		name = other.name;
 		desc = other.desc;
 
+		bind_style<other_string_type>(prefix, other.prefix);
 		bind_style<other_string_type>(tag, other.tag);
 		bind_style<other_string_type>(text, other.text);
 
