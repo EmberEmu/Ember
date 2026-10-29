@@ -19,7 +19,7 @@
 #include <commands/ScopedCommand.h>
 #include <commands/Suggestions.h>
 #include <memory>
-#include <mutex>
+#include <shared_mutex>
 #include <span>
 #include <string>
 #include <string_view>
@@ -39,7 +39,7 @@ class Command : public std::enable_shared_from_this<Command> {
 		explicit _constructor_tag() = default;
 	};
 
-	mutable std::mutex mutex_;
+	mutable std::recursive_mutex mutex_;
 
 	std::string description_;
 	std::string name_;

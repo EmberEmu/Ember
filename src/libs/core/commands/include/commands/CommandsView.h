@@ -14,11 +14,11 @@
 namespace ember::commands {
 
 class CommandsView {
-	std::unique_lock<std::mutex> guard_;
+	std::unique_lock<std::recursive_mutex> guard_;
 	const CommandMap* map_;
 
 public:
-	CommandsView(const CommandMap& map, std::mutex& lock)
+	CommandsView(const CommandMap& map, std::recursive_mutex& lock)
 		: guard_(lock)
 		, map_(&map) {}
 
