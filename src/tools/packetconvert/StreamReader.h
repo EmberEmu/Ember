@@ -41,8 +41,10 @@ class StreamReader final {
 	template<typename flatbuffer_type>
 	void dispatch(std::span<const std::uint8_t> buff);
 
-	bool try_read(std::ifstream& file, std::span<std::uint8_t> buffer);
-	template<typename T> std::optional<T> try_read(std::ifstream& file);
+	static bool try_read(std::ifstream& file, std::span<std::uint8_t> buffer);
+
+	template<typename T>
+	static std::optional<T> try_read(std::ifstream& file);
 
 public:
 	StreamReader(std::ifstream& in, std::uintmax_t size, bool stream, bool skip = false,

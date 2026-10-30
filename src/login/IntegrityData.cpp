@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2025 Ember
+ * Copyright (c) 2016 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -31,7 +31,7 @@ void IntegrityData::add_version(const GameVersion& version, std::string_view pat
 }
 
 void IntegrityData::add_versions(std::span<const GameVersion> versions, std::string_view path) {
-	for(auto& version : versions) {
+	for(const auto& version : versions) {
 		add_version(version, path);
 	}
 }

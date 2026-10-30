@@ -99,7 +99,7 @@ void ConsoleSink::handle(const fblog::Footer& message) {
 	std::cout << "</footer>\n" << std::endl;
 }
 
-void ConsoleSink::print_opcode(const fblog::Message& message) const {
+void ConsoleSink::print_opcode(const fblog::Message& message) {
 	protocol::ClientOpcode c_op;
 	protocol::ServerOpcode s_op;
 	std::string op_desc;

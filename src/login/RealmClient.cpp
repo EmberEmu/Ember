@@ -58,7 +58,7 @@ void RealmClient::mark_realm_offline(const spark::Link& link) {
 	realmlist_.add_realm(std::move(*realm));
 }
 
-bool RealmClient::validate_status(const Status& msg) const {
+bool RealmClient::validate_status(const Status& msg) {
 	return msg.name() && msg.id() && msg.ip() && msg.address();
 }
 

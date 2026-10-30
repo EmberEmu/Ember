@@ -39,25 +39,25 @@ std::string path_fragment(std::span<const std::string> tokens, std::size_t depth
 	return fragment;
 }
 
-std::vector<std::string> parse_input(const std::string_view input, bool escape) {
+std::vector<std::string> parse_input(const std::string_view input, bool escape) try {
 	std::vector<std::string> tokens;
 	std::string str(input);
 
-	try {
-		if(escape) {
-			boost::escaped_list_separator<char> sep('\\', ' ', '"');
-			boost::tokenizer tok(str, sep);
-			tokens.assign_range(tok);
-		} else {
-			boost::char_separator<char> sep(" ");
-			boost::tokenizer tok(str, sep);
-			tokens.assign_range(tok);
-		}
-	} catch(const boost::escaped_list_error& e) {
-		throw parse_error(e.what());
+	if(escape) {
+		boost::escaped_list_separator<char> sep('\\', ' ', '"');
+		boost::tokenizer tok(str, sep);
+		tokens.assign_range(tok);
+	} else {
+		boost::char_separator<char> sep(" ");
+		boost::tokenizer tok(str, sep);
+		tokens.assign_range(tok);
 	}
 
 	return tokens;
+} catch(const boost::escaped_list_error& e) {
+	throw parse_error(e.what());
+} catch(...) {
+	throw;
 }
 
 namespace impl {

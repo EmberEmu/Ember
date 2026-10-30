@@ -16,7 +16,7 @@ namespace ember {
 class ConsoleSink final : public Sink {
 	inline static constexpr cstring_view time_fmt_ { "%FT%TZ" }; // ISO 8601, can be overriden by header
 
-	void print_opcode(const fblog::Message& message) const;
+	static void print_opcode(const fblog::Message& message);
 
 public:
 	void handle(const fblog::Header& header) override;

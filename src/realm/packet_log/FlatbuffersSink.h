@@ -24,11 +24,11 @@ class FlatbuffersSink final : public PacketSink {
 	inline static cstring_view time_fmt_ = "%Y-%m-%dT%H:%M:%SZ"; // ISO 8601
 
 	void start_log(const std::string& filename, std::string_view host, std::string_view remote_host);
-	fblog::Direction direction(PacketDirection direction) const;
+	static fblog::Direction direction(PacketDirection direction);
 
 public:
 	FlatbuffersSink(const std::string& filename, std::string_view host, std::string_view remote_host);
-	~FlatbuffersSink();
+	~FlatbuffersSink() override;
 
 	void log(std::span<const std::uint8_t> buffer, const std::time_t& time,
 	         PacketDirection dir) override;

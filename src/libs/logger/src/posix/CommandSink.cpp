@@ -150,7 +150,6 @@ void CommandSink::write(Severity severity, Filter type,	std::string_view prefix,
 
 	const std::string_view timestamp(ts_buffer.data(), ts_size);
 	const std::string_view sevsv = severity_string(severity);
-	const std::string_view recordsv = record;
 	const auto pad_sz = detail::calculate_prefix_padding(prefix, prefix_pad_);
 
 	// hack, need to make newline handling more consistent rather than... this

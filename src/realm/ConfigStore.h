@@ -56,7 +56,7 @@ public:
 	/*
 	 * Updates the config for the current thread only. 
 	 */
-	void update_thread_config(Config config) {
+	static void update_thread_config(Config config) {
 		tls_config_ = std::move(config);
 	}
 
@@ -77,7 +77,7 @@ public:
 		}
 	}
 
-	const Config& config_tls() const {
+	static const Config& config_tls() {
 		return *tls_config_;
 	}
 };

@@ -106,7 +106,6 @@ void Service::stop() {
 	}
 
 	SLOG_TRACE(logger, "Service termination requested");
-	auto ctx = context.get();
 
 	boost::asio::post(ioc, [&] {
 		auto ctx = context.get();

@@ -36,7 +36,7 @@ public:
 		// we don't care about enums at the moment
 	}
 
-	std::string generate_column(const std::string_view name, const std::string_view type) {
+	static std::string generate_column(const std::string_view name, const std::string_view type) {
 		std::string column = std::format("  `{}` ", name);
 
 		if(type == "int8") {

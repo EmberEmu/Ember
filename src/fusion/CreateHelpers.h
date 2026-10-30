@@ -146,10 +146,11 @@ inline void destroy_service(const ServiceContext& context) {
 
 inline std::unique_ptr<log::Logger> configure_logger(const std::string_view name, const Params& params) {
 	opts::variables_map opts = *params.args;
-
-	// give this service its own log file, if file logging is enabled
-	const auto option = std::format("{}.file", name);
-	opts.insert_or_assign("file_log.path", opts.at(option));
+	
+	{ // give this service its own log file, if file logging is enabled
+		const auto option = std::format("{}.file", name);
+		opts.insert_or_assign("file_log.path", opts.at(option));
+	}
 
 	std::unique_ptr<log::Logger> logger;
 

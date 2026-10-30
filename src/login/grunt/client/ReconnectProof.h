@@ -67,7 +67,7 @@ public:
 		stream << client_checksum;
 		stream << key_count;
 
-		for (auto& key : keys) {
+		for (const auto& key : keys) {
 			stream << key.len;
 			stream << key.pub_value;
 			stream << key.product;

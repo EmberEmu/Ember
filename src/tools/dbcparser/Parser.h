@@ -45,7 +45,7 @@ class Parser final {
 	void parse_enum_node(types::Enum& structure, UniqueCheck& check, rapidxml::xml_node<>* node);
 	void parse_enum_options(std::vector<std::pair<std::string_view, std::string_view>>& key, rapidxml::xml_node<>* node);
 
-	void assign_unique(std::string_view& type, bool& exists, rapidxml::xml_node<>* node);
+	void assign_unique(std::string_view& type, bool& exists, const rapidxml::xml_node<>* node);
 
 public:
 	types::Definitions parse(std::string& document);

@@ -58,14 +58,14 @@ void FlatbuffersSink::start_log(const std::string& filename, std::string_view ho
 	}
 }
 
-fblog::Direction FlatbuffersSink::direction(PacketDirection direction) const {
+fblog::Direction FlatbuffersSink::direction(PacketDirection direction) {
+	using enum PacketDirection;
+
 	switch(direction) {
-		case PacketDirection::inbound:
+		case inbound:
 			return fblog::Direction::inbound;
-		case PacketDirection::outbound:
+		case outbound:
 			return fblog::Direction::outbound;
-		default:
-			assert(false && "unhandled packet direction case");
 	}
 
 	std::unreachable();

@@ -40,12 +40,11 @@ constexpr cstring_view app_name { "Fusion" };
 std::unordered_map<std::string, ServiceRunner> runners;
 
 opts::variables_map parse_arguments(int, const char*[]);
-int launch(const opts::variables_map&, log::Logger&);
-void register_service_commands(commands::Command& registry, log::Logger& logger);
-void create_service_subcommands(commands::Command& registry);
+int launch(const opts::variables_map&, commands::Command& root, log::Logger&);
+void register_service_commands(commands::Command& root, log::Logger& logger);
+void create_service_subcommands(commands::Command& root);
 void stop_services();
 
-std::shared_ptr<commands::Command> root;
 Params glob_params{};
 
 int main(int argc, const char* argv[]) try {
@@ -67,7 +66,7 @@ int main(int argc, const char* argv[]) try {
 
 	print_defaulted(args, logger);
 
-	root = commands::create("root");
+	auto root = commands::create("root");
 	create_service_subcommands(*root);
 	const auto suggestions = args["console_log.suggestions"].as<bool>();
 	utility::register_command_handlers(root, logger, suggestions);
@@ -83,7 +82,7 @@ int main(int argc, const char* argv[]) try {
 		.logger = &logger,
 	};
 
-	const auto ret = launch(args, logger);
+	const auto ret = launch(args, *root, logger);
 	SLOG_INFO(logger, "{} terminated", app_name);
 	return ret;
 } catch(const std::exception& e) {
@@ -108,7 +107,7 @@ Params create_params(std::shared_ptr<commands::Command> registry) {
 	};
 }
 
-void service_start(const std::string& service, log::Logger& logger) {
+void service_start(const std::string& service, commands::Command& root, log::Logger& logger) {
 	auto idx = string_to_idx(service);
 
 	if(idx == ServiceIndex::service_invalid) {
@@ -125,7 +124,7 @@ void service_start(const std::string& service, log::Logger& logger) {
 		}
 	}
 
-	const auto params = create_params(root->view()->at(service));
+	const auto params = create_params(root.view()->at(service));
 	auto runner = create_runner(idx, params);
 
 	LOG_CONSOLE(logger, "Starting {} service...", service);
@@ -156,20 +155,20 @@ void service_stop(const std::string& service, log::Logger& logger) {
 	runners.erase(it);
 }
 
-void service_restart(const std::string& service, log::Logger& logger) {
+void service_restart(const std::string& service, commands::Command& root, log::Logger& logger) {
 	service_stop(service, logger);
-	service_start(service, logger);
+	service_start(service, root, logger);
 }
 
-void register_service_commands(commands::Command& registry, log::Logger& logger) {
-	auto svc_cmd = registry.insert("service")
+void register_service_commands(commands::Command& root, log::Logger& logger) {
+	auto svc_cmd = root.insert("service")
 		->description("Commands for service control");
 
 	svc_cmd->insert("start")
 		->argument<std::string>("service")
 		->description("Start service (load library if shared)")
 		->handler([&](const commands::Arguments& args) {
-			service_start(args["service"].as<std::string>(), logger);
+			service_start(args["service"].as<std::string>(), root, logger);
 		});
 
 	svc_cmd->insert("stop")
@@ -182,12 +181,12 @@ void register_service_commands(commands::Command& registry, log::Logger& logger)
 	svc_cmd->insert("restart")
 		->argument<std::string>("service")
 		->description("Restart service (reload library if shared)")
-		->handler([&logger](const commands::Arguments& args) {
-			service_restart(args["service"].as<std::string>(), logger);
+		->handler([&](const commands::Arguments& args) {
+			service_restart(args["service"].as<std::string>(), root, logger);
 		});
 }
 
-int launch(const opts::variables_map& args, log::Logger& logger) try {
+int launch(const opts::variables_map& args, commands::Command& root, log::Logger& logger) try {
 	// Start initial services, as specified in config
 	for(const auto& service : lib_props) {
 		const auto key = std::format("{}.active", service.name);
@@ -197,7 +196,7 @@ int launch(const opts::variables_map& args, log::Logger& logger) try {
 				continue;
 			}
 
-			const auto commands = root->view();
+			const auto commands = root.view();
 
 			if(auto registry = commands->find(service.name); registry != commands->end()) {
 				const auto params = create_params(registry->second);

@@ -153,7 +153,6 @@ void CommandSink::write(Severity severity, Filter type, std::string_view prefix,
 		return;
 	}
 
-	std::lock_guard guard(console_lock_);
 
 	[[indeterminate]] std::array<char, timestamp_buf_size> ts_buffer;
 	std::size_t ts_size = 0;
@@ -172,6 +171,8 @@ void CommandSink::write(Severity severity, Filter type, std::string_view prefix,
 		+ pad_sz
 		+ record.size()
 		+ sevsv.size();
+
+	std::lock_guard guard(console_lock_); // todo, locking needs a rethink
 
 	out_buf_.resize(buff_req_size, boost::container::default_init);
 
@@ -197,7 +198,6 @@ void CommandSink::write(Severity severity, Filter type, std::string_view prefix,
 	}
 
 	if(opts_.colours) [[likely]] {
-		std::lock_guard guard(console_lock_);
 		ConsoleColour concol(detail::severity_colour(severity));
 		write_buffer(out_buf_, false);
 	} else {

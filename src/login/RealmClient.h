@@ -30,8 +30,8 @@ class RealmClient final : public services::RealmClient {
 	void mark_realm_offline(const spark::Link& link);
 
 	void handle_get_status_response(const spark::Link& link, const rpc::Realm::Status& msg) override;
-	bool validate_status(const rpc::Realm::Status& msg) const;
 	void update_realm(const rpc::Realm::Status& msg);
+	static bool validate_status(const rpc::Realm::Status& msg);
 
 public:
 	RealmClient(spark::Server& server, RealmList& realmlist, log::Logger& logger);

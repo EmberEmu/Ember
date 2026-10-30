@@ -38,7 +38,7 @@ void update(std::chrono::milliseconds delta) {
  * A monotonic clock is being used as we don't want any changes in
  * system time (e.g. DST) to impact the game logic.
  */
-void run(log::Logger& log, bool& stop_flag) {
+void run(log::Logger& log, const bool& stop_flag) {
 	LOG_TRACE(log, log_func);
 
 	const utility::ScopedTimerPeriod timer_guard(TIME_PERIOD);

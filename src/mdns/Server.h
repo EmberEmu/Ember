@@ -27,7 +27,7 @@ class Server final : public Handler {
 
 public:
     Server(std::unique_ptr<Socket> socket, log::Logger& logger);
-	~Server();
+	~Server() override;
 
 	void shutdown();
 };

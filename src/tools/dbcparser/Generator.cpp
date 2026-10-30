@@ -643,7 +643,7 @@ void generate_storage(const types::Definitions& defs, const std::string& output,
 			continue;
 		}
 
-		const auto dbc = static_cast<types::Struct*>(def.get());
+		const auto  dbc = static_cast<const types::Struct*>(def.get());
 
 		// ensure this is actually a DBC definition rather than a user-defined struct
 		if(!dbc->dbc) {

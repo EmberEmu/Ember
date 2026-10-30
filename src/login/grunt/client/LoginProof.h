@@ -172,7 +172,7 @@ public:
 
 		stream << gsl::narrow<std::uint8_t>(keys.size());
 
-		for(auto& key : keys) {
+		for(const auto& key : keys) {
 			stream << key.len;
 			stream << key.pub_value;
 			stream << key.product;

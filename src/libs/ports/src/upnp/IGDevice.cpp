@@ -324,7 +324,7 @@ ErrorCode IGDevice::validate_soap_arguments(const UPnPActionArgs& args) {
 
 	for(const auto& arg : expected_args) {
 		// didn't originally have a use for a map
-		const bool found = std::ranges::any_of(args.arguments | std::views::keys, [&](auto& key) {
+		const bool found = std::ranges::any_of(args.arguments | std::views::keys, [&](const auto& key) {
 			return key == arg;
 		});
 

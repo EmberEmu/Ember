@@ -101,7 +101,7 @@ std::span<std::uint32_t> MemoryArchive::file_sectors(const BlockTableEntry& entr
 	const auto sector_size = block_size << header_->block_size_shift;
 	// compiler will optimise
 	auto count = (entry.uncompressed_size / sector_size
-		+ (entry.uncompressed_size % sector_size? 1 : 0)) + 1;
+		+ ((entry.uncompressed_size % sector_size)? 1 : 0)) + 1;
 
 	if(entry.flags & Flags::mpq_file_sector_crc) {
 		++count;

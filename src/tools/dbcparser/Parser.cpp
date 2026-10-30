@@ -127,7 +127,7 @@ void Parser::parse_struct_node(types::Struct& type, UniqueCheck& check, rxml::xm
 	));
 }
 
-void Parser::assign_unique(std::string_view& type, bool& exists, rxml::xml_node<>* node) {
+void Parser::assign_unique(std::string_view& type, bool& exists, const rxml::xml_node<>* node) {
 	LOG_TRACE_GLOB << log_func << LOG_ASYNC;
 
 	if(exists) {
