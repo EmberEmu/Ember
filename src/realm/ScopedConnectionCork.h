@@ -29,7 +29,7 @@ public:
 		}
 
 		connection_.uncork(token_);
-		released_ = false;
+		released_ = true;
 
 	}
 
