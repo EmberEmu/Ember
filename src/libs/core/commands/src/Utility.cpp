@@ -56,8 +56,6 @@ std::vector<std::string> parse_input(const std::string_view input, bool escape) 
 	return tokens;
 } catch(const boost::escaped_list_error& e) {
 	throw parse_error(e.what());
-} catch(...) {
-	throw;
 }
 
 namespace impl {
@@ -153,7 +151,6 @@ Suggestions autocomplete_recurse(const CommandsView& commands, std::span<const s
 
 	if(!view->empty()) {
 		auto recurse_res = autocomplete_recurse(view, remaining);
-
 		result.substring += ' ';
 		result.substring += recurse_res.substring;
 		result.records = std::move(recurse_res.records);
