@@ -82,6 +82,7 @@ private:
 	void read();
 	void write();
 	void flush();
+	bool fastpath_write();
 
 	// message reading & dispatching
 	void process_buffered_data();

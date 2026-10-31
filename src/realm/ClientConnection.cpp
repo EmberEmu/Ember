@@ -19,6 +19,7 @@
 #include <spark/buffers/BufferSequence.h>
 #include <boost/asio/bind_allocator.hpp>
 #include <boost/asio/read.hpp>
+#include <boost/asio/write.hpp>
 #include <algorithm>
 
 namespace ember::realm {
@@ -40,7 +41,9 @@ ClientConnection::ClientConnection(tcp_socket socket,  std::pair<DynamicTLSBuffe
 	, outbound_front_(&outbound_buffers_.first)
 	, outbound_back_(&outbound_buffers_.second)
 	, allocator_(allocator_tag)
-	, dispatcher_(dispatcher) {}
+	, dispatcher_(dispatcher) {
+	socket_.non_blocking(true);
+}
 
 void ClientConnection::parse_header() {
 	LOG_TRACE(logger_, log_func);
@@ -104,11 +107,42 @@ void ClientConnection::process_buffered_data() {
 	} while(!inbound_buffer_.empty());
 }
 
+bool ClientConnection::fastpath_write() {
+	assert(socket_.non_blocking());
+
+	while(!outbound_front_->empty()) {
+		const spark::io::BufferSequence sequence(*outbound_front_);
+
+		boost::system::error_code ec;
+		const auto size = boost::asio::write(socket_, sequence, ec);
+		outbound_front_->skip(size);
+
+		if(ec) {
+			if(ec == boost::asio::error::would_block ||
+			   ec == boost::asio::error::try_again ||
+			   ec == boost::asio::error::operation_aborted) {
+				return false;
+			}
+
+			close_session();
+			return true;
+		}
+
+		std::swap(outbound_front_, outbound_back_);
+	}
+
+	return true;
+}
+
 void ClientConnection::write() {
 	if(!socket_.is_open()) {
 		return;
 	}
-	
+
+	if(fastpath_write()) {
+		return;
+	}
+
 	const spark::io::BufferSequence sequence(*outbound_front_);
 
 	socket_.async_send(sequence, boost::asio::bind_allocator(AsioStaticAllocator<int>(allocator_),

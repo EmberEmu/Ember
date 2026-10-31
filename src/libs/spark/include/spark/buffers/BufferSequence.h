@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2025 Ember
+ * Copyright (c) 2016 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -28,6 +28,12 @@ public:
 		using Node = typename BufferType::node_type;
 
 	public:
+		using value_type = asio::const_buffer;
+		using reference = value_type;
+		using pointer = void;
+		using difference_type = std::ptrdiff_t;
+		using iterator_category = std::forward_iterator_tag;
+
 		const_iterator(const BufferType& buffer, const Node* curr_node)
 			: buffer_(buffer),
 			  curr_node_(curr_node) {}
@@ -56,8 +62,6 @@ public:
 			return curr_node_ != rhs.curr_node_;
 		}
 
-		const_iterator& operator=(const_iterator&) = delete;
-
 	#ifdef EMBER_BUFFER_DEBUG
 		std::span<const char> get_buffer() {
 			auto buffer = buffer_.buffer_from_node(curr_node_);
@@ -72,15 +76,15 @@ public:
 		const Node* curr_node_;
 	};
 
-const_iterator begin() const {
-	return const_iterator(buffer_, buffer_.root_.next);
-}
+	const_iterator begin() const {
+		return const_iterator(buffer_, buffer_.root_.next);
+	}
 
-const_iterator end() const {
-	return const_iterator(buffer_, &buffer_.root_);
-}
+	const_iterator end() const {
+		return const_iterator(buffer_, &buffer_.root_);
+	}
 
-friend class const_iterator;
+	friend class const_iterator;
 };
 
 } // io, spark, ember

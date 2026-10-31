@@ -88,7 +88,7 @@ std::uint32_t get_time() {
 }
 
 void initiate_player_login(ClientContext& ctx, const PlayerLogin& event) {
-	ScopedConnectionCork cork(ctx.connection());
+	ScopedConnectionCork cork(ctx.connection()); // just a basic mechanism test
 
     auto& state_ctx = std::get<Context>(ctx.state_ctx);
     state_ctx.character_id = event.character_id_;
