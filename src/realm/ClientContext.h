@@ -108,6 +108,11 @@ public:
 		return rate_limit_;
 	}
 
+	ClientConnection& connection() const {
+		assert(connection_);
+		return *connection_;
+	}
+
 	// if the client is occupying a slot
 	void set_active();
 	bool is_active() const;

@@ -35,6 +35,7 @@ ClientConnection::ClientConnection(tcp_socket socket,  std::pair<DynamicTLSBuffe
 	, write_in_progress_(false)
 	, handler_(nullptr)
 	, compression_level_(0)
+	, cork_depth_(0)
 	, outbound_buffers_ { std::move(buffers) }
 	, outbound_front_(&outbound_buffers_.first)
 	, outbound_back_(&outbound_buffers_.second)
@@ -107,7 +108,7 @@ void ClientConnection::write() {
 	if(!socket_.is_open()) {
 		return;
 	}
-
+	
 	const spark::io::BufferSequence sequence(*outbound_front_);
 
 	socket_.async_send(sequence, boost::asio::bind_allocator(AsioStaticAllocator<int>(allocator_),
@@ -297,6 +298,26 @@ void ClientConnection::rebind(ClientHandler& handler) noexcept {
 	handler_ = &handler;
 }
 
+CorkToken ClientConnection::cork() {
+	return CorkToken(++cork_depth_);
+}
+
+void ClientConnection::uncork(CorkToken token) {
+	assert(token.depth == cork_depth_);
+	--cork_depth_;
+
+	if(cork_depth_ == 0) {
+		flush();
+	}
+}
+
+void ClientConnection::flush() {
+	if(!write_in_progress_) {
+		std::swap(outbound_front_, outbound_back_);
+		write();
+	}
+}
+
 ClientConnection::ClientConnection(ClientConnection&& other) noexcept
 	: socket_(std::move(other.socket_))
 	, remote_ep_(socket_.remote_endpoint())
@@ -308,6 +329,7 @@ ClientConnection::ClientConnection(ClientConnection&& other) noexcept
 	, write_in_progress_(other.write_in_progress_)
 	, handler_(other.handler_)
 	, compression_level_(other.compression_level_)
+	, cork_depth_(other.cork_depth_)
 	, outbound_buffers_{ std::move(other.outbound_buffers_) }
 	, outbound_front_(&outbound_buffers_.first)
 	, outbound_back_(&outbound_buffers_.second)

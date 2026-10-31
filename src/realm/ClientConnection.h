@@ -34,6 +34,15 @@ namespace ember::realm {
 class AllocationProvider;
 class ClientHandler;
 
+class CorkToken {
+	unsigned int depth;
+
+	CorkToken(unsigned int depth)
+		: depth(depth) {}
+
+	friend class ClientConnection;
+};
+
 class ClientConnection final {
 	static constexpr std::string_view allocator_tag { "realm_client_connection" };
 
@@ -63,6 +72,7 @@ private:
 	log::Logger& logger_;
 	bool write_in_progress_;
 	unsigned int compression_level_;
+	unsigned int cork_depth_;
 	std::unique_ptr<PacketLogger> packet_logger_;
 	EventDispatcher& dispatcher_;
 	std::atomic_bool stopped_;
@@ -71,6 +81,7 @@ private:
 	// socket I/O
 	void read();
 	void write();
+	void flush();
 
 	// message reading & dispatching
 	void process_buffered_data();
@@ -115,6 +126,9 @@ public:
 	bool packet_logging() const;
 
 	void rebind(ClientHandler& handler) noexcept;
+
+	CorkToken cork();
+	void uncork(CorkToken token);
 };
 
 } // realm, ember

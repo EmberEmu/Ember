@@ -56,8 +56,8 @@ void ClientConnection::send(const protocol::is_packet auto& packet) {
 		return;
 	}
 
-	// initiate sending if not already in progress
-	if(!write_in_progress_) {
+	// initiate sending if not already in progress and we're not corked
+	if(cork_depth_ == 0 && !write_in_progress_) {
 		std::swap(outbound_front_, outbound_back_);
 		write();
 	}
