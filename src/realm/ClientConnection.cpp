@@ -21,6 +21,7 @@
 #include <boost/asio/read.hpp>
 #include <boost/asio/write.hpp>
 #include <algorithm>
+#include <cassert>
 
 namespace ember::realm {
 
