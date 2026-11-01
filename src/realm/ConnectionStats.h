@@ -20,6 +20,7 @@ struct ConnectionStats {
 	std::size_t messages_out;
 	std::size_t async_receives;
 	std::size_t async_sends;
+	std::size_t fastpath_sends;
 	std::uint32_t latency;
 };
 

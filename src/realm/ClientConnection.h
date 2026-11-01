@@ -43,6 +43,12 @@ class CorkToken {
 	friend class ClientConnection;
 };
 
+enum class WriteResult {
+	success,
+	would_block,
+	failed
+};
+
 class ClientConnection final {
 	static constexpr std::string_view allocator_tag { "realm_client_connection" };
 
@@ -57,7 +63,6 @@ private:
 	} read_state_;
 
 	tcp_socket socket_;
-	boost::asio::ip::tcp::endpoint remote_ep_;
 
 	StaticBuffer inbound_buffer_;
 	std::pair<DynamicTLSBuffer, DynamicTLSBuffer> outbound_buffers_;
@@ -82,6 +87,7 @@ private:
 	void read();
 	void write();
 	void flush();
+	WriteResult fastpath_write();
 
 	// message reading & dispatching
 	void process_buffered_data();
@@ -95,6 +101,7 @@ private:
 	void close_session();
 	void set_handler(ClientHandler& handler);
 	void set_ident(const ClientIdent& ident);
+	void set_non_blocking();
 
 public:
 	ClientConnection(tcp_socket socket, std::pair<DynamicTLSBuffer, DynamicTLSBuffer> buffers,

@@ -19,14 +19,15 @@
 #include <spark/buffers/BufferSequence.h>
 #include <boost/asio/bind_allocator.hpp>
 #include <boost/asio/read.hpp>
+#include <boost/asio/write.hpp>
 #include <algorithm>
+#include <cassert>
 
 namespace ember::realm {
 
 ClientConnection::ClientConnection(tcp_socket socket,  std::pair<DynamicTLSBuffer, DynamicTLSBuffer> buffers,
 								   EventDispatcher& dispatcher, log::Logger& logger)
 	: socket_(std::move(socket))
-	, remote_ep_(socket_.remote_endpoint())
 	, stats_{}
 	, msg_size_(0)
 	, logger_(logger)
@@ -41,6 +42,15 @@ ClientConnection::ClientConnection(tcp_socket socket,  std::pair<DynamicTLSBuffe
 	, outbound_back_(&outbound_buffers_.second)
 	, allocator_(allocator_tag)
 	, dispatcher_(dispatcher) {}
+
+void ClientConnection::set_non_blocking() {
+	boost::system::error_code ec;
+	socket_.non_blocking(true, ec);
+	
+	if(ec) {
+		close_session();
+	}
+}
 
 void ClientConnection::parse_header() {
 	LOG_TRACE(logger_, log_func);
@@ -104,11 +114,35 @@ void ClientConnection::process_buffered_data() {
 	} while(!inbound_buffer_.empty());
 }
 
+WriteResult ClientConnection::fastpath_write() {
+    assert(socket_.non_blocking());
+
+    if(outbound_front_->empty()) {
+        return WriteResult::success;
+    }
+
+    const spark::io::BufferSequence sequence(*outbound_front_);
+
+    boost::system::error_code ec;
+    const auto size = boost::asio::write(socket_, sequence, ec);
+    outbound_front_->skip(size);
+    stats_.bytes_out += size;
+
+    if(!ec) {
+        ++stats_.fastpath_sends;
+        return WriteResult::success;
+    }
+
+    if(ec == boost::asio::error::would_block ||
+		ec == boost::asio::error::try_again) {
+        return WriteResult::would_block;
+    }
+
+    close_session();
+    return WriteResult::failed;
+}
+
 void ClientConnection::write() {
-	if(!socket_.is_open()) {
-		return;
-	}
-	
 	const spark::io::BufferSequence sequence(*outbound_front_);
 
 	socket_.async_send(sequence, boost::asio::bind_allocator(AsioStaticAllocator<int>(allocator_),
@@ -190,12 +224,7 @@ void ClientConnection::send(std::span<const std::uint8_t> packet) {
 	}
 
 	outbound_back_->write(packet);
-
-	// initiate sending if not already in progress
-	if(!write_in_progress_) {
-		std::swap(outbound_front_, outbound_back_);
-		write();
-	}
+	flush();
 
 	if(packet_logger_) [[unlikely]] {
 		packet_logger_->log(packet, PacketDirection::outbound);
@@ -219,6 +248,7 @@ void ClientConnection::start(ClientHandler& handler, const ClientIdent& ident) {
 
 	set_handler(handler);
 	set_ident(ident);
+	set_non_blocking();
 	read();
 }
 
@@ -240,7 +270,14 @@ void ClientConnection::close_session() {
 }
 
 std::string ClientConnection::remote_address() const {
-	return remote_ep_.address().to_string();
+	boost::system::error_code ec;
+	auto remote_ep = socket_.remote_endpoint(ec);
+
+	if(ec) {
+		return {}; // todo
+	}
+
+	return socket_.remote_endpoint().address().to_string();
 }
 
 const ConnectionStats& ClientConnection::stats() const {
@@ -312,15 +349,21 @@ void ClientConnection::uncork(CorkToken token) {
 }
 
 void ClientConnection::flush() {
+	if(!socket_.is_open()) {
+		return;
+	}
+
 	if(!write_in_progress_) {
 		std::swap(outbound_front_, outbound_back_);
-		write();
+		
+		if(fastpath_write() == WriteResult::would_block) {
+			write();
+		}
 	}
 }
 
 ClientConnection::ClientConnection(ClientConnection&& other) noexcept
 	: socket_(std::move(other.socket_))
-	, remote_ep_(socket_.remote_endpoint())
 	, stats_(other.stats_)
 	, msg_size_(other.msg_size_)
 	, logger_(other.logger_)
