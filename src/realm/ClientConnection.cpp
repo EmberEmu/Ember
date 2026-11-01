@@ -273,7 +273,7 @@ std::string ClientConnection::remote_address() const {
 	boost::system::error_code ec;
 	auto remote_ep = socket_.remote_endpoint(ec);
 
-	if(!ec) {
+	if(ec) {
 		return {}; // todo
 	}
 
