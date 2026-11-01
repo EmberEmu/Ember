@@ -43,6 +43,12 @@ class CorkToken {
 	friend class ClientConnection;
 };
 
+enum class WriteResult {
+	success,
+	would_block,
+	failed
+};
+
 class ClientConnection final {
 	static constexpr std::string_view allocator_tag { "realm_client_connection" };
 
@@ -82,7 +88,7 @@ private:
 	void read();
 	void write();
 	void flush();
-	bool fastpath_write();
+	WriteResult fastpath_write();
 
 	// message reading & dispatching
 	void process_buffered_data();

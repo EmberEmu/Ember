@@ -116,7 +116,7 @@ void ClientConnection::process_buffered_data() {
 	} while(!inbound_buffer_.empty());
 }
 
-bool ClientConnection::fastpath_write() {
+WriteResult ClientConnection::fastpath_write() {
 	assert(socket_.non_blocking());
 
 	while(!outbound_front_->empty()) {
@@ -129,17 +129,17 @@ bool ClientConnection::fastpath_write() {
 		if(ec) {
 			if(ec == boost::asio::error::would_block ||
 				ec == boost::asio::error::try_again) {
-				return false;
+				return WriteResult::would_block;
 			}
 
 			close_session();
-			return true;
+			return WriteResult::failed;
 		}
 
 		std::swap(outbound_front_, outbound_back_);
 	}
 
-	return true;
+	return WriteResult::success;
 }
 
 void ClientConnection::write() {
@@ -354,7 +354,7 @@ void ClientConnection::flush() {
 	if(!write_in_progress_) {
 		std::swap(outbound_front_, outbound_back_);
 		
-		if(!fastpath_write()) {
+		if(fastpath_write() == WriteResult::would_block) {
 			write();
 		}
 	}
