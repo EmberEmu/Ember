@@ -117,29 +117,31 @@ void ClientConnection::process_buffered_data() {
 }
 
 WriteResult ClientConnection::fastpath_write() {
-	assert(socket_.non_blocking());
+    assert(socket_.non_blocking());
 
-	while(!outbound_front_->empty()) {
-		const spark::io::BufferSequence sequence(*outbound_front_);
+    if(outbound_front_->empty()) {
+        return WriteResult::success;
+    }
 
-		boost::system::error_code ec;
-		const auto size = boost::asio::write(socket_, sequence, ec);
-		outbound_front_->skip(size);
+    const spark::io::BufferSequence sequence(*outbound_front_);
 
-		if(ec) {
-			if(ec == boost::asio::error::would_block ||
-				ec == boost::asio::error::try_again) {
-				return WriteResult::would_block;
-			}
+    boost::system::error_code ec;
+    const auto size = boost::asio::write(socket_, sequence, ec);
+    outbound_front_->skip(size);
+    stats_.bytes_out += size;
 
-			close_session();
-			return WriteResult::failed;
-		}
+    if(!ec) {
+        ++stats_.fastpath_sends;
+        return WriteResult::success;
+    }
 
-		std::swap(outbound_front_, outbound_back_);
-	}
+    if(ec == boost::asio::error::would_block ||
+		ec == boost::asio::error::try_again) {
+        return WriteResult::would_block;
+    }
 
-	return WriteResult::success;
+    close_session();
+    return WriteResult::failed;
 }
 
 void ClientConnection::write() {

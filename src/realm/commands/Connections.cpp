@@ -113,7 +113,7 @@ void print_connection_stats(bprinter::TablePrinter& table, SessionManager::Sessi
 	table << stats.bytes_in;
 	table << stats.bytes_out;
 	table << stats.async_receives;
-	table << stats.async_sends;
+	table << stats.async_sends + stats.fastpath_sends;
 }
 
 void connection_statistics(const commands::Arguments& args,
