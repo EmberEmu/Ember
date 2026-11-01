@@ -146,14 +146,6 @@ bool ClientConnection::fastpath_write() {
 }
 
 void ClientConnection::write() {
-	if(!socket_.is_open()) {
-		return;
-	}
-
-	if(fastpath_write()) {
-		return;
-	}
-
 	const spark::io::BufferSequence sequence(*outbound_front_);
 
 	socket_.async_send(sequence, boost::asio::bind_allocator(AsioStaticAllocator<int>(allocator_),
@@ -358,9 +350,16 @@ void ClientConnection::uncork(CorkToken token) {
 }
 
 void ClientConnection::flush() {
+	if(!socket_.is_open()) {
+		return;
+	}
+
 	if(!write_in_progress_) {
 		std::swap(outbound_front_, outbound_back_);
-		write();
+		
+		if(!fastpath_write()) {
+			write();
+		}
 	}
 }
 
