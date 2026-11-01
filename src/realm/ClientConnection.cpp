@@ -356,7 +356,7 @@ void ClientConnection::flush() {
 
 ClientConnection::ClientConnection(ClientConnection&& other) noexcept
 	: socket_(std::move(other.socket_))
-	, address_(socket_.remote_endpoint().address())
+	, address_(other.address_)
 	, stats_(other.stats_)
 	, msg_size_(other.msg_size_)
 	, logger_(other.logger_)
