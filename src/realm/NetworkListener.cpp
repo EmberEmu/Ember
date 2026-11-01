@@ -79,8 +79,8 @@ void NetworkListener::dispatch_socket() {
 		 * allowing the thread local allocators to operate in 'unsafe entrant' mode, meaning they
 		 * can forego ensuring that the calling thread has previously initialised the allocator.
 		 */
-		boost::asio::dispatch(ioc, [this, &ioc, socket = std::move(socket_), index = index_]() mutable {
-			auto client = builder_.create(std::move(socket), ioc);
+		boost::asio::dispatch(ioc, [this, &ioc, socket = std::move(socket_), ep, index = index_]() mutable {
+			auto client = builder_.create(std::move(socket), std::move(ep), ioc);
 			client->start(index);
 			sessions_.enqueue(std::move(client));
 		});

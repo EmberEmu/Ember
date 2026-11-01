@@ -76,7 +76,7 @@ void connection_list(const commands::Arguments& args,
 	for(const auto& session : sessions) {
 		const auto& [id, client] = session;
 		table << id;
-		table << client->connection().remote_address();
+		table << client->connection().address();
 		table << client->handler().whoami();
 		table << ClientState_to_string(client->handler().state());
 		++connections;
@@ -106,7 +106,7 @@ void print_connection_stats_footer(bprinter::TablePrinter& table) {
 void print_connection_stats(bprinter::TablePrinter& table, SessionManager::SessionID id, const Client& client) {
 	const auto stats = client.connection().stats();
 	table << id;
-	table << client.connection().remote_address();
+	table << client.connection().address();
 	table << stats.latency;
 	table << stats.messages_in;
 	table << stats.messages_out;

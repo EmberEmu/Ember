@@ -21,13 +21,16 @@
 #include <boost/asio/read.hpp>
 #include <boost/asio/write.hpp>
 #include <algorithm>
+#include <format>
 #include <cassert>
 
 namespace ember::realm {
 
-ClientConnection::ClientConnection(tcp_socket socket,  std::pair<DynamicTLSBuffer, DynamicTLSBuffer> buffers,
+ClientConnection::ClientConnection(tcp_socket socket, boost::asio::ip::tcp::endpoint endpoint,
+                                   std::pair<DynamicTLSBuffer, DynamicTLSBuffer> buffers,
 								   EventDispatcher& dispatcher, log::Logger& logger)
 	: socket_(std::move(socket))
+	, endpoint_(std::move(endpoint))
 	, stats_{}
 	, msg_size_(0)
 	, logger_(logger)
@@ -68,7 +71,7 @@ void ClientConnection::parse_header() {
 	spark::io::endian::big_to_native_inplace(msg_size_);
 
 	if(msg_size_ < sizeof(protocol::ClientHeader::OpcodeType)) {
-		LOG_DEBUG(logger_, "Invalid message size from {}", remote_address());
+		LOG_DEBUG(logger_, "Invalid message size from {}", address());
 		close_session();
 		return;
 	}
@@ -189,7 +192,7 @@ void ClientConnection::read() {
 	// ensure we have enough buffer space for the next read, allowing the buffer
 	// to internally defragment itself if required
 	if(!inbound_buffer_.ensure_write_space(required_space)) [[unlikely]] {
-		LOG_DEBUG(logger_, "Inbound buffer full, closing {}", remote_address());
+		LOG_DEBUG(logger_, "Inbound buffer full, closing {}", address());
 		close_session();
 		return;
 	}
@@ -258,7 +261,7 @@ void ClientConnection::stop() {
 	}
 
 	stopped_ = true;
-	LOG_DEBUG(logger_, "Closing connection to {}", remote_address());
+	LOG_DEBUG(logger_, "Closing connection to {}", address());
 	boost::system::error_code ec; // we don't care about any errors
 	socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
 	socket_.close(ec);
@@ -269,15 +272,8 @@ void ClientConnection::close_session() {
 	stop();
 }
 
-std::string ClientConnection::remote_address() const {
-	boost::system::error_code ec;
-	auto remote_ep = socket_.remote_endpoint(ec);
-
-	if(ec) {
-		return {}; // todo
-	}
-
-	return socket_.remote_endpoint().address().to_string();
+std::string ClientConnection::address() const {
+	return std::format("{}:{}", endpoint_.address().to_string(), endpoint_.port());
 }
 
 const ConnectionStats& ClientConnection::stats() const {
@@ -364,6 +360,7 @@ void ClientConnection::flush() {
 
 ClientConnection::ClientConnection(ClientConnection&& other) noexcept
 	: socket_(std::move(other.socket_))
+	, endpoint_(std::move(other.endpoint_))
 	, stats_(other.stats_)
 	, msg_size_(other.msg_size_)
 	, logger_(other.logger_)

@@ -88,7 +88,7 @@ std::string_view ClientContext::whoami() const {
 	}
 
 	if(client_id_str_.empty()) [[unlikely]] {
-		client_id_str_ = connection_->remote_address();
+		client_id_str_ = connection_->address();
 	}
 
 	return client_id_str_;

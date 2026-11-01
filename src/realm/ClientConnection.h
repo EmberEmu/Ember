@@ -63,6 +63,7 @@ private:
 	} read_state_;
 
 	tcp_socket socket_;
+	boost::asio::ip::tcp::endpoint endpoint_;
 
 	StaticBuffer inbound_buffer_;
 	std::pair<DynamicTLSBuffer, DynamicTLSBuffer> outbound_buffers_;
@@ -104,7 +105,8 @@ private:
 	void set_non_blocking();
 
 public:
-	ClientConnection(tcp_socket socket, std::pair<DynamicTLSBuffer, DynamicTLSBuffer> buffers,
+	ClientConnection(tcp_socket socket, boost::asio::ip::tcp::endpoint endpoint,
+	                 std::pair<DynamicTLSBuffer, DynamicTLSBuffer> buffers,
 	                 EventDispatcher& dispatcher, log::Logger& logger);
 	~ClientConnection();
 
@@ -126,7 +128,7 @@ public:
 	void latency(std::uint32_t latency);
 
 	const ConnectionStats& stats() const;
-	std::string remote_address() const;
+	std::string address() const;
 
 	void packet_log_start(std::unique_ptr<PacketLogger> logger);
 	void packet_log_stop();

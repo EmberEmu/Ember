@@ -60,7 +60,7 @@ void Client::packet_log_start() {
 	handler_.log_redirect_stop(); // avoid generating an infinite packet loop
 	
 	auto plogger = create_packet_logger(
-		"realm", connection_.remote_address(), ident().to_string(), logger_, false
+		"realm", connection_.address(), ident().to_string(), logger_, false
 	);
 
 	if(!plogger) {
