@@ -28,7 +28,6 @@ namespace ember::realm {
 ClientConnection::ClientConnection(tcp_socket socket,  std::pair<DynamicTLSBuffer, DynamicTLSBuffer> buffers,
 								   EventDispatcher& dispatcher, log::Logger& logger)
 	: socket_(std::move(socket))
-	, address_(socket_.remote_endpoint().address())
 	, stats_{}
 	, msg_size_(0)
 	, logger_(logger)
@@ -42,8 +41,7 @@ ClientConnection::ClientConnection(tcp_socket socket,  std::pair<DynamicTLSBuffe
 	, outbound_front_(&outbound_buffers_.first)
 	, outbound_back_(&outbound_buffers_.second)
 	, allocator_(allocator_tag)
-	, dispatcher_(dispatcher) {
-}
+	, dispatcher_(dispatcher) {}
 
 void ClientConnection::set_non_blocking() {
 	boost::system::error_code ec;
@@ -272,7 +270,14 @@ void ClientConnection::close_session() {
 }
 
 std::string ClientConnection::remote_address() const {
-	return address_.to_string();
+	boost::system::error_code ec;
+	auto remote_ep = socket_.remote_endpoint(ec);
+
+	if(!ec) {
+		return {}; // todo
+	}
+
+	return socket_.remote_endpoint().address().to_string();
 }
 
 const ConnectionStats& ClientConnection::stats() const {
@@ -359,7 +364,6 @@ void ClientConnection::flush() {
 
 ClientConnection::ClientConnection(ClientConnection&& other) noexcept
 	: socket_(std::move(other.socket_))
-	, address_(other.address_)
 	, stats_(other.stats_)
 	, msg_size_(other.msg_size_)
 	, logger_(other.logger_)

@@ -63,7 +63,6 @@ private:
 	} read_state_;
 
 	tcp_socket socket_;
-	boost::asio::ip::address address_;
 
 	StaticBuffer inbound_buffer_;
 	std::pair<DynamicTLSBuffer, DynamicTLSBuffer> outbound_buffers_;
