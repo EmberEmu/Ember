@@ -96,6 +96,7 @@ private:
 	void close_session();
 	void set_handler(ClientHandler& handler);
 	void set_ident(const ClientIdent& ident);
+	void set_non_blocking();
 
 public:
 	ClientConnection(tcp_socket socket, std::pair<DynamicTLSBuffer, DynamicTLSBuffer> buffers,

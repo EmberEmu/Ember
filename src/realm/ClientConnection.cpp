@@ -42,7 +42,15 @@ ClientConnection::ClientConnection(tcp_socket socket,  std::pair<DynamicTLSBuffe
 	, outbound_back_(&outbound_buffers_.second)
 	, allocator_(allocator_tag)
 	, dispatcher_(dispatcher) {
-	socket_.non_blocking(true);
+}
+
+void ClientConnection::set_non_blocking() {
+	boost::system::error_code ec;
+	socket_.non_blocking(true, ec);
+	
+	if(ec) {
+		close_session();
+	}
 }
 
 void ClientConnection::parse_header() {
@@ -255,6 +263,7 @@ void ClientConnection::start(ClientHandler& handler, const ClientIdent& ident) {
 
 	set_handler(handler);
 	set_ident(ident);
+	set_non_blocking();
 	read();
 }
 
