@@ -130,9 +130,6 @@ bool ClientConnection::fastpath_write() {
 			if(ec == boost::asio::error::would_block ||
 				ec == boost::asio::error::try_again) {
 				return false;
-			} else if(ec == boost::asio::error::operation_aborted) {
-				close_session();
-				return true;
 			}
 
 			close_session();
