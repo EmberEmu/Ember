@@ -256,11 +256,10 @@ void ClientConnection::start(ClientHandler& handler, const ClientIdent& ident) {
 }
 
 void ClientConnection::stop() {
-	if(stopped_) {
+	if(stopped_.exchange(true)) {
 		return;
 	}
 
-	stopped_ = true;
 	LOG_DEBUG(logger_, "Closing connection to {}", address());
 	boost::system::error_code ec; // we don't care about any errors
 	socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
