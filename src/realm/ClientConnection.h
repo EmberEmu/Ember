@@ -62,7 +62,7 @@ private:
 		done
 	} read_state_;
 
-	tcp_socket socket_;
+	tcp::Socket socket_;
 	boost::asio::ip::tcp::endpoint endpoint_;
 
 	StaticBuffer inbound_buffer_;
@@ -105,7 +105,7 @@ private:
 	void set_non_blocking();
 
 public:
-	ClientConnection(tcp_socket socket, boost::asio::ip::tcp::endpoint endpoint,
+	ClientConnection(tcp::Socket socket, boost::asio::ip::tcp::endpoint endpoint,
 	                 std::pair<DynamicTLSBuffer, DynamicTLSBuffer> buffers,
 	                 EventDispatcher& dispatcher, log::Logger& logger);
 	~ClientConnection();

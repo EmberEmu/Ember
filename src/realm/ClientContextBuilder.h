@@ -38,7 +38,7 @@ public:
 		, rate_limit_opts_(std::move(rate_limit_opts))
 		, logger_(logger) {}
 
-	ClientContext create(executor& executor) const {
+	ClientContext create(Executor& executor) const {
 		return ClientContext(
 			executor, cfg_store_, dispatcher_, queue_, account_rpc_, character_rpc_, realm_rpc_, rate_limit_opts_, logger_
 		);

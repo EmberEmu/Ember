@@ -20,10 +20,14 @@
  */
 namespace ember {
 
-using executor = boost::asio::io_context::executor_type;
+using Executor = boost::asio::io_context::executor_type;
 
-using tcp_socket = boost::asio::basic_stream_socket<boost::asio::ip::tcp, executor>;
-using tcp_strand_socket = boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::strand<executor>>;
-using tcp_acceptor = boost::asio::basic_socket_acceptor<boost::asio::ip::tcp, executor>;
+namespace tcp {
+
+using Socket = boost::asio::basic_stream_socket<boost::asio::ip::tcp, Executor>;
+using StrandSocket = boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost::asio::strand<Executor>>;
+using Acceptor = boost::asio::basic_socket_acceptor<boost::asio::ip::tcp, Executor>;
+
+} // tcp
 
 } // ember

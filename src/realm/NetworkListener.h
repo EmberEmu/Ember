@@ -30,9 +30,9 @@ namespace asio = boost::asio;
 class NetworkListener final {
 	SessionManager& sessions_;
 	ClientBuilder builder_;
-	tcp_acceptor acceptor_;
+	tcp::Acceptor acceptor_;
 	std::size_t index_;
-	tcp_socket socket_;
+	tcp::Socket socket_;
 	thread::ServicePool& pool_;
 	log::Logger& logger_;
 	std::atomic_bool stopped_;

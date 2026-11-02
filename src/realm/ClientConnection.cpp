@@ -26,7 +26,7 @@
 
 namespace ember::realm {
 
-ClientConnection::ClientConnection(tcp_socket socket, boost::asio::ip::tcp::endpoint endpoint,
+ClientConnection::ClientConnection(tcp::Socket socket, boost::asio::ip::tcp::endpoint endpoint,
                                    std::pair<DynamicTLSBuffer, DynamicTLSBuffer> buffers,
 								   EventDispatcher& dispatcher, log::Logger& logger)
 	: socket_(std::move(socket))

@@ -71,7 +71,7 @@ class ClientContext {
 	}
 
 public:
-	ClientContext(executor& executor, const ConfigStore& cfg_store, EventDispatcher& dispatcher,
+	ClientContext(Executor& executor, const ConfigStore& cfg_store, EventDispatcher& dispatcher,
 				  RealmQueue& queue, AccountClient& account_rpc, CharacterClient& character_rpc,
 				  const RealmService& realm_rpc, RateLimitOptions rate_limit_opts,
 				  log::Logger& logger);
