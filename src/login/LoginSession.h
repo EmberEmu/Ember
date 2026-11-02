@@ -34,7 +34,7 @@ class LoginSession final : public NetworkSession<LoginSession> {
 
 public:
 	LoginSession(SessionManager& sessions,
-	             tcp_strand_socket socket,
+	             tcp::StrandSocket socket,
 	             log::Logger& logger,
 	             thread::ThreadPool& pool,
 	             const LoginHandlerBuilder& builder);

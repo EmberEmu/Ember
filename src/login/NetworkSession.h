@@ -45,7 +45,7 @@ private:
 	allocators::PoolAllocator allocator_;
 
 	SessionManager& sessions_;
-	tcp_strand_socket socket_;
+	tcp::StrandSocket socket_;
 	boost::asio::steady_timer timer_;
 
 	BufferType inbound_buffer_;
@@ -177,7 +177,7 @@ private:
 	}
 
 public:
-	NetworkSession(SessionManager& sessions, tcp_strand_socket socket, log::Logger& logger)
+	NetworkSession(SessionManager& sessions, tcp::StrandSocket socket, log::Logger& logger)
 		: allocator_(allocator_tag)
 		, sessions_(sessions)
 		, socket_(std::move(socket))

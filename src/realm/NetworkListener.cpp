@@ -63,30 +63,31 @@ void NetworkListener::dispatch_socket() {
 	boost::system::error_code ec;
 	const auto ep = socket_.remote_endpoint(ec);
 
-	if(!ec) {
-		const auto max_socks = cfg_store_.config().max_sockets;
-
-		if(!ClientSlots::reserve_slot(max_socks)) {
-			LOG_DEBUG(logger_, "Rejected connection from {}, too many sockets", ep.address().to_string());
-			return;
-		}
-
-		LOG_DEBUG(logger_, "Accepted connection from {}", ep.address().to_string());
-		auto& ioc = pool_.get(index_);
-
-		/*
-		 * This dispatch ensures that the client is created on the same thread that it will live on,
-		 * allowing the thread local allocators to operate in 'unsafe entrant' mode, meaning they
-		 * can forego ensuring that the calling thread has previously initialised the allocator.
-		 */
-		boost::asio::dispatch(ioc, [this, &ioc, socket = std::move(socket_), ep, index = index_]() mutable {
-			auto client = builder_.create(std::move(socket), std::move(ep), ioc);
-			client->start(index);
-			sessions_.enqueue(std::move(client));
-		});
-	} else {
+	if(ec) {
 		LOG_DEBUG(logger_, "Aborted connection, remote peer disconnected");
+		return;
 	}
+
+	const auto max_socks = cfg_store_.config().max_sockets;
+
+	if(!ClientSlots::reserve_slot(max_socks)) {
+		LOG_DEBUG(logger_, "Rejected connection from {}, too many sockets", ep.address().to_string());
+		return;
+	}
+
+	LOG_DEBUG(logger_, "Accepted connection from {}", ep.address().to_string());
+	auto& ioc = pool_.get(index_);
+
+	/*
+	 * This dispatch ensures that the client is created on the same thread that it will live on,
+	 * allowing the thread local allocators to operate in 'unsafe entrant' mode, meaning they
+	 * can forego ensuring that the calling thread has previously initialised the allocator.
+	 */
+	boost::asio::dispatch(ioc, [this, &ioc, socket = std::move(socket_), ep, index = index_]() mutable {
+		auto client = builder_.create(std::move(socket), std::move(ep), ioc);
+		client->start(index);
+		sessions_.enqueue(std::move(client));
+	});
 }
 
 void NetworkListener::shutdown() {

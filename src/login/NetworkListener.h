@@ -30,8 +30,8 @@ namespace ember {
 
 class NetworkListener final {
 	boost::asio::io_context& io_context_;
-	tcp_acceptor acceptor_;
-	tcp_strand_socket socket_;
+	tcp::Acceptor acceptor_;
+	tcp::StrandSocket socket_;
 
 	SessionManager sessions_;
 	const LoginSessionBuilder& session_builder_;
@@ -75,12 +75,12 @@ class NetworkListener final {
 				}
 			}
 
-			socket_ = tcp_strand_socket(boost::asio::make_strand(io_context_));
+			socket_ = tcp::StrandSocket(boost::asio::make_strand(io_context_));
 			accept_connection();
 		});
 	}
 
-	void start_session(tcp_strand_socket socket) {
+	void start_session(tcp::StrandSocket socket) {
 		LOG_TRACE(logger_, log_func);
 		auto session = session_builder_.create(sessions_, std::move(socket));
 		sessions_.start(std::move(session));

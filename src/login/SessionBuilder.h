@@ -31,7 +31,7 @@ public:
 		, pool_(pool)
 		, logger_(logger) { }
 
-	std::shared_ptr<LoginSession> create(SessionManager& sessions, tcp_strand_socket socket) const {
+	std::shared_ptr<LoginSession> create(SessionManager& sessions, tcp::StrandSocket socket) const {
 		return std::make_shared<LoginSession>(
 			sessions, std::move(socket), logger_, pool_, builder_
 		);
