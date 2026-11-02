@@ -71,7 +71,7 @@ void NetworkListener::dispatch_socket() {
 	const auto max_socks = cfg_store_.config().max_sockets;
 
 	if(!ClientSlots::reserve_slot(max_socks)) {
-		LOG_DEBUG(logger_, "Rejected connection from {}, too many sockets", ep.address().to_string());
+		LOG_WARN(logger_, "Rejected connection from {}, too many sockets", ep.address().to_string());
 		return;
 	}
 
