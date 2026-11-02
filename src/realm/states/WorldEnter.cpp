@@ -10,8 +10,8 @@
 #include "../ClientContext.h"
 #include "../ClientHandler.h"
 #include "../ClientConnection.h"
+#include "../ConnectionCork.h"
 #include "../RealmQueue.h"
-#include "../ScopedConnectionCork.h"
 #include <commands/Utility.h>
 #include <logger/CommandSink.h>
 #include <protocol/Deserialise.h>
@@ -88,7 +88,7 @@ std::uint32_t get_time() {
 }
 
 void initiate_player_login(ClientContext& ctx, const PlayerLogin& event) {
-	ScopedConnectionCork cork(ctx.connection()); // just a basic mechanism test
+	ConnectionCork cork(ctx.connection()); // just a basic mechanism test
 
     auto& state_ctx = std::get<Context>(ctx.state_ctx);
     state_ctx.character_id = event.character_id_;

@@ -86,7 +86,7 @@ set(LIBRARY_HDR
     AllocationProvider.h
     ClientSlots.h
     TokenCosts.h
-    ScopedConnectionCork.h
+    ConnectionCork.h
 )
 
 set(LIBRARY_SRC

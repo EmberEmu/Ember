@@ -12,13 +12,13 @@
 
 namespace ember::realm {
 
-class ScopedConnectionCork {
+class ConnectionCork {
 	ClientConnection& connection_;
 	CorkToken token_;
 	bool released_;
 
 public:
-	ScopedConnectionCork(ClientConnection& connection)
+	ConnectionCork(ClientConnection& connection)
 		: connection_(connection)
 		, token_(connection.cork())
 		, released_(false) {}
@@ -33,7 +33,7 @@ public:
 
 	}
 
-	~ScopedConnectionCork() {
+	~ConnectionCork() {
 		release();
 	}
 };
