@@ -98,7 +98,10 @@ private:
 	void dispatch_message();
 
 	void log_packet();
-	bool write_packet_stream(const protocol::is_packet auto& packet);
+
+	template<protocol::is_packet PacketType>
+	bool write_packet_stream(const PacketType& packet);
+
 	std::size_t minimum_transfer() const;
 	void close_session();
 	void set_handler(ClientHandler& handler);

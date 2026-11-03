@@ -322,7 +322,7 @@ void ClientConnection::log_packet() {
  * handler will be able to do anything useful with the incoming
  * packet.
  */
-inline std::size_t ClientConnection::minimum_transfer() const {
+std::size_t ClientConnection::minimum_transfer() const {
 	if(read_state_ == ReadState::header) {
 		return protocol::ClientHeader::wire_size
 			- inbound_buffer_.size();
