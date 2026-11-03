@@ -70,6 +70,12 @@ void EventDispatcher::execute(const ClientIdent& client, auto&& work) const {
 }
 
 void EventDispatcher::dispatch(const ClientIdent& client, is_event auto event) const {
+	// bypass Asio if the client is on the same thread
+	if(auto handler = locate_handler(client)) {
+		handler->handle_event(event);
+		return;
+	}
+
 	auto service = pool_.get_if(client.service());
 
 	// bad service index encoded in the UUID
