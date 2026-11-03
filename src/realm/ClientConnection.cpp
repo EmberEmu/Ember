@@ -118,7 +118,7 @@ void ClientConnection::process_buffered_data() {
 }
 
 WriteResult ClientConnection::fastpath_write() {
-    assert(socket_.non_blocking());
+	assert(socket_.non_blocking());
 
 	if(outbound_front_->empty()) {
 		return WriteResult::success;

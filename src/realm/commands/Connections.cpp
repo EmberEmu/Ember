@@ -67,8 +67,8 @@ void connection_list(const commands::Arguments& args,
 	bprinter::TablePrinter table(&stream);
 	table.AddColumn("ID", 5);
 	table.AddColumn("Remote", 22);
-	table.AddColumn("Identity", 55);
-	table.AddColumn("State", 25);
+	table.AddColumn("Identity", 50);
+	table.AddColumn("State", 20);
 	table.PrintHeader();
 
 	std::size_t connections = 0; // count could change outside of iteration
