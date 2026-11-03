@@ -52,10 +52,9 @@ void ClientHandler::handle_message(BinaryStream& stream) {
 	// handle ping as a special case
 	if(opcode == protocol::ClientOpcode::cmsg_ping) {
 		handle_ping(stream);
-		return;
+	} else {
+		update_packet[state_](context_, opcode);
 	}
-
-	update_packet[state_](context_, opcode);
 
 	// if the state didn't handle this message, skip it
 	if(!stream.empty()) {
@@ -115,6 +114,7 @@ void ClientHandler::handle_ping(BinaryStream& stream) {
 	}
 
 	if(!validate_ping(packet)) {
+		CLIENT_DEBUG(context_, "cmsg_ping violations exceeded grace");
 		close_session();
 		return;
 	}
@@ -194,27 +194,31 @@ bool ClientHandler::ping_sent_check() {
 }
 
 bool ClientHandler::validate_ping(const protocol::cmsg_ping& ping) {
-	if(!ping_sequence_) {
+	if(ping->sequence_id == no_ping) {
+		CLIENT_DEBUG(context_, "Invalid cmsg_ping sequence");
+		return false;
+	}
+
+	if(ping_sequence_ == no_ping) {
 		ping_sequence_ = ping->sequence_id;
 		last_tick_ = utility::get_tick_count(utility::as_chrono);
 		return true;
 	}
 
-	if(!ping->sequence_id) {
-		CLIENT_DEBUG(context_, "Zero cmsg_ping sequence");
-		return false;
-	}
+	const auto expected = ping_sequence_ + 1;
 
-	if(++ping_sequence_ != ping->sequence_id) {
+	if(ping->sequence_id != expected) {
 		CLIENT_DEBUG(context_, "Non-sequential cmsg_ping sequence");
 		return false;
 	}
 
-	const auto tick = utility::get_tick_count(utility::as_chrono);
-	const auto delta = tick - last_tick_;
-	last_tick_ = tick;
+	ping_sequence_ = expected;
 
-	if(delta > (ping_delta - ping_leeway) && delta < (ping_delta + ping_leeway)) {
+	const auto now = utility::get_tick_count(utility::as_chrono);
+	const auto delta = now - last_tick_;
+	last_tick_ = now;
+
+	if(delta >= ping_delta - ping_leeway) {
 		if(ping_violation_) {
 			--ping_violation_;
 		}
@@ -222,14 +226,8 @@ bool ClientHandler::validate_ping(const protocol::cmsg_ping& ping) {
 		return true;
 	}
 
-	CLIENT_DEBUG(context_, "cmsg_ping timing violation");
-
-	if(++ping_violation_ > ping_grace) {
-		CLIENT_DEBUG(context_, "cmsg_ping violations exceeded grace");
-		return false;
-	}
-
-	return true;
+	CLIENT_DEBUG(context_, "cmsg_ping timing violation ({} delta)", delta);
+	return ++ping_violation_ < ping_grace;
 }
 
 void ClientHandler::log_redirect(LogRedirect::Type type, log::Severity severity) {
@@ -302,9 +300,9 @@ ClientHandler::ClientHandler(ClientContext context, log::Logger& logger)
 	, redirecting_(false)
 	, packet_counter_(0)
 	, pps_violation_(0)
-	, ping_sequence_(0)
+	, ping_sequence_(no_ping)
+	, prev_ping_sequence_(no_ping)
 	, ping_violation_(0)
-	, prev_ping_sequence_(0)
 	, timer_events_(0)
 	, last_tick_(utility::get_tick_count()) {
 	context_.set_handler(*this);
@@ -318,8 +316,8 @@ ClientHandler::ClientHandler(ClientHandler&& other) noexcept
 	, packet_counter_(other.packet_counter_)
 	, pps_violation_(other.pps_violation_)
 	, ping_sequence_(other.ping_sequence_)
-	, ping_violation_(other.ping_violation_)
 	, prev_ping_sequence_(other.prev_ping_sequence_)
+	, ping_violation_(other.ping_violation_)
 	, timer_events_(other.timer_events_)
 	, last_tick_(other.last_tick_)
 	, redirecting_(other.redirecting_)

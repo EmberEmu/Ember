@@ -30,13 +30,16 @@ namespace ember::realm {
 using namespace std::chrono_literals;
 
 class ClientHandler final {
+	using SequenceType = decltype(protocol::client::Ping::sequence_id);
+
 	// client sanity check rules
 	constexpr static auto pps_grace = 3u;
 	constexpr static auto pps_soft_limit = 33u;
 	constexpr static auto pps_hard_limit = 50u;
 	constexpr static auto ping_grace = 5u;
 	constexpr static auto ping_delta = 30000ms;
-	constexpr static auto ping_leeway = 500ms;
+	constexpr static auto ping_leeway = 1000ms;
+	constexpr static auto no_ping { static_cast<SequenceType>(-1) };
 
 	ClientConnection* connection_;
 	ClientContext context_;
@@ -49,8 +52,8 @@ class ClientHandler final {
 	// client sanity check state
 	unsigned int packet_counter_;
 	unsigned int pps_violation_;
-	std::uint32_t ping_sequence_;
-	std::uint32_t prev_ping_sequence_;
+	SequenceType ping_sequence_;
+	SequenceType prev_ping_sequence_;
 	unsigned int ping_violation_;
 	std::chrono::milliseconds last_tick_;
 	unsigned int timer_events_;
