@@ -28,7 +28,7 @@ namespace ember::realm {
 
 ClientConnection::ClientConnection(tcp::Socket socket, boost::asio::ip::tcp::endpoint endpoint,
                                    std::pair<DynamicTLSBuffer, DynamicTLSBuffer> buffers,
-								   EventDispatcher& dispatcher, log::Logger& logger)
+                                   EventDispatcher& dispatcher, log::Logger& logger)
 	: socket_(std::move(socket))
 	, endpoint_(std::move(endpoint))
 	, stats_{}
@@ -200,7 +200,7 @@ void ClientConnection::read() {
 	const auto at_least = boost::asio::transfer_at_least(required_space);
 
 	boost::asio::async_read(socket_, inbound_buffer_.write_span(), at_least,
-							boost::asio::bind_allocator(AsioStaticAllocator<int>(allocator_),
+	                        boost::asio::bind_allocator(AsioStaticAllocator<int>(allocator_),
 		[this](const boost::system::error_code& ec, const std::size_t size) {
 			if(!ec) {
 				stats_.bytes_in += size;
