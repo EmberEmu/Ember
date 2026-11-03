@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include "BindToken.h"
 #include "Event.h"
 #include "FilterTypes.h"
 #include "Forwards.h"
@@ -78,7 +79,8 @@ public:
 	ClientHandler(ClientHandler& other) = delete;
 	ClientHandler& operator=(ClientHandler& other) = delete;
 
-	void start(ClientConnection& connection, const ClientIdent& ident);
+	BindToken<ClientHandler> bind(ClientConnection& connection, const ClientIdent& ident);
+	void start(BindToken<ClientHandler> token);
 	void stop();
 	bool stopped() const;
 

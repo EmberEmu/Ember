@@ -95,8 +95,11 @@ void Client::start(const std::size_t index) {
 
 	// Referencing each other like this is fine because they won't start running until we return
 	// - that's assuming we're running on the same Asio worker, which we really should be
-	handler_.start(connection_, ident);
-	connection_.start(handler_, ident);
+	auto handler_token = handler_.bind(connection_, ident);
+	auto connect_token = connection_.bind(handler_, ident);
+
+	connection_.start(std::move(connect_token));
+	handler_.start(std::move(handler_token));
 }
 
 void Client::stop() {

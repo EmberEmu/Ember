@@ -87,6 +87,7 @@ set(LIBRARY_HDR
     ClientSlots.h
     TokenCosts.h
     ConnectionCork.h
+    BindToken.h
 )
 
 set(LIBRARY_SRC

@@ -251,14 +251,20 @@ void ClientConnection::set_ident(const ClientIdent& ident) {
 	ident_ = ident;
 }
 
-void ClientConnection::start(ClientHandler& handler, const ClientIdent& ident) {
+BindToken<ClientConnection> ClientConnection::bind(ClientHandler& handler, const ClientIdent& ident) {
+	set_handler(handler);
+	set_ident(ident);
+	set_non_blocking();
+	return BindToken(this);
+}
+
+void ClientConnection::start(BindToken<ClientConnection> token) {
+	assert(token.bound() == this);
+
 	if(stopped_) {
 		return;
 	}
 
-	set_handler(handler);
-	set_ident(ident);
-	set_non_blocking();
 	read();
 }
 

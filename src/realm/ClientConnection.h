@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include "BindToken.h"
 #include "ConnectionDefines.h"
 #include "ConnectionStats.h"
 #include "FilterTypes.h"
@@ -116,7 +117,8 @@ public:
 	ClientConnection& operator=(ClientConnection& other) = delete;
 
 	// session management
-	void start(ClientHandler& handler, const ClientIdent& ident);
+	BindToken<ClientConnection> bind(ClientHandler& handler, const ClientIdent& ident);
+	void start(BindToken<ClientConnection> token);
 	void stop();
 	bool stopped() const;
 

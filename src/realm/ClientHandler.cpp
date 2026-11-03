@@ -24,9 +24,14 @@
 
 namespace ember::realm {
 
-void ClientHandler::start(ClientConnection& connection, const ClientIdent& ident) {
+BindToken<ClientHandler> ClientHandler::bind(ClientConnection& connection, const ClientIdent& ident) {
 	set_ident(ident);
 	set_connection(connection);
+	return BindToken(this);
+}
+
+void ClientHandler::start(BindToken<ClientHandler> token) {
+	assert(token.bound() == this);
 	state_update(ClientState::cs_authenticating);
 }
 
