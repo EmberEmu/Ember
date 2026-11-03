@@ -27,8 +27,8 @@ struct DeferredClientDeleter final {
 	void operator()(Client* ptr) const {
 		ClientSlots::free_slot();
 
-		boost::asio::post(ioc, [alloc = &allocator, ptr]() {
-			alloc->deallocate(ptr);
+		boost::asio::post(ioc, [allocator = &allocator, ptr]() {
+			allocator->deallocate(ptr);
 		});
 	}
 };

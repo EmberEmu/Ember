@@ -318,9 +318,11 @@ void ClientConnection::log_packet() {
  */
 inline std::size_t ClientConnection::minimum_transfer() const {
 	if(read_state_ == ReadState::header) {
-		return protocol::ClientHeader::wire_size;
+		return protocol::ClientHeader::wire_size
+			- inbound_buffer_.size();
 	} else {
-		return msg_size_ - inbound_buffer_.size();
+		return msg_size_
+			- inbound_buffer_.size();
 	}
 }
 
