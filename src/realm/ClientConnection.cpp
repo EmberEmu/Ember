@@ -49,7 +49,7 @@ ClientConnection::ClientConnection(tcp::Socket socket, boost::asio::ip::tcp::end
 void ClientConnection::set_non_blocking() {
 	boost::system::error_code ec;
 	socket_.non_blocking(true, ec);
-	
+
 	if(ec) {
 		close_session();
 	}
@@ -108,7 +108,7 @@ void ClientConnection::process_buffered_data() {
 			if(packet_logger_) [[unlikely]] {
 				log_packet();
 			}
-			
+
 			dispatch_message();
 			read_state_ = ReadState::header;
 		} else {
@@ -120,16 +120,16 @@ void ClientConnection::process_buffered_data() {
 WriteResult ClientConnection::fastpath_write() {
     assert(socket_.non_blocking());
 
-    if(outbound_front_->empty()) {
-        return WriteResult::success;
-    }
+	if(outbound_front_->empty()) {
+		return WriteResult::success;
+	}
 
-    const spark::io::BufferSequence sequence(*outbound_front_);
+	const spark::io::BufferSequence sequence(*outbound_front_);
 
-    boost::system::error_code ec;
+	boost::system::error_code ec;
 	const auto size = socket_.send(sequence, {}, ec);;
-    outbound_front_->skip(size);
-    stats_.bytes_out += size;
+	outbound_front_->skip(size);
+	stats_.bytes_out += size;
 
 	if(ec) {
 		if(ec == boost::asio::error::would_block
@@ -358,7 +358,7 @@ void ClientConnection::flush() {
 	}
 
 	std::swap(outbound_front_, outbound_back_);
-		
+
 	if(fastpath_write() == WriteResult::would_block) {
 		write();
 	}
@@ -380,7 +380,8 @@ ClientConnection::ClientConnection(ClientConnection&& other) noexcept
 	, outbound_front_(&outbound_buffers_.first)
 	, outbound_back_(&outbound_buffers_.second)
 	, allocator_(other.allocator_tag)
-	, dispatcher_(other.dispatcher_) {
+	, dispatcher_(other.dispatcher_)
+	, ident_(other.ident_) {
 	if(handler_) {
 		handler_->rebind(*this);
 		other.handler_ = nullptr;
