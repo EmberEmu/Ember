@@ -23,7 +23,7 @@ public:
 	BindToken(const BindToken&) = delete;
 	BindToken& operator=(const BindToken&) = delete;
 	BindToken(BindToken&&) noexcept = default;
-	BindToken& operator=(BindToken&&) = delete;
+	BindToken& operator=(BindToken&&) noexcept = delete;
 
 	const T* bound() const noexcept {
 		return instance_;
