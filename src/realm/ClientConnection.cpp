@@ -231,7 +231,10 @@ void ClientConnection::send(std::span<const std::uint8_t> packet) {
 	}
 
 	outbound_back_->write(packet);
-	flush();
+
+	if(cork_depth_ == 0) {
+		flush();
+	}
 
 	if(packet_logger_) [[unlikely]] {
 		packet_logger_->log(packet, PacketDirection::outbound);
