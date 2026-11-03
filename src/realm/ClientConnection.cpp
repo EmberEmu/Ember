@@ -127,22 +127,26 @@ WriteResult ClientConnection::fastpath_write() {
     const spark::io::BufferSequence sequence(*outbound_front_);
 
     boost::system::error_code ec;
-    const auto size = boost::asio::write(socket_, sequence, ec);
+	const auto size = socket_.send(sequence, {}, ec);;
     outbound_front_->skip(size);
     stats_.bytes_out += size;
 
-    if(!ec) {
-        ++stats_.fastpath_sends;
-        return WriteResult::success;
-    }
+	if(ec) {
+		if(ec == boost::asio::error::would_block
+			|| ec == boost::asio::error::try_again) {
+			return WriteResult::would_block;
+		}
 
-    if(ec == boost::asio::error::would_block ||
-		ec == boost::asio::error::try_again) {
-        return WriteResult::would_block;
-    }
+		close_session();
+		return WriteResult::failed;
+	}
 
-    close_session();
-    return WriteResult::failed;
+	if(!outbound_front_->empty()) {
+		return WriteResult::would_block;
+	}
+
+	++stats_.fastpath_sends;
+	return WriteResult::success;
 }
 
 void ClientConnection::write() {
@@ -344,16 +348,14 @@ void ClientConnection::uncork(CorkToken token) {
 }
 
 void ClientConnection::flush() {
-	if(!socket_.is_open()) {
+	if(write_in_progress_ || !socket_.is_open()) {
 		return;
 	}
 
-	if(!write_in_progress_) {
-		std::swap(outbound_front_, outbound_back_);
+	std::swap(outbound_front_, outbound_back_);
 		
-		if(fastpath_write() == WriteResult::would_block) {
-			write();
-		}
+	if(fastpath_write() == WriteResult::would_block) {
+		write();
 	}
 }
 
