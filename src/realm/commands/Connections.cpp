@@ -216,7 +216,7 @@ void add_connections_commands(ServiceContext& context, commands::Command& regist
 		->handler(exec([&](const commands::Arguments& args) {
 			toggle_logging(
 				args["id"].as<SessionManager::SessionID>(), 
-				args["bool"].as<bool>(), sessions, dispatcher, logger
+				args["toggle"].as<bool>(), sessions, dispatcher, logger
 			);
 		}));
 
