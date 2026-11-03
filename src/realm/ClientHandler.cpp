@@ -114,7 +114,7 @@ void ClientHandler::handle_ping(BinaryStream& stream) {
 	}
 
 	if(!validate_ping(packet)) {
-		CLIENT_DEBUG(context_, "cmsg_ping violations exceeded grace");
+		CLIENT_DEBUG(context_, "cmsg_ping validation failed");
 		close_session();
 		return;
 	}
