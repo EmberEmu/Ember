@@ -25,7 +25,7 @@ void ClientSink::dispatch(std::string message) {
 	dispatcher_.post(client_, std::move(event));
 }
 
-inline bool ClientSink::filtered(log::Severity severity, log::Filter type) const {
+bool ClientSink::filtered(log::Severity severity, log::Filter type) const {
 	return severity < this->severity() || this->filter() & type;
 }
 
