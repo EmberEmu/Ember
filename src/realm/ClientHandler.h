@@ -65,6 +65,7 @@ class ClientHandler final {
 	bool ping_sent_check();
 	bool pps_flood_check();
 	bool handle_self_event(const Event& event);
+	void dispatch_message(BinaryStream& stream);
 
 	void send(protocol::is_packet auto& packet);
 	void skip(BinaryStream& stream);

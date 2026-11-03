@@ -41,7 +41,7 @@ void ClientHandler::stop() {
 	}
 }
 
-void ClientHandler::handle_message(BinaryStream& stream) {
+void ClientHandler::dispatch_message(BinaryStream& stream) {
 	context_.stream(stream);
 	protocol::ClientOpcode opcode;
 	stream >> opcode;
@@ -52,8 +52,15 @@ void ClientHandler::handle_message(BinaryStream& stream) {
 	// handle ping as a special case
 	if(opcode == protocol::ClientOpcode::cmsg_ping) {
 		handle_ping(stream);
-	} else {
-		update_packet[state_](context_, opcode);
+		return;
+	} 
+
+	update_packet[state_](context_, opcode);
+}
+
+void ClientHandler::handle_message(BinaryStream& stream) {
+	if(state_ != ClientState::cs_session_closed) {
+		dispatch_message(stream);
 	}
 
 	// if the state didn't handle this message, skip it
@@ -75,6 +82,10 @@ bool ClientHandler::handle_self_event(const Event& event) {
 }
 
 void ClientHandler::handle_event(const Event& event) {
+	if(state_ == ClientState::cs_session_closed) {
+		return;
+	}
+
 	if(handle_self_event(event)) {
 		return;
 	}
