@@ -263,9 +263,10 @@ void ClientHandler::log_redirect(std::shared_ptr<ClientSink> sink) {
 }
 
 std::shared_ptr<ClientSink> ClientHandler::log_redirect_stop() {
-	const auto sink_name = std::format("client_sink_{}", ident_.to_string());
 	return std::dynamic_pointer_cast<ClientSink>(
-		logger_.extract_sink(sink_name)
+		logger_.extract_sink(
+			std::format("client_sink_{}", ident_.to_string())
+		)
 	);
 }
 
