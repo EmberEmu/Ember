@@ -24,6 +24,7 @@
 #include <tuple>
 #include <utility>
 #include <vector>
+#include <cassert>
 #include <cstddef>
 #include <cstring>
 
@@ -80,8 +81,8 @@ class Logger::impl final {
 	}
 
 public:
-	impl(std::string prefix) : 
-		prefix_(std::move(prefix))
+	impl(std::string prefix)
+		: prefix_(std::move(prefix))
 		, worker_(sinks_, sink_lock_) {
 		worker_.start();
 	}
@@ -236,6 +237,22 @@ public:
 		}
 
 		return remove_sink(target);
+	}
+
+	std::shared_ptr<Sink> extract_sink(const std::string_view name) {
+		std::lock_guard lock(sink_lock_);
+
+		const auto it = std::ranges::find_if(sinks_, [&](const auto& sink) {
+			return sink->name() == name;
+		});
+
+		if(it == sinks_.end()) {
+	        return nullptr;
+		}
+
+		auto target = std::move(*it);
+		sinks_.erase(it);
+		return target;
 	}
 
 	std::vector<std::shared_ptr<Sink>> fetch_sinks() {

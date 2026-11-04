@@ -43,6 +43,10 @@ bool Logger::remove_sink(const std::string_view name) {
 	return pimpl_->remove_sink(name);
 }
 
+std::shared_ptr<Sink> Logger::extract_sink(const std::string_view name) {
+	return pimpl_->extract_sink(name);
+}
+
 std::vector<std::shared_ptr<Sink>> Logger::fetch_sinks() {
 	return pimpl_->fetch_sinks();
 }

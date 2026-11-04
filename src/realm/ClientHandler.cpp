@@ -251,21 +251,22 @@ void ClientHandler::log_redirect(LogRedirect::Type type, log::Severity severity)
 	);
 
 	logger_.add_sink(sink);
-	redirecting_ = true;
 }
 
-void ClientHandler::log_redirect_stop() {
-	if(!redirecting_) {
-		return;
-	}
+void ClientHandler::log_redirect(std::shared_ptr<ClientSink> sink) {
+	assert(sink && sink->name() == std::format(
+		"client_sink_{}", ident_.to_string()
+	));
 
-	auto sink_name = std::format("client_sink_{}", ident_.to_string());
+	log_redirect_stop(); // remove if we're just changing settings
+	logger_.add_sink(std::move(sink));
+}
 
-	if(!logger_.remove_sink(sink_name)) {
-		LOG_WARN(logger_, "Client logging sink not found, remove failed");
-	}
-	
-	redirecting_ = false;
+std::shared_ptr<ClientSink> ClientHandler::log_redirect_stop() {
+	const auto sink_name = std::format("client_sink_{}", ident_.to_string());
+	return std::dynamic_pointer_cast<ClientSink>(
+		logger_.extract_sink(sink_name)
+	);
 }
 
 void ClientHandler::stream_err(const protocol::StreamResult& result) {
@@ -308,7 +309,6 @@ ClientHandler::ClientHandler(ClientContext context, log::Logger& logger)
 	, state_(ClientState::cs_session_closed)
 	, connection_(nullptr)
 	, logger_(logger)
-	, redirecting_(false)
 	, packet_counter_(0)
 	, pps_violation_(0)
 	, ping_sequence_(no_ping)
@@ -331,7 +331,6 @@ ClientHandler::ClientHandler(ClientHandler&& other) noexcept
 	, ping_violation_(other.ping_violation_)
 	, timer_events_(other.timer_events_)
 	, last_tick_(other.last_tick_)
-	, redirecting_(other.redirecting_)
 	, ident_(other.ident_) {
 	if(connection_) {
 		connection_->rebind(*this);

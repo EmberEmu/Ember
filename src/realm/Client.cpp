@@ -7,6 +7,7 @@
  */
 
 #include "Client.h"
+#include "ClientSink.h"
 #include "ClientSlots.h"
 #include "EventDispatcher.h"
 #include "packet_log/Helper.h"
@@ -57,7 +58,7 @@ void Client::handle_request_stop() {
 }
 
 void Client::packet_log_start() {
-	handler_.log_redirect_stop(); // avoid generating an infinite packet loop
+	auto sink = handler_.log_redirect_stop(); // avoid generating an infinite packet loop
 	
 	auto plogger = create_packet_logger(
 		"realm", connection_.address(), ident().to_string(), logger_, false
@@ -65,6 +66,12 @@ void Client::packet_log_start() {
 
 	if(!plogger) {
 		LOG_ERROR(logger_, "Packet logger creation failed!");
+
+		// reinstall the sink
+		if(sink) {
+			handler_.log_redirect(std::move(sink));
+		}
+
 		return;
 	}
 

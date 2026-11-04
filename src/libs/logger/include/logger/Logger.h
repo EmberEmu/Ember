@@ -107,6 +107,7 @@ public:
 	std::vector<std::shared_ptr<Sink>> fetch_sinks(const std::string_view type);
 	std::vector<std::shared_ptr<Sink>> fetch_sinks();
 	std::shared_ptr<Sink> fetch_unique(const std::string_view type);
+	std::shared_ptr<Sink> extract_sink(std::string_view name);
 	Severity severity();
 	Filter filter();
 	void finalise();

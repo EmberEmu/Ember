@@ -62,6 +62,7 @@ public:
 
 	void write(log::Severity severity, log::Filter type, std::string_view prefix, std::string_view record, bool flush) override;
 	void batch_write(const std::span<std::tuple<log::RecordDetail, std::string_view, std::string>>& records) override;
+	LogRedirect::Type redirect_type() { return type_; }
 
 	static constexpr std::string_view type() { return sink_type; }
 };

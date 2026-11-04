@@ -47,7 +47,6 @@ class ClientHandler final {
 	ClientState state_;
 
 	log::Logger& logger_;
-	bool redirecting_;
 
 	// client sanity check state
 	unsigned int packet_counter_;
@@ -84,6 +83,7 @@ public:
 	ClientHandler& operator=(ClientHandler& other) = delete;
 
 	BindToken<ClientHandler> bind(ClientConnection& connection, const ClientIdent& ident);
+	void rebind(ClientConnection& connection) noexcept;
 	void start(BindToken<ClientHandler> token);
 	void stop();
 	bool stopped() const;
@@ -95,13 +95,12 @@ public:
 	void handle_event(const Event& event);
 
 	void log_redirect(LogRedirect::Type type, log::Severity severity);
-	void log_redirect_stop();
+	void log_redirect(std::shared_ptr<ClientSink> sink);
+	std::shared_ptr<ClientSink> log_redirect_stop();
 
 	ClientState state() const {
 		return state_;
 	}
-
-	void rebind(ClientConnection& connection) noexcept;
 
 	friend class ClientContext;
 };
