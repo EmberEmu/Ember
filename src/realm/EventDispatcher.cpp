@@ -11,7 +11,6 @@
 #include <shared/utility/xoroshiro128plus.h>
 #include <boost/asio/dispatch.hpp>
 #include <boost/asio/post.hpp>
-#include <bit>
 #include <ranges>
 #include <type_traits>
 #include <cassert>
