@@ -131,6 +131,14 @@ if(NOT allocator IN_LIST allocator_options)
     )
 endif()
 
+option(BOTAN_OBJECT_REUSE "Reuse Botan objects per thread" ON)
+
+if(BOTAN_OBJECT_REUSE)
+    add_compile_definitions(BOTAN_REUSE=thread_local)
+else()
+    add_compile_definitions(BOTAN_REUSE=)
+endif()
+
 if(ALLOCATOR_TRACKING)
     add_compile_definitions(EMBER_DEBUG_ALLOCATOR_TRACKING)
 endif()

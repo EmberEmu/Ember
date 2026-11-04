@@ -108,7 +108,7 @@ auto PINAuthenticator::calculate_hash(const SaltBytes& server_salt,
 
 	// x = H(client_salt | H(server_salt | ascii(pin_bytes)))
 	HashBytes hash;
-	auto hasher = Botan::HashFunction::create_or_throw("SHA-1");
+	BOTAN_REUSE auto hasher = Botan::HashFunction::create_or_throw("SHA-1");
 	BOOST_ASSERT_MSG(hasher->output_length() == hash.size(), "Bad hash size");
 	hasher->update(server_salt);
 	hasher->update(pin_bytes_);

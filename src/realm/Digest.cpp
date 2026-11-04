@@ -19,7 +19,7 @@ bool validate(const Context& ctx, std::span<const std::uint8_t, hash_sizes::sha1
 }
 
 std::array<std::uint8_t, hash_sizes::sha160> calculate(const Context& ctx) {
-	auto hasher = Botan::HashFunction::create_or_throw("SHA-1");
+	BOTAN_REUSE auto hasher = Botan::HashFunction::create_or_throw("SHA-1");
 	[[indeterminate]] std::array<std::uint8_t, hash_sizes::sha160> hash;
 	BOOST_ASSERT_MSG(hash.size() == hasher->output_length(), "Bad hash length");
 	hasher->update(ctx.username);
