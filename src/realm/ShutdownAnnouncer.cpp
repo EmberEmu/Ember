@@ -57,7 +57,7 @@ void ShutdownAnnouncer::set_after(std::chrono::seconds expiry, bool announce) {
 }
 
 void ShutdownAnnouncer::write_journal_entry(std::chrono::seconds expiry, bool announce) {
-	const auto time = std::chrono::system_clock::now() + expiry;;
+	const auto time = std::chrono::system_clock::now() + expiry;
 	const auto result = journal_.create(time, journal::Operation::shutdown, announce);
 
 	if(!result) {
