@@ -17,9 +17,6 @@
 #include <shared/utility/Utility.h>
 #include <boost/asio/dispatch.hpp>
 #include <boost/asio/executor_work_guard.hpp>
-#ifdef EXPORT_SERVICE
-#include <boost/asio/impl/src.hpp>
-#endif
 #ifdef WITH_MIMALLOC
 #include <mimalloc/mimalloc-new-delete.h>
 #endif

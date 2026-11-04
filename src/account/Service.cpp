@@ -21,9 +21,6 @@
 #include <thread/Utility.h>
 #include <shared/utility/Utility.h>
 #include <spark/Server.h>
-#ifdef EXPORT_SERVICE
-#include <boost/asio/impl/src.hpp>
-#endif
 #include <boost/asio/dispatch.hpp>
 #ifdef WITH_MIMALLOC
 #include <mimalloc/mimalloc-new-delete.h>
