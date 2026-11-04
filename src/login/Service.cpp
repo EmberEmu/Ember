@@ -30,6 +30,9 @@
 #include <botan/version.h>
 #include <boost/asio/dispatch.hpp>
 #include <boost/asio/executor_work_guard.hpp>
+#ifdef EXPORT_SERVICE
+#include <boost/asio/impl/src.hpp>
+#endif
 #include <boost/version.hpp>
 #include <boost/program_options.hpp>
 #ifdef WITH_JEMALLOC

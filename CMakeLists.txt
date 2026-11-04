@@ -315,6 +315,7 @@ add_compile_definitions(DB_MYSQL) # temporary!
 include_directories(${CMAKE_SOURCE_DIR}/deps)
 include(BuildDBCLoaders)
 include(BuildSparkServices)
+include(AsioConfig)
 
 add_subdirectory(schemas)
 set(cmake_ctest_arguments "CTEST_OUTPUT_ON_FAILURE")

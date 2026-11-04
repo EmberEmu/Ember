@@ -111,7 +111,7 @@ add_library(${LIBRARY_OBJECTS} OBJECT
 )
 
 target_include_directories(${LIBRARY_OBJECTS} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(${LIBRARY_OBJECTS} PUBLIC ${ZLIB_LIBRARY} ${BOTAN_TARGET} Threads::Threads allocators spark ports dbcreader stun service spark srp6 ratelimit shared)
+target_link_libraries(${LIBRARY_OBJECTS} PRIVATE asio_impl PUBLIC ${ZLIB_LIBRARY} ${BOTAN_TARGET} Threads::Threads allocators spark ports dbcreader stun service spark srp6 ratelimit shared)
 
 add_library(${LIBRARY_NAME} ${SERVICE_LIB_LINKAGE}
     $<TARGET_OBJECTS:${LIBRARY_OBJECTS}>
@@ -130,7 +130,7 @@ add_dependencies(${LIBRARY_NAME} SPARK_RPC_GENERATE)
 target_link_libraries(${LIBRARY_NAME} PUBLIC service PRIVATE ${LIBRARY_OBJECTS} thread spark srp6 stun ports ${ZLIB_LIBRARY} dbcreader botan::botan-static Threads::Threads PUBLIC logger commands shared Boost::program_options)
 
 add_executable(${EXECUTABLE_NAME} ${EXECUTABLE_SOURCE})
-target_link_libraries(${EXECUTABLE_NAME} PRIVATE ${LIBRARY_NAME} banner logger commands shared Boost::program_options Threads::Threads)
+target_link_libraries(${EXECUTABLE_NAME} PRIVATE ${LIBRARY_NAME} asio_impl banner logger commands shared Boost::program_options Threads::Threads)
 
 install(TARGETS ${EXECUTABLE_NAME} ${LIBRARY_INSTALL_TARGET} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})
 set_target_properties(${EXECUTABLE_NAME} PROPERTIES FOLDER "Services/Applications")

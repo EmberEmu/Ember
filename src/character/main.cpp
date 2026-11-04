@@ -18,6 +18,7 @@
 #include <shared/utility/shutdown/Install.h>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/signal_set.hpp>
+#include <boost/asio/impl/src.hpp>
 #include <boost/program_options.hpp>
 #ifdef WITH_MIMALLOC
 #include <mimalloc/mimalloc-new-delete.h>
