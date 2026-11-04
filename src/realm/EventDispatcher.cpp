@@ -11,6 +11,7 @@
 #include <shared/utility/xoroshiro128plus.h>
 #include <boost/asio/dispatch.hpp>
 #include <boost/asio/post.hpp>
+#include <bit>
 #include <ranges>
 #include <type_traits>
 #include <cassert>
@@ -18,11 +19,12 @@
 namespace ember::realm {
 
 std::size_t EventDispatcher::random_slot() const {
-	std::size_t index = rng::xorshift::next() & 0xfff;
+	constexpr auto max_slot = ClientIdent::max_slot_value;
+	static_assert((max_slot & (max_slot + 1)) == 0, "bad mask value");
 
-	// modulo avoidance, mask needs to be a power of two
-	// bump down if we were unlucky enough to hit the max
-	if(index == 0xfff) {
+	auto index = rng::xorshift::next() & max_slot;
+
+	if(index == max_slot) {
 		index = 0;
 	}
 
