@@ -83,7 +83,7 @@ public:
 	Logger& operator <<(Logger& (*m)(Logger&));
 	Logger& operator <<(Severity severity);
 	Logger& operator <<(Filter record_type);
-	Logger& operator <<(const std::string_view data);
+	Logger& operator <<(std::string_view data);
 	Logger& operator <<(float data);
 	Logger& operator <<(double data);
 
@@ -103,10 +103,10 @@ public:
 	bool remove_sink(std::string_view name);
 	void set_soft_limit(std::size_t value);
 	void set_hard_limit(std::size_t value);
-	std::shared_ptr<Sink> fetch_sink(const std::string_view name);
-	std::vector<std::shared_ptr<Sink>> fetch_sinks(const std::string_view type);
+	std::shared_ptr<Sink> fetch_sink(std::string_view name);
+	std::vector<std::shared_ptr<Sink>> fetch_sinks(std::string_view type);
 	std::vector<std::shared_ptr<Sink>> fetch_sinks();
-	std::shared_ptr<Sink> fetch_unique(const std::string_view type);
+	std::shared_ptr<Sink> fetch_unique(std::string_view type);
 	std::shared_ptr<Sink> extract_sink(std::string_view name);
 	Severity severity();
 	Filter filter();
