@@ -224,19 +224,17 @@ public:
 
 	bool remove_sink(const std::string_view name) {
 		std::lock_guard lock(sink_lock_);
-		std::shared_ptr<Sink> target;
 
-		for(auto& sink : sinks_) {
-			if(sink->name() == name) {
-				target = sink;
-			}
-		}
+		auto it = std::ranges::find_if(sinks_, [&](const auto& sink) {
+			return sink->name() == name;
+		});
 
-		if(!target) {
+		if(it == sinks_.end()) {
 			return false;
 		}
 
-		return remove_sink(target);
+		sinks_.erase(it);
+		return true;
 	}
 
 	std::shared_ptr<Sink> extract_sink(const std::string_view name) {
