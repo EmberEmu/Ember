@@ -40,7 +40,7 @@ if(BUILD_SHARED)
 endif()
 
 add_dependencies(${LIBRARY_NAME} SPARK_RPC_GENERATE)
-target_link_libraries(${LIBRARY_NAME} PRIVATE dbcreader spark Threads::Threads PUBLIC service logger commands shared Boost::container Boost::program_options)
+target_link_libraries(${LIBRARY_NAME} PRIVATE asio_impl dbcreader spark Threads::Threads PUBLIC service logger commands shared Boost::container Boost::program_options)
 
 if(WIN32)
     set(ICON_RESOURCE resources.rc)
@@ -51,7 +51,7 @@ add_executable(${EXECUTABLE_NAME}
     ${ICON_RESOURCE}
 )
 
-target_link_libraries(${EXECUTABLE_NAME} PRIVATE ${LIBRARY_NAME} banner logger commands shared Boost::program_options)
+target_link_libraries(${EXECUTABLE_NAME} PRIVATE ${LIBRARY_NAME} asio_impl banner logger commands shared Boost::program_options)
 
 install(TARGETS ${EXECUTABLE_NAME} ${LIBRARY_INSTALL_TARGET} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})
 set_target_properties(${EXECUTABLE_NAME} PROPERTIES FOLDER "Services/Applications")

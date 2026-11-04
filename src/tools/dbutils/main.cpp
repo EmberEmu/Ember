@@ -19,6 +19,7 @@
 #include <logger/Logger.h>
 #include <shared/utility/polyfill/print>
 #include <boost/asio/ip/host_name.hpp>
+#include <boost/asio/impl/src.hpp>
 #include <boost/program_options.hpp>
 #include <array>
 #include <algorithm>

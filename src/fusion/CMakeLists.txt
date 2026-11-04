@@ -40,6 +40,7 @@ set(SERVICE_LIBRARIES
     libcharacter
 )
 
+target_compile_definitions(${EXECUTABLE_NAME} PRIVATE BOOST_ASIO_SEPARATE_COMPILATION)
 target_link_libraries(${EXECUTABLE_NAME} PRIVATE ${SERVICE_LIBRARIES} banner logger commands shared Boost::program_options)
 target_include_directories(${EXECUTABLE_NAME} PRIVATE ../)
 

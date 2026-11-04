@@ -47,5 +47,5 @@ target_include_directories(${LIBRARY_NAME} PUBLIC
     ${CMAKE_SOURCE_DIR}/deps/rapidxml
 )
 
-target_link_libraries(${LIBRARY_NAME} PUBLIC shared logger spark)
+target_link_libraries(${LIBRARY_NAME} PUBLIC asio_impl shared logger spark)
 set_target_properties(${LIBRARY_NAME} PROPERTIES FOLDER "Common Libraries")

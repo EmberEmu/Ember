@@ -38,6 +38,9 @@
 #include <thread/Utility.h>
 #include <boost/asio/dispatch.hpp>
 #include <boost/asio/io_context.hpp>
+#ifdef EXPORT_SERVICE
+#include <boost/asio/impl/src.hpp>
+#endif
 #include <boost/program_options.hpp>
 #include <boost/version.hpp>
 #include <botan/version.h>
