@@ -48,27 +48,22 @@ void EventDispatcher::broadcast(std::vector<ClientIdent> clients, std::shared_pt
 		return lhs.service() < rhs.service();
 	});
 
-	const auto clients_ptr = std::make_shared<decltype(clients)>();
-	clients_ptr->swap(clients);
+	const auto clients_ptr = std::make_shared<decltype(clients)>(std::move(clients));
 
 	for(std::size_t i = 0, j = pool_.size(); i < j; ++i) {
 		const auto service_id = gsl::narrow<std::uint8_t>(i);
-
-		const auto found = std::ranges::binary_search(
-			*clients_ptr, service_id, std::ranges::less{}, &ClientIdent::service
-		);
-
-		if(!found) {
-			continue;
-		}
 
 		const auto range = std::ranges::equal_range(
 			*clients_ptr, service_id, std::ranges::less{}, &ClientIdent::service
 		);
 
+		if(range.empty()) {
+			continue;
+		}
+
 		auto& service = pool_.get(i);
 
-		boost::asio::post(service, [&, clients_ptr, range, event] {
+		boost::asio::post(service, [this, clients_ptr, range, event] {
 			auto [beg, end] = range;
 
 			while(beg != end) {

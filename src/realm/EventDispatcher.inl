@@ -117,7 +117,7 @@ void EventDispatcher::broadcast(const is_event auto& event) const {
 	}
 }
 
-void EventDispatcher::broadcast_self(is_event auto event) const {
+void EventDispatcher::broadcast_self(const is_event auto& event) const {
 	deliver(event);
 }
 

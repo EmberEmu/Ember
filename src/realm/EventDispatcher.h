@@ -74,7 +74,7 @@ public:
 
 	// broadcasts an event to all handlers registered with the worker residing on the current thread
 	// has no effect if not called from within a worker
-	void broadcast_self(is_event auto event) const;
+	void broadcast_self(const is_event auto& event) const;
 
 	// broadcasts an event to all handlers, across all service threads
 	void broadcast(std::shared_ptr<const Event> event) const;
