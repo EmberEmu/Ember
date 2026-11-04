@@ -19,7 +19,7 @@
 #include <Windows.h>
 #include <algorithm>
 #include <array>
-#include <iostream>
+#include <ostream>
 #include <iterator>
 #include <string_view>
 #include <cassert>

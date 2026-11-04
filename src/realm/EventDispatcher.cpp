@@ -101,8 +101,6 @@ void EventDispatcher::broadcast(std::shared_ptr<const Event> event) const {
 }
 
 #ifndef DISABLE_FAST_DISPATCH_TABLE
-#pragma warning(push)
-#pragma warning(disable : 28020) // ignore false positive
 bool EventDispatcher::try_insert(ClientType* handler, ClientIdent& ident) {
 	assert(handler);
 
@@ -129,7 +127,6 @@ bool EventDispatcher::try_insert(ClientType* handler, ClientIdent& ident) {
 	ident.encode(0, slot_npos); // encode sentinel
 	return false;
 }
-#pragma warning(pop)
 #endif
 
 ClientIdent EventDispatcher::register_client(ClientType* client, std::size_t service_index) {

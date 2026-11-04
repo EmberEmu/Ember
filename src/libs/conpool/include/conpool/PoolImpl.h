@@ -30,7 +30,6 @@
 #include <atomic>
 #include <vector>
 #include <cstddef>
-#include <iostream>
 
 #define POOL_LOG(sev, msg)        \
 if(logger_) {                     \

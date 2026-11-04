@@ -34,7 +34,7 @@ using namespace std::chrono_literals;
  * clients doesn't matter.
  * 
  * Overall, timers are quite expensive and this mitigates that by removing the need for
- * per client timers for events that don't need precise timing.
+ * per-client timers for events that don't need precise timing.
  */
 class BroadcastTimer {
 	template<typename T>
