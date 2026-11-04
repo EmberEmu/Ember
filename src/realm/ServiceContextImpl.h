@@ -10,16 +10,16 @@
 
 #include "AccountClient.h"
 #include "AllocationProvider.h"
-#include "CharacterClient.h"
 #include "BroadcastTimer.h"
-#include "Config.h"
+#include "CharacterClient.h"
 #include "ConfigStore.h"
 #include "EventDispatcher.h"
 #include "NetworkListener.h"
 #include "RealmService.h"
 #include "RealmQueue.h"
-#include "ShutdownAnnouncer.h"
+#include "ServiceConfig.h"
 #include "SessionManager.h"
+#include "ShutdownAnnouncer.h"
 #include "WorldRPCClient.h"
 #include <commands/ScopedCommand.h>
 #include <dbcreader/Storage.h>

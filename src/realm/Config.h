@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2026 Ember
+ * Copyright (c) 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,21 +8,27 @@
 
 #pragma once
 
-#include "ConfigConsts.h"
-#include <shared/game/GameVersion.h>
-#include <shared/Realm.h>
-#include <chrono>
-#include <vector>
+// size of the inbound client buffer
+#ifndef CLIENT_BUFFER_IN_SIZE
+#define CLIENT_BUFFER_IN_SIZE 8192
+#endif
 
-namespace ember::realm {
+// size of the outbound client buffers
+#ifndef CLIENT_BUFFER_OUT_SIZE
+#define CLIENT_BUFFER_OUT_SIZE 8192
+#endif
 
-struct Config {
-	Realm realm;
-	std::size_t max_slots;
-	std::chrono::seconds auth_timeout;
-	std::chrono::seconds char_list_timeout;
-	std::vector<GameVersion> allowed_builds;
-	unsigned int max_sockets;
-};
+// maximum size of the outbound client buffers
+#ifndef CLIENT_BUFFER_OUT_MAX_SIZE
+#define CLIENT_BUFFER_OUT_MAX_SIZE 65536
+#endif
 
-} // realm, ember
+// the maximum chunk size Asio can request without resorting to the system allocator
+#ifndef PREALLOCATED_ASIO_CHUNK_SIZE
+#define PREALLOCATED_ASIO_CHUNK_SIZE 512
+#endif
+
+// the number of preallocated chunks Asio can request without using the system allocator
+#ifndef PREALLOCATED_ASIO_CHUNKS 
+#define PREALLOCATED_ASIO_CHUNKS 8
+#endif

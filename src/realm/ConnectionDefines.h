@@ -8,8 +8,8 @@
 
 #pragma once
 
+#include "Config.h"
 #include "SocketType.h"
-#include "BuildDefines.h"
 #include <allocators/AsioAllocator.h>
 #include <allocators/InplaceAllocator.h>
 #include <protocol/MessageView.h>

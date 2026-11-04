@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "BuildDefines.h"
+#include "Config.h"
 #include "Client.h"
 #include <allocators/TLSBlockAllocator.h>
 

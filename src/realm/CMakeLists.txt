@@ -8,7 +8,7 @@ set(EXECUTABLE_NAME realm)
 set(LIBRARY_NAME    librealm)
 
 set(LIBRARY_HDR
-    Config.h
+    ServiceConfig.h
     Event.h
     EventDispatcher.h
     EventDispatcher.inl
@@ -82,7 +82,7 @@ set(LIBRARY_HDR
     ClientContext.h
     ConfigConsts.h
     ShutdownAnnouncer.h
-    BuildDefines.h
+    Config.h
     AllocationProvider.h
     ClientSlots.h
     TokenCosts.h

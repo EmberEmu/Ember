@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "Config.h"
+#include "ServiceConfig.h"
 #include "ServiceContext.h"
 #include <commands/Commands.h>
 #include <logger/LoggerFwd.h>
