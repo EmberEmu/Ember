@@ -127,7 +127,7 @@ WriteResult ClientConnection::fastpath_write() {
 	const spark::io::BufferSequence sequence(*outbound_front_);
 
 	boost::system::error_code ec;
-	const auto size = socket_.send(sequence, {}, ec);;
+	const auto size = socket_.send(sequence, {}, ec);
 	outbound_front_->skip(size);
 	stats_.bytes_out += size;
 
