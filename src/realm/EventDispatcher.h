@@ -35,7 +35,10 @@ class EventDispatcher final {
 #ifndef DISABLE_FAST_DISPATCH_TABLE
 	constexpr static std::size_t cache_size = ClientIdent::max_slot_value;
 	constexpr static auto slot_npos = ClientIdent::max_slot_value;
+	constexpr static auto slot_full = ClientIdent::max_slot_value;
+
 	static inline thread_local std::array<ClientIdent, cache_size> cache_{};
+	static inline thread_local std::size_t next_slot_{};
 #endif
 
 	static inline thread_local HandlerMap handlers_;
@@ -45,6 +48,7 @@ class EventDispatcher final {
 
 	inline Client* locate_handler(const ClientIdent& client) const;
 	void deliver(const is_event auto& event) const;
+	std::size_t random_slot() const;
 
 #ifndef DISABLE_FAST_DISPATCH_TABLE
 	bool try_insert(ClientType* handler, ClientIdent& ident);

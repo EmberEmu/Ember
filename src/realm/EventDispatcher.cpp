@@ -17,6 +17,18 @@
 
 namespace ember::realm {
 
+std::size_t EventDispatcher::random_slot() const {
+	std::size_t index = rng::xorshift::next() & 0xfff;
+
+	// modulo avoidance, mask needs to be a power of two
+	// bump down if we were unlucky enough to hit the max
+	if(index == 0xfff) {
+		index = 0;
+	}
+
+	return index;
+}
+
 void EventDispatcher::post(const ClientIdent& client, std::unique_ptr<Event> event) const {
 	auto service = pool_.get_if(client.service());
 
@@ -91,12 +103,10 @@ void EventDispatcher::broadcast(std::shared_ptr<const Event> event) const {
 bool EventDispatcher::try_insert(ClientType* handler, ClientIdent& ident) {
 	assert(handler);
 
-	std::size_t index = rng::xorshift::next() & 0xfff;
+	auto index = next_slot_;
 
-	// modulo avoidance, mask needs to be a power of two
-	// bump down if we were unlucky enough to hit the max
-	if(index == 0xfff) {
-		index = 0;
+	if(index == slot_full) {
+		return false;
 	}
 
 	const auto start = index;
@@ -105,12 +115,14 @@ bool EventDispatcher::try_insert(ClientType* handler, ClientIdent& ident) {
 		if(cache_[index].is_zero()) {
 			ident.encode(handler, index);
 			cache_[index] = ident;
+			next_slot_ = random_slot(); // jump-off point for next insertion
 			return true;
 		} else if(++index == slot_npos) {
 			index = 0;
 		}
 	} while(index != start);
 
+	next_slot_ = slot_full;     // mark table full
 	ident.encode(0, slot_npos); // encode sentinel
 	return false;
 }
@@ -135,6 +147,7 @@ void EventDispatcher::remove_client(const ClientType* client) {
 #ifndef DISABLE_FAST_DISPATCH_TABLE
 	if(auto slot = client->ident().extract_slot(); slot != slot_npos) {
 		cache_[slot].set_zero();
+		next_slot_ = slot;
 	} else {
 		handlers_.erase(client->ident());
 	}
