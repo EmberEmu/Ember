@@ -184,14 +184,12 @@ public:
 		std::lock_guard lock(sink_lock_);
 
 		for(const auto& s : sinks_) {
-			if(sink->unique()) {
-				if(s->type() == sink->type()) {
-					throw std::runtime_error(
-						std::format(
-							R"(Attempt to register multiple instances of a sink, "{}", declared as unique)", sink->type()
-						)
-					);
-				}
+			if(sink->unique() && s->type() == sink->type()) {
+				throw std::runtime_error(
+					std::format(
+						R"(Attempt to register multiple instances of a sink, "{}", declared as unique)", sink->type()
+					)
+				);
 			}
 
 			if(s->name() == sink->name()) {
@@ -286,16 +284,19 @@ public:
 
 	std::shared_ptr<Sink> fetch_unique(const std::string_view type) {
 		std::lock_guard lock(sink_lock_);
-		std::shared_ptr<Sink> sink;
 
-		for(auto& sink : sinks_) {
-			if(sink->type() == type) {
-				if(!sink->unique()) {
-					throw std::runtime_error("attempted to fetch non-unique sink type from fetch_unique");
-				}
-
-				return sink;
+		for(const auto& sink : sinks_) {
+			if(sink->type() != type) {
+				continue;
 			}
+
+			if(!sink->unique()) {
+				throw std::runtime_error(
+					"attempted to fetch non-unique sink type from fetch_unique"
+				);
+			}
+
+			return sink;
 		}
 
 		return nullptr;
