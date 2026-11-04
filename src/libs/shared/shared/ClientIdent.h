@@ -84,6 +84,7 @@ public:
 	}
 
 	// Encodes a pointer using 48 bits (widens on 32-bit platforms) and a 12-bit array index
+	// We're intentionally overwriting the weakest (lower) entropy xoroshiro bits
 	void encode(const void* ptr, std::size_t slot) {
 		assert(slot <= max_slot_value);
 		std::uint64_t ptr_val = reinterpret_cast<std::uint64_t>(ptr);
