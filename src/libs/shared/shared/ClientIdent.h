@@ -52,8 +52,6 @@ class ClientIdent final {
 	static constexpr std::size_t uuid_size = 16;
 
 	std::array<std::uint64_t, uuid_size / sizeof(std::uint64_t)> data_;
-	mutable std::uint64_t hash_ = 0;
-	mutable bool hashed_ = false;
 
 	void generate(const std::size_t service_index) {
 		assert(service_index < 256);
@@ -69,10 +67,6 @@ class ClientIdent final {
 	void encode_index(const std::uint8_t index) {
 		data_[0] &= 0x00ffffffffffffffull;
 		data_[0] |= static_cast<std::uint64_t>(index) << 56;
-	}
-
-	void invalidate_hash() {
-		hashed_ = false;
 	}
 
 public:
@@ -98,7 +92,6 @@ public:
 		const std::uint8_t slot_lo = slot & 0xf;
 		data_[0] = (data_[0] & (0xffull << 56)) | (ptr_val << 8ull) | slot_hi;
 		data_[1] = (data_[1] & ~0xfull) | slot_lo;
-		invalidate_hash();
 	}
 
 	template<typename T>
@@ -111,15 +104,8 @@ public:
 	}
 
 	inline std::uint64_t hash() const {
-		if(hashed_) {
-			return hash_;
-		}
-
 		auto bytes = std::as_bytes(std::span(data_));
-		hash_ = XXH3_64bits(bytes.data(), bytes.size_bytes());
-
-		hashed_ = true;
-		return hash_;
+		return XXH3_64bits(bytes.data(), bytes.size_bytes());
 	}
 
 	inline std::uint8_t service() const {
@@ -145,7 +131,6 @@ public:
 	void set_zero() {
 		data_[0] = 0;
 		data_[1] = 0;
-		invalidate_hash();
 	}
 
 	bool is_zero() const {
