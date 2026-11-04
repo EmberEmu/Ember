@@ -23,6 +23,8 @@ std::size_t EventDispatcher::random_slot() const {
 
 	auto index = rng::xorshift::next() & max_slot;
 
+	// modulo avoidance, mask needs to be a power of two
+	// bump down if we were unlucky enough to hit the max
 	if(index == max_slot) {
 		index = 0;
 	}
@@ -116,7 +118,7 @@ bool EventDispatcher::try_insert(ClientType* handler, ClientIdent& ident) {
 		if(cache_[index].is_zero()) {
 			ident.encode(handler, index);
 			cache_[index] = ident;
-			next_slot_ = random_slot(); // jump-off point for next insertion
+			next_slot_ = random_slot(); // jump off point for next insertion
 			return true;
 		} else if(++index == slot_npos) {
 			index = 0;
