@@ -469,7 +469,7 @@ public:
 	}
 
 	void skip() {
-		skip(read_limit() - total_read());
+		skip(size());
 	}
 
 	void skip(std::size_t count) {
