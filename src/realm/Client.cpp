@@ -60,22 +60,19 @@ void Client::handle_request_stop() {
 void Client::packet_log_start() {
 	auto sink = handler_.log_redirect_stop(); // avoid generating an infinite packet loop
 	
-	auto plogger = create_packet_logger(
-		"realm", connection_.address(), ident().to_string(), logger_, false
-	);
+	try {
+		auto plogger = create_packet_logger(
+			"realm", connection_.address(), ident().to_string(), logger_, false
+		);
 
-	if(!plogger) {
-		LOG_ERROR(logger_, "Packet logger creation failed!");
-
-		// reinstall the sink
-		if(sink) {
+		connection_.packet_log_start(std::move(plogger));
+	} catch(const std::exception& e) {
+		if(sink) { 	// reinstall the sink
 			handler_.log_redirect(std::move(sink));
 		}
 
-		return;
+		LOG_ERROR(logger_, "Packet logger creation failed: {}", e.what());
 	}
-
-	connection_.packet_log_start(std::move(plogger));
 }
 
 const ClientIdent& Client::ident() const {

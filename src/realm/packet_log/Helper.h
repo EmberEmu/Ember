@@ -21,7 +21,7 @@ namespace ember::realm {
 // configurable but it doesn't really need to be
 inline std::unique_ptr<PacketLogger> create_packet_logger(std::string realm, std::string remote,
                                                           std::string file, log::Logger& logger,
-                                                          bool file_only) try {
+                                                          bool file_only) {
 	// these can throw - they succeed or fail together
 	auto plogger = std::make_unique<PacketLogger>();
 	auto sink_fb = std::make_unique<FlatbuffersSink>(std::move(file), std::move(realm), remote);
@@ -33,8 +33,6 @@ inline std::unique_ptr<PacketLogger> create_packet_logger(std::string realm, std
 
 	plogger->add_sink(std::move(sink_fb));
 	return plogger;
-} catch(std::exception& e) {
-	return nullptr;
 }
 
 } // realm, ember
