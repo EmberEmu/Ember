@@ -9,8 +9,8 @@
 #include "Generator.h"
 #include "Scope.h"
 #include "TypeUtils.h"
-#include <nlohmann/json.hpp>
 #include <inja/inja.hpp>
+#include <nlohmann/json.hpp>
 #include <algorithm>
 #include <chrono>
 #include <format>

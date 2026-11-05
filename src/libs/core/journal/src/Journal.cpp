@@ -7,7 +7,7 @@
  */
 
 #include <journal/Journal.h>
-#include "nlohmann/json.hpp"
+#include <nlohmann/json.hpp>
 #include <fstream>
 #include <utility>
 #include <stdexcept>

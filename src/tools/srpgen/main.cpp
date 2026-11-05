@@ -8,8 +8,8 @@
 
 #include <srp6/Generator.h>
 #include <srp6/Utility.h>
-#include "nlohmann/json.hpp"
 #include <boost/program_options.hpp>
+#include <nlohmann/json.hpp>
 #include <algorithm>
 #include <exception>
 #include <fstream>
