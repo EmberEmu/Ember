@@ -117,12 +117,9 @@ public:
 			--ref_count_;
 
 			if(ref_count_ == 0) {
+				tls_handle_ = nullptr;
 				allocator_.reset();
 			}
-		}
-
-		if constexpr(std::is_same_v<EntrantPolicy, UnsafeEntrant>) {
-			tls_handle_ = nullptr;
 		}
 	}
 
@@ -144,7 +141,7 @@ public:
 		return allocator_handle()->allocate(std::forward<Args>(args)...);
 	}
 
-	inline void deallocate(_ty * t) {
+	inline void deallocate(_ty* t) {
 		assert(t);
 
 #ifdef EMBER_DEBUG_ALLOCATORS
@@ -166,6 +163,10 @@ public:
 
 	~TLSBlockAllocator() {
 		thread_exit();
+
+		if constexpr(std::is_same_v<EntrantPolicy, UnsafeEntrant>) {
+			 tls_handle_ = nullptr;
+		}
 
 #ifdef EMBER_DEBUG_ALLOCATORS
 		assert(active_allocs == 0);
