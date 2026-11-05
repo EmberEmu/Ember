@@ -67,7 +67,6 @@ class ClientHandler final {
 	void dispatch_message(BinaryStream& stream);
 
 	void send(protocol::is_packet auto& packet);
-	void skip(BinaryStream& stream);
 	void stream_err(const protocol::StreamResult& result);
 	void set_connection(ClientConnection& connection);
 	void set_ident(const ClientIdent& ident);

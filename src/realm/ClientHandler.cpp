@@ -63,9 +63,11 @@ void ClientHandler::handle_message(BinaryStream& stream) {
 		dispatch_message(stream);
 	}
 
-	// if the state didn't handle this message, skip it
+	// if the state didn't consume the entire message
 	if(!stream.empty()) {
-		skip(stream);
+		CLIENT_TRACE(context_, "{} skipping message",
+			ClientState_to_string(state_));
+		stream.skip();
 	}
 }
 
@@ -108,11 +110,6 @@ void ClientHandler::state_update(ClientState new_state) {
 	exit_state[state_](context_);
 	state_ = new_state;
 	enter_state[state_](context_);
-}
-
-void ClientHandler::skip(BinaryStream& stream) {
-	CLIENT_TRACE(context_, "{} skipping message", ClientState_to_string(state_));
-	stream.skip(stream.read_limit() - stream.total_read());
 }
 
 void ClientHandler::handle_ping(BinaryStream& stream) {

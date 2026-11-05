@@ -468,6 +468,10 @@ public:
 		}
 	}
 
+	void skip() {
+		skip(read_limit() - total_read());
+	}
+
 	void skip(std::size_t count) {
 		STREAM_READ_BOUNDS_ENFORCE(count, void());
 		buffer_.skip(count);

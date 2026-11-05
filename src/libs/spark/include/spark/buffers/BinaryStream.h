@@ -799,6 +799,10 @@ public:
 		SAFE_READ(dest.data(), read_size, void());
 	}
 
+	void skip() {
+		skip(read_limit() - total_read());
+	}
+
 	void skip(const size_type count) {
 		STREAM_READ_BOUNDS_ENFORCE(count, void());
 		buffer_.skip(count);
