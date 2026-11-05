@@ -19,7 +19,6 @@
 #include <memory>
 #include <vector>
 #include <cstddef>
-#include <cstdint>
 
 namespace ember::realm {
 
