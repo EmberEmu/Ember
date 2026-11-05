@@ -28,7 +28,6 @@ class ClientBuilder {
 	unique_deferred_client make_unique_client(tcp::Socket socket, boost::asio::ip::tcp::endpoint endpoint,
 	                                          boost::asio::io_context& ioc) const {
 		auto& allocator = alloc_provider_.client_allocator();
-		allocator.thread_enter();
 
 		return unique_deferred_client(allocator .allocate(
 			handler_builder_.create(ioc.get_executor()),

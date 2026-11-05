@@ -10,7 +10,7 @@
 
 #include "Config.h"
 #include "Client.h"
-#include <allocators/TLSBlockAllocator.h>
+#include <allocators/BlockAllocator.h>
 
 namespace ember::realm {
 
@@ -20,13 +20,10 @@ using PageLockPolicy = allocators::PageLock;
 using PageLockPolicy = allocators::NoPageLock;
 #endif
 
-using ClientAllocator = allocators::TLSBlockAllocator<
+using ClientAllocator = allocators::BlockAllocator<
 	Client,
-	allocators::NoRefCounting,
-	allocators::UnsafeEntrant,
 	PageLockPolicy,
-	allocators::ExplicitInit
+	allocators::NoValidateDealloc
 >;
 
 } // realm, ember
-
