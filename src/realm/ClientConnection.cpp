@@ -90,6 +90,7 @@ void ClientConnection::completion_check() {
 void ClientConnection::dispatch_message() {
 	BinaryStream stream(inbound_buffer_, msg_size_);
 	handler_->handle_message(stream);
+	assert(stream.empty());
 }
 
 void ClientConnection::process_buffered_data() {
