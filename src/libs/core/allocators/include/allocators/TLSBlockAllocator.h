@@ -54,19 +54,18 @@ class TLSBlockAllocator final {
 
 	[[no_unique_address]] TLSHandleCache tls_handle_{};
 
-	// Compiler will optimise calls to this out when using UnsafeEntrant
 	inline void initialise() {
-		if constexpr(std::is_same_v<EntrantPolicy, SafeEntrant>) {
-			if(!allocator_) {
-				allocator_ = std::make_unique<AllocatorType>(elements_, tag_);
-			}
+		if(!allocator_) {
+			allocator_ = std::make_unique<AllocatorType>(elements_, tag_);
 		}
 	}
 
 	inline AllocatorType* allocator_handle() {
 		if constexpr(std::is_same_v<EntrantPolicy, UnsafeEntrant>) {
+			assert(tls_handle_);
 			return tls_handle_;
 		} else {
+			assert(allocator_);
 			return allocator_.get();
 		}
 	}
@@ -121,6 +120,10 @@ public:
 				allocator_.reset();
 			}
 		}
+
+		if constexpr(std::is_same_v<EntrantPolicy, UnsafeEntrant>) {
+			tls_handle_ = nullptr;
+		}
 	}
 
 	template<typename ...Args>
@@ -130,7 +133,9 @@ public:
 		 * we can be 100% sure that any object using the allocator is created
 		 * on the same thread that ends up using it.
 		 */
-		initialise();
+		if constexpr(std::is_same_v<EntrantPolicy, SafeEntrant>) {
+			initialise();
+		}
 
 #ifdef EMBER_DEBUG_ALLOCATORS
 		++total_allocs;
@@ -139,7 +144,7 @@ public:
 		return allocator_handle()->allocate(std::forward<Args>(args)...);
 	}
 
-	inline void deallocate(_ty* t) {
+	inline void deallocate(_ty * t) {
 		assert(t);
 
 #ifdef EMBER_DEBUG_ALLOCATORS
@@ -151,7 +156,10 @@ public:
 
 #ifdef EMBER_DEBUG_ALLOCATORS
 	auto allocator() {
-		initialise();
+		if constexpr(std::is_same_v<EntrantPolicy, SafeEntrant>) {
+			initialise();
+		}
+
 		return allocator_handle();
 	}
 #endif
