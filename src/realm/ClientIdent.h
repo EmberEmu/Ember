@@ -97,11 +97,11 @@ public:
 	}
 
 	template<typename T>
-	T* extract_ptr() const {
+	T* ptr() const {
 		return reinterpret_cast<T*>((data_[0] >> 8) & 0xffffffffffff);
 	}
 
-	std::size_t extract_slot() const {
+	std::size_t slot() const {
 		return ((data_[0] & 0xff) << 4) | (data_[1] & 0xf);
 	}
 

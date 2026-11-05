@@ -61,7 +61,7 @@ TEST_F(ClientIdentTest, ExtractPtr) {
 	ClientIdent ident(0);
 	void* foo = (void*)0xbadf00d;
 	ident.encode(foo, 0);
-	const auto ptr = ident.extract_ptr<void*>();
+	const auto ptr = ident.ptr<void*>();
 	ASSERT_EQ(foo, ptr);
 }
 
@@ -69,7 +69,7 @@ TEST_F(ClientIdentTest, ExtractSlot) {
 	ClientIdent ident(0);
 	const auto expected = 4091u;
 	ident.encode(nullptr, expected);
-	const auto val = ident.extract_slot();
+	const auto val = ident.slot();
 	ASSERT_EQ(expected, val);
 }
 
@@ -78,8 +78,8 @@ TEST_F(ClientIdentTest, ExtractPtrAndSlot) {
 	void* foo = (void*)0xbadf00d;
 	const auto expected = 4091u;
 	ident.encode(foo, expected);
-	const auto ptr = ident.extract_ptr<void*>();
-	const auto val = ident.extract_slot();
+	const auto ptr = ident.ptr<void*>();
+	const auto val = ident.slot();
 	ASSERT_EQ(foo, ptr);
 	ASSERT_EQ(expected, val);
 }
