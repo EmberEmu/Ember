@@ -62,7 +62,6 @@ set(LIBRARY_HDR
     Survey.h
     LoginHandlerFwd.h
     SocketType.h
-    Service.h
     LoggingCallbacks.h
     InitHelpers.h
     ServiceContext.h
@@ -84,7 +83,6 @@ set(LIBRARY_SRC
     ExecutablesChecksum.cpp
     LocaleMap.cpp
     Survey.cpp
-    Service.cpp
     ServiceContext.cpp
     Patcher.cpp
     PINAuthenticator.cpp
@@ -114,6 +112,8 @@ target_include_directories(${LIBRARY_OBJECTS} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
 target_link_libraries(${LIBRARY_OBJECTS} PRIVATE asio_impl PUBLIC ${ZLIB_LIBRARY} ${BOTAN_TARGET} Threads::Threads allocators spark ports dbcreader stun service spark srp6 ratelimit shared)
 
 add_library(${LIBRARY_NAME} ${SERVICE_LIB_LINKAGE}
+    Service.h
+    Service.cpp
     $<TARGET_OBJECTS:${LIBRARY_OBJECTS}>
 )
 
