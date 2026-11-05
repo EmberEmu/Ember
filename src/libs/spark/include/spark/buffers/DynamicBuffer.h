@@ -33,21 +33,21 @@ template<decltype(auto) block_sz>
 concept int_gt_zero = std::integral<decltype(block_sz)> && block_sz > 0;
 
 template<decltype(auto) block_sz,
-	byte_type storage_value_type = std::byte,
-	typename AllocatorType = allocators::DefaultAllocator<detail::IntrusiveStorage<block_sz, storage_value_type>>
+	byte_type _value_type = std::byte,
+	typename _allocator_type = allocators::DefaultAllocator<void>
 >
 requires int_gt_zero<block_sz>
 class DynamicBuffer final : public pmr::Buffer {
 	constexpr static std::string_view allocator_tag { "dynamic_buffer" };
 
 public:
-	using storage_type   = detail::IntrusiveStorage<block_sz, storage_value_type>;
-	using value_type     = storage_value_type;
+	using storage_type   = detail::IntrusiveStorage<block_sz, _value_type>;
+	using value_type     = _value_type;
 	using node_type      = detail::IntrusiveNode;
 	using size_type      = std::size_t;
 	using offset_type    = std::size_t;
 	using contiguous     = is_non_contiguous;
-	using allocator_type = AllocatorType;
+	using allocator_type = typename std::allocator_traits<_allocator_type>::template rebind_alloc<storage_type>;
 
 	static constexpr auto npos { static_cast<size_type>(-1) };
 
@@ -67,7 +67,7 @@ public:
 private:
 	node_type root_;
 	size_type size_;
-	[[no_unique_address]] AllocatorType allocator_;
+	[[no_unique_address]] allocator_type allocator_;
 
 	void push_back(node_type* node) {
 		node->next = &root_;
@@ -181,7 +181,7 @@ public:
 		, root_{ .next = &root_, .prev = &root_ }
 		, size_(0) {}
 
-	explicit DynamicBuffer(AllocatorType allocator)
+	explicit DynamicBuffer(allocator_type allocator)
 		: allocator_(std::move(allocator))
 		, root_{ .next = &root_, .prev = &root_ }
 		, size_(0) {}
