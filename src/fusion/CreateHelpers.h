@@ -55,7 +55,7 @@ auto locate_symbol(const cstring_view lib_name, const cstring_view func_name) {
 
 	if(!library) {
 		throw std::runtime_error(
-			std::format("Unable to load library, {}", func_name)
+			std::format("Unable to load library, {}", lib_name)
 		);
 	}
 
