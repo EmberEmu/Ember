@@ -87,7 +87,8 @@ public:
 	// We're intentionally overwriting the weakest (lower) entropy xoroshiro bits
 	void encode(const void* ptr, std::size_t slot) {
 		assert(slot <= max_slot_value);
-		std::uint64_t ptr_val = reinterpret_cast<std::uint64_t>(ptr);
+		assert((reinterpret_cast<std::uintptr_t>(ptr) >> 48) == 0);
+		std::uint64_t ptr_val = reinterpret_cast<std::uint64_t>(ptr); // widen on 32-bit archs
 		ptr_val &= 0xffffffffffffull;
 		const std::uint8_t slot_hi = (slot >> 4) & 0xff;
 		const std::uint8_t slot_lo = slot & 0xf;

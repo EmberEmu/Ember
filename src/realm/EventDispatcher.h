@@ -19,8 +19,16 @@
 #include <memory>
 #include <vector>
 #include <cstddef>
+#include <cstdint>
 
 namespace ember::realm {
+
+#if !defined(DISABLE_FAST_DISPATCH_TABLE) && defined(__SIZEOF_POINTER__)
+	#if __SIZEOF_POINTER__ > 8
+		#define DISABLE_FAST_DISPATCH_TABLE 1
+		#warning "pointers wider than 64 bits: fast dispatch table disabled"
+	#endif
+#endif
 
 template<typename T>
 concept is_event = std::derived_from<T, Event>;
