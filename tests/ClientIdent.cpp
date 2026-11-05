@@ -6,13 +6,14 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include <shared/ClientIdent.h>
+#include <realm/ClientIdent.h>
 #include <gtest/gtest.h>
 #include <algorithm>
 #include <array>
 #include <random>
 
 using namespace ember;
+using namespace ember::realm;
 
 struct ClientIdentTest : public testing::Test {
 	static void SetUpTestSuite() {

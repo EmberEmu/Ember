@@ -13,6 +13,7 @@
 #include "FilterTypes.h"
 #include "Forwards.h"
 #include "ClientContext.h"
+#include "ClientIdent.h"
 #include "ClientSink.h"
 #include "ConnectionDefines.h"
 #include "states/ClientStates.h"
@@ -20,7 +21,6 @@
 #include <protocol/client/Ping.h>
 #include <protocol/Concepts.h>
 #include <protocol/StreamResult.h>
-#include <shared/ClientIdent.h>
 #include <memory>
 #include <string_view>
 #include <cstddef>

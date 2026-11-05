@@ -9,6 +9,7 @@
 #pragma once
 
 #include "BindToken.h"
+#include "ClientIdent.h"
 #include "ConnectionDefines.h"
 #include "ConnectionStats.h"
 #include "FilterTypes.h"
@@ -18,7 +19,6 @@
 #include "SocketType.h"
 #include <logger/LoggerFwd.h>
 #include <protocol/Concepts.h>
-#include <shared/ClientIdent.h>
 #include <boost/asio/ip/tcp.hpp>
 #include <array>
 #include <atomic>

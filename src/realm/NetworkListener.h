@@ -10,10 +10,10 @@
 
 #include "SessionManager.h"
 #include "ClientBuilder.h"
+#include "ClientIdent.h"
 #include "ConfigStore.h"
 #include "SocketType.h"
 #include <logger/LoggerFwd.h>
-#include <shared/ClientIdent.h>
 #include <thread/ServicePool.h>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/tcp.hpp>

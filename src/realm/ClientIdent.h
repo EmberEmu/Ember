@@ -23,7 +23,7 @@
 #include <cstdint>
 #include <cstring>
 
-namespace ember {
+namespace ember::realm {
 
 /*
  * This is used primarily to allow remote services to identify particular clients
@@ -158,11 +158,11 @@ inline std::size_t hash_value(const ClientIdent& uuid) {
 	return uuid.hash();
 }
 
-} // ember
+} // realm, ember
 
 template<>
-struct std::hash<ember::ClientIdent> {
-	std::size_t operator()(const ember::ClientIdent& uuid) const {
+struct std::hash<ember::realm::ClientIdent> {
+	std::size_t operator()(const ember::realm::ClientIdent& uuid) const {
 		return static_cast<std::size_t>(uuid.hash());
 	}
 };

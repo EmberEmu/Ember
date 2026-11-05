@@ -10,9 +10,9 @@
 
 #include "ClientConnection.h"
 #include "ClientHandler.h"
+#include "ClientIdent.h"
 #include "SocketType.h"
 #include <logger/LoggerFwd.h>
-#include <shared/ClientIdent.h>
 #include <atomic>
 
 namespace ember::realm {

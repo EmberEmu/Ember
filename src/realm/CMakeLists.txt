@@ -88,6 +88,7 @@ set(LIBRARY_HDR
     TokenCosts.h
     ConnectionCork.h
     BindToken.h
+    ClientIdent.h
 )
 
 set(LIBRARY_SRC

@@ -108,7 +108,6 @@ set(LIBRARY_SRC
     ${POSTGRESQL_DAOS_SRC}
     ${UTIL_SRC}
     ${METRICS_SRC}
-    shared/ClientIdent.h
     shared/CompilerWarn.h
     shared/IPBanCache.h
     shared/Realm.h

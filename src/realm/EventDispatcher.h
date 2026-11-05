@@ -10,9 +10,9 @@
 
 #include "Event.h"
 #include "Client.h"
+#include "ClientIdent.h"
 #include <logger/Logger.h>
 #include <thread/ServicePool.h>
-#include <shared/ClientIdent.h>
 #include <boost/functional/hash.hpp>
 #include <boost/unordered/unordered_flat_map.hpp>
 #include <concepts>

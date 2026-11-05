@@ -8,9 +8,9 @@
 
 #pragma once
 
+#include "ClientIdent.h"
 #include "Events.h"
 #include <logger/Sink.h>
-#include <shared/ClientIdent.h>
 #include <string>
 #include <string_view>
 #include <cstdint>
