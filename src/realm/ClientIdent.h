@@ -150,8 +150,7 @@ public:
 };
 
 inline bool operator==(const ClientIdent& lhs, const ClientIdent& rhs) {
-	return rhs.data_[0] == lhs.data_[0]
-		&& rhs.data_[1] == lhs.data_[1];
+	return rhs.data_ == lhs.data_;
 }
 
 inline std::size_t hash_value(const ClientIdent& uuid) {
