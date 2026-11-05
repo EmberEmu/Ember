@@ -183,6 +183,8 @@ class BlockAllocator {
 	}
 
 public:
+	using value_type = _ty;
+
 	static constexpr std::size_t block_size { sizeof(Block) };
 
 #ifdef EMBER_DEBUG_ALLOCATORS

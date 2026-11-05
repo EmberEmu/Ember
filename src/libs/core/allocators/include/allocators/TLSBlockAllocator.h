@@ -71,6 +71,8 @@ class TLSBlockAllocator final {
 	}
 
 public:
+	using value_type = _ty;
+
 #ifdef EMBER_DEBUG_ALLOCATORS
 	std::size_t total_allocs = 0;
 	std::size_t total_deallocs = 0;

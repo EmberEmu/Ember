@@ -39,7 +39,8 @@ template<decltype(auto) block_size,
 	typename entrant_policy = allocators::SafeEntrant,
 	typename storage_type = std::byte>
 using DynamicTLSBuffer = DynamicBuffer<block_size, storage_type,
-	allocators::TLSBlockAllocator<typename DynamicBuffer<block_size>::storage_type,
+	allocators::TLSBlockAllocator<
+		int,
 		ref_count_policy,
 		entrant_policy,
 		page_lock_policy

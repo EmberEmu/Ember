@@ -16,6 +16,8 @@ namespace ember::allocators {
 
 template<typename T>
 struct DefaultAllocator final {
+	using value_type = T;
+
 	std::string_view tag;
 
 #ifdef EMBER_DEBUG_ALLOCATORS
