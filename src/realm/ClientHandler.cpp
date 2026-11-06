@@ -247,7 +247,7 @@ void ClientHandler::log_redirect(LogRedirect::Type type, log::Severity severity)
 		std::move(sink_name) , context_.dispatcher, ident_, severity, type, log::Filter(lf_packet_trace)
 	);
 
-	logger_.add_sink(sink);
+	logger_.add_sink(std::move(sink));
 }
 
 void ClientHandler::log_redirect(std::shared_ptr<ClientSink> sink) {
