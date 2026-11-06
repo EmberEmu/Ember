@@ -61,7 +61,7 @@ void NetworkListener::accept_connection() {
 
 void NetworkListener::dispatch_socket() {
 	boost::system::error_code ec;
-	auto ep = socket_.remote_endpoint(ec);
+	const auto ep = socket_.remote_endpoint(ec);
 
 	if(ec) {
 		LOG_DEBUG(logger_, "Aborted connection, remote peer disconnected");
