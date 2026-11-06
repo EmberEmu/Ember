@@ -58,8 +58,12 @@ struct SessionKeyResponse final : Event {
 };
 
 struct CharEnumResponse final : Event {
+	CharEnumResponse(rpc::Character::Status status)
+		: Event { EventType::char_enum_response },
+		  status(status) { }
+
 	CharEnumResponse(rpc::Character::Status status, std::vector<Character> characters)
-		: Event{ EventType::char_enum_response },
+		: Event { EventType::char_enum_response },
 		  status(status),
 		  characters(std::move(characters)) { }
 
@@ -77,13 +81,18 @@ struct CharCreateResponse final : Event {
 
 struct CharDeleteResponse final : Event {
 	explicit CharDeleteResponse(protocol::Result result)
-		: Event{ EventType::char_delete_response },
+		: Event { EventType::char_delete_response },
 		  result(result) { }
 
 	protocol::Result result;
 };
 
 struct CharRenameResponse final : Event {
+	CharRenameResponse(protocol::Result result)
+		: Event { EventType::char_rename_response },
+		  result(result),
+		  character_id(0) { }
+
 	CharRenameResponse(protocol::Result result, std::uint64_t id, std::string name)
 		: Event { EventType::char_rename_response },
 		  result(result),

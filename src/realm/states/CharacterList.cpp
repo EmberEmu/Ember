@@ -45,24 +45,20 @@ void handle_timeout(ClientContext& ctx);
 
 void send_character_list_fail(ClientContext& ctx) {
 	LOG_TRACE(ctx.logger, log_func);
-
-	// displays an error dialogue on the client
-	protocol::smsg_char_create response;
+	protocol::smsg_char_create response; // bit of a hack
 	response->result = protocol::Result::char_list_failed;
 	ctx.send(response);
 }
 
-void send_character_list(ClientContext& ctx, std::vector<Character> characters) {
+void send_character_list(ClientContext& ctx, const CharEnumResponse& result) {
 	LOG_TRACE(ctx.logger, log_func);
-
 	protocol::smsg_char_enum response;
-	response->characters = std::move(characters);
+	response->characters = result.characters;
 	ctx.send(response);
 }
 
 void send_character_delete(ClientContext& ctx, const protocol::Result result) {
 	LOG_TRACE(ctx.logger, log_func);
-
 	protocol::smsg_char_delete response;
 	response->result = result;
 	ctx.send(response);
@@ -70,9 +66,17 @@ void send_character_delete(ClientContext& ctx, const protocol::Result result) {
 
 void send_character_create(ClientContext& ctx, const protocol::Result result) {
 	LOG_TRACE(ctx.logger, log_func);
-
 	protocol::smsg_char_create response;
 	response->result = result;
+	ctx.send(response);
+}
+
+void send_character_rename(ClientContext& ctx, const CharRenameResponse& res) {
+	LOG_TRACE(ctx.logger, log_func);
+	protocol::smsg_char_rename response;
+	response->result = res.result;
+	response->id = res.character_id;
+	response->name = res.name;
 	ctx.send(response);
 }
 
@@ -82,20 +86,9 @@ bool rate_limit_character_rename(ClientContext& ctx) {
 	}
 
 	CLIENT_DEBUG(ctx, "rate limit hit: cannot rename character");
-	protocol::smsg_char_rename response;
-	response->result = protocol::Result::char_name_failure;
-	ctx.send(response);
+	const CharRenameResponse response(protocol::Result::char_name_failure);
+	send_character_rename(ctx, response);
 	return true;
-}
-
-void send_character_rename(ClientContext& ctx, const CharRenameResponse& res) {
-	LOG_TRACE(ctx.logger, log_func);
-
-	protocol::smsg_char_rename response;
-	response->result = res.result;
-	response->id = res.character_id;
-	response->name = res.name;
-	ctx.send(response);
 }
 
 void character_rename(ClientContext& ctx) {
@@ -168,7 +161,7 @@ void character_enumerate_completion(ClientContext& ctx, const CharEnumResponse& 
 	LOG_TRACE(ctx.logger, log_func);
 
 	if(res.status == rpc::Character::Status::ok) {
-		send_character_list(ctx, res.characters);
+		send_character_list(ctx, res);
 	} else {
 		send_character_list_fail(ctx);
 	}
