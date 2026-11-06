@@ -68,7 +68,7 @@ void NetworkListener::dispatch_socket() {
 		return;
 	}
 
-	const auto max_socks = cfg_store_.config().max_sockets;
+	const auto max_socks = cfg_store_.config().max_sockets; // todo, this should not be here
 
 	if(!ClientSlots::reserve_slot(max_socks)) {
 		LOG_WARN(logger_, "Rejected connection from {}, too many sockets", ep.address().to_string());
@@ -76,15 +76,15 @@ void NetworkListener::dispatch_socket() {
 	}
 
 	LOG_DEBUG(logger_, "Accepted connection from {}", ep.address().to_string());
-	auto& ioc = pool_.get(index_);
+	auto& executor = socket_.get_executor();
 
 	/*
 	 * This dispatch ensures that the client is created on the same thread that it will live on,
 	 * allowing the thread local allocators to operate in 'unsafe entrant' mode, meaning they
 	 * can forego ensuring that the calling thread has previously initialised the allocator.
 	 */
-	boost::asio::dispatch(ioc, [this, &ioc, socket = std::move(socket_), ep, index = index_]() mutable {
-		auto client = builder_.create(std::move(socket), std::move(ep), ioc);
+	boost::asio::dispatch(executor, [this, socket = std::move(socket_), ep, index = index_]() mutable {
+		auto client = builder_.create(std::move(socket), ep);
 		client->start(index);
 		sessions_.enqueue(std::move(client));
 	});

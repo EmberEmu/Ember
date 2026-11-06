@@ -18,16 +18,16 @@ namespace ember::realm {
 
 struct DeferredClientDeleter final {
 	ClientAllocator& allocator;
-	boost::asio::io_context& ioc;
+	Executor& executor;
 
-	explicit DeferredClientDeleter(ClientAllocator& allocator, boost::asio::io_context& ioc) noexcept
+	explicit DeferredClientDeleter(ClientAllocator& allocator, Executor& executor) noexcept
 		: allocator(allocator)
-		, ioc(ioc) {}
+		, executor(executor) {}
 
 	void operator()(Client* ptr) const {
 		ClientSlots::free_slot();
 
-		boost::asio::post(ioc, [allocator = &allocator, ptr]() {
+		boost::asio::post(executor, [allocator = &allocator, ptr]() {
 			allocator->deallocate(ptr);
 		});
 	}
