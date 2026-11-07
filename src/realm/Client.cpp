@@ -18,13 +18,14 @@ using namespace std::string_view_literals;
 
 namespace ember::realm {
 
-Client::Client(ClientHandler handler, ClientConnection connection,
-               EventDispatcher& dispatcher, log::Logger& logger)
+Client::Client(ClientHandler handler, ClientConnection connection, EventDispatcher& dispatcher, log::Logger& logger)
 	: handler_(std::move(handler))
 	, connection_(std::move(connection))
 	, dispatcher_(dispatcher)
 	, logger_(logger)
-	, running_(false) {}
+	, running_(true) {
+	start();
+}
 
 bool Client::handle_self_event(const Event& event) {
 	using enum EventType;
@@ -87,15 +88,10 @@ void Client::handle_event(const Event& event) {
 	handler_.handle_event(event);
 }
 
-void Client::start(const std::size_t index) {
-	if(running_.exchange(true)) {
-		assert(running_);
-		return;
-	}
-
+void Client::start() {
 	ClientSlots::update_peak();
 
-	const auto ident = dispatcher_.register_client(this, index);
+	const auto ident = dispatcher_.register_client(this);
 
 	// Referencing each other like this is fine because they won't start running until we return
 	// - that's assuming we're running on the same Asio worker, which we really should be

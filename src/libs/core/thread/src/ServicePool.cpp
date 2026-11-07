@@ -70,7 +70,10 @@ void ServicePool::run(const bool pin, const unsigned int concurrency) {
 	}
 
 	for(std::size_t i = 0; i < pool_size_; ++i) {
-		threads_.emplace_back(&boost::asio::io_context::run, services_[i].get());
+		threads_.emplace_back([this, i] {
+			current_index_ = i;
+			services_[i]->run();
+		});
 
 		if(pin && concurrency) {
 			thread::set_affinity(threads_[i], i % concurrency);
@@ -97,8 +100,17 @@ void ServicePool::stop() {
 	shutdown();
 }
 
+bool ServicePool::running_in_pool() const {
+	const auto service = get_if(current_index());
+	return service && service->get_executor().running_in_this_thread();
+}
+
 std::size_t ServicePool::size() const {
 	return pool_size_;
+}
+
+std::size_t ServicePool::current_index() {
+	return current_index_;
 }
 
 } // thread, ember

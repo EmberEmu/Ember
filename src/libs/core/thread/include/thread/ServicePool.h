@@ -19,6 +19,10 @@
 namespace ember::thread {
 
 class ServicePool final {
+public:
+	static constexpr auto npos { static_cast<std::size_t>(-1) };
+
+private:
 	static constexpr auto asio_concurrency_hint = 1;
 
 	const int hint_;
@@ -27,6 +31,7 @@ class ServicePool final {
 	std::vector<std::unique_ptr<boost::asio::io_context>> services_;
 	std::vector<boost::asio::executor_work_guard<boost::asio::io_context::executor_type>> work_;
 	std::vector<std::jthread> threads_;
+	static inline thread_local std::size_t current_index_ = npos;
 
 	std::size_t limit_pool_size(const std::size_t pool_size);
 	void initialise_pool();
@@ -83,6 +88,17 @@ public:
 			return *service;
 		});
 	}
+
+	/*
+	 * Returns true if the currently executing thread belongs to this pool 
+	 */
+	bool running_in_pool() const;
+
+	/*
+	 * Retrieves the index of the currently executing thread
+	 * Returns npos if the current thread is not a worker
+	 */
+	static std::size_t current_index();
 
 	ServicePool(const ServicePool&) = delete;
 	ServicePool& operator=(const ServicePool&) = delete;
