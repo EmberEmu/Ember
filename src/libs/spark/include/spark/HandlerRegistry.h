@@ -9,7 +9,6 @@
 #pragma once
 
 #include <boost/unordered/unordered_flat_map.hpp>
-#include <functional>
 #include <mutex>
 #include <optional>
 #include <string>
@@ -27,8 +26,8 @@ public:
 	void register_service(Handler& service);
 	void deregister_service(Handler& service);
 
-	std::optional<std::reference_wrapper<Handler>> service(const std::string& name) const;
-	std::optional<std::reference_wrapper<Handler>> service(const std::string& name, const std::string& type) const;
+	std::optional<Handler&> service(const std::string& name) const;
+	std::optional<Handler&> service(const std::string& name, const std::string& type) const;
 	std::vector<Handler*> services(const std::string& type) const;
 	std::vector<std::string> services() const;
 };

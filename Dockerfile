@@ -33,11 +33,11 @@ RUN apt-get -y update \
 RUN if [ -n "use_clang" ]; then                                         \
  apt-get -y install clang;                                              \
 else                                                                    \
- apt-get -y install gcc-15 g++-15                                       \
- && update-alternatives --install /usr/bin/cc cc /usr/bin/gcc-15 100    \
- && update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++-15 100  \
- && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-15 100  \
- && update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-15 100; \
+ apt-get -y install gcc-16 g++-16                                       \
+ && update-alternatives --install /usr/bin/cc cc /usr/bin/gcc-16 100    \
+ && update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++-16 100  \
+ && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-16 100  \
+ && update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-16 100; \
 fi
 
 RUN wget -q https://github.com/anjo76/angelscript/archive/refs/tags/v2.38.0.tar.gz \

@@ -41,7 +41,7 @@ void HandlerRegistry::register_service(Handler& service) {
 	services_[type].emplace_back(&service);
 }
 
-std::optional<std::reference_wrapper<Handler>> HandlerRegistry::service(const std::string& name) const {
+std::optional<Handler&> HandlerRegistry::service(const std::string& name) const {
 	std::lock_guard guard(mutex_);
 
 	for(const auto& v : services_ | std::views::values) {
@@ -55,7 +55,7 @@ std::optional<std::reference_wrapper<Handler>> HandlerRegistry::service(const st
 	return std::nullopt;
 }
 
-std::optional<std::reference_wrapper<Handler>> HandlerRegistry::service(const std::string& name, const std::string& type) const {
+std::optional<Handler&> HandlerRegistry::service(const std::string& name, const std::string& type) const {
 	std::lock_guard guard(mutex_);
 
 	auto it = services_.find(type);
