@@ -91,9 +91,7 @@ void NetworkListener::dispatch_socket() {
 }
 
 void NetworkListener::shutdown() {
-	bool expected = false;
-
-	if(!stopped_.compare_exchange_strong(expected, true)) {
+	if(stopped_.exchange(true)) {
 		return;
 	}
 
