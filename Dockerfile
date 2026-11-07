@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:experimental
 
-FROM ubuntu:resolute AS builder
+FROM ubuntu:stonking AS builder
 LABEL description="Development build environment"
 
 ARG skip_upgrade
@@ -83,12 +83,12 @@ RUN --mount=type=cache,id=build-cache,target=/usr/src/ember/build \
  && cmake --install build                  \
  && ctest --test-dir build
 
-FROM ubuntu:resolute AS run_environment
+FROM ubuntu:stonking AS run_environment
 ARG install_dir=/usr/local/bin
 ARG working_dir=/usr/src/ember
 WORKDIR ${install_dir}
 RUN apt-get -y update \
- && apt-get install -y libbotan-3-10 \
+ && apt-get install -y libbotan-3-12 \
  && apt-get install -y libmysqlcppconn7v5 \
  && apt-get install -y mysql-client \
  && apt-get install -y libjemalloc2 
