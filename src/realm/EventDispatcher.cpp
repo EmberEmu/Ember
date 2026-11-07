@@ -101,7 +101,7 @@ void EventDispatcher::broadcast(std::shared_ptr<const Event> event) const {
 }
 
 #ifndef DISABLE_FAST_DISPATCH_TABLE
-bool EventDispatcher::try_insert(ClientType* handler, ClientIdent& ident) {
+bool EventDispatcher::try_insert(Client* handler, ClientIdent& ident) {
 	assert(handler);
 
 	auto index = next_slot_;
@@ -129,7 +129,7 @@ bool EventDispatcher::try_insert(ClientType* handler, ClientIdent& ident) {
 }
 #endif
 
-ClientIdent EventDispatcher::register_client(ClientType* client) {
+ClientIdent EventDispatcher::register_client(Client* client) {
 	assert(client);
 	assert(pool_.running_in_pool());
 
@@ -145,7 +145,7 @@ ClientIdent EventDispatcher::register_client(ClientType* client) {
 	return ident;
 }
 
-void EventDispatcher::remove_client(const ClientType* client) {
+void EventDispatcher::remove_client(const Client* client) {
 	assert(client);
 
 #ifndef DISABLE_FAST_DISPATCH_TABLE

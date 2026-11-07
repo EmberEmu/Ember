@@ -33,8 +33,6 @@ template<typename T>
 concept is_event = std::derived_from<T, Event>;
 
 class EventDispatcher final {
-	using ClientType = Client;
-
 	using HandlerMap = boost::unordered_flat_map<
 		ClientIdent, Client*, boost::hash<ClientIdent>
 	>;
@@ -58,7 +56,7 @@ class EventDispatcher final {
 	std::size_t random_slot() const;
 
 #ifndef DISABLE_FAST_DISPATCH_TABLE
-	bool try_insert(ClientType* handler, ClientIdent& ident);
+	bool try_insert(Client* handler, ClientIdent& ident);
 #endif
 
 public:
@@ -93,8 +91,8 @@ public:
 	// broadcasts an event to a vector of clients - the vector is sorted to minimise the number of messages
 	void broadcast(std::vector<ClientIdent> clients, std::shared_ptr<const Event> event) const;
 
-	ClientIdent register_client(ClientType* client);
-	void remove_client(const ClientType* client);
+	ClientIdent register_client(Client* client);
+	void remove_client(const Client* client);
 };
 
 } // realm, ember

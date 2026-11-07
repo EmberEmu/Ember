@@ -18,7 +18,7 @@ void EventDispatcher::deliver(const is_event auto& event) const {
 #ifndef DISABLE_FAST_DISPATCH_TABLE
 	for(auto& entry : cache_) {
 		if(!entry.is_zero()) {
-			entry.ptr<ClientType>()->handle_event(event);
+			entry.ptr<Client>()->handle_event(event);
 		}
 	}
 #endif
@@ -33,7 +33,7 @@ inline Client* EventDispatcher::locate_handler(const ClientIdent& client) const 
 
 	if(slot != slot_npos) {
 		if(cache_[slot] == client) {
-			return client.ptr<ClientType>();
+			return client.ptr<Client>();
 		} else {
 			return nullptr;
 		}
