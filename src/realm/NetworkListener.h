@@ -25,8 +25,6 @@
 
 namespace ember::realm {
 
-namespace asio = boost::asio;
-
 class NetworkListener final {
 	SessionManager& sessions_;
 	ClientBuilder builder_;

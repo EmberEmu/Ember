@@ -17,6 +17,8 @@
 
 namespace ember::realm {
 
+namespace asio = boost::asio;
+
 NetworkListener::NetworkListener(std::string_view interface, std::uint16_t port, bool tcp_no_delay,
                                  thread::ServicePool& pool, ClientBuilder builder,
                                  SessionManager& sessions, const ConfigStore& cfg_store, log::Logger& logger)
