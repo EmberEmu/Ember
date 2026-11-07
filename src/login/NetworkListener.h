@@ -20,7 +20,6 @@
 #include <boost/asio/strand.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <atomic>
-#include <string>
 #include <string_view>
 #include <utility>
 #include <cstdint>

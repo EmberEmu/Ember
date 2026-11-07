@@ -11,8 +11,6 @@
 #include "FilterTypes.h"
 #include <logger/Logger.h>
 #include <boost/asio/dispatch.hpp>
-#include <functional>
-#include <memory>
 #include <utility>
 
 namespace ember::realm {

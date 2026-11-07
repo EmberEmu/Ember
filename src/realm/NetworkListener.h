@@ -15,8 +15,6 @@
 #include "SocketType.h"
 #include <logger/LoggerFwd.h>
 #include <thread/ServicePool.h>
-#include <boost/asio/io_context.hpp>
-#include <boost/asio/ip/tcp.hpp>
 #include <atomic>
 #include <string>
 #include <string_view>
