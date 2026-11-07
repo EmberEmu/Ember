@@ -129,9 +129,12 @@ bool EventDispatcher::try_insert(ClientType* handler, ClientIdent& ident) {
 }
 #endif
 
-ClientIdent EventDispatcher::register_client(ClientType* client, std::size_t service_index) {
-	assert(client);
-	ClientIdent ident(service_index);
+ClientIdent EventDispatcher::register_client(ClientType* client) {
+	assert(pool_.running_in_pool());
+
+	ClientIdent ident(
+		pool_.current_index()
+	);
 
 #ifndef DISABLE_FAST_DISPATCH_TABLE
 	if(!try_insert(client, ident))

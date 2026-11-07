@@ -24,6 +24,8 @@ class Client {
 	log::Logger& logger_;
 	std::atomic_bool running_;
 
+	void start();
+
 	bool handle_self_event(const Event& event);
 	void handle_kick();
 	void handle_request_stop();
@@ -39,7 +41,6 @@ public:
 	Client& operator=(Client&) = delete;
 	Client& operator=(Client&&) = delete;
 
-	void start(std::size_t index);
 	void stop();
 	bool stopped() const;
 
