@@ -130,6 +130,7 @@ bool EventDispatcher::try_insert(ClientType* handler, ClientIdent& ident) {
 #endif
 
 ClientIdent EventDispatcher::register_client(ClientType* client) {
+	assert(client);
 	assert(pool_.running_in_pool());
 
 	ClientIdent ident(
