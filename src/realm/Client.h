@@ -13,7 +13,6 @@
 #include "ClientIdent.h"
 #include "SocketType.h"
 #include <logger/LoggerFwd.h>
-#include <atomic>
 
 namespace ember::realm {
 
@@ -22,7 +21,7 @@ class Client {
 	ClientConnection connection_;
 	EventDispatcher& dispatcher_;
 	log::Logger& logger_;
-	std::atomic_bool running_;
+	bool running_;
 
 	void start();
 

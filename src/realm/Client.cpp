@@ -103,10 +103,8 @@ void Client::start() {
 }
 
 void Client::stop() {
-	if(!running_.exchange(false)) {
-		return;
-	}
-
+	assert(running_ && "stop called twice, fix your logic");
+	running_ = false;
 	dispatcher_.remove_client(this);
 	handler_.stop();
 	connection_.stop();
@@ -125,7 +123,9 @@ const ClientHandler& Client::handler() const {
 }
 
 Client::~Client() {
-	stop();
+	if(running_) {
+		stop();
+	}
 }
 
 } // realm, ember
