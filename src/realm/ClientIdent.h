@@ -50,9 +50,11 @@ namespace ember::realm {
  */
 class ClientIdent final {
 public:
-	constexpr static auto slot_bits   = 0x0cu;  // todo, sz literal when compiler bump
-	constexpr static auto max_slot    = 0xfffu;
-	constexpr static auto max_service = 0x100u;
+	constexpr static auto slot_bits     = 0x0cu;  // todo, sz literal when compiler bump
+	constexpr static auto service_bits  = 0x08u;
+	constexpr static auto max_slot      = 0xfffu;
+	constexpr static auto max_service   = 0x0ffu;
+	static constexpr auto service_count = 1u << service_bits;
 	static_assert(max_slot < (1u << slot_bits), "Slot count exceeds bits assigned for encoding");
 
 private:
@@ -71,7 +73,7 @@ private:
 	}
 
 	void encode_index(const std::uint8_t index) {
-		assert(max_service < 0x100);
+		assert(index <= max_service);
 		data_[0] &= 0x00ffffffffffffffull;
 		data_[0] |= static_cast<std::uint64_t>(index) << 56;
 	}

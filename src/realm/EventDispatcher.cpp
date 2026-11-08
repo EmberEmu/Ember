@@ -11,6 +11,7 @@
 #include <shared/utility/xoroshiro128plus.h>
 #include <boost/asio/dispatch.hpp>
 #include <boost/asio/post.hpp>
+#include <format>
 #include <ranges>
 #include <type_traits>
 #include <cassert>
@@ -20,10 +21,11 @@ namespace ember::realm {
 EventDispatcher::EventDispatcher(const thread::ServicePool& pool, log::Logger& logger)
 	: pool_(pool)
 	, logger_(logger) {
-	if(pool_.size() > ClientIdent::max_slot) {
+	if(pool_.size() > ClientIdent::service_count) {
 		throw std::invalid_argument(
 			std::format(
-				"Maximum service index too large, limit is {}", ClientIdent::max_slot
+				"Service pool too large for client encoding; assign more bits or "
+				"restrict concurrency; limit is {}", ClientIdent::service_count
 			)
 		);
 	}
