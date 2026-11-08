@@ -29,14 +29,8 @@ void EventDispatcher::deliver(const is_event auto& event) const {
 
 inline Client* EventDispatcher::locate_handler(const ClientIdent& client) const {
 #ifndef DISABLE_FAST_DISPATCH_TABLE
-	const auto slot = client.slot();
-
-	if(slot != slot_npos) {
-		if(cache_[slot] == client) {
-			return client.ptr<Client>();
-		} else {
-			return nullptr;
-		}
+	if(auto ptr = client.ptr<Client>()) {
+		return (cache_[client.slot()] == client)? ptr : nullptr;
 	}
 #endif
 
