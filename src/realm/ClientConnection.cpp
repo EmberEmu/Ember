@@ -20,7 +20,6 @@
 #include <boost/asio/bind_allocator.hpp>
 #include <boost/asio/read.hpp>
 #include <boost/asio/write.hpp>
-#include <algorithm>
 #include <format>
 #include <cassert>
 
