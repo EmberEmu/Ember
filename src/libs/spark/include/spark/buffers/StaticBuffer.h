@@ -23,6 +23,8 @@ namespace ember::spark::io {
 
 template<byte_type storage_type, std::size_t buf_size>
 class StaticBuffer final {
+	std::array<storage_type, buf_size> buffer_;
+
 public:
 	using offset_type     = detail::smallest_type<buf_size>;
 	using size_type       = typename decltype(buffer_)::size_type;
@@ -30,7 +32,6 @@ public:
 	using contiguous      = is_contiguous;
 
 private:
-	std::array<storage_type, buf_size> buffer_;
 	offset_type read_ = 0;
 	offset_type write_ = 0;
 
