@@ -17,19 +17,21 @@
 
 namespace ember::realm {
 
-std::size_t EventDispatcher::random_slot() const {
-	constexpr auto max_slot = ClientIdent::max_slot_value;
-	static_assert((max_slot & (max_slot + 1)) == 0, "bad mask value");
-
-	auto index = rng::xorshift::next() & max_slot;
-
-	// modulo avoidance, mask needs to be a power of two
-	// bump down if we were unlucky enough to hit the max
-	if(index == max_slot) {
-		index = 0;
+EventDispatcher::EventDispatcher(const thread::ServicePool& pool, log::Logger& logger)
+	: pool_(pool)
+	, logger_(logger) {
+	if(pool_.size() > ClientIdent::max_slot) {
+		throw std::invalid_argument(
+			std::format(
+				"Maximum service index too large, limit is {}", ClientIdent::max_slot
+			)
+		);
 	}
+}
 
-	return index;
+std::size_t EventDispatcher::random_slot() const {
+	static_assert((ClientIdent::max_slot & (ClientIdent::max_slot + 1)) == 0, "bad mask value");
+	return rng::xorshift::next() & ClientIdent::max_slot;
 }
 
 void EventDispatcher::post(const ClientIdent& client, std::unique_ptr<Event> event) const {
@@ -118,13 +120,13 @@ bool EventDispatcher::try_insert(Client* handler, ClientIdent& ident) {
 			cache_[index] = ident;
 			next_slot_ = random_slot(); // jump off point for next insertion
 			return true;
-		} else if(++index == slot_npos) {
-			index = 0;
 		}
+
+		index = (index + 1) & slot_mask;
 	} while(index != start);
 
 	next_slot_ = slot_full;     // mark table full
-	ident.encode(0, slot_npos); // encode sentinel
+	ident.encode(nullptr, 0);   // encode sentinel
 	return false;
 }
 #endif
@@ -147,17 +149,22 @@ ClientIdent EventDispatcher::register_client(Client* client) {
 
 void EventDispatcher::remove_client(const Client* client) {
 	assert(client);
+	const auto& ident = client->ident();
 
 #ifndef DISABLE_FAST_DISPATCH_TABLE
-	if(auto slot = client->ident().slot(); slot != slot_npos) {
-		cache_[slot].set_zero();
-		next_slot_ = slot;
-	} else {
-		handlers_.erase(client->ident());
+	if(const auto ptr = ident.ptr<Client>()) {
+		const auto slot = ident.slot();
+
+		if(cache_[slot] == ident) {
+			cache_[slot].set_zero();
+			next_slot_ = slot;
+		}
+
+		return;
 	}
-#else
-	handlers_.erase(client->ident());
 #endif
+
+	handlers_.erase(ident);
 }
 
 } // realm, ember

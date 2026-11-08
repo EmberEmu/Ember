@@ -38,11 +38,11 @@ class EventDispatcher final {
 	>;
 
 #ifndef DISABLE_FAST_DISPATCH_TABLE
-	constexpr static std::size_t cache_size = ClientIdent::max_slot_value;
-	constexpr static auto slot_npos = ClientIdent::max_slot_value;
-	constexpr static auto slot_full = ClientIdent::max_slot_value;
+	constexpr static std::size_t table_size = 1u << ClientIdent::slot_bits;
+	constexpr static auto slot_mask = ClientIdent::max_slot;
+	constexpr static auto slot_full = table_size;
 
-	static inline thread_local std::array<ClientIdent, cache_size> cache_{};
+	static inline thread_local std::array<ClientIdent, table_size> cache_{};
 	static inline thread_local std::size_t next_slot_{};
 #endif
 
@@ -60,9 +60,7 @@ class EventDispatcher final {
 #endif
 
 public:
-	explicit EventDispatcher(const thread::ServicePool& pool, log::Logger& logger)
-		: pool_(pool)
-		, logger_(logger) {}
+	EventDispatcher(const thread::ServicePool& pool, log::Logger& logger);
 
 	// execute a task, only if the specified client still exists
 	void execute(const ClientIdent& client, auto&& work) const;

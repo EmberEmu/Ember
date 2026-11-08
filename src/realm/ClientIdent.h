@@ -49,12 +49,18 @@ namespace ember::realm {
  * Warning: xorshift must be seeded before using this class!
  */
 class ClientIdent final {
+public:
+	constexpr static auto slot_bits   = 0x0cu;  // todo, sz literal when compiler bump
+	constexpr static auto max_slot    = 0xfffu;
+	constexpr static auto max_service = 0x100u;
+	static_assert(max_slot < (1u << slot_bits), "Slot count exceeds bits assigned for encoding");
+
+private:
 	static constexpr std::size_t uuid_size = 16;
 
 	std::array<std::uint64_t, uuid_size / sizeof(std::uint64_t)> data_;
 
 	void generate(const std::size_t service_index) {
-		assert(service_index < 256);
 		assert(rng::xorshift::seed[0] && rng::xorshift::seed[1]);
 
 		for(auto& val : data_) {
@@ -65,14 +71,12 @@ class ClientIdent final {
 	}
 
 	void encode_index(const std::uint8_t index) {
+		assert(max_service < 0x100);
 		data_[0] &= 0x00ffffffffffffffull;
 		data_[0] |= static_cast<std::uint64_t>(index) << 56;
 	}
 
 public:
-	constexpr static auto max_slot_value = 0xfffu; // todo, sz literal when compiler bump
-	static_assert(max_slot_value < 0x1000, "Slot count exceeds bits assigned for encoding");
-
 	constexpr ClientIdent() : data_{} {};
 
 	explicit ClientIdent(std::size_t service_index) {
@@ -86,7 +90,7 @@ public:
 	// Encodes a pointer using 48 bits (widens on 32-bit platforms) and a 12-bit array index
 	// We're intentionally overwriting the weakest (lower) entropy xoroshiro bits
 	void encode(const void* ptr, std::size_t slot) {
-		assert(slot <= max_slot_value);
+		assert(slot <= max_slot);
 		assert((reinterpret_cast<std::uintptr_t>(ptr) >> 48) == 0);
 		std::uint64_t ptr_val = reinterpret_cast<std::uint64_t>(ptr); // widen on 32-bit archs
 		ptr_val &= 0xffffffffffffull;
