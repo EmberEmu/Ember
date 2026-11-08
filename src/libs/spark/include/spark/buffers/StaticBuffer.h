@@ -11,6 +11,7 @@
 #include <spark/buffers/Exception.h>
 #include <spark/buffers/Shared.h>
 #include <spark/buffers/Concepts.h>
+#include <spark/buffers/detail/Utility.h>
 #include <array>
 #include <span>
 #include <utility>
@@ -23,15 +24,18 @@ namespace ember::spark::io {
 template<byte_type storage_type, std::size_t buf_size>
 class StaticBuffer final {
 	std::array<storage_type, buf_size> buffer_;
-	std::size_t read_ = 0;
-	std::size_t write_ = 0;
 
 public:
+	using offset_type     = detail::smallest_type<buf_size>;
 	using size_type       = typename decltype(buffer_)::size_type;
-	using offset_type     = size_type;
 	using value_type      = storage_type;
 	using contiguous      = is_contiguous;
 
+private:
+	offset_type read_ = 0;
+	offset_type write_ = 0;
+
+public:
 	static constexpr auto npos { static_cast<size_type>(-1) };
 	
 	StaticBuffer() = default;

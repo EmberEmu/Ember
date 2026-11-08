@@ -14,6 +14,7 @@
 
 #include <spark/buffers/Shared.h>
 #include <spark/buffers/Concepts.h>
+#include <spark/buffers/detail/Utility.h>
 #include <algorithm>
 #include <array>
 #include <concepts>
@@ -33,7 +34,7 @@ struct IntrusiveNode {
 template<std::size_t block_size, byte_type storage_type = std::byte>
 struct IntrusiveStorage final {
 	using value_type = storage_type;
-	using offset_type = std::remove_const_t<decltype(block_size)>;
+	using offset_type = smallest_type<block_size>;
 
 	offset_type read_offset = 0;
 	offset_type write_offset = 0;

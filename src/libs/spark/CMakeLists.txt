@@ -40,6 +40,7 @@ set(IO_SRC
     include/spark/buffers/StaticBuffer.h
     include/spark/buffers/Concepts.h
     include/spark/buffers/detail/IntrusiveStorage.h
+    include/spark/buffers/detail/Utility.h
     include/spark/buffers/FileBuffer.h
     include/spark/buffers/Endian.h
     include/spark/buffers/NullBuffer.h

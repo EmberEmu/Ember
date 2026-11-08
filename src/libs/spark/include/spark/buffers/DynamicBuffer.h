@@ -259,7 +259,8 @@ public:
 			auto node = root_.next;
 			auto buffer = buffer_from_node(node);
 			remaining -= buffer->read(
-				static_cast<value_type*>(destination) + length - remaining, remaining, node == root_.prev);
+				static_cast<value_type*>(destination) + length - remaining, remaining, node == root_.prev
+			);
 
 			if(remaining) [[unlikely]] {
 				unlink_node(node);
