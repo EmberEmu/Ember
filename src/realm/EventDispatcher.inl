@@ -17,7 +17,7 @@ namespace ember::realm {
 void EventDispatcher::deliver(const is_event auto& event) const {
 #ifndef DISABLE_FAST_DISPATCH_TABLE
 	for(auto& entry : cache_) {
-		if(!entry.is_zero()) {
+		if(entry) {
 			entry.ptr<Client>()->handle_event(event);
 		}
 	}

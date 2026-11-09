@@ -136,12 +136,12 @@ public:
 		return result;
 	}
 
-	void set_zero() {
+	void clear() {
 		data_[0] = 0;
 		data_[1] = 0;
 	}
 
-	bool is_zero() const {
+	bool empty() const {
 		return data_[0] == 0 && data_[1] == 0;
 	}
 
@@ -151,6 +151,10 @@ public:
 
 	static consteval auto size() {
 		return uuid_size;
+	}
+
+	explicit operator bool() const noexcept {
+		return !empty();
 	}
 
 	friend bool operator==(const ClientIdent& lhs, const ClientIdent& rhs);

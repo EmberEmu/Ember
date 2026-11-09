@@ -25,19 +25,19 @@ struct ClientIdentTest : public testing::Test {
 
 TEST_F(ClientIdentTest, DefaultCtor) {
 	ClientIdent ident;
-	ASSERT_TRUE(ident.is_zero());
+	ASSERT_TRUE(!ident);
 }
 
 TEST_F(ClientIdentTest, IndexCtor) {
 	ClientIdent ident(0);
-	ASSERT_FALSE(ident.is_zero());
+	ASSERT_FALSE(!ident);
 }
 
 TEST_F(ClientIdentTest, SetZero) {
 	ClientIdent ident(0);
-	ASSERT_FALSE(ident.is_zero());
-	ident.set_zero();
-	ASSERT_TRUE(ident.is_zero());
+	ASSERT_FALSE(!ident);
+	ident.clear();
+	ASSERT_TRUE(!ident);
 }
 
 TEST_F(ClientIdentTest, Index) {
@@ -129,7 +129,7 @@ TEST_F(ClientIdentTest, HashInvalidateSetZero) {
 
 	ClientIdent ident(data);
 	ASSERT_EQ(ident.hash(), 0x91D8C5F0837DBF0C);
-	ident.set_zero(); // invalidate
+	ident.clear(); // invalidate
 	ASSERT_EQ(ident.hash(), 0xD0A66A65C7528968);
 }
 

@@ -13,6 +13,7 @@
 #include <boost/asio/post.hpp>
 #include <format>
 #include <ranges>
+#include <stdexcept>
 #include <type_traits>
 #include <cassert>
 
@@ -108,16 +109,14 @@ void EventDispatcher::broadcast(std::shared_ptr<const Event> event) const {
 bool EventDispatcher::try_insert(Client* handler, ClientIdent& ident) {
 	assert(handler);
 
-	auto index = next_slot_;
-
-	if(index == slot_full) {
+	if(next_slot_ == slot_full) {
 		return false;
 	}
 
-	const auto start = index;
+	auto index = next_slot_;
 
 	do {
-		if(cache_[index].is_zero()) {
+		if(!cache_[index]) {
 			ident.encode(handler, index);
 			cache_[index] = ident;
 			next_slot_ = random_slot(); // jump off point for next insertion
@@ -125,7 +124,7 @@ bool EventDispatcher::try_insert(Client* handler, ClientIdent& ident) {
 		}
 
 		index = (index + 1) & slot_mask;
-	} while(index != start);
+	} while(index != next_slot_);
 
 	next_slot_ = slot_full;     // mark table full
 	ident.encode(nullptr, 0);   // encode sentinel
@@ -154,11 +153,11 @@ void EventDispatcher::remove_client(const Client* client) {
 	const auto& ident = client->ident();
 
 #ifndef DISABLE_FAST_DISPATCH_TABLE
-	if(const auto ptr = ident.ptr<Client>()) {
+	if(ident.ptr<Client>()) {
 		const auto slot = ident.slot();
 
 		if(cache_[slot] == ident) {
-			cache_[slot].set_zero();
+			cache_[slot].clear();
 			next_slot_ = slot;
 		}
 
