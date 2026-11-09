@@ -89,7 +89,7 @@ public:
 	// broadcasts an event to a vector of clients - the vector is sorted to minimise the number of messages
 	void broadcast(std::vector<ClientIdent> clients, std::shared_ptr<const Event> event) const;
 
-	ClientIdent register_client(Client* client);
+	[[nodiscard]] ClientIdent register_client(Client* client);
 	void remove_client(const ClientIdent& ident);
 };
 
