@@ -148,10 +148,7 @@ ClientIdent EventDispatcher::register_client(Client* client) {
 	return ident;
 }
 
-void EventDispatcher::remove_client(const Client* client) {
-	assert(client);
-	const auto& ident = client->ident();
-
+void EventDispatcher::remove_client(const ClientIdent& ident) {
 #ifndef DISABLE_FAST_DISPATCH_TABLE
 	if(ident.ptr<Client>()) {
 		const auto slot = ident.slot();

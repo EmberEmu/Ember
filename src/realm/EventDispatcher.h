@@ -90,7 +90,7 @@ public:
 	void broadcast(std::vector<ClientIdent> clients, std::shared_ptr<const Event> event) const;
 
 	ClientIdent register_client(Client* client);
-	void remove_client(const Client* client);
+	void remove_client(const ClientIdent& ident);
 };
 
 } // realm, ember

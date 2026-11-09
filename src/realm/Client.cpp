@@ -105,7 +105,7 @@ void Client::start() {
 void Client::stop() {
 	assert(running_ && "stop called twice, fix your logic");
 	running_ = false;
-	dispatcher_.remove_client(this);
+	dispatcher_.remove_client(ident());
 	handler_.stop();
 	connection_.stop();
 }
