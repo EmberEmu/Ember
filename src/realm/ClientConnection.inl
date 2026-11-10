@@ -42,7 +42,7 @@ bool ClientConnection::write_packet_stream(const PacketType& packet) {
 	stream.write_seek(spark::io::StreamSeek::sk_stream_absolute, 0);
 	stream << size << opcode;
 	stream.write_seek(spark::io::StreamSeek::sk_stream_absolute, written);
-	return !!stream;
+	return stream.good();
 }
 
 void ClientConnection::send(const protocol::is_packet auto& packet) {
