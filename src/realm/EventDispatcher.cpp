@@ -79,7 +79,7 @@ void EventDispatcher::broadcast(std::vector<ClientIdent> clients, std::shared_pt
 			continue;
 		}
 
-		auto& service = pool_.get(i);
+		auto& service = pool_.get(service_id);
 
 		boost::asio::post(service, [this, clients_ptr, range, event] {
 			auto [beg, end] = range;

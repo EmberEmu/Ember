@@ -27,7 +27,7 @@ bool ClientConnection::write_packet_stream(const PacketType& packet) {
 	const auto written = stream.total_write();
 
 	auto size = spark::io::endian::native_to_big(
-		gsl::narrow_cast<SizeType>(written - sizeof(SizeType)
+		gsl::narrow_cast<SizeType>(written - sizeof(SizeType))
 	);
 
 	auto opcode = packet.opcode;
