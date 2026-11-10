@@ -21,6 +21,8 @@ concept is_packet = requires(T s) {
 };
 
 template<typename stream_type>
-concept le_stream = std::is_same_v<typename stream_type::endian_type, spark::io::endian::as_little_t>;
+concept le_stream = std::is_same_v<
+	typename stream_type::endian_type, spark::io::endian::as_little_t
+>;
 
 } // protocol, ember

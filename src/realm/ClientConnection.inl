@@ -18,7 +18,9 @@ template<protocol::is_packet PacketType>
 bool ClientConnection::write_packet_stream(const PacketType& packet) {
 	using SizeType = typename PacketType::SizeType;
 
-	spark::io::BinaryStream stream(*outbound_back_, spark::io::endian::little);
+	spark::io::BinaryStream stream(
+		*outbound_back_, spark::io::no_throw, spark::io::endian::little
+	);
 
 	if(!packet.write_to_stream(stream)) {
 		return false;
@@ -40,7 +42,7 @@ bool ClientConnection::write_packet_stream(const PacketType& packet) {
 	stream.write_seek(spark::io::StreamSeek::sk_stream_absolute, 0);
 	stream << size << opcode;
 	stream.write_seek(spark::io::StreamSeek::sk_stream_absolute, written);
-	return true;
+	return !!stream;
 }
 
 void ClientConnection::send(const protocol::is_packet auto& packet) {
