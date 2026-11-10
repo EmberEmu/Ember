@@ -24,10 +24,10 @@ bool ClientConnection::write_packet_stream(const PacketType& packet) {
 		return false;
 	}
 
-	const auto end_pos = stream.total_write();
+	const auto written = stream.total_write();
 
 	auto size = spark::io::endian::native_to_big(
-		gsl::narrow_cast<SizeType>(end_pos - sizeof(SizeType)
+		gsl::narrow_cast<SizeType>(written - sizeof(SizeType)
 	);
 
 	auto opcode = packet.opcode;
@@ -39,7 +39,7 @@ bool ClientConnection::write_packet_stream(const PacketType& packet) {
 
 	stream.write_seek(spark::io::StreamSeek::sk_stream_absolute, 0);
 	stream << size << opcode;
-	stream.write_seek(spark::io::StreamSeek::sk_stream_absolute, end_pos);
+	stream.write_seek(spark::io::StreamSeek::sk_stream_absolute, written);
 	return true;
 }
 
