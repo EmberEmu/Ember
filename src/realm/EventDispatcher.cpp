@@ -70,9 +70,7 @@ void EventDispatcher::broadcast(std::vector<ClientIdent> clients, std::shared_pt
 
 	const auto clients_ptr = std::make_shared<decltype(clients)>(std::move(clients));
 
-	for(std::size_t i = 0, j = pool_.size(); i < j; ++i) {
-		const auto service_id = gsl::narrow<std::uint8_t>(i);
-
+	for(std::size_t service_id = 0, j = pool_.size(); service_id < j; ++service_id) {
 		const auto range = std::ranges::equal_range(
 			*clients_ptr, service_id, std::ranges::less{}, &ClientIdent::service
 		);
