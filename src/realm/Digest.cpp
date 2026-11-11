@@ -7,7 +7,6 @@
  */
 
 #include "Digest.h"
-#include <algorithm>
 #include <boost/assert.hpp>
 #include <botan/hash.h>
 #include <botan/mem_ops.h>
