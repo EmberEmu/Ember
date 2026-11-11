@@ -6,11 +6,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#pragma once
-
 #include <allocators/HugePageAllocator.h>
-#if (defined __linux__ || defined __unix__) && defined ENABLE_HUGE_PAGES
-#include <hugetlbfs.h>
+#ifdef __linux__
 #include <sys/mman.h>
 #include <vector>
 #elif defined _WIN32
@@ -61,42 +58,6 @@ bool grant_permissions() {
 
 #endif
 
-#ifdef __linux__
-std::size_t determine_page_size(const std::size_t size) {
-	if(size == 0) {
-		return 0;
-	}
-
-	const auto count = gethugepagesizes(nullptr, 0);
-
-	if(count <= 0) {
-		return 0;
-	}
-
-	std::vector<long> sizes(count);
-
-	if(gethugepagesizes(sizes.data(), count) <= 0) {
-		return 0;
-	}
-
-	std::size_t result = 0;
-
-	for(const auto size : sizes) {
-		if(size <= 0) {
-			continue;
-		}
-
-		const auto candidate = static_cast<std::size_t>(size);
-
-		if(candidate <= size) {
-			result = std::max(result, candidate);
-		}
-	}
-
-	return result;
-}
-#endif
-
 #ifdef _WIN32
 void* allocate_win32(const std::size_t size) {
 	if(!grant_permissions()) {
@@ -123,6 +84,9 @@ void* allocate_win32(const std::size_t size) {
 #endif
 
 #ifdef __linux__
+
+#define HUGE_PAGE_MINIMUM 1024 * 1024 * 2 // 2MB - avoiding libhugetlbfs dep
+
 void* allocate_linux(const std::size_t size) {
 	constexpr std::size_t align_to = HUGE_PAGE_MINIMUM;
 	const auto rem = size % align_to;
