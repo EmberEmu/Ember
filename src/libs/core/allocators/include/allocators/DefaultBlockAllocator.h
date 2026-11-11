@@ -18,11 +18,11 @@
 namespace ember::allocators {
 
 struct DefaultBlockAllocator {
-	void* allocate(std::size_t size) {
+	void* allocate(const std::size_t size) {
 #if (defined __linux__ || defined __unix__) && defined ENABLE_HUGE_PAGES
 		constexpr std::size_t align_to = HUGE_PAGE_MINIMUM;
-		const auto rem = storage_size % align_to;
-		const auto alloc_size = rem == 0? storage_size : storage_size + (align_to - rem);
+		const auto rem = size % align_to;
+		const auto alloc_size = rem == 0? size : size + (align_to - rem);
 		auto allocated = std::aligned_alloc(HUGE_PAGE_MINIMUM, alloc_size));
 
 		if(!allocated) {
