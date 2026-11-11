@@ -18,7 +18,7 @@
 #include <cstddef>
 #include <cstdlib>
 
-namespace ember::allocators {
+namespace ember::allocators::detail {
 
 #ifdef _WIN32
 bool grant_permissions() {
@@ -106,17 +106,17 @@ void* allocate_linux(const std::size_t size) {
 }
 #endif
 
-void* HugePageAllocator::allocate(const std::size_t size) {
+void* huge_page_allocate(const std::size_t size) {
 #ifdef __linux__
 	return allocate_linux(size);
-#elif defined _WIN32
+#elifdef _WIN32
 	return allocate_win32(size);
 #else
 	return std::malloc(size);
 #endif
 }
 
-void HugePageAllocator::deallocate(void* ptr, std::size_t) {
+void huge_page_deallocate(void* ptr) {
 #if defined _WIN32
 	VirtualFree(ptr, 0, MEM_RELEASE);
 #else

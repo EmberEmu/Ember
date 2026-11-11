@@ -32,27 +32,29 @@ class InplaceAllocator final {
 		AlignedStorage, NoPageLock, NoValidateDealloc, _alloc
 	>;
 
-	class SlabAllocator {
-		static constexpr std::string_view tag { "static_slab_allocator" };
+	struct SlabStorage {
 		static constexpr std::size_t slab_size = BlockAllocator<>::block_size * _elements;
+		alignas(std::max_align_t) std::array<std::byte, slab_size> storage{};
 
-		alignas(std::max_align_t) std::array<std::byte, slab_size> storage;
 		bool in_use = false;
+	};
+
+	template<typename T>
+	class SlabAllocator {
+		static constexpr std::string_view tag = "static_slab_allocator";
+
+		SlabStorage slab;
 
 	public:
-		using value_type = AlignedStorage;
+		using value_type = T;
 
-		template<typename T>
-		struct rebind {
-			using other = SlabAllocator;
-		};
-
-		template<typename T>
-		SlabAllocator(const SlabAllocator&) noexcept {
+		SlabAllocator() {
 			ALLOC_TRACK(tag, mem_rep_create);
 		}
 
-		SlabAllocator() {
+		template<typename U>
+		SlabAllocator(const SlabAllocator<U>& u) noexcept
+			: slab(u.slab) {
 			ALLOC_TRACK(tag, mem_rep_create);
 		}
 
@@ -60,33 +62,40 @@ class InplaceAllocator final {
 			ALLOC_TRACK(tag, mem_rep_destroy);
 		}
 
-		void* allocate(std::size_t size) {
+		T* allocate(std::size_t count) {
+			const auto size = count * sizeof(T);
+
 			ALLOC_TRACK(tag, mem_rep_bytes_alloc, size);
 
-			if(size <= storage.size() && !in_use) {
+			if(size <= slab.storage.size() && !slab.in_use) {
 				ALLOC_TRACK(tag, mem_rep_alloc);
-				in_use = true;
-				return storage.data();
-			} else {
-				ALLOC_TRACK(tag, mem_rep_system_alloc);
-				return std::malloc(size);
+				slab.in_use = true;
+				return reinterpret_cast<T*>(slab.storage.data());
 			}
+
+			ALLOC_TRACK(tag, mem_rep_system_alloc);
+			return static_cast<T*>(std::malloc(size));
 		}
 
-		void deallocate(void* ptr, std::size_t size) {
+		void deallocate(T* ptr, std::size_t count) {
+			const auto size = count * sizeof(T);
+
 			ALLOC_TRACK(tag, mem_rep_bytes_dealloc, size);
 
-			if(ptr == storage.data()) {
+			if(static_cast<void*>(ptr) == slab.storage.data()) {
 				ALLOC_TRACK(tag, mem_rep_dealloc);
-				in_use = false;
+				slab.in_use = false;
 			} else {
 				ALLOC_TRACK(tag, mem_rep_system_dealloc);
 				std::free(ptr);
 			}
 		}
+
+		template<typename U>
+		friend class SlabAllocator;
 	};
 
-	BlockAllocator<SlabAllocator> allocator;
+	BlockAllocator<SlabAllocator<AlignedStorage>> allocator;
 	std::string_view tag;
 
 public:

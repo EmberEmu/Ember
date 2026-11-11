@@ -12,10 +12,28 @@
 
 namespace ember::allocators {
 
+namespace detail {
+	void* huge_page_allocate(std::size_t size);
+	void huge_page_deallocate(void* ptr);
+}
+
+template<typename T>
 class HugePageAllocator {
 public:
-	void* allocate(std::size_t size);
-	void deallocate(void* ptr, std::size_t);
+	using value_type = T;
+
+	HugePageAllocator() = default;
+
+	template<typename U>
+	HugePageAllocator(const HugePageAllocator<U>&) noexcept {}
+
+	T* allocate(std::size_t count) {
+		return static_cast<T*>(detail::huge_page_allocate(sizeof(T) * count));
+	}
+
+	void deallocate(void* ptr, std::size_t) {
+		detail::huge_page_deallocate(ptr);
+	}
 };
 
 } // allocators, ember

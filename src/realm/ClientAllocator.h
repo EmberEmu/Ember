@@ -11,6 +11,9 @@
 #include "Config.h"
 #include "Client.h"
 #include <allocators/BlockAllocator.h>
+#ifdef ENABLE_HUGE_PAGES
+#include <allocators/HugePageAllocator.h>
+#endif
 
 namespace ember::realm {
 
@@ -24,6 +27,9 @@ using ClientAllocator = allocators::BlockAllocator<
 	Client,
 	PageLockPolicy,
 	allocators::NoValidateDealloc
+#ifdef ENABLE_HUGE_PAGES
+	, allocators::HugePageAllocator<Client>
+#endif
 >;
 
 } // realm, ember

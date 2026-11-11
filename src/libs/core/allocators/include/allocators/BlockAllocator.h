@@ -128,7 +128,7 @@ class BlockAllocator {
 	void allocate_storage() {
 		constexpr auto block_size = sizeof(Block);
 		const auto storage_size = block_size * elements_;
-		storage_ = static_cast<Block*>(allocator_.allocate(elements_));
+		storage_ = allocator_.allocate(elements_);
 
 		if(!storage_) {
 			throw std::bad_alloc();
