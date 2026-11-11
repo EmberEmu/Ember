@@ -29,7 +29,11 @@ struct DefaultBlockAllocator {
 			return nullptr;
 		}
 
-		madvise(allocated, alloc_size, MADV_HUGEPAGE);
+		if(madvise(allocated, alloc_size, MADV_HUGEPAGE) != 0) {
+			std::free(allocated);
+			return nullptr;
+		}
+
 		return allocated;
 #else
 		return std::malloc(size);
