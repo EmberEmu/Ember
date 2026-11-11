@@ -16,6 +16,7 @@
 #include <shared/utility/Utility.h>
 #include <shared/utility/polyfill/print>
 #include <boost/asio/io_context.hpp>
+#include <boost/asio/post.hpp>
 #include <boost/asio/signal_set.hpp>
 #include <boost/program_options.hpp>
 #ifdef WITH_MIMALLOC
@@ -83,14 +84,19 @@ int run(const opts::variables_map& args, log::Logger& logger, commands::Command&
 		service.stop();
 	});
 
-	std::jthread worker([&]() {
+	std::jthread worker([&](const auto& token) {
 		thread::set_name("Signal handler");
-		ioc.run_one();
+
+		std::stop_callback stop(token, [&] {
+			boost::asio::post(ioc, [&] {
+				signals.cancel(); 
+			});
+		});
+
+		ioc.run();
 	});
 
-	const auto ret = service.run(args);
-	signals.cancel();
-	return ret;
+	return service.run(args);
 } catch(const std::exception& e) {
 	SLOG_FATAL(logger, e.what());
 	return EXIT_FAILURE;

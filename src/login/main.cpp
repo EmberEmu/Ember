@@ -17,6 +17,7 @@
 #include <shared/utility/polyfill/print>
 #include <shared/utility/shutdown/Install.h>
 #include <boost/asio/io_context.hpp>
+#include <boost/asio/post.hpp>
 #include <boost/asio/signal_set.hpp>
 #include <boost/asio/steady_timer.hpp>
 #include <boost/program_options.hpp>
@@ -86,8 +87,15 @@ int run(const opts::variables_map& args, log::Logger& logger, commands::Command&
 		service.stop();
 	});
 
-	std::jthread worker([&]() {
+	std::jthread worker([&](const auto& token) {
 		thread::set_name("Signal handler");
+
+		std::stop_callback stop(token, [&] {
+			boost::asio::post(ioc, [&] {
+				signals.cancel(); 
+			});
+		});
+
 		ioc.run();
 	});
 
@@ -95,9 +103,7 @@ int run(const opts::variables_map& args, log::Logger& logger, commands::Command&
 		LOG_CONSOLE(logger, message);
 	});
 
-	const auto ret = service.run(args);
-	signals.cancel();
-	return ret;
+	return service.run(args);
 } catch(const std::exception& e) {
 	SLOG_FATAL(logger, e.what());
 	return EXIT_FAILURE;
