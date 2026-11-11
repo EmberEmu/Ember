@@ -28,7 +28,7 @@ void RealmQueue::set_timer() {
 	});
 }
 
-bool RealmQueue::empty() {
+[[nodiscard]] bool RealmQueue::empty() {
 	std::lock_guard guard(lock_);
 	return queue_.empty();
 }
