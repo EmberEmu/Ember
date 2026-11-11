@@ -94,7 +94,7 @@ TEST_F(ClientIdentTest, CopyCtorEquality) {
 		0x81, 0x5d, 0x1a, 0xd6, 0x98, 0xc1, 0xc3, 0x0a
 	};
 
-	ClientIdent ident;
+	ClientIdent ident(data);
 	ClientIdent ident2(ident);
 	ASSERT_EQ(ident, ident2);
 }
@@ -105,7 +105,7 @@ TEST_F(ClientIdentTest, CopyAssignEquality) {
 		0x81, 0x5d, 0x1a, 0xd6, 0x98, 0xc1, 0xc3, 0x0a
 	};
 
-	ClientIdent ident;
+	ClientIdent ident(data);
 	ClientIdent ident2 = ident;
 	ASSERT_EQ(ident, ident2);
 }
