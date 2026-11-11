@@ -40,13 +40,7 @@ void handle_shutdown_command(const commands::Arguments& arguments,
 	}
 
 	timer->async_wait([flag, on_expire = std::move(on_expire)](const auto& ec) {
-		if(ec) {
-			return;
-		}
-
-		bool expected = true;
-
-		if(!flag->compare_exchange_strong(expected, false)) {
+		if(ec || !flag->exchange(false)) {
 			return;
 		}
 
@@ -68,9 +62,7 @@ void handle_remaining_command(std::shared_ptr<boost::asio::steady_timer> timer,
 void handle_cancel_command(std::shared_ptr<boost::asio::steady_timer> timer,
                            std::shared_ptr<std::atomic_bool> flag,
                            OnCancel on_cancel) {
-	bool expected = true;
-
-	if(flag->compare_exchange_strong(expected, false)) {
+	if(flag->exchange(false)) {
 		timer->cancel();
 		on_cancel(shutdown::State::pending);
 	} else {

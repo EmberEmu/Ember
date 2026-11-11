@@ -20,7 +20,7 @@ namespace ember::log {
 class CommandSink : public Sink {
 	static constexpr std::string_view sink_type { "CommandSink" };
 	static inline std::atomic_bool initialised { false };
-	bool singular_instance { false };
+	bool atomic_owner { false };
 
 public:
 	using CommandHandler = std::function<void(const std::string_view)>;

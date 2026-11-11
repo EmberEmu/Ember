@@ -14,19 +14,17 @@ namespace ember::log {
 
 CommandSink::CommandSink(std::string name, Severity severity, Filter filter)
 	: Sink(std::move(name), std::string(type()), severity, filter) {
-	bool expected = false;
-
-	if(!initialised.compare_exchange_strong(expected, true)) {
+	if(initialised.exchange(true)) {
 		throw std::runtime_error(
 			"command sinks are globally unique - attempted to create multiple instances"
 		);
 	}
 
-	singular_instance = true;
+	atomic_owner = true;
 }
 
 CommandSink::~CommandSink() {
-	if(!singular_instance) {
+	if(!atomic_owner) {
 		return;
 	}
 

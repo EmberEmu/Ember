@@ -79,9 +79,7 @@ void Service::initialise(const opts::variables_map& args) {
 }
 
 void Service::stop() {
-	bool expected = false;
-
-	if(!stopped.compare_exchange_strong(expected, true)) {
+	if(stopped.exchange(true)) {
 		return;
 	}
 

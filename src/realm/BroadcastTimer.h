@@ -91,9 +91,7 @@ public:
 	}
 
 	void start() {
-		bool expected = false;
-
-		if(!running_.compare_exchange_strong(expected, true)) {
+		if(running_.exchange(true)) {
 			return;
 		}
 

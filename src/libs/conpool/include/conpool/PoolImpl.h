@@ -205,9 +205,7 @@ public:
 	}
 
 	void close() {
-		bool expected = false;
-
-		if(!closed_.compare_exchange_strong(expected, true)) {
+		if(closed_.exchange(true)) {
 			return;
 		}
 
