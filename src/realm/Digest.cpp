@@ -10,12 +10,13 @@
 #include <algorithm>
 #include <boost/assert.hpp>
 #include <botan/hash.h>
+#include <botan/mem_ops.h>
 
 namespace ember::realm::digest {
 
 bool validate(const Context& ctx, std::span<const std::uint8_t, hash_sizes::sha160> client_digest) {
 	const auto result = calculate(ctx);
-	return std::ranges::equal(result, client_digest);
+	return Botan::constant_time_compare(result, client_digest);
 }
 
 std::array<std::uint8_t, hash_sizes::sha160> calculate(const Context& ctx) {
