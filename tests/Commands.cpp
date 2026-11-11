@@ -265,7 +265,7 @@ TEST_F(Commands, Execute_MissingArgs) {
 		"jumped",
 	};
 
-	ASSERT_EQ(cmd->execute(), commands::Result::missing_args);
+	ASSERT_EQ(cmd->execute(args), commands::Result::missing_args);
 }
 
 TEST_F(Commands, Execute_RequiredArgs_Success) {

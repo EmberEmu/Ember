@@ -9,7 +9,7 @@
 #pragma once
 
 #include <allocators/AllocTrack.h>
-#include <allocators/HugePages.h>
+#include <allocators/DefaultBlockAllocator.h>
 #include <shared/utility/Utility.h>
 #include <array>
 #include <concepts>
@@ -23,9 +23,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
-#if (defined __linux__ || defined __unix__) && defined ENABLE_HUGE_PAGES
-#include <sys/mman.h>
-#endif
 
 #ifndef NDEBUG
 #define EMBER_DEBUG_ALLOCATORS
@@ -38,16 +35,6 @@ struct PageLock final : NoPageLock {};
 
 struct NoValidateDealloc {};
 struct ValidateDealloc final : NoValidateDealloc {};
-
-struct DefaultBlockAllocator {
-	void* allocate(std::size_t size) {
-		return std::malloc(size);
-	}
-
-	void deallocate(void* ptr, std::size_t) {
-		std::free(ptr);
-	}
-};
 
 /*
  * Basic fixed-size block stack allocator that preallocates a slab of memory
@@ -141,22 +128,6 @@ class BlockAllocator {
 	void allocate_storage() {
 		constexpr auto block_size = sizeof(Block);
 		const auto storage_size = block_size * elements_;
-
-#if (defined __linux__ || defined __unix__) && defined ENABLE_HUGE_PAGES
-		constexpr std::size_t align_to = HUGE_PAGE_MINIMUM;
-		const auto rem = storage_size % align_to;
-		const auto alloc_size = rem == 0? storage_size : storage_size + (align_to - rem);
-
-		storage_ = static_cast<Block*>(std::aligned_alloc(HUGE_PAGE_MINIMUM, alloc_size));
-
-		if(!storage_) {
-			throw std::bad_alloc{};
-		}
-
-		madvise(storage_, alloc_size, MADV_HUGEPAGE);
-		elements_ = alloc_size / block_size;
-		alloc_size_ = alloc_size;
-#else
 		storage_ = static_cast<Block*>(allocator_.allocate(storage_size));
 
 		if(!storage_) {
@@ -164,15 +135,10 @@ class BlockAllocator {
 		}
 
 		alloc_size_ = storage_size;
-#endif
 	}
 
 	void deallocate_storage() {
-#if (defined __linux__ || defined __unix__) && defined ENABLE_HUGE_PAGES
-		std::free(storage_);
-#else
 		allocator_.deallocate(storage_, alloc_size_);
-#endif
 	}
 	
 	void initialise() {

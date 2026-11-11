@@ -13,6 +13,7 @@ add_library(${LIBRARY_NAME} INTERFACE
     include/allocators/DefaultAllocator.h
     include/allocators/TLSBlockAllocator.h
     include/allocators/BlockAllocator.h
+    include/allocators/DefaultBlockAllocator.h
     include/allocators/Tracking.h
     include/allocators/AllocTrack.h
 )
