@@ -144,3 +144,34 @@ TEST_F(ClientIdentTest, HashInvalidateEncode) {
 	ident.encode(reinterpret_cast<void*>(0x00FED00F), 1); // invalidate
 	ASSERT_EQ(ident.hash(), 0x58C96F972275FB96);
 }
+
+TEST_F(ClientIdentTest, DefaultEmpty) {
+	ClientIdent ident;
+	ASSERT_FALSE(ident);
+	ASSERT_TRUE(ident.empty());
+}
+
+TEST_F(ClientIdentTest, NotEmpty) {
+	const std::array<std::uint8_t, 16> data {
+		0xf1, 0xb9, 0xa0, 0x02, 0x21, 0xe6, 0xb9, 0x7c,
+		0x81, 0x5d, 0x1a, 0xd6, 0x98, 0xc1, 0xc3, 0x0a
+	};
+
+	ClientIdent ident(data);
+	ASSERT_TRUE(ident);
+	ASSERT_FALSE(ident.empty());
+}
+
+TEST_F(ClientIdentTest, ClearEmpty) {
+	const std::array<std::uint8_t, 16> data {
+		0xf1, 0xb9, 0xa0, 0x02, 0x21, 0xe6, 0xb9, 0x7c,
+		0x81, 0x5d, 0x1a, 0xd6, 0x98, 0xc1, 0xc3, 0x0a
+	};
+
+	ClientIdent ident(data);
+	ASSERT_TRUE(ident);
+	ASSERT_FALSE(ident.empty());
+	ident.clear();
+	ASSERT_FALSE(ident);
+	ASSERT_TRUE(ident.empty());
+}
