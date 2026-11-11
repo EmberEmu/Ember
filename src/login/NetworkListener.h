@@ -56,7 +56,7 @@ class NetworkListener final {
 				const auto& ep = socket_.remote_endpoint(ec);
 
 				if(ec) {
-					LOG_DEBUG(logger_, "Aborted connection, remote peer disconnected");
+					LOG_DEBUG(logger_, "Aborted connection: {}", ec.what());
 					metrics_.increment("aborted_connections");
 					return;
 				}
