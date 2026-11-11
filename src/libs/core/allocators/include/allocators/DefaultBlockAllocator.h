@@ -23,7 +23,7 @@ struct DefaultBlockAllocator {
 		constexpr std::size_t align_to = HUGE_PAGE_MINIMUM;
 		const auto rem = size % align_to;
 		const auto alloc_size = rem == 0? size : size + (align_to - rem);
-		auto allocated = std::aligned_alloc(HUGE_PAGE_MINIMUM, alloc_size));
+		auto allocated = std::aligned_alloc(HUGE_PAGE_MINIMUM, alloc_size);
 
 		if(!allocated) {
 			return nullptr;
