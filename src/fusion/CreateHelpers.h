@@ -278,7 +278,7 @@ inline ServiceRunner create_runner(ServiceIndex service, const Params& params) {
 		case ServiceIndex::service_character:
 			return create_character_runner(params);
 		default:
-			std::unreachable();
+			std::abort();
 	}
 }
 

@@ -63,7 +63,9 @@ constexpr std::string_view severity_style(const Theme::StyleBody& style, Severit
 		case console_error:
 			return style.conerr;
 		default:
-			return {};
+			throw std::runtime_error(
+				"invalid severity value given"
+			);
 	}
 }
 
