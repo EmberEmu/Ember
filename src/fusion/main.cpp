@@ -284,7 +284,7 @@ opts::variables_map parse_arguments(const int argc, const char* argv[]) {
 		("file_log.verbosity", opts::value<log::Severity>()->required())
 		("file_log.filter_mask", opts::value<log::Filter>()->required())
 		("file_log.path", opts::value<std::string>()->required())
-		("file_log.timestamp_format", opts::value<std::string>())
+		("file_log.timestamp_format", opts::value<std::string>()->required())
 		("file_log.mode", opts::value<std::string>()->required())
 		("file_log.size_rotate", opts::value<std::uint32_t>()->required())
 		("file_log.midnight_rotate", opts::value<bool>()->required())
