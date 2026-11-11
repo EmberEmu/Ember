@@ -8,5 +8,14 @@
 
 #pragma once
 
-// only taking x86_64 into account for now
-#define HUGE_PAGE_MINIMUM 1024 * 1024 * 2 // 2MB
+#include <cstddef>
+
+namespace ember::allocators {
+
+class HugePageAllocator {
+public:
+	void* allocate(std::size_t size);
+	void deallocate(void* ptr, std::size_t);
+};
+
+} // allocators, ember

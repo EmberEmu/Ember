@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include <allocators/HugePages.h>
 #if (defined __linux__ || defined __unix__) && defined ENABLE_HUGE_PAGES
 #include <sys/mman.h>
 #endif
@@ -17,7 +16,7 @@
 
 namespace ember::allocators {
 
-struct DefaultBlockAllocator {
+class HugePageAllocator {
 	void* allocate(const std::size_t size) {
 #if (defined __linux__ || defined __unix__) && defined ENABLE_HUGE_PAGES
 		constexpr std::size_t align_to = HUGE_PAGE_MINIMUM;

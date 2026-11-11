@@ -6,18 +6,19 @@
 
 set(LIBRARY_NAME allocators)
 
-add_library(${LIBRARY_NAME} INTERFACE
+add_library(${LIBRARY_NAME} STATIC
     include/allocators/AsioAllocator.h
     include/allocators/PoolAllocator.h
     include/allocators/InplaceAllocator.h
     include/allocators/DefaultAllocator.h
     include/allocators/TLSBlockAllocator.h
     include/allocators/BlockAllocator.h
-    include/allocators/DefaultBlockAllocator.h
+    include/allocators/HugePageAllocator.h
     include/allocators/Tracking.h
     include/allocators/AllocTrack.h
+    src/HugePageAllocator.cpp
 )
 
-target_include_directories(${LIBRARY_NAME} INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_link_libraries(${LIBRARY_NAME} INTERFACE shared)
 set_target_properties(${LIBRARY_NAME} PROPERTIES FOLDER "Common Libraries")

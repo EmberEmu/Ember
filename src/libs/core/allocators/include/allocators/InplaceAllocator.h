@@ -12,6 +12,7 @@
 #include <allocators/BlockAllocator.h>
 #include <array>
 #include <string_view>
+#include <memory>
 #include <cstddef>
 #include <cstdlib>
 
@@ -26,7 +27,7 @@ class InplaceAllocator final {
 		std::byte storage[_size];
 	};
 
-	template<typename _alloc = DefaultBlockAllocator>
+	template<typename _alloc = std::allocator<AlignedStorage>>
 	using BlockAllocator = BlockAllocator<
 		AlignedStorage, NoPageLock, NoValidateDealloc, _alloc
 	>;
@@ -39,6 +40,18 @@ class InplaceAllocator final {
 		bool in_use = false;
 
 	public:
+		using value_type = AlignedStorage;
+
+		template<typename T>
+		struct rebind {
+			using other = SlabAllocator;
+		};
+
+		template<typename T>
+		SlabAllocator(const SlabAllocator&) noexcept {
+			ALLOC_TRACK(tag, mem_rep_create);
+		}
+
 		SlabAllocator() {
 			ALLOC_TRACK(tag, mem_rep_create);
 		}
