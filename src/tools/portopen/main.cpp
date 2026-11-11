@@ -164,12 +164,6 @@ void use_upnp(const opts::variables_map& args) {
 	ctx.run();
 }
 
-void protocol_validate(const ports::Protocol& protocol) {
-	if(protocol == ports::Protocol::all) {
-		throw std::invalid_argument(R"("all" is not a valid protocol option for this tool)");
-	}
-}
-
 opts::variables_map parse_arguments(const int argc, const char* argv[]) {
 	opts::options_description cmdline_opts("Options");
 	cmdline_opts.add_options()
@@ -180,7 +174,7 @@ opts::variables_map parse_arguments(const int argc, const char* argv[]) {
 		("interface,f", opts::value<std::string>()->default_value("0.0.0.0"), "Interface to bind to")
 		("gateway,g", opts::value<std::string>()->default_value(""), "Gateway address")
 		("delete,d", "Delete mapping")
-		("protocol,p", opts::value<ports::Protocol>()->default_value(ports::Protocol::udp)->notifier(protocol_validate), "Protocol (udp, tcp)");
+		("protocol,p", opts::value<ports::Protocol>()->default_value(ports::Protocol::udp), "Protocol (udp, tcp)");
 
 	opts::variables_map options;
 	opts::store(opts::command_line_parser(argc, argv).options(cmdline_opts).run(), options);

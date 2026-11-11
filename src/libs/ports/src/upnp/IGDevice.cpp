@@ -287,10 +287,6 @@ asio::awaitable<ErrorCode> IGDevice::do_delete_port_mapping(const Mapping& mappi
 		co_return ErrorCode::soap_missing_uri;
 	}
 
-	if(mapping.protocol == Protocol::all) {
-		co_return ErrorCode::invalid_mapping_arg;
-	}
-
 	const auto args = build_upnp_del_mapping(mapping);
 
 	if(auto ec = validate_soap_arguments(args)) {
@@ -346,10 +342,6 @@ asio::awaitable<ErrorCode> IGDevice::do_add_port_mapping(Mapping mapping, HTTPTr
 
 	if(mapping.internal_ip.empty()) {
 		mapping.internal_ip = transport.local_endpoint().address().to_string();
-	}
-
-	if(mapping.protocol == Protocol::all) {
-		co_return ErrorCode::invalid_mapping_arg;
 	}
 
 	const auto args = build_upnp_add_mapping(mapping);

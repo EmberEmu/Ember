@@ -42,8 +42,6 @@ inline std::istream& operator>>(std::istream& in, Protocol& protocol) {
 		protocol = Protocol::udp;
 	} else if(token == "tcp") {
 		protocol = Protocol::tcp;
-	} else if(token == "all") {
-		protocol = Protocol::all;
 	} else {
 		in.setstate(std::ios_base::failbit);
 	}
@@ -53,9 +51,6 @@ inline std::istream& operator>>(std::istream& in, Protocol& protocol) {
 
 inline std::ostream& operator<<(std::ostream& stream, const Protocol& protocol) {
 	switch(protocol) {
-		case Protocol::all:
-			stream << "all";
-			break;
 		case Protocol::tcp:
 			stream << "tcp";
 			break;

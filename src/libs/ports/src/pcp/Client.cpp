@@ -26,7 +26,8 @@ Client::Client(std::string interface, std::string gateway, asio::io_context& ctx
 	, transport_(interface, PORT_IN, ctx)
 	, gateway_(std::move(gateway))
 	, interface_(std::move(interface))
-	, has_resolved_(false), resolve_res_(false) {
+	, has_resolved_(false)
+	, resolve_res_(false) {
 
 	auto& executor = timer_.get_executor();
 
@@ -485,9 +486,6 @@ ErrorCode Client::add_mapping_pcp(const MapRequest& request, bool strict) {
 			break;
 		case Protocol::udp:
 			protocol = pcp::Protocol::udp;
-			break;
-		case Protocol::all:
-			protocol = pcp::Protocol::all;
 			break;
 		default:
 			return ErrorCode::invalid_protocol;

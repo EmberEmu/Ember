@@ -12,7 +12,6 @@ namespace ember::ports {
 
 // Exists only so NAT-PMP/PCP & UPnP can use the same definition
 enum class Protocol {
-	all, // PCP only
 	tcp,
 	udp
 };
