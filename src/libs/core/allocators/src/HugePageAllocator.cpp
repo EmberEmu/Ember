@@ -131,7 +131,7 @@ void* allocate_win32(const std::size_t size) {
 void* allocate_linux(const std::size_t size) {
 	// skip huge pages if the allocation fits within a single page
 	if(size <= getpagesize()) {
-		return ::operator new(size);
+		return std::aligned_alloc(alignof(std::max_align_t), size);
 	}
 
 	constexpr std::size_t align_to = HUGE_PAGE_MINIMUM;
@@ -145,6 +145,7 @@ void* allocate_linux(const std::size_t size) {
 
 	if(madvise(allocated, alloc_size, MADV_HUGEPAGE) != 0) {
 		std::free(allocated);
+
 		throw huge_page_allocation_error(
 			std::format(
 				"madvise with MADV_HUGEPAGE failed, error {}", errno
@@ -167,7 +168,9 @@ void* huge_page_allocate(const std::size_t size) {
 }
 
 void huge_page_deallocate(void* ptr) {
-#if defined _WIN32
+#ifdef __linux__
+	std::free(ptr);
+#elifdef _WIN32
 	VirtualFree(ptr, 0, MEM_RELEASE);
 #else
 	::operator delete(ptr);
