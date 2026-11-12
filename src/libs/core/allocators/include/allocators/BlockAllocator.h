@@ -9,7 +9,6 @@
 #pragma once
 
 #include <allocators/AllocTrack.h>
-#include <allocators/DefaultBlockAllocator.h>
 #include <shared/utility/Utility.h>
 #include <array>
 #include <concepts>
@@ -58,9 +57,9 @@ struct ValidateDealloc final : NoValidateDealloc {};
 template<typename _ty, 
 	std::derived_from<NoPageLock> PageLockPolicy = NoPageLock,
 	std::derived_from<NoValidateDealloc> ValidatePolicy = NoValidateDealloc,
-	typename UseAllocator = DefaultBlockAllocator
+	typename BaseAllocatorType = std::allocator<_ty>
 >
-class BlockAllocator {
+class BlockAllocator final {
 	static constexpr std::string_view default_tag { "block_allocator" };
 
 	using tid_type = std::conditional_t<
@@ -83,13 +82,14 @@ class BlockAllocator {
 		} meta;
 	};
 
+	using AllocatorType = typename std::allocator_traits<BaseAllocatorType>::template rebind_alloc<Block>;
+
 	Block* head_ = nullptr;
 	Block* storage_ = nullptr;
 	std::size_t elements_ = 0;
 	std::string_view tag_;
-	UseAllocator allocator_;
+	AllocatorType allocator_;
 	[[no_unique_address]] tid_type thread_id_;
-	std::size_t alloc_size_ = 0;
 
 	void page_lock_conditional() {
 		if constexpr(std::is_same_v<PageLockPolicy, PageLock>) {
@@ -128,17 +128,15 @@ class BlockAllocator {
 	void allocate_storage() {
 		constexpr auto block_size = sizeof(Block);
 		const auto storage_size = block_size * elements_;
-		storage_ = static_cast<Block*>(allocator_.allocate(storage_size));
+		storage_ = allocator_.allocate(elements_);
 
 		if(!storage_) {
 			throw std::bad_alloc();
 		}
-
-		alloc_size_ = storage_size;
 	}
 
 	void deallocate_storage() {
-		allocator_.deallocate(storage_, alloc_size_);
+		allocator_.deallocate(storage_, elements_);
 	}
 	
 	void initialise() {

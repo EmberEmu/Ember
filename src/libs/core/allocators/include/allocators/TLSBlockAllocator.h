@@ -9,6 +9,9 @@
 #pragma once
 
 #include <allocators/BlockAllocator.h>
+#ifdef ENABLE_HUGE_PAGES
+#include <allocators/HugePageAllocator.h>
+#endif
 #include <concepts>
 #include <type_traits>
 #include <utility>
@@ -37,7 +40,11 @@ template<typename _ty,
 	std::derived_from<ImplicitInit> InitPolicy = ImplicitInit
 >
 class TLSBlockAllocator final {
+#ifdef ENABLE_HUGE_PAGES
+	using AllocatorType = BlockAllocator<_ty, PageLockPolicy, NoValidateDealloc, HugePageAllocator<_ty>>;
+#else
 	using AllocatorType = BlockAllocator<_ty, PageLockPolicy>;
+#endif
 
 	using RefCount = std::conditional_t<
 		std::is_same_v<RefCountPolicy, RefCounting>, int, std::monostate

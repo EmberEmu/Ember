@@ -94,10 +94,10 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ${BUILD_SHARED})
 
 option(BUILD_OPT_TOOLS "Build optional tools" ON)
 option(BUILD_SHARED ${BUILD_SHARED_MSG} OFF)
-option(DISABLE_FAST_CLIENT_DISPATCH_TABLE "Fast client event dispatch cache at the cost extra per-thread memory consumption" OFF)
-option(ENABLE_HUGE_PAGES "When running on Linux, enable huge page support (disable if memory constrained)" ON)
+option(DISABLE_FAST_CLIENT_DISPATCH_TABLE "Fast client event dispatch tables (disable if memory constrained)" OFF)
+option(ENABLE_HUGE_PAGES "On supported platforms, enable huge page support (disable if memory constrained)" ON)
 option(ENABLE_PAGE_LOCKING "Allow the allocator to lock pages (disable if memory constrained)" ON)
-option(ALLOCATOR_TRACKING "Enable viewing custom memory allocator statistics - slow, debugging only!" OFF)
+option(ALLOCATOR_TRACKING "Enable memory allocation statistics (very slow, debugging only!)" OFF)
 
 set(PGO "off" CACHE STRING "Profile guided optimisation mode")
 set_property(CACHE PGO PROPERTY STRINGS "off" "generate" "use")
