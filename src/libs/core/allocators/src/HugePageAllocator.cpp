@@ -162,25 +162,6 @@ void* small_aligned_alloc(const std::size_t size) {
 	return allocated;
 }
 
-void* small_aligned_alloc(const std::size_t size) {
-	constexpr auto alignment = alignof(std::max_align_t);
-	const auto remainder = size % alignment;
-	const auto padding = !remainder? 0 : alignment - remainder;
-
-	if(size > std::numeric_limits<std::size_t>::max() - padding) {
-		throw std::bad_alloc();
-	}
-
-	const auto aligned_size = ((size + alignment - 1) / alignment) * alignment;
-	auto allocated = std::aligned_alloc(alignment, aligned_size);
-
-	if(!allocated) {
-		throw std::bad_alloc();
-	}
-
-	return allocated;
-}
-
 void* allocate_linux(const std::size_t size) {
 	// skip huge pages if the allocation fits within a single page
 	if(size <= sysconf(_SC_PAGESIZE)) {
