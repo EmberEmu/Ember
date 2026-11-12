@@ -16,6 +16,7 @@ add_library(${LIBRARY_NAME} STATIC
     include/allocators/HugePageAllocator.h
     include/allocators/Tracking.h
     include/allocators/AllocTrack.h
+    include/allocators/Exception.h
     src/HugePageAllocator.cpp
 )
 

@@ -7,25 +7,33 @@
  */
 
 #include <allocators/HugePageAllocator.h>
+#include <allocators/Exception.h>
 #ifdef __linux__
 #include <sys/mman.h>
 #include <vector>
+#include <cerrno>
 #elif defined _WIN32
 #define NOMINMAX
 #include <Windows.h>
 #endif
+#include <format>
 #include <limits>
+#include <new>
 #include <cstddef>
 #include <cstdlib>
 
 namespace ember::allocators::detail {
 
 #ifdef _WIN32
-bool grant_permissions() {
+bool grant_permissions(DWORD& last_error) {
 	HANDLE token{};
-	BOOL result = OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &token);
+
+	auto result = OpenProcessToken(
+		GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &token
+	);
 
 	if(!result) {
+		last_error = GetLastError();
 		return false;
 	}
 
@@ -35,6 +43,7 @@ bool grant_permissions() {
 	result = LookupPrivilegeValue(nullptr, SE_LOCK_MEMORY_NAME, &privileges.Privileges[0].Luid);
 
 	if(!result) {
+		last_error = GetLastError();
 		CloseHandle(token);
 		return false;
 	}
@@ -49,7 +58,8 @@ bool grant_permissions() {
 
 	CloseHandle(token);
 
-	if(!result|| last_err == ERROR_NOT_ALL_ASSIGNED) {
+	if(!result || last_err != ERROR_SUCCESS) {
+		last_error = last_err;
 		return false;
 	}
 
@@ -60,19 +70,33 @@ bool grant_permissions() {
 
 #ifdef _WIN32
 void* allocate_win32(const std::size_t size) {
-	if(!grant_permissions()) {
-		return nullptr;
+	DWORD last_error = 0;
+
+	if(!grant_permissions(last_error)) {
+		throw huge_page_allocation_error(
+			std::format(
+				"unable to grant permissions required for huge page creation, error {}", last_error
+			)
+		);
 	}
 
 	const auto page_size = GetLargePageMinimum();
 
 	if(page_size == 0) {
-		return nullptr;
+		throw huge_page_allocation_error(
+			"system does not support huge pages"
+		);
+	}
+
+	if(size <= page_size) {
+		return ::operator new(size);
 	}
 
 	// round up
 	if(size > std::numeric_limits<std::size_t>::max() - (page_size - 1)) {
-		return nullptr;
+		throw huge_page_allocation_error(
+			"huge page allocation request would overflow"
+		);
 	}
 
 	const auto aligned_size = ((size + page_size - 1) / page_size) * page_size;
@@ -88,18 +112,26 @@ void* allocate_win32(const std::size_t size) {
 #define HUGE_PAGE_MINIMUM 1024 * 1024 * 2 // 2MB - avoiding libhugetlbfs dep
 
 void* allocate_linux(const std::size_t size) {
+	if(size <= HUGE_PAGE_MINIMUM) {
+		return ::operator new(size);
+	}
+
 	constexpr std::size_t align_to = HUGE_PAGE_MINIMUM;
 	const auto rem = size % align_to;
 	const auto alloc_size = rem == 0? size : size + (align_to - rem);
 	auto allocated = std::aligned_alloc(HUGE_PAGE_MINIMUM, alloc_size);
 
 	if(!allocated) {
-		return nullptr;
+		throw std::bad_alloc();
 	}
 
 	if(madvise(allocated, alloc_size, MADV_HUGEPAGE) != 0) {
 		std::free(allocated);
-		return nullptr;
+		throw huge_page_allocation_error(
+			std::format(
+				"madvise with MADV_HUGEPAGE failed, error {}", errno
+			)
+		);
 	}
 
 	return allocated;
@@ -112,7 +144,7 @@ void* huge_page_allocate(const std::size_t size) {
 #elifdef _WIN32
 	return allocate_win32(size);
 #else
-	return std::malloc(size);
+	return ::operator new(size);
 #endif
 }
 
@@ -120,7 +152,7 @@ void huge_page_deallocate(void* ptr) {
 #if defined _WIN32
 	VirtualFree(ptr, 0, MEM_RELEASE);
 #else
-	std::free(ptr);
+	::operator delete(ptr);
 #endif
 }
 
