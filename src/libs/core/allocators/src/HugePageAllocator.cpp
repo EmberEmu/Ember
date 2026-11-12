@@ -130,7 +130,7 @@ void* allocate_win32(const std::size_t size) {
 
 void* allocate_linux(const std::size_t size) {
 	// skip huge pages if the allocation fits within a single page
-	if(size <= getpagesize()) {
+	if(size <= sysconf(_SC_PAGESIZE)) {
 		constexpr auto alignment = alignof(std::max_align_t);
 		const auto remainder = size % alignment;
 		const auto padding = !remainder? 0 : alignment - remainder;
