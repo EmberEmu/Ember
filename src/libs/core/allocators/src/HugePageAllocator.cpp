@@ -139,7 +139,7 @@ void* allocate_linux(const std::size_t size) {
 			throw std::bad_alloc();
 		}
 
-		const auto aligned_size = ((requested + alignment - 1) / alignment) * alignment;
+		const auto aligned_size = ((size + alignment - 1) / alignment) * alignment;
 		return std::aligned_alloc(alignment, aligned_size);
 	}
 
