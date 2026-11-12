@@ -18,7 +18,7 @@ namespace ember::realm {
 
 struct DeferredClientDeleter final {
 	ClientAllocator& allocator;
-	Executor& executor;
+	Executor executor;
 
 	explicit DeferredClientDeleter(ClientAllocator& allocator, Executor& executor) noexcept
 		: allocator(allocator)
