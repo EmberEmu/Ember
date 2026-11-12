@@ -19,10 +19,8 @@
 #define NOMINMAX
 #include <Windows.h>
 #endif
+#include <algorithm>
 #include <format>
-#include <limits>
-#include <new>
-#include <cstddef>
 #include <cstdlib>
 
 namespace ember::allocators::detail {
@@ -72,7 +70,7 @@ bool grant_permissions(DWORD& last_error) {
 #endif
 
 #ifdef _WIN32
-void* allocate_win32(const std::size_t size) {
+void* allocate_win32(const std::size_t size, const SIZE_T alignment) {
 	SYSTEM_INFO info{};
 	GetNativeSystemInfo(&info);
 
@@ -87,9 +85,10 @@ void* allocate_win32(const std::size_t size) {
 		return ptr;
 	}
 
-	DWORD last_error = 0;
+	static DWORD last_error = 0;
+	static auto result = grant_permissions(last_error);
 
-	if(!grant_permissions(last_error)) {
+	if(!result) {
 		throw huge_page_allocation_error(
 			std::format(
 				"unable to grant permissions required for huge page creation, error {}", last_error
@@ -97,7 +96,7 @@ void* allocate_win32(const std::size_t size) {
 		);
 	}
 
-	const auto page_size = GetLargePageMinimum();
+	const auto page_size = std::max(GetLargePageMinimum(), alignment);
 
 	if(page_size == 0) {
 		throw huge_page_allocation_error(
@@ -143,8 +142,7 @@ std::uint64_t hpage_pmd_size() {
 	return size;
 }
 
-void* small_aligned_alloc(const std::size_t size) {
-	constexpr auto alignment = alignof(std::max_align_t);
+void* small_aligned_alloc(const std::size_t size, std::size_t alignment) {
 	const auto remainder = size % alignment;
 	const auto padding = !remainder? 0 : alignment - remainder;
 
@@ -162,13 +160,16 @@ void* small_aligned_alloc(const std::size_t size) {
 	return allocated;
 }
 
-void* allocate_linux(const std::size_t size) {
+void* allocate_linux(const std::size_t size, const std::size_t alignment) {
 	// skip huge pages if the allocation fits within a single page
 	if(size <= sysconf(_SC_PAGESIZE)) {
-		return small_aligned_alloc(size);
+		return small_aligned_alloc(size, alignment);
 	}
 
-	static const auto align_to = hpage_pmd_size();
+	static const auto align_to = std::max(
+		static_cast<std::size_t>(hpage_pmd_size()), alignment
+	);
+
 	const auto remainder = size % align_to;
 	const auto padding = remainder == 0 ? 0 : align_to - remainder;
 
@@ -197,23 +198,23 @@ void* allocate_linux(const std::size_t size) {
 }
 #endif
 
-void* huge_page_allocate(const std::size_t size) {
+void* huge_page_allocate(const std::size_t size, const std::size_t alignment) {
 #ifdef __linux__
-	return allocate_linux(size);
-#elifdef _WIN32
-	return allocate_win32(size);
+	return allocate_linux(size, alignment);
+#elif defined(_WIN32)
+	return allocate_win32(size, static_cast<SIZE_T>(alignment));
 #else
-	return ::operator new(size);
+	return ::operator new(size, std::align_val_t(alignment));
 #endif
 }
 
-void huge_page_deallocate(void* ptr) {
+void huge_page_deallocate(void* ptr, const std::size_t /*size*/, const std::size_t alignment) {
 #ifdef __linux__
 	std::free(ptr);
-#elifdef _WIN32
+#elif defined(_WIN32)
 	VirtualFree(ptr, 0, MEM_RELEASE);
 #else
-	::operator delete(ptr);
+	::operator delete(ptr, std::align_val_t(alignment));
 #endif
 }
 
