@@ -76,13 +76,11 @@ void* allocate_win32(const std::size_t size, const SIZE_T alignment) {
 
 	// skip huge pages if the allocation fits within a single page
 	if(size <= info.dwPageSize) {
-		auto ptr = VirtualAlloc(nullptr, size, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
-
-		if(!ptr) {
+		if(auto ptr = VirtualAlloc(nullptr, size, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE); ptr) {
+			return ptr;
+		} else {
 			throw std::bad_alloc();
 		}
-
-		return ptr;
 	}
 
 	static DWORD last_error = 0;
