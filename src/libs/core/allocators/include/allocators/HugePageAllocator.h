@@ -35,7 +35,7 @@ public:
 		}
 
 		return static_cast<T*>(
-			detail::huge_page_allocate(sizeof(T) * count), alignof(T)
+			detail::huge_page_allocate(sizeof(T) * count, alignof(T))
 		);
 	}
 
