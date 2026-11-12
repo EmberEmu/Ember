@@ -128,19 +128,29 @@ void* allocate_win32(const std::size_t size) {
 
 #define HUGE_PAGE_MINIMUM 1024 * 1024 * 2 // 2MB - avoiding libhugetlbfs dep
 
+void* small_aligned_alloc(const std::size_t size) {
+	constexpr auto alignment = alignof(std::max_align_t);
+	const auto remainder = size % alignment;
+	const auto padding = !remainder? 0 : alignment - remainder;
+
+	if(size > std::numeric_limits<std::size_t>::max() - padding) {
+		throw std::bad_alloc();
+	}
+
+	const auto aligned_size = ((size + alignment - 1) / alignment) * alignment;
+	auto allocated = std::aligned_alloc(alignment, aligned_size);
+
+	if(!allocated) {
+		throw std::bad_alloc();
+	}
+
+	return allocated;
+}
+
 void* allocate_linux(const std::size_t size) {
 	// skip huge pages if the allocation fits within a single page
 	if(size <= sysconf(_SC_PAGESIZE)) {
-		constexpr auto alignment = alignof(std::max_align_t);
-		const auto remainder = size % alignment;
-		const auto padding = !remainder? 0 : alignment - remainder;
-
-		if(size > std::numeric_limits<std::size_t>::max() - padding) {
-			throw std::bad_alloc();
-		}
-
-		const auto aligned_size = ((size + alignment - 1) / alignment) * alignment;
-		return std::aligned_alloc(alignment, aligned_size);
+		return small_aligned_alloc();
 	}
 
 	constexpr std::size_t align_to = HUGE_PAGE_MINIMUM;
