@@ -9,9 +9,10 @@
 #include <allocators/HugePageAllocator.h>
 #include <allocators/Exception.h>
 #ifdef __linux__
-#include <sys/mman.h>
 #include <vector>
 #include <cerrno>
+#include <sys/mman.h>
+#include <unistd.h>
 #elif defined _WIN32
 #define NOMINMAX
 #include <Windows.h>
@@ -88,7 +89,10 @@ void* allocate_win32(const std::size_t size) {
 		);
 	}
 
-	if(size <= page_size) {
+	SYSTEM_INFO info{};
+	GetNativeSystemInfo(&info);
+
+	if(size <= info.dwPageSize) {
 		return ::operator new(size);
 	}
 
@@ -112,7 +116,7 @@ void* allocate_win32(const std::size_t size) {
 #define HUGE_PAGE_MINIMUM 1024 * 1024 * 2 // 2MB - avoiding libhugetlbfs dep
 
 void* allocate_linux(const std::size_t size) {
-	if(size <= HUGE_PAGE_MINIMUM) {
+	if(size <= getpagesize()) {
 		return ::operator new(size);
 	}
 
