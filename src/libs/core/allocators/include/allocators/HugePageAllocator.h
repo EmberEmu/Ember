@@ -15,8 +15,8 @@
 namespace ember::allocators {
 
 namespace detail {
-	void* huge_page_allocate(std::size_t size, std::size_t alignment = alignof(std::max_align_t));
-	void huge_page_deallocate(void* ptr, std::size_t size, std::size_t alignment = alignof(std::max_align_t));
+	void* huge_page_allocate(std::size_t size, std::size_t alignment);
+	void huge_page_deallocate(void* ptr, std::size_t size, std::size_t alignment);
 }
 
 template<typename T>
@@ -40,7 +40,7 @@ public:
 	}
 
 	void deallocate(T* ptr, std::size_t count) const {
-		detail::huge_page_deallocate(ptr, sizeof(T) * count);
+		detail::huge_page_deallocate(ptr, sizeof(T) * count, alignof(T));
 	}
 };
 
