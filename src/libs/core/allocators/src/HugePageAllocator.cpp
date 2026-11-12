@@ -13,6 +13,8 @@
 #include <cerrno>
 #include <sys/mman.h>
 #include <unistd.h>
+#include <fstream>
+#include <cstdint>
 #elif defined _WIN32
 #define NOMINMAX
 #include <Windows.h>
@@ -126,7 +128,20 @@ void* allocate_win32(const std::size_t size) {
 
 #ifdef __linux__
 
-#define HUGE_PAGE_MINIMUM 1024 * 1024 * 2 // 2MB - avoiding libhugetlbfs dep
+// this is an alternative to using libhugetlbfs or parsing /sys/kernel/mm/hugepages/
+// - the downside is that we might not be getting the optimal huge page size
+// - libhugetlbfs utils would be easy to include standalone but it's LGPL
+std::uint64_t hpage_pmd_size() {
+	std::ifstream file("/sys/kernel/mm/transparent_hugepage/hpage_pmd_size");
+
+	std::uint64_t size{};
+
+	if(!(file >> size)) {
+		throw std::runtime_error("failed to read hpage_pmd_size");
+	}
+
+	return size;
+}
 
 void* small_aligned_alloc(const std::size_t size) {
 	constexpr auto alignment = alignof(std::max_align_t);
@@ -153,7 +168,7 @@ void* allocate_linux(const std::size_t size) {
 		return small_aligned_alloc();
 	}
 
-	constexpr std::size_t align_to = HUGE_PAGE_MINIMUM;
+	static const auto align_to = hpage_pmd_size();
 	const auto remainder = size % align_to;
 	const auto padding = remainder == 0 ? 0 : align_to - remainder;
 
