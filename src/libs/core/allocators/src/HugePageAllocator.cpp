@@ -71,6 +71,20 @@ bool grant_permissions(DWORD& last_error) {
 
 #ifdef _WIN32
 void* allocate_win32(const std::size_t size) {
+	SYSTEM_INFO info{};
+	GetNativeSystemInfo(&info);
+
+	// skip huge pages if the allocation fits within a single page
+	if(size <= info.dwPageSize) {
+		auto ptr = VirtualAlloc(nullptr, size, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+
+		if(!ptr) {
+			throw std::bad_alloc();
+		}
+
+		return ptr;
+	}
+
 	DWORD last_error = 0;
 
 	if(!grant_permissions(last_error)) {
@@ -89,13 +103,6 @@ void* allocate_win32(const std::size_t size) {
 		);
 	}
 
-	SYSTEM_INFO info{};
-	GetNativeSystemInfo(&info);
-
-	if(size <= info.dwPageSize) {
-		return ::operator new(size);
-	}
-
 	// round up
 	if(size > std::numeric_limits<std::size_t>::max() - (page_size - 1)) {
 		throw huge_page_allocation_error(
@@ -105,9 +112,15 @@ void* allocate_win32(const std::size_t size) {
 
 	const auto aligned_size = ((size + page_size - 1) / page_size) * page_size;
 
-	return VirtualAlloc(
+	auto ptr = VirtualAlloc(
 		nullptr, aligned_size, MEM_RESERVE | MEM_COMMIT | MEM_LARGE_PAGES, PAGE_READWRITE
 	);
+
+	if(!ptr) {
+		throw std::bad_alloc();
+	}
+
+	return ptr;
 }
 #endif
 
@@ -116,6 +129,7 @@ void* allocate_win32(const std::size_t size) {
 #define HUGE_PAGE_MINIMUM 1024 * 1024 * 2 // 2MB - avoiding libhugetlbfs dep
 
 void* allocate_linux(const std::size_t size) {
+	// skip huge pages if the allocation fits within a single page
 	if(size <= getpagesize()) {
 		return ::operator new(size);
 	}
