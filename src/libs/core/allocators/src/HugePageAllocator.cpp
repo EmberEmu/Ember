@@ -131,13 +131,28 @@ void* allocate_win32(const std::size_t size) {
 void* allocate_linux(const std::size_t size) {
 	// skip huge pages if the allocation fits within a single page
 	if(size <= getpagesize()) {
-		return std::aligned_alloc(alignof(std::max_align_t), size);
+		constexpr auto alignment = alignof(std::max_align_t);
+		const auto remainder = size % alignment;
+		const auto padding = !remainder? 0 : alignment - remainder;
+
+		if(size > std::numeric_limits<std::size_t>::max() - padding) {
+			throw std::bad_alloc();
+		}
+
+		const auto aligned_size = ((requested + alignment - 1) / alignment) * alignment;
+		return std::aligned_alloc(alignment, aligned_size);
 	}
 
 	constexpr std::size_t align_to = HUGE_PAGE_MINIMUM;
-	const auto rem = size % align_to;
-	const auto alloc_size = rem == 0? size : size + (align_to - rem);
-	auto allocated = std::aligned_alloc(HUGE_PAGE_MINIMUM, alloc_size);
+	const auto remainder = size % align_to;
+	const auto padding = remainder == 0 ? 0 : align_to - remainder;
+
+	if(size > std::numeric_limits<std::size_t>::max() - padding) {
+		throw std::bad_alloc();
+	}
+
+	const auto alloc_size = size + padding;
+	auto allocated = std::aligned_alloc(align_to, alloc_size);
 
 	if(!allocated) {
 		throw std::bad_alloc();

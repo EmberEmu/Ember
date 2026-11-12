@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <limits>
+#include <new>
 #include <cstddef>
 
 namespace ember::allocators {
@@ -28,6 +30,10 @@ public:
 	HugePageAllocator(const HugePageAllocator<U>&) noexcept {}
 
 	T* allocate(std::size_t count) {
+		if(count > std::numeric_limits<std::size_t>::max() / sizeof(T)) {
+			throw std::bad_array_new_length();
+		}
+
 		return static_cast<T*>(detail::huge_page_allocate(sizeof(T) * count));
 	}
 
