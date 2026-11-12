@@ -59,7 +59,7 @@ template<typename _ty,
 	std::derived_from<NoValidateDealloc> ValidatePolicy = NoValidateDealloc,
 	typename BaseAllocatorType = std::allocator<_ty>
 >
-class BlockAllocator {
+class BlockAllocator final {
 	static constexpr std::string_view default_tag { "block_allocator" };
 
 	using tid_type = std::conditional_t<

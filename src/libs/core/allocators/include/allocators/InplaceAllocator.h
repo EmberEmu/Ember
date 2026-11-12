@@ -40,7 +40,7 @@ class InplaceAllocator final {
 	};
 
 	template<typename T>
-	class SlabAllocator {
+	class SlabAllocator final {
 		static constexpr std::string_view tag = "static_slab_allocator";
 
 		SlabStorage slab;

@@ -20,7 +20,7 @@ namespace detail {
 }
 
 template<typename T>
-class HugePageAllocator {
+class HugePageAllocator final {
 public:
 	using value_type = T;
 
@@ -29,7 +29,7 @@ public:
 	template<typename U>
 	HugePageAllocator(const HugePageAllocator<U>&) noexcept {}
 
-	T* allocate(std::size_t count) {
+	T* allocate(std::size_t count) const {
 		if(count > std::numeric_limits<std::size_t>::max() / sizeof(T)) {
 			throw std::bad_array_new_length();
 		}
@@ -37,7 +37,7 @@ public:
 		return static_cast<T*>(detail::huge_page_allocate(sizeof(T) * count));
 	}
 
-	void deallocate(void* ptr, std::size_t) {
+	void deallocate(void* ptr, std::size_t) const {
 		detail::huge_page_deallocate(ptr);
 	}
 };
