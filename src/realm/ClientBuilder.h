@@ -28,12 +28,22 @@ class ClientBuilder {
 	unique_deferred_client make_unique_client(tcp::Socket socket, boost::asio::ip::tcp::endpoint endpoint) const {
 		auto& allocator = alloc_provider_.client_allocator();
 		auto executor = socket.get_executor();
+		auto client = allocator.allocate();
 
-		return unique_deferred_client(allocator .allocate(
-			handler_builder_.create(executor),
-			conn_builder_.create(std::move(socket), std::move(endpoint)),
-			dispatcher_, logger_
-		), DeferredClientDeleter(allocator, executor));
+		try {
+			allocator.construct(
+				client, handler_builder_.create(executor),
+				conn_builder_.create(std::move(socket), std::move(endpoint)),
+				dispatcher_, logger_
+			);
+		} catch(...) {
+			allocator.deallocate(client);
+			throw;
+		}
+
+		return unique_deferred_client(
+			client, DeferredClientDeleter(allocator, executor)
+		);
 	}
 
 public:

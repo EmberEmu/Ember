@@ -179,8 +179,7 @@ public:
 	BlockAllocator(BlockAllocator&) = delete;
 	BlockAllocator& operator=(BlockAllocator&) = delete;
 
-	template<typename ...Args>
-	[[nodiscard]] inline _ty* allocate(Args&&... args) {
+	[[nodiscard]] inline _ty* allocate() {
 		Block* block = pop();
 
 		if(block) [[likely]] {
@@ -207,10 +206,10 @@ public:
 		++active_count;
 #endif
 		ALLOC_TRACK(tag_, mem_rep_bytes_alloc, sizeof(_ty));
-		return new (&block->obj) _ty(std::forward<Args>(args)...);
+		return &block->obj;
 	}
 
-	inline void deallocate(_ty* t) {
+	void deallocate(_ty* t) {
 		assert(t);
 		auto block = reinterpret_cast<Block*>(t);
 
@@ -223,14 +222,12 @@ public:
 #ifdef EMBER_DEBUG_ALLOCATORS
 			--new_active_count;
 #endif
-			t->~_ty();
 			operator delete(block);
 			ALLOC_TRACK(tag_, mem_rep_system_dealloc);
 		} else {
 #ifdef EMBER_DEBUG_ALLOCATORS
 			--storage_active_count;
 #endif
-			t->~_ty();
 			push(block);
 			ALLOC_TRACK(tag_, mem_rep_dealloc);
 		}
@@ -240,6 +237,15 @@ public:
 		--active_count;
 #endif
 		ALLOC_TRACK(tag_, mem_rep_bytes_dealloc, sizeof(_ty));
+	}
+
+	template <class... Args>
+	static constexpr void construct(_ty* ptr, Args&&... args) {
+		std::construct_at(ptr, std::forward<Args>(args)...);
+	}
+
+	static constexpr void destroy(_ty* ptr) {
+		std::destroy_at(ptr);
 	}
 
 	std::string_view tag() const {

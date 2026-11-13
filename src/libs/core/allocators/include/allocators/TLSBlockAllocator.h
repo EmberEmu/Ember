@@ -132,8 +132,7 @@ public:
 		}
 	}
 
-	template<typename ...Args>
-	[[nodiscard]] inline _ty* allocate(Args&&... args) {
+	[[nodiscard]] inline _ty* allocate() {
 		/*
 		 * When SafeEntrant is set, need to do this here & in ctor unless
 		 * we can be 100% sure that any object using the allocator is created
@@ -147,7 +146,7 @@ public:
 		++total_allocs;
 		++active_allocs;
 #endif
-		return allocator_handle()->allocate(std::forward<Args>(args)...);
+		return allocator_handle()->allocate();
 	}
 
 	inline void deallocate(_ty* t) {

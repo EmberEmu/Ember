@@ -169,7 +169,7 @@ void* allocate_linux(const std::size_t size, const std::size_t alignment) {
 	);
 
 	const auto remainder = size % align_to;
-	const auto padding = remainder == 0 ? 0 : align_to - remainder;
+	const auto padding = remainder == 0? 0 : align_to - remainder;
 
 	if(size > std::numeric_limits<std::size_t>::max() - padding) {
 		throw std::bad_alloc();

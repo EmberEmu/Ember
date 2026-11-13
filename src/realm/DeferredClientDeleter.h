@@ -28,6 +28,7 @@ struct DeferredClientDeleter final {
 		ClientSlots::free_slot();
 
 		boost::asio::post(executor, [allocator = &allocator, ptr]() {
+			allocator->destroy(ptr);
 			allocator->deallocate(ptr);
 		});
 	}
