@@ -463,16 +463,12 @@ void print_lib_versions(log::Logger& logger) {
 		<< LOG_SYNC;
 }
 
-extern "C" {
-
-EMBER_EXPORT_SERVICE Service* create_login(log::Logger& logger, commands::Command& registry) {
+EMBER_SERVICE_LINKAGE EMBER_EXPORT_SERVICE Service* create(log::Logger& logger, commands::Command& registry) {
 	return new Service(logger, registry);
 }
 
-EMBER_EXPORT_SERVICE void destroy_login(Service* service) {
+EMBER_SERVICE_LINKAGE EMBER_EXPORT_SERVICE void destroy(Service* service) {
 	delete service;
 }
-
-} // extern "C"
 
 } // login, ember
