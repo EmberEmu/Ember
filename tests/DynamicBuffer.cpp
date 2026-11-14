@@ -126,6 +126,7 @@ TEST(DynamicBuffer, Clear) {
 TEST(DynamicBuffer, AttachTail) {
 	spark::io::DynamicBuffer<32> chain;
 	auto buffer = chain.get_allocator().allocate();
+	std::construct_at(buffer);
 
 	std::string text("This is a string that is almost certainly longer than 32 bytes");
 	std::size_t written = buffer->write(text.c_str(), text.length());
@@ -150,6 +151,7 @@ TEST(DynamicBuffer, AttachTail) {
 TEST(DynamicBuffer, PopFrontPushBack) {
 	spark::io::DynamicBuffer<32> chain;
 	auto buffer = chain.get_allocator().allocate();
+	std::construct_at(buffer);
 
 	std::string text("This is a string that is almost certainly longer than 32 bytes");
 	std::size_t written = buffer->write(text.c_str(), text.length());
