@@ -25,7 +25,7 @@ class ClientBuilder {
 	EventDispatcher& dispatcher_;
 	log::Logger& logger_;
 
-	unique_deferred_client make_unique_client(tcp::Socket socket, boost::asio::ip::tcp::endpoint endpoint) const {
+	DeferredClient make_unique_client(tcp::Socket socket, boost::asio::ip::tcp::endpoint endpoint) const {
 		auto& allocator = alloc_provider_.client_allocator();
 		auto client = allocator.allocate();
 		auto executor = socket.get_executor();
@@ -41,7 +41,7 @@ class ClientBuilder {
 			throw;
 		}
 
-		return unique_deferred_client(
+		return DeferredClient(
 			client, DeferredClientDeleter(allocator, executor)
 		);
 	}
@@ -56,7 +56,7 @@ public:
 		, dispatcher_(dispatcher)
 		, logger_(logger) {}
 
-	unique_deferred_client create(tcp::Socket socket, boost::asio::ip::tcp::endpoint endpoint) const {
+	DeferredClient create(tcp::Socket socket, boost::asio::ip::tcp::endpoint endpoint) const {
 		return make_unique_client(std::move(socket), std::move(endpoint));
 	}
 };

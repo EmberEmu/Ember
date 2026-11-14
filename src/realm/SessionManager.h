@@ -32,14 +32,14 @@ private:
 	constexpr static auto session_id_wrap  = 32'768;
 	constexpr static auto max_bulk_dequeue = 1024;
 
-	using SessionsMap = boost::unordered_flat_map<SessionID, unique_deferred_client>;
+	using SessionsMap = boost::unordered_flat_map<SessionID, DeferredClient>;
 
 	SessionsMap sessions_;
 	SessionID next_id_ = 0;
 	std::size_t peak_count_ = 0;
 	boost::asio::steady_timer timer_;
 	log::Logger& logger_;
-	moodycamel::ConcurrentQueue<unique_deferred_client> queue_;
+	moodycamel::ConcurrentQueue<DeferredClient> queue_;
 	moodycamel::ConsumerToken token_;
 	std::bitset<session_id_wrap> slots_;
 
@@ -48,7 +48,7 @@ private:
 	void collect();
 	void start_timer();
 	void process_queue();
-	std::size_t bulk_insert(std::span<unique_deferred_client> clients);
+	std::size_t bulk_insert(std::span<DeferredClient> clients);
 	SessionID reserve_slot_id();
 	void release_slot_id(SessionID id);
 
@@ -58,7 +58,7 @@ public:
 
 	SessionManager(boost::asio::io_context& ioc, std::size_t buckets, log::Logger& logger);
 
-	void enqueue(unique_deferred_client client);
+	void enqueue(DeferredClient client);
 	void stop();
 
 	std::size_t count() const;

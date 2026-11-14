@@ -35,6 +35,6 @@ struct DeferredClientDeleter final {
 	}
 };
 
-using unique_deferred_client = std::unique_ptr<Client, DeferredClientDeleter>;
+using DeferredClient = std::unique_ptr<Client, DeferredClientDeleter>;
 
 } // realm, ember
