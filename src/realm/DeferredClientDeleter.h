@@ -13,6 +13,7 @@
 #include "ClientSlots.h"
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/post.hpp>
+#include <memory>
 
 namespace ember::realm {
 
@@ -28,7 +29,7 @@ struct DeferredClientDeleter final {
 		ClientSlots::free_slot();
 
 		boost::asio::post(executor, [allocator = &allocator, ptr]() {
-			allocator->destroy(ptr);
+			std::destroy_at(ptr);
 			allocator->deallocate(ptr);
 		});
 	}
