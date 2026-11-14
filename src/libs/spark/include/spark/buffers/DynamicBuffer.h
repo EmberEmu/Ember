@@ -168,10 +168,13 @@ private:
 	}
 
 	[[nodiscard]] storage_type* allocate() {
-		return allocator_.allocate();
+		auto ptr = allocator_.allocate();
+		std::allocator_traits<allocator_type>::construct(allocator_, ptr);
+		return ptr;
 	}
 
 	void deallocate(storage_type* buffer) {
+		std::allocator_traits<allocator_type>::destroy(allocator_, buffer);
 		allocator_.deallocate(buffer);
 	}
 

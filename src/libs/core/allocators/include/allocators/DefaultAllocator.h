@@ -26,13 +26,12 @@ struct DefaultAllocator final {
 	mutable std::size_t total_deallocs = 0;
 #endif
 
-	template<typename ...Args>
-	[[nodiscard]] inline T* allocate(Args&&... args) const {
+	[[nodiscard]] inline T* allocate() const {
 #ifdef EMBER_DEBUG_ALLOCATORS
 		++active_count;
 		++total_allocs;
 #endif
-		return new T(std::forward<Args>(args)...);
+		return static_cast<T*>(::operator new(sizeof(T), std::align_val_t(alignof(T))));
 	}
 
 	inline void deallocate(T* t) const {
@@ -40,7 +39,7 @@ struct DefaultAllocator final {
 		--active_count;
 		++total_deallocs;
 #endif
-		delete t;
+		::operator delete(t, std::align_val_t(alignof(T)));
 	}
 
 	DefaultAllocator(std::string_view tag = {}) : tag(tag) {}
