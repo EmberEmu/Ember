@@ -147,6 +147,8 @@ ClientIdent EventDispatcher::register_client(Client* client) {
 }
 
 void EventDispatcher::remove_client(const ClientIdent& ident) {
+	assert(pool_.get(ident.service()).get_executor().running_in_this_thread());
+
 #ifndef DISABLE_FAST_DISPATCH_TABLE
 	if(ident.ptr<Client>()) {
 		const auto slot = ident.slot();
