@@ -107,6 +107,10 @@ std::shared_ptr<commands::Command> init_commands(const opts::variables_map& args
 	const auto suggestions = args["console_log.suggestions"].as<bool>();
 	utility::register_command_handlers(registry, logger, suggestions);
 	utility::register_common_commands(registry, logger);
+
+	auto theme_path = args["console_log.theme_path"].as<std::filesystem::path>();
+	utility::register_theme_commands(registry, logger, std::move(theme_path));
+
 	return registry;
 }
 
