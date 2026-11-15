@@ -97,7 +97,7 @@ void EventDispatcher::broadcast(std::vector<ClientIdent> clients, std::shared_pt
 
 void EventDispatcher::broadcast(std::shared_ptr<const Event> event) const {
 	for(auto& ioc : pool_.services()) {
-		boost::asio::dispatch(ioc, [&, event]() {
+		boost::asio::post(ioc, [&, event]() {
 			deliver(*event.get());
 		});
 	}
