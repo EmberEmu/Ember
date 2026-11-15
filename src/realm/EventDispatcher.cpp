@@ -46,7 +46,7 @@ void EventDispatcher::post(const ClientIdent& client, std::unique_ptr<Event> eve
 		return;
 	}
 
-	boost::asio::post(*service, [&, client, event = std::move(event)] {
+	boost::asio::post(*service, [this, client, event = std::move(event)] {
 		if(auto handler = locate_handler(client)) {
 			handler->handle_event(*event);
 		} else {
@@ -97,7 +97,7 @@ void EventDispatcher::broadcast(std::vector<ClientIdent> clients, std::shared_pt
 
 void EventDispatcher::broadcast(std::shared_ptr<const Event> event) const {
 	for(auto& ioc : pool_.services()) {
-		boost::asio::post(ioc, [&, event]() {
+		boost::asio::post(ioc, [this, event]() {
 			deliver(*event.get());
 		});
 	}

@@ -50,7 +50,7 @@ void EventDispatcher::execute(const ClientIdent& client, auto work) const {
 		return;
 	}
 
-	boost::asio::post(*service, [&, client, work = std::forward<decltype(work)>(work)] {
+	boost::asio::post(*service, [this, client, work = std::forward<decltype(work)>(work)] {
 		if(auto handler = locate_handler(client)) {
 			if constexpr(std::invocable<decltype(work), const Client&>) {
 				work(*handler);
@@ -78,7 +78,7 @@ void EventDispatcher::dispatch(const ClientIdent& client, is_event auto event) c
 		return;
 	}
 
-	boost::asio::dispatch(*service, [&, client, event = std::move(event)] {
+	boost::asio::dispatch(*service, [this, client, event = std::move(event)] {
 		if(auto handler = locate_handler(client)) {
 			handler->handle_event(event);
 		} else {
@@ -96,7 +96,7 @@ void EventDispatcher::post(const ClientIdent& client, is_event auto event) const
 		return;
 	}
 
-	boost::asio::post(*service, [&, client, event = std::move(event)] {
+	boost::asio::post(*service, [this, client, event = std::move(event)] {
 		if(auto handler = locate_handler(client)) {
 			handler->handle_event(event);
 		} else {
@@ -124,7 +124,7 @@ void EventDispatcher::broadcast_worker(std::size_t index, is_event auto event) c
 		return;
 	}
 
-	boost::asio::post(*service, [&, event = std::move(event)]() {
+	boost::asio::post(*service, [this, event = std::move(event)]() {
 		deliver(event);
 	});
 }
