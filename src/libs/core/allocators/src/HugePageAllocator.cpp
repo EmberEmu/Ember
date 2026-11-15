@@ -102,7 +102,6 @@ void* allocate_win32(const std::size_t size, const SIZE_T alignment) {
 		);
 	}
 
-	// round up
 	if(size > std::numeric_limits<std::size_t>::max() - (page_size - 1)) {
 		throw huge_page_allocation_error(
 			"huge page allocation request would overflow"
