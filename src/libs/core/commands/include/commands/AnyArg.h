@@ -20,8 +20,8 @@ public:
 		: value_(std::move(value)) {}
 
 	template<typename _ty>
-	const _ty as() const {
-		return std::any_cast<_ty>(value_);
+	const _ty& as() const {
+		return std::any_cast<const _ty&>(value_);
 	}
 };
 
