@@ -15,6 +15,7 @@
 #include "DeferredClientDeleter.h"
 #include <logger/LoggerFwd.h>
 #include <memory>
+#include <cassert>
 
 namespace ember::realm {
 
@@ -26,6 +27,7 @@ class ClientBuilder {
 	log::Logger& logger_;
 
 	DeferredClient make_deferred_client(tcp::Socket socket, boost::asio::ip::tcp::endpoint endpoint) const {
+		assert(socket.get_executor().running_in_this_thread());
 		auto& allocator = alloc_provider_.client_allocator();
 		auto client = allocator.allocate();
 		auto executor = socket.get_executor();
