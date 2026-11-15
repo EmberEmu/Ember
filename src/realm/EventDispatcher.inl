@@ -41,7 +41,7 @@ inline Client* EventDispatcher::locate_handler(const ClientIdent& client) const 
 	}
 }
 
-void EventDispatcher::execute(const ClientIdent& client, auto&& work) const {
+void EventDispatcher::execute(const ClientIdent& client, auto work) const {
 	auto service = pool_.get_if(client.service());
 
 	// bad service index encoded in the UUID
@@ -50,7 +50,7 @@ void EventDispatcher::execute(const ClientIdent& client, auto&& work) const {
 		return;
 	}
 
-	boost::asio::post(*service, [&, client, work = std::move(work)] {
+	boost::asio::post(*service, [&, client, work = std::forward<decltype(work)>(work)] {
 		if(auto handler = locate_handler(client)) {
 			if constexpr(std::invocable<decltype(work), const Client&>) {
 				work(*handler);
