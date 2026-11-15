@@ -12,6 +12,7 @@
 #include <shared/utility/Utility.h>
 #include <array>
 #include <concepts>
+#include <limits>
 #include <memory>
 #include <new>
 #include <string_view>
@@ -127,6 +128,11 @@ class BlockAllocator final {
 
 	void allocate_storage() {
 		constexpr auto block_size = sizeof(Block);
+
+		if(elements_ > std::numeric_limits<std::size_t>::max() / sizeof(Block)) {
+			throw std::bad_array_new_length{};
+		}
+
 		const auto storage_size = block_size * elements_;
 		storage_ = allocator_.allocate(elements_);
 
