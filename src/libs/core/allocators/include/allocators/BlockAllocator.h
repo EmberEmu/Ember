@@ -79,7 +79,7 @@ class BlockAllocator final {
 
 		struct {
 			[[no_unique_address]] tid_type thread_id;
-			bool using_new;
+			bool fallback;
 		} meta;
 	};
 
@@ -192,14 +192,14 @@ public:
 #ifdef EMBER_DEBUG_ALLOCATORS
 			++storage_active_count;
 #endif
-			block->meta.using_new = false;
+			block->meta.fallback = false;
 			ALLOC_TRACK(tag_, mem_rep_alloc);
 		} else {
 #ifdef EMBER_DEBUG_ALLOCATORS
 			++new_active_count;
 #endif
-			block = new Block;
-			block->meta.using_new = true;
+			block = allocator_.allocate(1);
+			block->meta.fallback = true;
 			ALLOC_TRACK(tag_, mem_rep_system_alloc);
 		}
 
@@ -224,11 +224,11 @@ public:
 				&& "thread policy violation or clobbered block");
 		}
 
-		if(block->meta.using_new) [[unlikely]] {
+		if(block->meta.fallback) [[unlikely]] {
 #ifdef EMBER_DEBUG_ALLOCATORS
 			--new_active_count;
 #endif
-			operator delete(block);
+			allocator_.deallocate(block, 1);
 			ALLOC_TRACK(tag_, mem_rep_system_dealloc);
 		} else {
 #ifdef EMBER_DEBUG_ALLOCATORS
