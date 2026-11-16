@@ -96,7 +96,6 @@ class BlockAllocator final {
 	std::size_t elements_ = 0;
 	std::string_view tag_;
 	AllocatorType allocator_;
-	[[no_unique_address]] tid_type thread_id_;
 
 	void page_lock_conditional() {
 		if constexpr(std::is_same_v<PageLockPolicy, PageLock>) {
@@ -174,14 +173,6 @@ public:
 #endif
 
 	BlockAllocator(std::size_t elements, std::string_view tag = default_tag)
-		requires std::same_as<ValidatePolicy, ValidateDealloc>
-		: elements_(elements)
-		, tag_(tag)
-		, thread_id_(std::this_thread::get_id()) {
-		initialise();
-	}
-
-	BlockAllocator(std::size_t elements, std::string_view tag = default_tag)
 		: elements_(elements)
 		, tag_(tag) {
 		initialise();
@@ -212,7 +203,7 @@ public:
 		}
 
 		if constexpr(std::is_same_v<ValidatePolicy, ValidateDealloc>) {
-			block->meta.thread_id = thread_id_;
+			block->meta.thread_id = std::this_thread::get_id();
 		}
 
 #ifdef EMBER_DEBUG_ALLOCATORS
@@ -228,7 +219,7 @@ public:
 		auto block = reinterpret_cast<Block*>(t);
 
 		if constexpr(std::is_same_v<ValidatePolicy, ValidateDealloc>) {
-			assert(block->meta.thread_id == thread_id_
+			assert(block->meta.thread_id == std::this_thread::get_id()
 				&& "thread policy violation or clobbered block");
 		}
 
