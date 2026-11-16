@@ -144,7 +144,9 @@ class BlockAllocator final {
 	}
 
 	void deallocate_storage() {
-		allocator_.deallocate(storage_, elements_);
+		auto storage = storage_;
+		storage_ = nullptr;
+		allocator_.deallocate(storage, elements_);
 	}
 	
 	void initialise() {
