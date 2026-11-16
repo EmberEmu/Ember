@@ -110,19 +110,19 @@ class BlockAllocator final {
 		}
 	}
 
-	void initialise_free_list() {
+	void initialise_free_list() noexcept {
 		for(std::size_t i = 0; i < elements_; ++i) {
 			push(&storage_[i]);
 		}
 	}
 
-	inline void push(Block* block) {
+	inline void push(Block* block) noexcept {
 		assert(block);
 		block->next = head_;
 		head_ = block;
 	}
 
-	[[nodiscard]] inline Block* pop() {
+	[[nodiscard]] inline Block* pop() noexcept {
 		if(!head_) {
 			return nullptr;
 		}
@@ -154,7 +154,14 @@ class BlockAllocator final {
 	void initialise() {
 		ALLOC_TRACK(tag_, mem_rep_create);
 		allocate_storage();
-		page_lock_conditional();
+
+		try {
+			page_lock_conditional();
+		} catch(...) {
+			deallocate_storage();
+			throw;
+		}
+
 		initialise_free_list();
 	}
 
