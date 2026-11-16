@@ -208,10 +208,10 @@ public:
 			block->meta.fallback = false;
 			ALLOC_TRACK(tag_, mem_rep_alloc);
 		} else {
+			block = allocator_.allocate(1);
 #ifdef EMBER_DEBUG_ALLOCATORS
 			++new_active_count;
 #endif
-			block = allocator_.allocate(1);
 			block->meta.fallback = true;
 			ALLOC_TRACK(tag_, mem_rep_system_alloc);
 		}
@@ -238,16 +238,16 @@ public:
 		}
 
 		if(block->meta.fallback) [[unlikely]] {
+			allocator_.deallocate(block, 1);
 #ifdef EMBER_DEBUG_ALLOCATORS
 			--new_active_count;
 #endif
-			allocator_.deallocate(block, 1);
 			ALLOC_TRACK(tag_, mem_rep_system_dealloc);
 		} else {
+			push(block);
 #ifdef EMBER_DEBUG_ALLOCATORS
 			--storage_active_count;
 #endif
-			push(block);
 			ALLOC_TRACK(tag_, mem_rep_dealloc);
 		}
 
