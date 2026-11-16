@@ -26,8 +26,8 @@ namespace detail {
  * Linux's transparent huge pages allows for existing allocations to be
  * explicitly converted to huge pages but Windows requires that allocations
  * are marked as huge pages at the point of allocation, meaning the
- * underlying allocator must explicitly written to support it, rather than
- * allowing a policy within the user-facing allocators to mark returned
+ * underlying allocator must be explicitly designed to support it, rather than
+ * allowing a policy within the user-facing allocator to mark returned
  * memory as huge pages.
  * 
  * Additionally, allocators can be composed, meaning that memory allocated
