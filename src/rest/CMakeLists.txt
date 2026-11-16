@@ -6,7 +6,7 @@
 
 set(EXECUTABLE_NAME rest)
 set(LIBRARY_NAME    rest_shared) # Shared library
-set(LIBRARY_OBJECTS rest)        # Object library
+set(LIBRARY_OBJECTS librest)     # Object library
 
 set(LIBRARY_HDR
 
