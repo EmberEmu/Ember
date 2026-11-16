@@ -133,13 +133,10 @@ class BlockAllocator final {
 	}
 
 	void allocate_storage() {
-		constexpr auto block_size = sizeof(Block);
-
 		if(elements_ > std::numeric_limits<std::size_t>::max() / sizeof(Block)) {
 			throw std::bad_array_new_length{};
 		}
 
-		const auto storage_size = block_size * elements_;
 		storage_ = allocator_.allocate(elements_);
 
 		if(!storage_) {
@@ -167,8 +164,6 @@ class BlockAllocator final {
 
 public:
 	using value_type = _ty;
-
-	static constexpr std::size_t block_size { sizeof(Block) };
 
 #ifdef EMBER_DEBUG_ALLOCATORS
 	std::size_t storage_active_count = 0;
