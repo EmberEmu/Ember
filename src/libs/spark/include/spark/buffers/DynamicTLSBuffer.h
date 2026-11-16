@@ -22,7 +22,7 @@ namespace ember::spark::io {
 // 
 // Minimum memory usage is IntrusiveStorage<block_size> * count.
 // Additional blocks are not added if the original is exhausted ('colony' structure),
-// so the allocator will fall back to the system allocator instead.
+// so the allocator will fall back to the underlying allocator instead.
 //
 // Pros: extremely fast allocation/deallocation for many instances per thread
 // Cons: everything else.
