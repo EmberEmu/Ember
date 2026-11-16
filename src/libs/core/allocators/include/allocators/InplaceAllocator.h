@@ -27,9 +27,15 @@ class InplaceAllocator final {
 		std::byte storage[_size];
 	};
 
+#ifdef NDEBUG
+	using ValidatePolicy = NoValidateDealloc;
+#else
+	using ValidatePolicy = ValidateDealloc;
+#endif
+
 	template<typename _alloc = std::allocator<AlignedStorage>>
 	using BlockAllocator = BlockAllocator<
-		AlignedStorage, NoPageLock, NoValidateDealloc, _alloc
+		AlignedStorage, NoPageLock, ValidatePolicy, _alloc
 	>;
 
 	struct SlabStorage {

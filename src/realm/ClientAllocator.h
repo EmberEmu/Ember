@@ -23,10 +23,16 @@ using PageLockPolicy = allocators::PageLock;
 using PageLockPolicy = allocators::NoPageLock;
 #endif
 
+#ifdef NDEBUG
+using ValidatePolicy = allocators::NoValidateDealloc;
+#else
+using ValidatePolicy = allocators::ValidateDealloc;
+#endif
+
 using ClientAllocator = allocators::BlockAllocator<
 	Client,
 	PageLockPolicy,
-	allocators::NoValidateDealloc
+	ValidatePolicy
 #ifdef ENABLE_HUGE_PAGES
 	, allocators::HugePageAllocator<Client>
 #endif
