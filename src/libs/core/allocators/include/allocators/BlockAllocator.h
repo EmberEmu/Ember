@@ -37,19 +37,25 @@ struct NoValidateDealloc {};
 struct ValidateDealloc final : NoValidateDealloc {};
 
 /*
- * Basic fixed-size block stack allocator that preallocates a slab of memory
- * capable of holding a compile-time determined number of elements.
- * When constructed, a linked list of chunks is built within the slab and
- * each allocation request will take the head node. Since the allocations
+ * Basic LIFO object allocator that can fulfill requests for a constructor-specified
+ * number of objects.
+ * 
+ * When constructed, a list of chunks is built within the slab and
+ * each allocation request is served from the head node. Since the allocations
  * are fixed-size, the list does not need to be traversed for a suitable
- * size. Deallocations place the chunk as the new head (LIFO).
+ * size and fragmentation is not possible within the initial slab.
  *
- * If the preallocated slab runs out of chunks, it will fall back to using the
- * system allocator rather than allocating additional slabs. This means sizing
- * the initial allocation correctly is important for maximum performance, so
- * it's better to be pessimistic. This is a server application and RAM is cheap. :)
+ * If the preallocated slab runs out of objects, it will fall back to using the
+ * underlying allocator to fulfill the request rather than allocating additional
+ * slabs. This means sizing the initial allocation correctly is important for
+ * both performance and keeping fragmentation to a minimum, so it's better to be
+ * pessimistic. This is a server application and RAM is cheap (edit: now lies). :)
+ * 
+ * Thread safety: for performance, all functionality is intentionally unsafe.
  *
  * PagePolicy: 'lock' requests that the OS does not page out the memory slab to disk.
+ * If the underlying allocator is huge pages, this is likely already the case and the
+ * policy will have no additional effect.
  *
  * ThreadPolicy: 'same_thread' triggers an assert if an allocated object
  * is deallocated from a different thread. Used by the TLS allocator, since
