@@ -72,6 +72,8 @@ set(UTIL_SRC
     shared/utility/Exception.h
     shared/utility/CommandHelpers.h
     shared/utility/CommandHelpers.cpp
+    shared/utility/ConsoleCommandHandler.h
+    shared/utility/ConsoleCommandHandler.cpp
     shared/utility/HashDefines.h
     shared/utility/CommandExecutor.h
     shared/utility/cstring_view.hpp

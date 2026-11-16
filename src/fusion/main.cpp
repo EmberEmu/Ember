@@ -15,6 +15,7 @@
 #include <commands/Commands.h>
 #include <logger/Logger.h>
 #include <thread/Utility.h>
+#include <shared/utility/ConsoleCommandHandler.h>
 #include <shared/utility/cstring_view.hpp>
 #include <shared/utility/CommandHelpers.h>
 #include <shared/utility/LogConfig.h>
@@ -69,7 +70,7 @@ int main(int argc, const char* argv[]) try {
 	auto root = commands::create("root");
 	create_service_subcommands(*root);
 	const auto suggestions = args["console_log.suggestions"].as<bool>();
-	utility::register_command_handlers(root, logger, suggestions);
+	utility::register_console_command_handler(root, logger, suggestions);
 	utility::register_common_commands(root, logger);
 
 	auto theme_path = args["console_log.theme_path"].as<std::filesystem::path>();
