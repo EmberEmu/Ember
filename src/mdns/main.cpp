@@ -11,6 +11,7 @@
 #include <commands/Commands.h>
 #include <logger/Logger.h>
 #include <thread/Utility.h>
+#include <shared/utility/ConsoleCommandHandler.h>
 #include <shared/utility/CommandHelpers.h>
 #include <shared/utility/LogConfig.h>
 #include <shared/utility/Utility.h>
@@ -106,7 +107,7 @@ int run(const opts::variables_map& args, log::Logger& logger, commands::Command&
 std::shared_ptr<commands::Command> init_commands(const opts::variables_map& args, log::Logger& logger) {
 	auto registry = commands::create("root");
 	const auto suggestions = args["console_log.suggestions"].as<bool>();
-	utility::register_command_handlers(registry, logger, suggestions);
+	utility::register_console_command_handler(registry, logger, suggestions);
 	utility::register_common_commands(registry, logger);
 
 	auto theme_path = args["console_log.theme_path"].as<std::filesystem::path>();
