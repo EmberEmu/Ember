@@ -166,6 +166,8 @@ class BlockAllocator final {
 public:
 	using value_type = _ty;
 
+	static constexpr std::size_t block_size { sizeof(Block) };
+
 #ifdef EMBER_DEBUG_ALLOCATORS
 	std::size_t storage_active_count = 0;
 	std::size_t new_active_count = 0;
