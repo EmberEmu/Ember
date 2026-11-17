@@ -9,10 +9,11 @@ set(LIBRARY_NAME    rest_shared) # Shared library
 set(LIBRARY_OBJECTS librest)     # Object library
 
 set(LIBRARY_HDR
-
+    Service.h
 )
 
 set(LIBRARY_SRC
+    Service.cpp
 )
 
 if(WIN32)
