@@ -31,7 +31,7 @@ add_library(${LIBRARY_OBJECTS} OBJECT
 )
 
 target_include_directories(${LIBRARY_OBJECTS} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(${LIBRARY_OBJECTS} PUBLIC $Threads::Threads)
+target_link_libraries(${LIBRARY_OBJECTS} PUBLIC Threads::Threads)
 
 add_library(${LIBRARY_NAME} ${SERVICE_LIB_LINKAGE}
     $<TARGET_OBJECTS:${LIBRARY_OBJECTS}>
