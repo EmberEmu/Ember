@@ -29,21 +29,21 @@ namespace ember::spark::io {
 // 
 // TL;DR Do not use unless you know what you're doing.
 #ifdef ENABLE_PAGE_LOCKING
-using page_lock_policy = allocators::PageLock;
+using PageLockPolicy = allocators::PageLock;
 #else
-using page_lock_policy = allocators::NoPageLock;
+using PageLockPolicy = allocators::NoPageLock;
 #endif
 
-template<decltype(auto) block_size,
-	typename ref_count_policy = allocators::NoRefCounting,
-	typename entrant_policy = allocators::SafeEntrant,
-	typename storage_type = std::byte>
-using DynamicTLSBuffer = DynamicBuffer<block_size, storage_type,
+template<decltype(auto) BlockSize,
+	typename RefCountPolicy = allocators::NoRefCounting,
+	typename EntrantPolicy = allocators::SafeEntrant,
+	typename StorageType = std::byte>
+using DynamicTLSBuffer = DynamicBuffer<BlockSize, StorageType,
 	allocators::TLSBlockAllocator<
 		int,
-		ref_count_policy,
-		entrant_policy,
-		page_lock_policy
+		RefCountPolicy,
+		EntrantPolicy,
+		PageLockPolicy
 	>
 >;
 
