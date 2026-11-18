@@ -74,7 +74,7 @@ bool LoginHandler::update_state(const grunt::Packet& packet) try {
 			return false;
 	}
 
-	return true;
+	return state_ != LoginState::closed;
 } catch(const std::exception& e) {
 	LOG_DEBUG(logger_, e.what());
 	update_state(LoginState::closed);
@@ -191,6 +191,7 @@ void LoginHandler::fetch_user(grunt::Opcode opcode, const utf8_string& username)
 		default:
 			update_state(LoginState::closed);
 			BOOST_ASSERT_MSG(false, "Impossible fetch_user condition");
+			return;
 	}
 
 	auto action = std::make_unique<FetchUserAction>(username, user_src_);
