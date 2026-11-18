@@ -167,6 +167,21 @@ private:
 		}
 	}
 
+public:
+	DynamicBuffer()
+		: allocator_(allocator_tag)
+		, root_{ .next = &root_, .prev = &root_ }
+		, size_(0) {}
+
+	explicit DynamicBuffer(allocator_type allocator)
+		: allocator_(std::move(allocator))
+		, root_{ .next = &root_, .prev = &root_ }
+		, size_(0) {}
+
+	~DynamicBuffer() {
+		clear();
+	}
+
 	[[nodiscard]] storage_type* allocate() {
 		auto ptr = allocator_.allocate();
 
@@ -182,21 +197,6 @@ private:
 	void deallocate(storage_type* buffer) {
 		std::destroy_at(buffer);
 		allocator_.deallocate(buffer);
-	}
-
-public:
-	DynamicBuffer()
-		: allocator_(allocator_tag)
-		, root_{ .next = &root_, .prev = &root_ }
-		, size_(0) {}
-
-	explicit DynamicBuffer(allocator_type allocator)
-		: allocator_(std::move(allocator))
-		, root_{ .next = &root_, .prev = &root_ }
-		, size_(0) {}
-
-	~DynamicBuffer() {
-		clear();
 	}
 
 	DynamicBuffer& operator=(DynamicBuffer&& rhs) noexcept {
@@ -567,16 +567,6 @@ public:
 		}
 
 		return npos;
-	}
-
-	[[nodiscard]]
-	auto& get_allocator() {
-		return allocator_;
-	}
-
-	[[nodiscard]]
-	auto& get_allocator() const {
-		return allocator_;
 	}
 
 	template<typename buffer_type>
