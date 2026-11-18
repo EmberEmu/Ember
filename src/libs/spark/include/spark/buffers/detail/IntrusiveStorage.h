@@ -98,6 +98,11 @@ struct IntrusiveStorage final {
 		return free() == 0;
 	}
 
+	[[nodiscard]]
+	constexpr static std::size_t capacity() {
+		return block_size;
+	}
+
 	void write_seek(const BufferSeek direction, const std::size_t offset) {
 		switch(direction) {
 			case BufferSeek::sk_absolute:
