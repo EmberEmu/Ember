@@ -12,8 +12,11 @@
 #include <logger/Logger.h>
 #include <shared/utility/Utility.h>
 #include <bprinter/table_printer.h>
-#include <string>
+#include <latch>
+#include <span>
 #include <sstream>
+#include <string>
+#include <vector>
 
 namespace ember::realm {
 
@@ -65,12 +68,63 @@ void handle_allocator_debug(const commands::Arguments& args, log::Logger& logger
 #endif
 }
 
-auto allocator_debug(utility::CommandExecutor& exec, log::Logger& logger) -> std::shared_ptr<commands::Command> {
+std::vector<DispatcherStats> handle_client_table_debug(const commands::Arguments& args, thread::ServicePool* pool) {
+    std::vector<DispatcherStats> stats(pool->size());
+
+    std::latch latch(pool->size());
+
+    for(std::size_t i = 0; i < pool->size(); ++i) {
+        boost::asio::dispatch(pool->get(i), [&, i]() {
+            stats[i] = EventDispatcher::statistics();
+			latch.count_down();
+        });
+    }
+
+	latch.wait();
+    return stats;
+}
+
+void print_client_table_debug(const std::span<const DispatcherStats> stats, log::Logger& logger) {
+	std::stringstream stream;
+	bprinter::TablePrinter table(&stream);
+	table.AddColumn("worker", 8);
+	table.AddColumn("table used", 12);
+	table.AddColumn("table capacity", 15);
+	table.AddColumn("map used", 12);
+	table.AddColumn("peak clients", 15);
+	table.PrintHeader();
+
+	std::size_t worker = 0;
+
+	for(const auto& s : stats) {
+		table << worker;
+		table << s.table_occupied;
+		table << s.table_capacity;
+		table << s.map_occupied;
+		table << s.peak_clients;
+		++worker;
+	}
+
+	table.PrintFooter();
+	LOG_CONSOLE(logger, "Displaying client table statistics\n{}", stream.view());
+}
+
+auto allocator_debug(utility::CommandExecutor& exec, log::Logger& logger) {
 	return commands::create("allocator")
 		->description("Display allocator statistics")
 		->argument<std::string>("file", commands::optional)
 		->handler(exec([&](const commands::Arguments& args) {
 			handle_allocator_debug(args, logger);
+		}
+	));
+}
+
+auto client_table_debug(utility::CommandExecutor& exec, ServiceContext& context, log::Logger& logger) {
+	return commands::create("table")
+		->description("Display client table")
+		->handler(exec([&, &context = context](const commands::Arguments& args) {
+			const auto stats = handle_client_table_debug(args, context.get()->service_pool);
+			print_client_table_debug(stats, logger);
 		}
 	));
 }
@@ -84,6 +138,7 @@ void add_debug_commands(ServiceContext& context, commands::Command& registry, lo
 		->description("Misc. debugging commands");
 
 	root->insert(allocator_debug(*impl->cmd_exec, logger));
+	root->insert(client_table_debug(*impl->cmd_exec, context, logger));
 	impl->commands.emplace_back(registry.scoped_insert(std::move(root)));
 }
 

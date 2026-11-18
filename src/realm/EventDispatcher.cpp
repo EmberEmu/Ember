@@ -11,6 +11,7 @@
 #include <shared/utility/xoroshiro128plus.h>
 #include <boost/asio/dispatch.hpp>
 #include <boost/asio/post.hpp>
+#include <algorithm>
 #include <format>
 #include <ranges>
 #include <stdexcept>
@@ -134,6 +135,9 @@ ClientIdent EventDispatcher::register_client(Client* client) {
 	assert(client);
 	assert(pool_.running_in_pool());
 
+	++current_clients_;
+	peak_clients_ = std::max(peak_clients_, current_clients_);
+
 	ClientIdent ident(
 		pool_.current_index()
 	);
@@ -148,6 +152,7 @@ ClientIdent EventDispatcher::register_client(Client* client) {
 
 void EventDispatcher::remove_client(const ClientIdent& ident) {
 	assert(pool_.get(ident.service()).get_executor().running_in_this_thread());
+	--current_clients_;
 
 #ifndef DISABLE_FAST_DISPATCH_TABLE
 	if(ident.ptr<Client>()) {
@@ -165,4 +170,16 @@ void EventDispatcher::remove_client(const ClientIdent& ident) {
 	handlers_.erase(ident);
 }
 
+DispatcherStats EventDispatcher::statistics() {
+	const auto occupied = std::ranges::count_if(cache_, [](const auto& entry) {
+		return !!entry;
+	});
+
+	return DispatcherStats {
+		.table_capacity = table_size,
+		.table_occupied = static_cast<std::size_t>(occupied),
+		.map_occupied = handlers_.size(),
+		.peak_clients = peak_clients_
+	};
+}
 } // realm, ember
