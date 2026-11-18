@@ -48,6 +48,8 @@ bool LoginSession::handle_packet(BufferType& buffer) {
 	auto result = grunt_handler_.process_buffer(buffer);
 
 	if(!result) {
+		LOG_TRACE(logger_, "process_buffer error ({}): {}",
+			remote_address(), std::to_underlying(result.error()));
 		return false;
 	}
 	

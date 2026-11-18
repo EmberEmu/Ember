@@ -36,7 +36,7 @@ void Handler::dump_bad_packet(BufferType& buffer, std::size_t offset) {
 
 	auto output = utility::format_packet(contig_buff.data(), contig_buff.size());
 
-	LOG_ERROR(logger_, "Deserialisation error! Triggered by {} bytes. Dumping packet...\n", valid_bytes);
+	LOG_ERROR(logger_, "Deserialisation error! Triggered at {} bytes. Dumping packet...\n", valid_bytes);
 	LOG_ERROR(logger_, output);
 }
 
