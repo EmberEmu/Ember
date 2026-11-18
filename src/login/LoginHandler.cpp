@@ -130,8 +130,7 @@ void LoginHandler::handle_login_challenge(const grunt::Packet& packet) {
 	 * but they're close enough that patch transfers will still work
 	 */
 	if(!validate_protocol_version(challenge)) {
-		LOG_DEBUG(logger_, "Unsupported protocol version {} ({})",
-		                challenge.protocol_ver, identifier_);
+		LOG_DEBUG(logger_, "Unsupported protocol version {} ({})", challenge.protocol_ver, identifier_);
 	}
 
 	if(challenge.game != grunt::Game::WoW) {
@@ -140,8 +139,7 @@ void LoginHandler::handle_login_challenge(const grunt::Packet& packet) {
 		return;
 	}
 
-	LOG_DEBUG(logger_, "Challenge: {}, {} ({})", challenge.username,
-	                to_string(challenge.version), identifier_);
+	LOG_DEBUG(logger_, "Challenge: {}, {} ({})", challenge.username, to_string(challenge.version), identifier_);
 
 	const Patcher::PatchLevel level = patcher_.check_version(challenge.version);
 
