@@ -83,26 +83,6 @@ struct IntrusiveStorage final {
 		return skip_len;
 	}
 
-	[[nodiscard]]
-	std::size_t size() const {
-		return write_offset - read_offset;
-	}
-
-	[[nodiscard]]
-	std::size_t free() const {
-		return block_size - write_offset;
-	}
-
-	[[nodiscard]]
-	bool full() const {
-		return free() == 0;
-	}
-
-	[[nodiscard]]
-	constexpr static std::size_t capacity() {
-		return block_size;
-	}
-
 	void write_seek(const BufferSeek direction, const std::size_t offset) {
 		switch(direction) {
 			case BufferSeek::sk_absolute:
@@ -128,53 +108,59 @@ struct IntrusiveStorage final {
 		return size;
 	}
 
-	[[nodiscard]]
-	const value_type* read_ptr() const {
+	[[nodiscard]] std::size_t size() const {
+		return write_offset - read_offset;
+	}
+
+	[[nodiscard]] std::size_t free() const {
+		return block_size - write_offset;
+	}
+
+	[[nodiscard]] bool full() const {
+		return free() == 0;
+	}
+
+	[[nodiscard]] constexpr static std::size_t capacity() {
+		return block_size;
+	}
+
+	[[nodiscard]] const value_type* read_ptr() const {
 		return storage.data() + read_offset;
 	}
 
-	[[nodiscard]]
-	value_type* read_ptr() {
+	[[nodiscard]] value_type* read_ptr() {
 		return storage.data() + read_offset;
 	}
 
-	[[nodiscard]]
-	const value_type* write_ptr () const {
+	[[nodiscard]] const value_type* write_ptr () const {
 		return storage.data() + write_offset;
 	}
 
-	[[nodiscard]]
-	value_type* write_ptr() {
+	[[nodiscard]] value_type* write_ptr() {
 		return storage.data() + write_offset;
 	}
 
-	[[nodiscard]]
-	std::span<const value_type> read_data() const {
+	[[nodiscard]] std::span<const value_type> read_data() const {
 		return { storage.data() + read_offset, size() };
 	}
 
-	[[nodiscard]]
-	std::span<value_type> read_data() {
+	[[nodiscard]] std::span<value_type> read_data() {
 		return { storage.data() + read_offset, size() } ;
 	}
 
-	[[nodiscard]]
-	std::span<const value_type> write_data() const {
+	[[nodiscard]] std::span<const value_type> write_data() const {
 		return { storage.data() + write_offset, free() } ;
 	}
 
-	[[nodiscard]]
-	std::span<value_type> write_data() {
+	[[nodiscard]] std::span<value_type> write_data() {
 		return { storage.data() + write_offset, free() } ;
 	}
 
-	[[nodiscard]]
-	value_type& operator[](const std::size_t index) {
+	[[nodiscard]] value_type& operator[](const std::size_t index) {
 		return *(storage.data() + index);
 	}
 
-	[[nodiscard]]
-	const value_type& operator[](const std::size_t index) const {
+	[[nodiscard]] const value_type& operator[](const std::size_t index) const {
 		return *(storage.data() + index);
 	}
 };
