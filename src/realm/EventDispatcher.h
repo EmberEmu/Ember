@@ -52,10 +52,10 @@ class EventDispatcher final {
 
 	static inline thread_local std::array<ClientIdent, table_size> cache_{};
 	static inline thread_local std::size_t next_slot_{};
-	static inline thread_local std::size_t current_clients_{};
-	static inline thread_local std::size_t peak_clients_{};
 #endif
 
+	static inline thread_local std::size_t current_clients_{};
+	static inline thread_local std::size_t peak_clients_{};
 	static inline thread_local HandlerMap handlers_;
 
 	const thread::ServicePool& pool_;
