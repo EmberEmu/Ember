@@ -95,7 +95,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ${BUILD_SHARED})
 option(BUILD_OPT_TOOLS "Build optional tools" ON)
 option(BUILD_SHARED ${BUILD_SHARED_MSG} OFF)
 option(DISABLE_FAST_CLIENT_DISPATCH_TABLE "Fast client event dispatch tables (disable if memory constrained)" OFF)
-option(ENABLE_HUGE_PAGES "On supported platforms, enable huge page support (disable if memory constrained)" ON)
+option(ENABLE_HUGE_PAGES "On supported platforms, enable huge page support (disable if memory constrained)" OFF)
 option(ENABLE_PAGE_LOCKING "Allow the allocator to lock pages (disable if memory constrained)" ON)
 option(ALLOCATOR_TRACKING "Enable memory allocation statistics (very slow, debugging only!)" OFF)
 
