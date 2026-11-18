@@ -8,10 +8,6 @@
 
 #pragma once
 
-#if _MSC_VER
-#pragma warning(disable : 4996)
-#endif
-
 #include <spark/buffers/Shared.h>
 #include <spark/buffers/Concepts.h>
 #include <spark/buffers/detail/Utility.h>
@@ -21,8 +17,8 @@
 #include <span>
 #include <type_traits>
 #include <cassert>
-#include <cstring>
 #include <cstddef>
+#include <cstring>
 
 namespace ember::spark::io::detail {
 
