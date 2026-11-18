@@ -83,9 +83,11 @@ private:
 					if(static_cast<T*>(this)->handle_packet(inbound_buffer_)) {
 						read();
 					} else {
+						LOG_DEBUG(logger_, "Connection error, {}: handle_packet failed", remote_address());
 						close_session();
 					}
 				} else {
+					LOG_DEBUG(logger_, "Connection error, {}: {}", remote_address(), ec.what());
 					close_session();
 				}
 			}
