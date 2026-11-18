@@ -163,8 +163,10 @@ void* allocate_linux(const std::size_t size, const std::size_t alignment) {
 		return small_aligned_alloc(size, alignment);
 	}
 
-	static const auto align_to = std::max(
-		static_cast<std::size_t>(hpage_pmd_size()), alignment
+	static const auto page_size = hpage_pmd_size();
+
+	const auto align_to = std::max(
+		static_cast<std::size_t>(page_size), alignment
 	);
 
 	const auto remainder = size % align_to;
