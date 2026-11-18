@@ -208,7 +208,7 @@ public:
 		return buffer_.data();
 	}
 
-	void advance_write(size_type bytes) {
+	void commit_write(size_type bytes) {
 		assert(buffer_.size() >= (write_ + bytes));
 		write_ += bytes;
 	}

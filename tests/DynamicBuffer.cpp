@@ -133,7 +133,7 @@ TEST(DynamicBuffer, AttachTail) {
 	ASSERT_EQ(0, chain.size()) << "Chain size is incorrect";
 	chain.push_back(buffer);
 	chain.skip(32); // skip first block
-	chain.advance_write(written);
+	chain.commit_write(written);
 	ASSERT_EQ(written, chain.size()) << "Chain size is incorrect";
 
 	std::string output;

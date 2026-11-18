@@ -210,7 +210,7 @@ void ClientConnection::read() {
 				stats_.bytes_in += size;
 				++stats_.async_receives;
 
-				inbound_buffer_.advance_write(size);
+				inbound_buffer_.commit_write(size);
 				process_buffered_data();
 				read();
 			} else if(ec != boost::asio::error::operation_aborted) {

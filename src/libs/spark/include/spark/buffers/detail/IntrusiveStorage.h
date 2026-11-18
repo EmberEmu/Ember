@@ -97,7 +97,7 @@ struct IntrusiveStorage final {
 		}
 	}
 
-	[[nodiscard]] std::size_t advance_write(std::size_t size) {
+	[[nodiscard]] std::size_t commit_write(std::size_t size) {
 		const auto remaining = free();
 
 		if(remaining < size) {

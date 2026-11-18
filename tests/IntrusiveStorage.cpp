@@ -107,7 +107,7 @@ TEST(IntrusiveStorage, AdvanceWrite) {
 	spark::io::detail::IntrusiveStorage<32, char> buffer;
 	constexpr std::string_view str {"A short string"};
 	const std::size_t advance = 10;
-	buffer.advance_write(advance);
+	buffer.commit_write(advance);
 	ASSERT_EQ(buffer.size(), advance);
 	buffer.write(str.data(), str.size() + 1);
 	ASSERT_EQ(buffer.size(), advance + str.size() + 1);

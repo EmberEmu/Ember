@@ -147,7 +147,7 @@ TEST(StaticBuffer, AdvanceWrite) {
 	spark::io::StaticBuffer<char, 3> buffer { 'a', 'b', 'c' };
 	buffer.write_seek(spark::io::BufferSeek::sk_absolute, 0);
 	const char val = 'd';
-	buffer.advance_write(1);
+	buffer.commit_write(1);
 	buffer.write(&val, 1);
 	ASSERT_EQ(buffer[1], val);
 }

@@ -78,7 +78,7 @@ private:
 				}
 
 				if(!ec) {
-					inbound_buffer_.advance_write(size);
+					inbound_buffer_.commit_write(size);
 
 					if(static_cast<T*>(this)->handle_packet(inbound_buffer_)) {
 						read();

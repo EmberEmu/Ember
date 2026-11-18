@@ -96,12 +96,12 @@ private:
 	}
 
 	template<typename T>
-	inline void advance_write(T&& arg) {
+	inline void commit_write(T&& arg) {
 		total_write_ += sizeof(T);
 	}
 
 	template<typename T, typename U>
-	inline void advance_write(T&&, U&& size) {
+	inline void commit_write(T&&, U&& size) {
 		total_write_ += size;
 	}
 
@@ -110,7 +110,7 @@ private:
 		try {
 			if(state_ == StreamState::ok) [[likely]] {
 				buffer_.write(std::forward<Ts>(args)...);
-				advance_write(std::forward<Ts>(args)...);                            
+				commit_write(std::forward<Ts>(args)...);                            
 			}
 		} catch(...) {
 			state_ = StreamState::buffer_write_error;

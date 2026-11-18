@@ -399,7 +399,7 @@ public:
 				buffer = buffer_from_node(tail);
 			}
 
-			remaining -= buffer->advance_write(remaining);
+			remaining -= buffer->commit_write(remaining);
 			tail = tail->next;
 		} while(remaining);
 
@@ -442,9 +442,9 @@ public:
 		size_ += buffer->write_offset;
 	}
 
-	void advance_write(const size_type size) {
+	void commit_write(const size_type size) {
 		auto buffer = buffer_from_node(root_.prev);
-		const auto actual = buffer->advance_write(size);
+		const auto actual = buffer->commit_write(size);
 		assert(size <= block_sz && actual <= size &&
 		       "Attempted to advance write cursor out of bounds!");
 		size_ += size;

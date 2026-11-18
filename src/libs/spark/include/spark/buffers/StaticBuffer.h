@@ -99,7 +99,7 @@ public:
 		}
 	}
 
-	void advance_write(size_type bytes) {
+	void commit_write(size_type bytes) {
 		assert(free() >= bytes);
 		write_ += bytes;
 	}

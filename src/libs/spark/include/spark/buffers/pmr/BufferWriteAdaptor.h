@@ -114,7 +114,7 @@ public:
 		}
 	}
 
-	void advance_write(std::size_t bytes) {
+	void commit_write(std::size_t bytes) {
 		assert(buffer_.size() >= (write_ + bytes));
 		write_ += bytes;
 	}
