@@ -98,8 +98,13 @@ void print_client_table_debug(const std::span<const DispatcherStats> stats, log:
 
 	for(const auto& s : stats) {
 		table << worker;
+#ifndef DISABLE_FAST_DISPATCH_TABLE
 		table << s.table_occupied;
 		table << s.table_capacity;
+#else
+		table << "disabled";
+		table << "disabled";
+#endif
 		table << s.map_occupied;
 		table << s.peak_clients;
 		++worker;
@@ -109,37 +114,33 @@ void print_client_table_debug(const std::span<const DispatcherStats> stats, log:
 	LOG_CONSOLE(logger, "Displaying client table statistics\n{}", stream.view());
 }
 
-auto allocator_debug(utility::CommandExecutor& exec, log::Logger& logger) {
-	return commands::create("allocator")
-		->description("Display allocator statistics")
-		->argument<std::string>("file", commands::optional)
-		->handler(exec([&](const commands::Arguments& args) {
-			handle_allocator_debug(args, logger);
-		}
-	));
-}
-
-auto client_table_debug(utility::CommandExecutor& exec, ServiceContext& context, log::Logger& logger) {
-	return commands::create("table")
-		->description("Display client table")
-		->handler(exec([&, &context = context](const commands::Arguments& args) {
-			const auto stats = handle_client_table_debug(args, context.get()->service_pool);
-			print_client_table_debug(stats, logger);
-		}
-	));
-}
-
 } // unnamed
 
 void add_debug_commands(ServiceContext& context, commands::Command& registry, log::Logger& logger) {
 	auto impl = context.get();
+	auto& exec = *impl->cmd_exec;
 
 	auto root = commands::create("debug")
 		->description("Misc. debugging commands");
 
-	root->insert(allocator_debug(*impl->cmd_exec, logger));
-	root->insert(client_table_debug(*impl->cmd_exec, context, logger));
-	impl->commands.emplace_back(registry.scoped_insert(std::move(root)));
+	root->insert("table")
+		->description("Display client table")
+		->handler(exec([&, &context = context](const commands::Arguments& args) {
+			const auto stats = handle_client_table_debug(args, context.get()->service_pool);
+			print_client_table_debug(stats, logger);
+		})
+	);
+
+	root->insert("allocator")
+		->description("Display allocator statistics")
+		->argument<std::string>("file", commands::optional)
+		->handler(exec([&](const commands::Arguments& args) {
+			handle_allocator_debug(args, logger);
+		})
+	);
+
+	auto scoped = registry.scoped_insert(root);
+	impl->commands.emplace_back(std::move(scoped));
 }
 
 } // realm, ember

@@ -171,13 +171,17 @@ void EventDispatcher::remove_client(const ClientIdent& ident) {
 }
 
 DispatcherStats EventDispatcher::statistics() {
+#ifndef DISABLE_FAST_DISPATCH_TABLE
 	const auto occupied = std::ranges::count_if(cache_, [](const auto& entry) {
 		return !!entry;
 	});
+#endif
 
 	return DispatcherStats {
+#ifndef DISABLE_FAST_DISPATCH_TABLE
 		.table_capacity = table_size,
 		.table_occupied = static_cast<std::size_t>(occupied),
+#endif
 		.map_occupied = handlers_.size(),
 		.peak_clients = peak_clients_
 	};
