@@ -75,7 +75,7 @@ void* allocate_win32(const std::size_t size, const SIZE_T alignment) {
 	GetNativeSystemInfo(&info);
 
 	// skip huge pages if the allocation fits within a single page
-	if(size <= info.dwPageSize) {
+	if(size <= info.dwPageSize && alignment <= info.dwAllocationGranularity) {
 		if(auto ptr = VirtualAlloc(nullptr, size, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE); ptr) {
 			return ptr;
 		} else {
