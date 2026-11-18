@@ -15,8 +15,7 @@ namespace ember::thread {
 
 ServicePool::ServicePool(const std::size_t pool_size, const int hint)
 	: hint_(hint)
-	, pool_size_(limit_pool_size(pool_size))
-	, next_service_(0)  {
+	, pool_size_(limit_pool_size(pool_size)) {
 	initialise_pool();
 }
 
@@ -40,12 +39,6 @@ void ServicePool::initialise_pool() {
 
 		work_.emplace_back(boost::asio::make_work_guard(*ctx));
 	}
-}
-
-boost::asio::io_context& ServicePool::get_next() {
-	auto& service = *services_[next_service_++];
-	next_service_ %= pool_size_;
-	return service;
 }
 
 boost::asio::io_context& ServicePool::get(const std::size_t index) const {

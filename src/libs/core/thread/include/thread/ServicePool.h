@@ -27,7 +27,6 @@ private:
 
 	const int hint_;
 	std::size_t pool_size_;
-	std::size_t next_service_;
 	std::vector<std::unique_ptr<boost::asio::io_context>> services_;
 	std::vector<boost::asio::executor_work_guard<boost::asio::io_context::executor_type>> work_;
 	std::vector<std::jthread> threads_;
@@ -45,11 +44,6 @@ public:
 	 * without first calling 'stop' or 'shutdown'.
 	 */
 	void run(bool pin = true, unsigned int concurrency = std::thread::hardware_concurrency());
-
-	/*
-	 * Requests a worker from the pool. This selects a worker using round-robin. 
-	 */
-	boost::asio::io_context& get_next();
 
 	/*
 	 * Requests a specific worker from the pool. 

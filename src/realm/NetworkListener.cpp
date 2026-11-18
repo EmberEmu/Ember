@@ -22,7 +22,7 @@ NetworkListener::NetworkListener(std::string_view interface, std::uint16_t port,
                                  SessionManager& sessions, const ConfigStore& cfg_store, log::Logger& logger)
 	: sessions_(sessions)
 	, builder_(std::move(builder))
-	, acceptor_(pool.get_next(), asio::ip::tcp::endpoint(asio::ip::make_address(interface), port))
+	, acceptor_(pool.get(0), asio::ip::tcp::endpoint(asio::ip::make_address(interface), port))
 	, index_(0)
 	, socket_(pool.get(index_))
 	, pool_(pool)
