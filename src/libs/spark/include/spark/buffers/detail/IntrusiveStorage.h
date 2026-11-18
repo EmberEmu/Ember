@@ -43,6 +43,7 @@ struct IntrusiveStorage final {
 	}
 
 	std::size_t write(const auto source, std::size_t length) {
+		assert(free() >= length);
 		assert(!detail::region_overlap(source, length, storage.data(), storage.size()));
 		const auto write_len = std::min<std::size_t>(block_size - write_offset, length);
 		std::memcpy(storage.data() + write_offset, source, write_len);
@@ -51,6 +52,7 @@ struct IntrusiveStorage final {
 	}
 
 	std::size_t copy(auto destination, const std::size_t length) const {
+		assert(free() >= length);
 		assert(!detail::region_overlap(storage.data(), storage.size(), destination, length));
 		const auto read_len = std::min<std::size_t>(block_size - read_offset, length);
 		std::memcpy(destination, storage.data() + read_offset, read_len);
@@ -58,6 +60,7 @@ struct IntrusiveStorage final {
 	}
 
 	std::size_t read(auto destination, const std::size_t length, const bool allow_optimise = false) {
+		assert(size() >= length);
 		std::size_t read_len = copy(destination, length);
 		read_offset += static_cast<offset_type>(read_len);
 
@@ -69,6 +72,7 @@ struct IntrusiveStorage final {
 	}
 
 	std::size_t skip(const std::size_t length, const bool allow_optimise = false) {
+		assert(size() >= length);
 		const auto skip_len = std::min<std::size_t>(block_size - read_offset, length);
 		read_offset += static_cast<offset_type>(skip_len);
 
