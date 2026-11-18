@@ -10,6 +10,7 @@
 #include <gtest/gtest.h>
 #include <array>
 #include <string_view>
+#include <cstddef>
 
 using namespace ember;
 
@@ -114,4 +115,28 @@ TEST(IntrusiveStorage, AdvanceWrite) {
 	buffer.read(out.data(), advance); // skip the 'empty' data
 	buffer.read(out.data(), str.size() + 1);
 	ASSERT_STREQ(str.data(), out.data());
+}
+
+TEST(IntrusiveStorage, Full) {
+	spark::io::detail::IntrusiveStorage<32, char> buffer;
+	char byte{};
+
+	for(auto i = 0u; i < buffer.capacity() - 1; ++i) {
+		buffer.write(&byte, 1);
+	}
+
+	ASSERT_FALSE(buffer.full());
+	buffer.write(&byte, 1);
+	ASSERT_TRUE(buffer.full());
+	buffer.clear();
+	ASSERT_FALSE(buffer.full());
+}
+
+TEST(IntrusiveStorage, Capacity) {
+	constexpr std::size_t capacity = 32;
+	spark::io::detail::IntrusiveStorage<capacity, char> buffer;
+	ASSERT_EQ(buffer.capacity(), capacity);
+	char byte{};
+	buffer.write(&byte, 1);
+	ASSERT_EQ(buffer.capacity(), capacity);
 }
