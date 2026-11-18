@@ -30,6 +30,13 @@ namespace ember::realm {
 	#endif
 #endif
 
+struct DispatcherStats {
+	std::size_t table_capacity;
+	std::size_t table_occupied;
+	std::size_t map_occupied;
+	std::size_t peak_clients;
+};
+
 template<typename T>
 concept is_event = std::derived_from<T, Event>;
 
@@ -47,6 +54,8 @@ class EventDispatcher final {
 	static inline thread_local std::size_t next_slot_{};
 #endif
 
+	static inline thread_local std::size_t current_clients_{};
+	static inline thread_local std::size_t peak_clients_{};
 	static inline thread_local HandlerMap handlers_;
 
 	const thread::ServicePool& pool_;
@@ -89,6 +98,8 @@ public:
 
 	// broadcasts an event to a vector of clients - the vector is sorted to minimise the number of messages
 	void broadcast(std::vector<ClientIdent> clients, std::shared_ptr<const Event> event) const;
+
+	static DispatcherStats statistics();
 
 	[[nodiscard]] ClientIdent register_client(Client* client);
 	void remove_client(const ClientIdent& ident);
