@@ -43,25 +43,25 @@ struct IntrusiveStorage final {
 	}
 
 	std::size_t write(const auto source, std::size_t length) {
-		assert(free() >= length);
 		assert(!detail::region_overlap(source, length, storage.data(), storage.size()));
 		const auto write_len = std::min<std::size_t>(block_size - write_offset, length);
+		assert(free() >= write_len);
 		std::memcpy(storage.data() + write_offset, source, write_len);
 		write_offset += static_cast<offset_type>(write_len);
 		return write_len;
 	}
 
 	std::size_t copy(auto destination, const std::size_t length) const {
-		assert(free() >= length);
 		assert(!detail::region_overlap(storage.data(), storage.size(), destination, length));
 		const auto read_len = std::min<std::size_t>(block_size - read_offset, length);
+		assert(size() >= read_len);
 		std::memcpy(destination, storage.data() + read_offset, read_len);
 		return read_len;
 	}
 
 	std::size_t read(auto destination, const std::size_t length, const bool allow_optimise = false) {
-		assert(size() >= length);
 		std::size_t read_len = copy(destination, length);
+		assert(size() >= read_len);
 		read_offset += static_cast<offset_type>(read_len);
 
 		if(allow_optimise && read_offset == write_offset) {
@@ -71,9 +71,9 @@ struct IntrusiveStorage final {
 		return read_len;
 	}
 
-	std::size_t skip(const std::size_t length, const bool allow_optimise = false) {
-		assert(size() >= length);
+	[[nodiscard]] std::size_t skip(const std::size_t length, const bool allow_optimise = false) {
 		const auto skip_len = std::min<std::size_t>(block_size - read_offset, length);
+		assert(size() >= skip_len);
 		read_offset += static_cast<offset_type>(skip_len);
 
 		if(allow_optimise && read_offset == write_offset) {
@@ -86,18 +86,21 @@ struct IntrusiveStorage final {
 	void write_seek(const BufferSeek direction, const std::size_t offset) {
 		switch(direction) {
 			case BufferSeek::sk_absolute:
+				assert(offset >= read_offset && offset <= block_size);
 				write_offset = offset;
 				break;
 			case BufferSeek::sk_backward:
+				assert(offset <= write_offset - read_offset);
 				write_offset -= static_cast<offset_type>(offset);
 				break;
 			case BufferSeek::sk_forward:
+				assert(offset <= block_size - write_offset);
 				write_offset += static_cast<offset_type>(offset);
 				break;
 		}
 	}
 
-	[[nodiscard]] std::size_t commit_write(std::size_t size) {
+	[[nodiscard]] std::size_t advance_write(std::size_t size) {
 		const auto remaining = free();
 
 		if(remaining < size) {
