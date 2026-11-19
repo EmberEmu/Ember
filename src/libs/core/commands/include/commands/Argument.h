@@ -10,6 +10,7 @@
 
 #include <commands/ParseArgument.h>
 #include <functional>
+#include <memory>
 #include <string>
 #include <typeinfo>
 #include <utility>
