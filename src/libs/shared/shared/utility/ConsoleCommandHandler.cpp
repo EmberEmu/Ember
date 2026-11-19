@@ -11,7 +11,6 @@
 #include <logger/posix/CommandSink.h>
 #include <logger/Logger.h>
 #include <shared/utility/DurationString.h>
-#include <boost/lexical_cast.hpp>
 #include <chrono>
 #include <ranges>
 #include <span>
@@ -80,8 +79,6 @@ void execute_command(const std::string_view input, const commands::Command& root
 	}
 } catch(const commands::parse_error& e) {
 	LOG_CONERR(logger, R"(Error parsing arguments, "{}")", e.what());
-} catch(const boost::bad_lexical_cast&) {
-	LOG_CONERR(logger, R"(Unable to execute command, invalid argument types provided)");
 } catch(const std::exception& e) {
 	LOG_CONERR(logger, R"(Error during command execution, "{}")", e.what());
 }

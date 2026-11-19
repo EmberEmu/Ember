@@ -63,11 +63,7 @@ Result Command::execute(std::span<const std::string> arguments) {
 			return validation;
 		}
 
-		try {
-			args = build_argument_map(arguments);
-		} catch(invalid_type&) {
-			return Result::invalid_types;
-		}
+		args = build_argument_map(arguments);
 
 		if(auto result = can_execute_handler(); result != Result::success) {
 			return result;
