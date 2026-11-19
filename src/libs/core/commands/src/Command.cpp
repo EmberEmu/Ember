@@ -37,15 +37,12 @@ auto Command::validate_arg_count(const std::size_t count) const -> Result {
 	return Result::success;
 }
 
-ArgMap Command::build_argument_map(std::span<std::any> values) const {
+ArgMap Command::build_argument_map(std::span<const std::string> values) const {
 	ArgMap args;
 
 	for(auto [value, arg] : std::views::zip(values, args_)) {
-		if(!validate_type(arg.type, value)) {
-			throw invalid_type(arg.name);
-		}
-
-		args.emplace(arg.name, std::move(value));
+		auto result = arg.parser->to_any(value);
+		args.emplace(arg.name, std::move(result));
 	}
 
 	return args;
@@ -55,22 +52,18 @@ Result Command::execute() {
 	return execute({});
 }
 
-Result Command::execute(std::span<std::any> arg_values) {
+Result Command::execute(std::span<const std::string> arguments) {
 	std::shared_ptr<Handler> handler;
 	ArgMap args;
 
 	{
 		std::lock_guard guard(mutex_);
 
-		if(auto validation = validate_arg_count(arg_values.size()); validation != Result::success) {
+		if(auto validation = validate_arg_count(arguments.size()); validation != Result::success) {
 			return validation;
 		}
 
-		try {
-			args = build_argument_map(arg_values);
-		} catch(invalid_type&) {
-			return Result::invalid_types;
-		}
+		args = build_argument_map(arguments);
 
 		if(auto result = can_execute_handler(); result != Result::success) {
 			return result;
@@ -94,21 +87,25 @@ auto Command::can_execute_handler() const -> Result {
 	}
 }
 
-std::shared_ptr<Command> Command::insert_argument(std::string argument, const std::type_info& type_info) {
+std::shared_ptr<Command> Command::insert_argument(std::string argument,
+                                                  std::unique_ptr<ParseArgumentBase> parser,
+                                                  const std::type_info& type_info) {
 	std::lock_guard guard(mutex_);
 
 	if(optional_arg_count() > 0) {
 		throw std::invalid_argument("Required arguments must be placed before optional arguments");
 	}
 		
-	args_.emplace_back(std::move(argument), true, type_info);
+	args_.emplace_back(std::move(argument), true, std::move(parser), type_info);
 	return this->shared_from_this();
 }
 
-std::shared_ptr<Command> Command::insert_optional_argument(std::string argument, const std::type_info& type_info) {
+std::shared_ptr<Command> Command::insert_optional_argument(std::string argument,
+                                                           std::unique_ptr<ParseArgumentBase> parser,
+                                                           const std::type_info& type_info) {
 	std::lock_guard guard(mutex_);
 
-	args_.emplace_back(std::move(argument), false, type_info);
+	args_.emplace_back(std::move(argument), false, std::move(parser), type_info);
 	return this->shared_from_this();
 }
 
@@ -253,10 +250,6 @@ bool Command::erase(const std::shared_ptr<const Command>& command) {
 void Command::clear_commands() {
 	std::lock_guard guard(map_mutex_);
 	commands_.clear();
-}
-
-bool Command::validate_type(const std::type_info& type, const std::any& value) const {
-	return type == value.type();
 }
 
 std::size_t Command::argument_count() const {

@@ -12,6 +12,7 @@ add_library(${LIBRARY_NAME} STATIC
     src/ScopedCommand.cpp
     include/commands/Commands.h
     include/commands/Command.h
+    include/commands/Command.inl
     include/commands/CommandMap.h
     include/commands/Argument.h
     include/commands/Utility.h
@@ -27,6 +28,8 @@ add_library(${LIBRARY_NAME} STATIC
     include/commands/SearchResult.h
     include/commands/CommandsView.h
     include/commands/impl/StringHash.h
+    include/commands/ParseArgument.h
+    include/commands/ParseArgumentBase.h
 )
 
 target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)

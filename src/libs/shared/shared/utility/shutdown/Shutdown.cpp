@@ -78,7 +78,7 @@ void register_command(commands::Command& registry, boost::asio::io_context& ioc,
 
 	auto root = registry.insert("shutdown")
 		->description("Shuts the service down")
-		->argument<std::chrono::seconds>("seconds", commands::optional)
+		->argument<unsigned int>("seconds", commands::optional)
 		->handler([&, timer, flag, initiate = std::move(handlers.on_initiate),
 			expire = std::move(handlers.on_expire)](auto arguments) {
 			handle_shutdown_command(arguments, timer, flag, initiate, expire);

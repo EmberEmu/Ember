@@ -9,6 +9,7 @@
 #pragma once
 
 #include <chrono>
+#include <istream>
 #include <regex>
 #include <string>
 
@@ -19,6 +20,8 @@ namespace ember::utility {
 struct DurationString {
 	std::chrono::seconds value;
 
+	DurationString() = default;
+
 	DurationString(const std::string& input)
 		: value(parse(input)) {	}
 
@@ -27,7 +30,7 @@ struct DurationString {
 		std::smatch matches;
 
 		if(!std::regex_match(input, matches, pattern)) {
-			throw std::invalid_argument("invalid duration format");
+			throw std::invalid_argument("Invalid duration format: expected %d%h%m%s");
 		}
 
 		auto duration = 0s;
@@ -55,5 +58,20 @@ struct DurationString {
 		return duration;
 	}
 };
+
+inline std::istream& operator>>(std::istream& in, DurationString& duration) try {
+	std::string input;
+	in >> input;
+
+	if(!in) {
+		return in;
+	}
+
+	duration = DurationString(input);
+	return in;
+} catch(...) {
+	in.setstate(std::ios_base::failbit);
+	throw;
+}
 
 } // utility, ember
