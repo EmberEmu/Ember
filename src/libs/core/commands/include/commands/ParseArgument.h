@@ -58,7 +58,7 @@ public:
 		}
 
 		throw parse_error(
-			std::format("Unable to convert '{}' to bool argument", token)
+			std::format("Unable to convert '{}' to bool", token)
 		);
 	}
 };

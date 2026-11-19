@@ -61,10 +61,12 @@ struct DurationString {
 };
 
 inline std::istream& operator>>(std::istream& in, DurationString& duration) try {
-	std::string input {
-		std::istreambuf_iterator<char>(in),
-		std::istreambuf_iterator<char>()
-	};
+	std::string input;
+	in >> input;
+
+	if(!in) {
+		return in;
+	}
 
 	duration = DurationString(input);
 	return in;
