@@ -17,13 +17,13 @@ namespace ember::commands {
 template<typename _ty>
 std::shared_ptr<Command> Command::argument(std::string argument, required_t) {
 	auto parser = std::make_unique<ParseArgument<_ty>>();
-	return insert_argument(std::move(argument), std::move(parser), typeid(_ty));
+	return insert_argument(std::move(argument), std::move(parser), typeid(_ty), true);
 }
 
 template<typename _ty>
 std::shared_ptr<Command> Command::argument(std::string argument, optional_t) {
 	auto parser = std::make_unique<ParseArgument<_ty>>();
-	return insert_optional_argument(std::move(argument), std::move(parser), typeid(_ty));
+	return insert_argument(std::move(argument), std::move(parser), typeid(_ty), false);
 }
 
 } // commands, ember

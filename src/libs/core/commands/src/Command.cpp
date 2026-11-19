@@ -89,23 +89,20 @@ auto Command::can_execute_handler() const -> Result {
 
 std::shared_ptr<Command> Command::insert_argument(std::string argument,
                                                   std::unique_ptr<ParseArgumentBase> parser,
-                                                  const std::type_info& type_info) {
+                                                  const std::type_info& type_info,
+                                                  bool required) {
 	std::lock_guard guard(mutex_);
 
-	if(optional_arg_count() > 0) {
-		throw std::invalid_argument("Required arguments must be placed before optional arguments");
+	if(required && optional_arg_count() > 0) {
+		throw std::invalid_argument(
+			"Required arguments must be placed before optional arguments"
+		);
 	}
 		
-	args_.emplace_back(std::move(argument), true, std::move(parser), type_info);
-	return this->shared_from_this();
-}
+	args_.emplace_back(
+		std::move(argument), required, std::move(parser), type_info
+	);
 
-std::shared_ptr<Command> Command::insert_optional_argument(std::string argument,
-                                                           std::unique_ptr<ParseArgumentBase> parser,
-                                                           const std::type_info& type_info) {
-	std::lock_guard guard(mutex_);
-
-	args_.emplace_back(std::move(argument), false, std::move(parser), type_info);
 	return this->shared_from_this();
 }
 

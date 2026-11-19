@@ -59,11 +59,8 @@ class Command final : public std::enable_shared_from_this<Command> {
 
 	std::shared_ptr<Command> insert_argument(std::string argument,
 	                                         std::unique_ptr<ParseArgumentBase> parser,
-	                                         const std::type_info& type);
-
-	std::shared_ptr<Command> insert_optional_argument(std::string argument,
-	                                                  std::unique_ptr<ParseArgumentBase> parser,
-	                                                  const std::type_info& type);
+	                                         const std::type_info& type,
+	                                         bool required);
 
 public:
 	explicit Command(std::string name, _constructor_tag);
