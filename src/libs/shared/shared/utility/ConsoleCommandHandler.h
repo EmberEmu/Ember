@@ -12,6 +12,6 @@
 
 namespace ember::utility {
 
-void register_console_command_handler(std::shared_ptr<commands::Command> root, log::Logger& logger, bool suggestions);
+void register_console_command_handler(std::shared_ptr<commands::Command> root, log::Logger& logger);
 
 } // utility, ember

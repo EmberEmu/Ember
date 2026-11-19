@@ -679,7 +679,7 @@ void CommandSink::register_handler(CommandHandler handler) {
 	handler_ = std::move(handler);
 }
 
-void CommandSink::register_suggestion(Suggestion handler) {
+void CommandSink::register_completion_hint(CompletionHintHandler handler) {
 	std::lock_guard guard(handler_lock_);
 	suggestion_ = std::move(handler);
 }

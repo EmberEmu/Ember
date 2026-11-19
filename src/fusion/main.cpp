@@ -69,8 +69,7 @@ int main(int argc, const char* argv[]) try {
 
 	auto root = commands::create("root");
 	create_service_subcommands(*root);
-	const auto suggestions = args["console_log.suggestions"].as<bool>();
-	utility::register_console_command_handler(root, logger, suggestions);
+	utility::register_console_command_handler(root, logger);
 	utility::register_common_commands(root, logger);
 
 	auto theme_path = args["console_log.theme_path"].as<std::filesystem::path>();
@@ -270,7 +269,6 @@ opts::variables_map parse_arguments(const int argc, const char* argv[]) {
 		("console_log.prefixes", opts::value<bool>()->required())
 		("console_log.prefix", opts::value<std::string>()->required())
 		("console_log.prefix_width", opts::value<unsigned int>()->required())
-		("console_log.suggestions", opts::value<bool>()->required())
 		("console_log.no_bg", opts::value<bool>()->required())
 		("console_log.theme", opts::value<log::posix::Theme>()->required())
 		("console_log.theme_path", opts::value<std::filesystem::path>()->required())

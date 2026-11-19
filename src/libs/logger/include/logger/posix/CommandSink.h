@@ -59,7 +59,7 @@ class CommandSink final : public log::CommandSink {
 
 	CommandHandler handler_;
 	Autocomplete autocomplete_;
-	Suggestion suggestion_;
+	CompletionHintHandler suggestion_;
 
 	std::mutex handler_lock_;
 	std::recursive_mutex console_lock_;
@@ -120,7 +120,7 @@ public:
 
 	void register_handler(CommandHandler handler) override;
 	void register_autocomplete(Autocomplete handler) override;
-	void register_suggestion(Suggestion handler) override;
+	void register_completion_hint(CompletionHintHandler handler) override;
 
 	void clear_console() override;
 	void set_max_table_cols(unsigned int cols);

@@ -25,7 +25,7 @@ class CommandSink : public Sink {
 public:
 	using CommandHandler = std::function<void(const std::string_view)>;
 	using Autocomplete = std::function<commands::Suggestions(const std::string&)>;
-	using Suggestion = std::function<std::string(const std::string_view)>;
+	using CompletionHintHandler = std::function<std::string(const std::string_view)>;
 
 	CommandSink(std::string name, Severity severity, Filter filter);
 	~CommandSink();
@@ -35,7 +35,7 @@ public:
 
 	virtual void register_handler(CommandHandler handler) = 0;
 	virtual void register_autocomplete(Autocomplete handler) = 0;
-	virtual void register_suggestion(Suggestion handler) = 0;
+	virtual void register_completion_hint(CompletionHintHandler handler) = 0;
 
 	virtual bool invoke(const std::string_view command) = 0;
 	virtual void clear_console() = 0;

@@ -84,7 +84,7 @@ void execute_command(const std::string_view input, const commands::Command& root
 	LOG_CONERR(logger, R"(Error during command execution, "{}")", e.what());
 }
 
-void register_console_command_handler(std::shared_ptr<commands::Command> root, log::Logger& logger, const bool suggestions) {
+void register_console_command_handler(std::shared_ptr<commands::Command> root, log::Logger& logger) {
 	auto result = logger.fetch_unique(log::CommandSink::type());
 
 	if(!result) {
@@ -102,11 +102,9 @@ void register_console_command_handler(std::shared_ptr<commands::Command> root, l
 		execute_command(input, *root, logger);
 	});
 
-	if(suggestions) {
-		sink.register_suggestion([root](auto cmd) {
-			return root->autocomplete(cmd).substring;
-		});
-	}
+	sink.register_completion_hint([root](auto cmd) {
+		return root->autocomplete(cmd).substring;
+	});
 }
 
 } // utility, ember

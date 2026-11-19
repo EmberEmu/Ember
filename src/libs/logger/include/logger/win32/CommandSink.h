@@ -43,7 +43,7 @@ class CommandSink final : public log::CommandSink {
 
 	using CommandHandler = std::function<void(const std::string_view)>;
 	using Autocomplete = std::function<commands::Suggestions(const std::string&)>;
-	using Suggestion = std::function<std::string(const std::string_view)>;
+	using CompletionHintHandler = std::function<std::string(const std::string_view)>;
 
 	static constexpr auto sv_reserve = 256u;
 	static constexpr auto max_buf_size = 4096u;
@@ -60,7 +60,7 @@ class CommandSink final : public log::CommandSink {
 
 	CommandHandler handler_;
 	Autocomplete autocomplete_;
-	Suggestion suggestion_;
+	CompletionHintHandler suggestion_;
 
 	std::mutex handler_lock_;
 	std::recursive_mutex console_lock_;
@@ -106,7 +106,7 @@ public:
 
 	void register_handler(CommandHandler handler) override;
 	void register_autocomplete(Autocomplete handler) override;
-	void register_suggestion(Suggestion handler) override;
+	void register_completion_hint(CompletionHintHandler handler) override;
 
 	void clear_console() override;
 	void set_max_table_cols(unsigned int cols);

@@ -742,7 +742,7 @@ void CommandSink::register_autocomplete(Autocomplete handler) {
 	autocomplete_ = std::move(handler);
 }
 
-void CommandSink::register_suggestion(Suggestion handler) {
+void CommandSink::register_completion_hint(CompletionHintHandler handler) {
 	std::lock_guard lock(handler_lock_);
 	suggestion_ = std::move(handler);
 }

@@ -105,8 +105,7 @@ int run(const opts::variables_map& args, log::Logger& logger, commands::Command&
 
 std::shared_ptr<commands::Command> init_commands(const opts::variables_map& args, log::Logger& logger) {
 	auto registry = commands::create("root");
-	const auto suggestions = args["console_log.suggestions"].as<bool>();
-	utility::register_console_command_handler(registry, logger, suggestions);
+	utility::register_console_command_handler(registry, logger);
 	utility::register_common_commands(registry, logger);
 
 	auto theme_path = args["console_log.theme_path"].as<std::filesystem::path>();
@@ -131,7 +130,6 @@ opts::variables_map parse_arguments(const int argc, const char* argv[]) {
 		("console_log.verbosity", opts::value<log::Severity>()->required())
 		("console_log.filter_mask", opts::value<log::Filter>()->required())
 		("console_log.colours", opts::value<bool>()->required())
-		("console_log.suggestions", opts::value<bool>()->required())
 		("console_log.win_ansi", opts::value<bool>()->required())
 		("console_log.timestamp", opts::value<bool>()->required())
 		("console_log.timestamp_format", opts::value<std::string>()->required())

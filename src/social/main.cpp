@@ -144,7 +144,6 @@ opts::variables_map parse_arguments(const int argc, const char* argv[]) {
 		("console_log.verbosity", opts::value<log::Severity>()->required())
 		("console_log.filter_mask", opts::value<log::Filter>()->required())
 		("console_log.colours", opts::value<bool>()->required())
-		("console_log.suggestions", opts::value<bool>()->required())
 		("console_log.win_ansi", opts::value<bool>()->required())
 		("console_log.timestamp", opts::value<bool>()->required())
 		("console_log.timestamp_format", opts::value<std::string>()->required())
