@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <commands/ParseArgument.h>
 #include <functional>
 #include <string>
 #include <typeinfo>
@@ -23,12 +24,17 @@ inline constexpr optional_t optional = optional_t();
 
 struct Argument {
 	std::string name;
-	std::reference_wrapper<const std::type_info> type; // this is okay, type_info lives for the duration of the program
 	bool required;
+	std::shared_ptr<ParseArgumentBase> parser;         // todo, need to refactor some other bits
+	std::reference_wrapper<const std::type_info> type; // this is okay, type_info lives for the duration of the program
 
-	Argument(std::string name, bool required, const std::type_info& type_info) noexcept
+	Argument(std::string name,
+	         bool required,
+	         std::unique_ptr<ParseArgumentBase> parser,
+	         const std::type_info& type_info) noexcept
 		: name(std::move(name))
 		, required(required)
+		, parser(std::move(parser))
 		, type(type_info) {}
 };
 

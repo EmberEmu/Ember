@@ -15,6 +15,7 @@
 #include <commands/CommandsView.h>
 #include <commands/Flags.h>
 #include <commands/Result.h>
+#include <commands/ParseArgument.h>
 #include <commands/SearchResult.h>
 #include <commands/ScopedCommand.h>
 #include <commands/Suggestions.h>
@@ -51,13 +52,18 @@ class Command final : public std::enable_shared_from_this<Command> {
 	Flags flags_;
 
 	Result validate_arg_count(std::size_t count) const;
-	bool validate_type(const std::type_info& type, const std::any& value) const;
-	ArgMap build_argument_map(std::span<std::any> values) const;
+	ArgMap build_argument_map(std::span<const std::string> values) const;
 	std::size_t required_arg_count() const;
 	std::size_t optional_arg_count() const;
 	Result can_execute_handler() const;
-	std::shared_ptr<Command> insert_argument(std::string argument, const std::type_info& type);
-	std::shared_ptr<Command> insert_optional_argument(std::string argument, const std::type_info& type);
+
+	std::shared_ptr<Command> insert_argument(std::string argument,
+	                                         std::unique_ptr<ParseArgumentBase> parser,
+	                                         const std::type_info& type);
+
+	std::shared_ptr<Command> insert_optional_argument(std::string argument,
+	                                                  std::unique_ptr<ParseArgumentBase> parser,
+	                                                  const std::type_info& type);
 
 public:
 	explicit Command(std::string name, _constructor_tag);
@@ -77,14 +83,10 @@ public:
 	ScopedCommand scoped_insert(std::shared_ptr<Command> command);
 
 	template<typename _ty>
-	std::shared_ptr<Command> argument(std::string argument, required_t = required) {
-		return insert_argument(std::move(argument), typeid(_ty));
-	}
+	std::shared_ptr<Command> argument(std::string argument, required_t = required);
 
 	template<typename _ty>
-	std::shared_ptr<Command> argument(std::string argument, optional_t) {
-		return insert_optional_argument(std::move(argument), typeid(_ty));
-	}
+	std::shared_ptr<Command> argument(std::string argument, optional_t);
 
 	bool erase_argument(const std::string& argument);
 	void clear_arguments();
@@ -141,7 +143,9 @@ public:
 	SearchResult find(std::span<const std::string> tokens) const;
 
 	Result execute();
-	Result execute(std::span<std::any> arg_values);
+	Result execute(std::span<const std::string> arguments);
 };
 
 } // commands, ember
+
+#include <commands/Command.inl>
