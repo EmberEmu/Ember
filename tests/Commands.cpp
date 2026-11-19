@@ -245,7 +245,7 @@ TEST_F(Commands, Execute_SubcommandsOnly) {
 
 TEST_F(Commands, Execute_MissingArgsEmpty) {
 	auto cmd = registry->find("root").command;
-	ASSERT_EQ(cmd->execute(), commands::Result::missing_args);
+	ASSERT_EQ(cmd->execute(), commands::Result::too_few_args);
 }
 
 TEST_F(Commands, Execute_TooManyArgs) {
@@ -265,7 +265,7 @@ TEST_F(Commands, Execute_MissingArgs) {
 		"jumped",
 	};
 
-	ASSERT_EQ(cmd->execute(args), commands::Result::missing_args);
+	ASSERT_EQ(cmd->execute(args), commands::Result::too_few_args);
 }
 
 TEST_F(Commands, Execute_RequiredArgs_Success) {

@@ -36,10 +36,11 @@ void handle_command_result(commands::Result result,
 	using enum commands::Result;
 
     switch(result) {
-		case missing_args:
-			[[fallthrough]];
+		case too_few_args:
+			LOG_CONERR(logger, "Missing arguments, usage: {} {}", path, command.usage_string());
+			break;
         case too_many_args:
-			LOG_CONERR(logger, "Usage: {} {}", path, command.usage_string());
+			LOG_CONERR(logger, "Too many arguments, usage: {} {}", path, command.usage_string());
             break;
         case subcommands:
 			log_subcommands(path, command.view(), logger);

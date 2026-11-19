@@ -29,7 +29,7 @@ std::shared_ptr<Command> Command::create(std::string name) {
 
 auto Command::validate_arg_count(const std::size_t count) const -> Result {
 	if(count < required_arg_count()) {
-		return Result::missing_args;
+		return Result::too_few_args;
 	} else if(count > args_.size()) {
 		return Result::too_many_args;
 	}

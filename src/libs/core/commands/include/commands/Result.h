@@ -13,7 +13,7 @@ namespace ember::commands {
 enum class Result {
 	success,
 	too_many_args,
-	missing_args,
+	too_few_args,
 	unavailable,
 	subcommands,
 	invalid_types,
