@@ -40,6 +40,11 @@ void handle_command_result(commands::Result result, const commands::Command& roo
 
 	const auto tokens = commands::parse_input(input);
 
+	if(tokens.empty()) {
+		LOG_CONERR(logger, R"(Error handling command result, unexpected empty input")");
+		return;
+	}
+
 	if(result == command_not_found) {
 		LOG_CONERR(logger, R"(Command "{}" not found)", tokens.front());
 		return;
