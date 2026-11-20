@@ -56,6 +56,7 @@ class Command final : public std::enable_shared_from_this<Command> {
 	std::size_t required_arg_count() const;
 	std::size_t optional_arg_count() const;
 	Result can_execute_handler() const;
+	Result execute_path(std::span<const std::string> arguments, bool require_match);
 
 	std::shared_ptr<Command> insert_argument(std::string argument,
 	                                         std::unique_ptr<ParseArgumentBase> parser,
@@ -141,6 +142,7 @@ public:
 
 	Result execute();
 	Result execute(std::span<const std::string> arguments);
+	Result execute_path(std::span<const std::string> tokens);
 };
 
 } // commands, ember
