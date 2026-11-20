@@ -143,6 +143,7 @@ public:
 	Result execute();
 	Result execute(std::span<const std::string> arguments);
 	Result execute_path(std::span<const std::string> tokens);
+	Result execute_path(std::string_view input);
 };
 
 } // commands, ember

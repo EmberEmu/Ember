@@ -79,6 +79,11 @@ Result Command::execute_path(std::span<const std::string> tokens, const bool req
 	return execute(tokens);
 }
 
+Result Command::execute_path(const std::string_view input) {
+	const auto tokens = commands::parse_input(input);
+	return execute_path(tokens);
+}
+
 Result Command::execute_path(std::span<const std::string> tokens) {
 	if(tokens.empty()) {
 		return Result::empty_input;

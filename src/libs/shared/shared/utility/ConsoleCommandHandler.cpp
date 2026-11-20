@@ -30,19 +30,20 @@ void log_subcommands(const std::string& path, const commands::CommandsView& subc
 }
 
 void handle_command_result(commands::Result result, const commands::Command& root,
-                           std::span<const std::string> tokens, log::Logger& logger) {
+                           std::string_view input, log::Logger& logger) {
 	using enum commands::Result;
 
-    switch(result) {
-		case empty_input:
-			LOG_CONERR(logger, "Command cannot be empty");
-			return;
-		case command_not_found:
-			LOG_CONERR(logger, R"(Command "{}" not found)", tokens.front());
-			return;
-		default:
-			break;
-    }
+	if(result == empty_input) {
+		LOG_CONERR(logger, "Command cannot be empty");
+		return;
+	}
+
+	const auto tokens = commands::parse_input(input);
+
+	if(result == command_not_found) {
+		LOG_CONERR(logger, R"(Command "{}" not found)", tokens.front());
+		return;
+	}
 
 	const auto search = root.find(tokens);
 
@@ -51,7 +52,7 @@ void handle_command_result(commands::Result result, const commands::Command& roo
 		return;
 	}
 
-	const auto& path = commands::path_fragment(tokens, search.depth);
+	const auto path = commands::path_fragment(tokens, search.depth);
 
 	switch(result) {
 		case too_few_args:
@@ -76,10 +77,8 @@ void handle_command_result(commands::Result result, const commands::Command& roo
 }
 
 void execute_command(const std::string_view input, commands::Command& root, log::Logger& logger) try {
-	const auto tokens = commands::parse_input(input);
-
-	if(auto result = root.execute_path(tokens); result != commands::Result::success) {
-		handle_command_result(result, root, tokens, logger);
+	if(auto result = root.execute_path(input); result != commands::Result::success) {
+		handle_command_result(result, root, input, logger);
 	}
 } catch(const commands::parse_error& e) {
 	LOG_CONERR(logger, R"(Error parsing arguments, "{}")", e.what());
