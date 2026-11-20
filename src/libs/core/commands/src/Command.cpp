@@ -52,6 +52,46 @@ Result Command::execute() {
 	return execute({});
 }
 
+Result Command::execute_path(std::span<const std::string> tokens, const bool require_match) {
+	if(tokens.empty()) {
+		return require_match? Result::command_not_found : execute();
+	}
+	
+	// prevent recursive locking in case this is no longer a DAG
+	std::shared_ptr<Command> command;
+	
+	{
+		std::lock_guard guard(mutex_);
+	
+		if(auto it = commands_.find(tokens.front()); it != commands_.end()) {
+			command = it->second;
+		}
+	}
+	
+	if(require_match && !command) {
+		return Result::command_not_found;
+	}
+
+	if(command) {
+		return command->execute_path(tokens.subspan<1>(), false);
+	}
+	
+	return execute(tokens);
+}
+
+Result Command::execute_path(const std::string_view input) {
+	const auto tokens = commands::parse_input(input);
+	return execute_path(tokens);
+}
+
+Result Command::execute_path(std::span<const std::string> tokens) {
+	if(tokens.empty()) {
+		return Result::empty_input;
+	}
+
+	return execute_path(tokens, true);
+}
+
 Result Command::execute(std::span<const std::string> arguments) {
 	std::shared_ptr<Handler> handler;
 	ArgMap args;

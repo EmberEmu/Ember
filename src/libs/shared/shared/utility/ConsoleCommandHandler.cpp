@@ -29,55 +29,56 @@ void log_subcommands(const std::string& path, const commands::CommandsView& subc
 	}
 }
 
-void handle_command_result(commands::Result result,
-                           const std::string& path,
-                           const commands::Command& command,
-                           log::Logger& logger) {
+void handle_command_result(commands::Result result, const commands::Command& root,
+                           std::string_view input, log::Logger& logger) {
 	using enum commands::Result;
 
-    switch(result) {
-		case too_few_args:
-			LOG_CONERR(logger, "Missing arguments, usage: {} {}", path, command.usage_string());
-			break;
-        case too_many_args:
-			LOG_CONERR(logger, "Too many arguments, usage: {} {}", path, command.usage_string());
-            break;
-        case subcommands:
-			log_subcommands(path, command.view(), logger);
-            break;
-        case unavailable:
-			LOG_CONERR(logger, R"(Command "{}" is currently unavailable.)", path);
-            break;
-		case invalid_types:
-			LOG_CONERR(logger, R"(Bad argument types when attempting to execute "{}")", path);
-			break;
-        default:
-			LOG_CONERR(logger, R"(An unhandled error occurred while executing "{}")", path);
-            break;
-    }
-}
+	if(result == empty_input) {
+		LOG_CONERR(logger, "Command cannot be empty");
+		return;
+	}
 
-void execute_command(const std::string_view input, const commands::Command& root, log::Logger& logger) try {
 	const auto tokens = commands::parse_input(input);
 
-	if(tokens.empty()) {
-		LOG_CONERR(logger, "Command cannot be empty");
+	if(result == command_not_found) {
+		LOG_CONERR(logger, R"(Command "{}" not found)", tokens.front());
 		return;
 	}
 
 	const auto search = root.find(tokens);
 
 	if(!search.command) {
-		LOG_CONERR(logger, R"(Command "{}" not found)", tokens.front());
+		LOG_CONERR(logger, R"(Error handling command result for "{}")", tokens.front());
 		return;
 	}
 
-	auto arguments = std::span(tokens).subspan(search.depth); // discard command name token
+	const auto path = commands::path_fragment(tokens, search.depth);
 
-	// execute the command handler
-	if(auto result = search.command->execute(arguments); result != commands::Result::success) {
-		const auto& path = commands::path_fragment(tokens, search.depth);
-		handle_command_result(result, path, *search.command, logger);
+	switch(result) {
+		case too_few_args:
+			LOG_CONERR(logger, "Missing arguments, usage: {} {}", path, search.command->usage_string());
+			break;
+		case too_many_args:
+			LOG_CONERR(logger, "Too many arguments, usage: {} {}", path, search.command->usage_string());
+			break;
+		case subcommands:
+			log_subcommands(path, search.command->view(), logger);
+			break;
+		case unavailable:
+			LOG_CONERR(logger, R"(Command "{}" is currently unavailable.)", path);
+			break;
+		case invalid_types:
+			LOG_CONERR(logger, R"(Bad argument types when attempting to execute "{}")", path);
+			break;
+		default:
+			LOG_CONERR(logger, R"(An unhandled error occurred while executing "{}")", path);
+			break;
+	}
+}
+
+void execute_command(const std::string_view input, commands::Command& root, log::Logger& logger) try {
+	if(auto result = root.execute_path(input); result != commands::Result::success) {
+		handle_command_result(result, root, input, logger);
 	}
 } catch(const commands::parse_error& e) {
 	LOG_CONERR(logger, R"(Error parsing arguments, "{}")", e.what());

@@ -17,6 +17,8 @@ enum class Result {
 	unavailable,
 	subcommands,
 	invalid_types,
+	command_not_found,
+	empty_input,
 	error
 };
 
