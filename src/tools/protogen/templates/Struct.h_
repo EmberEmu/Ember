@@ -18,10 +18,13 @@
 ## for header in includes
 #include <{{ header }}>
 ## endfor
+{% if has_strings %}#include <protocol/StringTraits.h>{% endif %}
 
 namespace {{ namespace }} {
 
+{% if has_strings %}template<class Ownership = use_strings>{% endif %}
 struct {{ name }} {
+{% if has_strings %}	IMPORT_STRING_ALIASES{% endif %}
 ## for f in fields
 	{{ f.type }} {{ f.name }}{{ f.suffix }};
 ## endfor
