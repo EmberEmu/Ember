@@ -23,7 +23,6 @@ add_library(${LIBRARY_NAME} STATIC
     include/commands/ArgumentMap.h
     include/commands/AnyArg.h
     include/commands/ScopedCommand.h
-    include/commands/UserData.h
     include/commands/Flags.h
     include/commands/SearchResult.h
     include/commands/CommandsView.h
