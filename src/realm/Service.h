@@ -52,7 +52,7 @@ public:
 	void stop();
 };
 
-extern "C" EMBER_EXPORT_SERVICE Service* create_realm(log::Logger& logger, commands::Command& registry);
-extern "C" EMBER_EXPORT_SERVICE void destroy_realm(Service* service);
+extern "C" EMBER_EXPORT_SERVICE Service* create(log::Logger& logger, commands::Command& registry);
+extern "C" EMBER_EXPORT_SERVICE void destroy(Service* service);
 
 } // realm, ember

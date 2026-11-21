@@ -23,3 +23,9 @@
 #else
 	#define EMBER_EXPORT_SERVICE
 #endif
+
+#if defined(BUILD_SHARED_SERVICES)
+	#define EMBER_SERVICE_LINKAGE       extern "C"
+#else
+	#define EMBER_SERVICE_LINKAGE
+#endif

@@ -118,22 +118,22 @@ auto destroy_service(const ServiceContext& context) {
 inline void destroy_service(const ServiceContext& context) {
 	switch(context.index) {
 		case ServiceIndex::service_account:
-			destroy_service<account::destroy_account, account::Service>(context);
+			destroy_service<account::destroy, account::Service>(context);
 			break;
 		case ServiceIndex::service_world:
-			destroy_service<world::destroy_world, world::Service>(context);
+			destroy_service<world::destroy, world::Service>(context);
 			break;
 		case ServiceIndex::service_character:
-			destroy_service<character::destroy_character, character::Service>(context);
+			destroy_service<character::destroy, character::Service>(context);
 			break;
 		case ServiceIndex::service_realm:
-			destroy_service<realm::destroy_realm, realm::Service>(context);
+			destroy_service<realm::destroy, realm::Service>(context);
 			break;
 		case ServiceIndex::service_login:
-			destroy_service<login::destroy_login, login::Service>(context);
+			destroy_service<login::destroy, login::Service>(context);
 			break;
 		case ServiceIndex::service_mdns:
-			destroy_service<dns::destroy_mdns, dns::Service>(context);
+			destroy_service<dns::destroy, dns::Service>(context);
 			break;
 		default:
 			std::abort();
@@ -228,37 +228,37 @@ ServiceRunner create_runner(const ServiceIndex idx, const Params& params,
 }
 
 inline ServiceRunner create_mdns_runner(const Params& params) {
-	return create_runner<dns::create_mdns>(
+	return create_runner<dns::create>(
 		ServiceIndex::service_mdns, params, dns::Service::options()
 	);
 }
 
 inline ServiceRunner create_login_runner(const Params& params) {
-	return create_runner<login::create_login>(
+	return create_runner<login::create>(
 		ServiceIndex::service_login, params, login::Service::options()
 	);
 }
 
 inline ServiceRunner create_realm_runner(const Params& params) {
-	return create_runner<realm::create_realm>(
+	return create_runner<realm::create>(
 		ServiceIndex::service_realm, params, realm::Service::options()
 	);
 }
 
 inline ServiceRunner create_account_runner(const Params& params) {
-	return create_runner<account::create_account>(
+	return create_runner<account::create>(
 		ServiceIndex::service_account, params, account::Service::options()
 	);
 }
 
 inline ServiceRunner create_character_runner(const Params& params) {
-	return create_runner<character::create_character>(
+	return create_runner<character::create>(
 		ServiceIndex::service_character, params, character::Service::options()
 	);
 }
 
 inline ServiceRunner create_world_runner(const Params& params) {
-	return create_runner<world::create_world>(
+	return create_runner<world::create>(
 		ServiceIndex::service_world, params, world::Service::options()
 	);
 }

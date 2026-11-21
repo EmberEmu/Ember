@@ -19,7 +19,6 @@ set(LIBRARY_HDR
     Serialisation.h
     detail/Parser.h
     NSDService.h
-    Service.h
     StreamType.h
     ServiceContext.h
     ServiceContextImpl.h
@@ -33,7 +32,6 @@ set(LIBRARY_SRC
     Serialisation.cpp
     detail/Parser.cpp
     NSDService.cpp
-    Service.cpp
     ServiceContext.cpp
 )
 
@@ -43,6 +41,8 @@ add_library(${LIBRARY_OBJECTS} OBJECT
 )
 
 add_library(${LIBRARY_NAME} ${SERVICE_LIB_LINKAGE} 
+    Service.h
+    Service.cpp
     $<TARGET_OBJECTS:${LIBRARY_OBJECTS}>
 )
 
