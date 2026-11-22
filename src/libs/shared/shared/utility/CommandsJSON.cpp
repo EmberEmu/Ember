@@ -11,6 +11,7 @@
 #include "CommandsJSON.h"
 #include <commands/Command.h>
 #include <nlohmann/json.hpp>
+#include <ranges>
 
 namespace ember::utility {
 
