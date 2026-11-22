@@ -196,7 +196,8 @@ void ClientConnection::read() {
 	// ensure we have enough buffer space for the next read, allowing the buffer
 	// to internally defragment itself if required
 	if(!inbound_buffer_.ensure_write_space(required_space)) [[unlikely]] {
-		LOG_DEBUG(logger_, "Inbound buffer full, closing {}", address());
+		LOG_DEBUG(logger_, "Insufficient inbound buffer space, {} bytes required, closing {}",
+			required_space, address());
 		close_session();
 		return;
 	}
