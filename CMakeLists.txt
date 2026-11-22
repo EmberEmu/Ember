@@ -5,6 +5,24 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 cmake_minimum_required(VERSION 3.30)
+
+set(allocator_options "system" "mimalloc" "jemalloc")
+set(allocator "system" CACHE STRING "Allocator selection")
+set_property(CACHE allocator PROPERTY STRINGS ${allocator_options})
+
+if(NOT allocator IN_LIST allocator_options)
+    message(FATAL_ERROR
+        "Invalid allocator '${allocator}'. "
+        "Must be one of: ${allocator_options}"
+    )
+endif()
+
+if(allocator STREQUAL "mimalloc")
+    list(APPEND VCPKG_MANIFEST_FEATURES "mimalloc")
+elseif(allocator STREQUAL "jemalloc")
+    list(APPEND VCPKG_MANIFEST_FEATURES "jemalloc")
+endif()
+
 project(Ember)
 
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
@@ -118,17 +136,6 @@ if(PGO STREQUAL "use")
     else()
         add_compile_options("$<$<CXX_COMPILER_ID:GNU,Clang>:-fprofile-use>")
     endif()
-endif()
-
-set(allocator_options "system" "mimalloc" "jemalloc")
-set(allocator "system" CACHE STRING "Allocator selection")
-set_property(CACHE allocator PROPERTY STRINGS ${allocator_options})
-
-if(NOT allocator IN_LIST allocator_options)
-    message(FATAL_ERROR
-        "Invalid allocator '${allocator}'. "
-        "Must be one of: ${allocator_options}"
-    )
 endif()
 
 option(BOTAN_OBJECT_REUSE "Reuse Botan objects per thread" ON)
