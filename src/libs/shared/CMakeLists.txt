@@ -85,6 +85,8 @@ set(UTIL_SRC
     shared/utility/shutdown/Install.h
     shared/utility/UncheckedBackInserter.h
     shared/utility/Truncate.h
+    shared/utility/CommandsJSON.h
+    shared/utility/CommandsJSON.cpp
 )
 
 set(METRICS_SRC
@@ -128,6 +130,7 @@ add_library(${LIBRARY_NAME} STATIC ${LIBRARY_SRC})
 
 target_include_directories(${LIBRARY_NAME} PUBLIC
     ${CMAKE_SOURCE_DIR}/deps/utf8cpp
+	${CMAKE_SOURCE_DIR}/deps
     ${PROJECT_BINARY_DIR}/src
     ${CMAKE_CURRENT_SOURCE_DIR}/
 )

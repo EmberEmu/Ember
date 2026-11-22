@@ -90,7 +90,7 @@ int run(const opts::variables_map& args, log::Logger& logger, commands::Command&
 
 		std::stop_callback stop(token, [&] {
 			boost::asio::post(ioc, [&] {
-				signals.cancel(); 
+				signals.cancel();
 			});
 		});
 
