@@ -7,19 +7,19 @@
 cmake_minimum_required(VERSION 3.30)
 
 set(allocator_options "system" "mimalloc" "jemalloc")
-set(allocator "system" CACHE STRING "Allocator selection")
+set(ALLOCATOR "system" CACHE STRING "Allocator selection")
 set_property(CACHE allocator PROPERTY STRINGS ${allocator_options})
 
-if(NOT allocator IN_LIST allocator_options)
+if(NOT ALLOCATOR IN_LIST allocator_options)
     message(FATAL_ERROR
         "Invalid allocator '${allocator}'. "
         "Must be one of: ${allocator_options}"
     )
 endif()
 
-if(allocator STREQUAL "mimalloc")
+if(ALLOCATOR STREQUAL "mimalloc")
     list(APPEND VCPKG_MANIFEST_FEATURES "mimalloc")
-elseif(allocator STREQUAL "jemalloc")
+elseif(ALLOCATOR STREQUAL "jemalloc")
     list(APPEND VCPKG_MANIFEST_FEATURES "jemalloc")
 endif()
 
@@ -279,7 +279,7 @@ endif()
 ##############################
 #          JEMALLOC          #
 ##############################
-if(allocator STREQUAL "jemalloc")
+if(ALLOCATOR STREQUAL "jemalloc")
     add_compile_definitions(WITH_JEMALLOC)
     find_package(Jemalloc REQUIRED)
     link_libraries(Jemalloc::Jemalloc)
@@ -288,7 +288,7 @@ endif()
 ##############################
 #          MIMALLOC          #
 ##############################
-if(allocator STREQUAL "mimalloc")
+if(ALLOCATOR STREQUAL "mimalloc")
     add_compile_definitions(WITH_MIMALLOC)
     find_package(mimalloc CONFIG REQUIRED)
     link_libraries($<IF:$<TARGET_EXISTS:mimalloc-static>,mimalloc-static,mimalloc>)
