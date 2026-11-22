@@ -8,7 +8,7 @@ cmake_minimum_required(VERSION 3.30)
 
 set(allocator_options "system" "mimalloc" "jemalloc")
 set(ALLOCATOR "system" CACHE STRING "Allocator selection")
-set_property(CACHE allocator PROPERTY STRINGS ${allocator_options})
+set_property(CACHE ALLOCATOR PROPERTY STRINGS ${allocator_options})
 
 if(NOT ALLOCATOR IN_LIST allocator_options)
     message(FATAL_ERROR
