@@ -13,11 +13,22 @@
 #include "../ServiceContextImpl.h"
 #include <logger/Logger.h>
 #include <bprinter/table_printer.h>
+#include <chrono>
+#include <format>
 #include <sstream>
 
 namespace ember::realm {
 
 namespace {
+
+std::string uptime_format(const std::chrono::steady_clock::time_point& start, const std::chrono::steady_clock::time_point& now) {
+	const auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(now - start).count();
+	const auto hours = elapsed / 3600;
+	const auto minutes = (elapsed % 3600) / 60;
+	const auto seconds = elapsed % 60;
+
+	return std::format("{}h {}m {}s", hours, minutes, seconds);
+}
 
 void toggle_logging(SessionManager::SessionID id,
                     bool toggle,
@@ -68,16 +79,19 @@ void connection_list(const commands::Arguments& args,
 	table.AddColumn("ID", 5);
 	table.AddColumn("Remote", 22);
 	table.AddColumn("Identity", 50);
-	table.AddColumn("State", 20);
+	table.AddColumn("Uptime", 14);
+	table.AddColumn("State", 18);
 	table.PrintHeader();
 
 	std::size_t connections = 0; // count could change outside of iteration
+	const auto time = std::chrono::steady_clock::now();
 
 	for(const auto& session : sessions) {
 		const auto& [id, client] = session;
 		table << id;
 		table << client->connection().address();
 		table << client->handler().whoami();
+		table << uptime_format(client->start_time(), time);
 		table << ClientState_to_string(client->handler().state());
 		++connections;
 	}

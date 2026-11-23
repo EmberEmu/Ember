@@ -19,7 +19,8 @@ using namespace std::string_view_literals;
 namespace ember::realm {
 
 Client::Client(ClientHandler handler, ClientConnection connection, EventDispatcher& dispatcher, log::Logger& logger)
-	: handler_(std::move(handler))
+	: start_time_(std::chrono::steady_clock::now())
+	, handler_(std::move(handler))
 	, connection_(std::move(connection))
 	, dispatcher_(dispatcher)
 	, logger_(logger)
@@ -120,6 +121,10 @@ const ClientConnection& Client::connection() const {
 
 const ClientHandler& Client::handler() const {
 	return handler_;
+}
+
+std::chrono::steady_clock::time_point Client::start_time() const {
+	return start_time_;
 }
 
 Client::~Client() {

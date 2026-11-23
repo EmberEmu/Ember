@@ -13,10 +13,13 @@
 #include "ClientIdent.h"
 #include "SocketType.h"
 #include <logger/LoggerFwd.h>
+#include <chrono>
 
 namespace ember::realm {
 
 class Client {
+	const std::chrono::steady_clock::time_point start_time_;
+
 	ClientHandler handler_;
 	ClientConnection connection_;
 	EventDispatcher& dispatcher_;
@@ -44,6 +47,7 @@ public:
 	bool stopped() const;
 
 	void handle_event(const Event& event);
+	std::chrono::steady_clock::time_point start_time() const;
 
 	const ClientIdent& ident() const;
 	const ClientConnection& connection() const;
