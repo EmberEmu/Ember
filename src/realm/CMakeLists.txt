@@ -89,6 +89,7 @@ set(LIBRARY_HDR
     ConnectionCork.h
     BindToken.h
     ClientIdent.h
+    CorkToken.h
 )
 
 set(LIBRARY_SRC

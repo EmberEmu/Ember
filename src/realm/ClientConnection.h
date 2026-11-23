@@ -12,6 +12,7 @@
 #include "ClientIdent.h"
 #include "ConnectionDefines.h"
 #include "ConnectionStats.h"
+#include "CorkToken.h"
 #include "FilterTypes.h"
 #include "Forwards.h"
 #include "PacketCrypto.h"
@@ -32,31 +33,19 @@
 
 namespace ember::realm {
 
-class AllocationProvider;
-class ClientHandler;
-
-class CorkToken {
-	unsigned int depth;
-
-	CorkToken(unsigned int depth)
-		: depth(depth) {}
-
-	friend class ClientConnection;
-};
-
-enum class WriteResult {
-	success,
-	would_block,
-	failed
-};
-
 class ClientConnection final {
-	static constexpr std::string_view allocator_tag { "realm_client_connection" };
-
 public:
-	static constexpr auto key_size = 40;
+	static constexpr auto key_size { 40 };
 
 private:
+	static constexpr std::string_view allocator_tag { "realm_client_connection" };
+
+	enum class WriteResult {
+		success,
+		would_block,
+		failed
+	};
+
 	enum class ReadState {
 		header,
 		body,
