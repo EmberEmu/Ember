@@ -59,6 +59,7 @@ add_library(${LIBRARY_NAME} STATIC
     include/logger/posix/CommandSinkOptions.h
     include/logger/win32/CommandSinkOptions.h
     include/logger/posix/ThemeUtility.h
+    include/logger/posix/Keys.h
 )
 
 if(WIN32)

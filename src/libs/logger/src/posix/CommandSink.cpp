@@ -444,13 +444,13 @@ void CommandSink::history_scroll(ScrollDirection dir) {
 	redraw_prompt();
 }
 
-void CommandSink::delete_character(bool after, const TerminalControl::KeyEvent& event) {
+void CommandSink::delete_character(bool after, const KeyEvent& event) {
 	if(after) {
 		if(cursor_pos_ < command_.size()) {
 			command_.erase(cursor_pos_, 1);
 		}
 	} else if(cursor_pos_ > 0) {
-		if(TerminalControl::has_modifier(event.modifier, TerminalControl::KeyModifier::alt)) {
+		if(has_modifier(event.modifier, KeyModifier::alt)) {
 			const auto pos = command_.find_last_of(' ', cursor_pos_ - 1);
 
 			if(pos != std::string::npos) {
@@ -469,8 +469,8 @@ void CommandSink::delete_character(bool after, const TerminalControl::KeyEvent& 
 	redraw_prompt();
 }
 
-void CommandSink::buffer_scroll(CursorDirection dir, const TerminalControl::KeyEvent& event) {
-	if(TerminalControl::has_modifier(event.modifier, TerminalControl::KeyModifier::alt)) {
+void CommandSink::buffer_scroll(CursorDirection dir, const KeyEvent& event) {
+	if(has_modifier(event.modifier, KeyModifier::alt)) {
 		if(dir == CursorDirection::back && cursor_pos_) {
 			auto pos = command_.find_last_not_of(' ', cursor_pos_ - 1);
 
@@ -524,8 +524,6 @@ void CommandSink::insert_character(char ch) {
 }
 
 void CommandSink::read_console_input(std::stop_token stop) {
-	using Key = TerminalControl::Key;
-
 	while(!stop.stop_requested()) {
 		const auto event = terminal_.read_key();
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2022 Ember
+ * Copyright (c) 2016 - 2026 Ember
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,7 +9,7 @@
 #pragma once
 
 #include <concepts>
-#include <type_traits>
+#include <utility>
 
 namespace ember {
 
@@ -22,69 +22,61 @@ template<typename T>
 concept bitmask_enum = EnableBitMask<T>::value && std::is_scoped_enum_v<T>;
 
 template<bitmask_enum Enum>
-Enum operator|(Enum lhs, Enum rhs) {
-	using underlying = typename std::underlying_type<Enum>::type;
+constexpr Enum operator|(Enum lhs, Enum rhs) {
 	return static_cast<Enum> (
-		static_cast<underlying>(lhs) |
-		static_cast<underlying>(rhs)
+		std::to_underlying(lhs) |
+		std::to_underlying(rhs)
 	);
 }
 
 template<bitmask_enum Enum>
-Enum operator&(Enum lhs, Enum rhs) {
-	using underlying = typename std::underlying_type<Enum>::type;
+constexpr Enum operator&(Enum lhs, Enum rhs) {
 	return static_cast<Enum> (
-		static_cast<underlying>(lhs) &
-		static_cast<underlying>(rhs)
+		std::to_underlying(lhs) &
+		std::to_underlying(rhs)
 	);
 }
 
 template<bitmask_enum Enum>
-Enum operator^(Enum lhs, Enum rhs) {
-	using underlying = typename std::underlying_type<Enum>::type;
+constexpr Enum operator^(Enum lhs, Enum rhs) {
 	return static_cast<Enum> (
-		static_cast<underlying>(lhs) ^
-		static_cast<underlying>(rhs)
+		std::to_underlying(lhs) ^
+		std::to_underlying(rhs)
 	);
 }
 
 template<bitmask_enum Enum>
-Enum operator~(Enum rhs) {
-	using underlying = typename std::underlying_type<Enum>::type;
+constexpr Enum operator~(Enum rhs) {
 	return static_cast<Enum> (
-		~static_cast<underlying>(rhs)
+		~std::to_underlying(rhs)
 	);
 }
 
 template<bitmask_enum Enum>
-Enum operator|=(Enum &lhs, Enum rhs) {
-	using underlying = typename std::underlying_type<Enum>::type;
+constexpr Enum operator|=(Enum &lhs, Enum rhs) {
 	lhs = static_cast<Enum> (
-		static_cast<underlying>(lhs) |
-		static_cast<underlying>(rhs)
+		std::to_underlying(lhs) |
+		std::to_underlying(rhs)
 	);
 
 	return lhs;
 }
 
 template<bitmask_enum Enum>
-Enum operator&=(Enum &lhs, Enum rhs) {
-	using underlying = typename std::underlying_type<Enum>::type;
+constexpr Enum operator&=(Enum &lhs, Enum rhs) {
 	lhs = static_cast<Enum> (
-		static_cast<underlying>(lhs) &
-		static_cast<underlying>(rhs)
+		std::to_underlying(lhs) &
+		std::to_underlying(rhs)
 	);
 
 	return lhs;
 }
 
 template<bitmask_enum Enum>
-Enum operator^=(Enum &lhs, Enum rhs) {
-	using underlying = typename std::underlying_type<Enum>::type;
-
+constexpr Enum operator^=(Enum &lhs, Enum rhs) {
 	lhs = static_cast<Enum> (
-		static_cast<underlying>(lhs) ^
-		static_cast<underlying>(rhs)
+		std::to_underlying(lhs) ^
+		std::to_underlying(rhs)
 	);
 
 	return lhs;
