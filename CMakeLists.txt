@@ -23,6 +23,17 @@ elseif(ALLOCATOR STREQUAL "jemalloc")
     list(APPEND VCPKG_MANIFEST_FEATURES "jemalloc")
 endif()
 
+option(ASIO_IO_URING "Enable Asio's io_uring support and disable epoll" OFF)
+
+if(ASIO_IO_URING)
+    list(APPEND VCPKG_MANIFEST_FEATURES "liburing")
+
+	add_compile_definitions(
+        BOOST_ASIO_HAS_IO_URING=1
+        BOOST_ASIO_DISABLE_EPOLL=1
+     )
+endif()
+
 project(Ember)
 
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
@@ -277,7 +288,7 @@ if(NOT BUILD_SHARED)
 endif()
 
 ##############################
-#          JEMALLOC          #
+#          jemalloc          #
 ##############################
 if(ALLOCATOR STREQUAL "jemalloc")
     add_compile_definitions(WITH_JEMALLOC)
@@ -286,7 +297,7 @@ if(ALLOCATOR STREQUAL "jemalloc")
 endif()
 
 ##############################
-#          MIMALLOC          #
+#          mimalloc          #
 ##############################
 if(ALLOCATOR STREQUAL "mimalloc")
     add_compile_definitions(WITH_MIMALLOC)
@@ -295,9 +306,17 @@ if(ALLOCATOR STREQUAL "mimalloc")
 endif()
 
 ##############################
-#          JSONCONS          #
+#          jsoncons          #
 ##############################
 find_package(jsoncons REQUIRED)
+
+##############################
+#          liburing          #
+##############################
+if(ASIO_IO_URING)
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(LIBURING REQUIRED IMPORTED_TARGET liburing)
+endif()
 
 ##############################
 #         Google Test        #

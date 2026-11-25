@@ -13,3 +13,7 @@ file(WRITE "${ASIO_IMPL_SOURCE}"
 add_library(asio_impl STATIC "${ASIO_IMPL_SOURCE}")
 
 target_link_libraries(asio_impl PUBLIC asio_config Boost::headers)
+
+if(ASIO_IO_URING)
+    target_link_libraries(asio_impl PRIVATE PkgConfig::LIBURING)
+endif()
