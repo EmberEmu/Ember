@@ -35,7 +35,7 @@
       ]
     },
     "liburing": {
-      "description": "Enable Asio's io_uring backend'",
+      "description": "Enable Asio's io_uring backend",
       "dependencies": [
         "liburing"
       ]
