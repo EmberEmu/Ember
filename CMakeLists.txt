@@ -116,6 +116,7 @@ option(DISABLE_FAST_CLIENT_DISPATCH_TABLE "Fast client event dispatch tables (di
 option(ENABLE_HUGE_PAGES "On supported platforms, enable huge page support (disable if memory constrained)" OFF)
 option(ENABLE_PAGE_LOCKING "Allow the allocator to lock pages (disable if memory constrained)" ON)
 option(ALLOCATOR_TRACKING "Enable memory allocation statistics (very slow, debugging only!)" OFF)
+option(ASIO_IO_URING "Enable Asio's io_uring support and disable epoll" OFF)
 
 set(PGO "off" CACHE STRING "Profile guided optimisation mode")
 set_property(CACHE PGO PROPERTY STRINGS "off" "generate" "use")
@@ -207,6 +208,13 @@ endif()
 set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
 find_package(Boost 1.90.0 REQUIRED COMPONENTS container locale program_options)
+
+if(ASIO_IO_URING)
+    add_compile_definitions(
+        BOOST_ASIO_HAS_IO_URING=1
+        BOOST_ASIO_DISABLE_EPOLL=1
+     )
+ endif()
 
 ##############################
 #             Git            #
