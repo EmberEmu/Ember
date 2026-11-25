@@ -33,6 +33,12 @@
       "dependencies": [
         "jemalloc"
       ]
+    },
+    "liburing": {
+      "description": "Enable Asio's io_uring backend'",
+      "dependencies": [
+        "liburing"
+      ]
     }
   },
   "overrides": [
