@@ -14,6 +14,9 @@
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/steady_timer.hpp>
 #include <boost/unordered/unordered_flat_map.hpp>
+#ifdef BOOST_ASIO_HAS_IO_URING
+	#undef BLOCK_SIZE
+#endif
 #include <moodycamel/concurrentqueue.h>
 #include <bitset>
 #include <mutex>
