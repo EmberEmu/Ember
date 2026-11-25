@@ -153,7 +153,6 @@ void CommandSink::write(Severity severity, Filter type, std::string_view prefix,
 		return;
 	}
 
-
 	[[indeterminate]] std::array<char, timestamp_buf_size> ts_buffer;
 	std::size_t ts_size = 0;
 
@@ -410,7 +409,19 @@ void CommandSink::delete_character(const bool current) {
 	if(current) {
 		command_.erase(rel_pos, 1);
 	} else if(rel_pos) {
-		command_.erase(--rel_pos, 1);
+		if(GetAsyncKeyState(VK_MENU) < 0) {
+			const auto pos = command_.find_last_of(' ', rel_pos - 1);
+
+			if(pos != std::string::npos) {
+				command_.erase(pos, rel_pos - pos);
+				rel_pos = pos;
+			} else {
+				command_.erase(0, rel_pos);
+				rel_pos = 0;
+			}
+		} else {
+			command_.erase(--rel_pos, 1);
+		}
 	}
 
 	update_suggestion();
@@ -430,10 +441,30 @@ void CommandSink::buffer_scroll(CursorDirection dir) {
 
 	auto rel_pos = info.dwCursorPosition.X - opts_.prompt.size();
 
-	if(dir == CursorDirection::back && rel_pos) {
-		--rel_pos;
-	} else if(dir == CursorDirection::forward) {
-		++rel_pos;
+	if(GetAsyncKeyState(VK_MENU) < 0) {
+		if(dir == CursorDirection::back && rel_pos) {
+			auto pos = command_.find_last_not_of(' ', rel_pos - 1);
+
+			if(pos != std::string::npos) {
+				pos = command_.find_last_of(' ', pos);
+			}
+
+			rel_pos = pos == std::string::npos ? 0 : pos + 1;
+		} else if(dir == CursorDirection::forward && rel_pos < command_.size()) {
+			auto pos = command_.find_first_not_of(' ', rel_pos);
+
+			if(pos != std::string::npos) {
+				pos = command_.find_first_of(' ', pos);
+			}
+
+			rel_pos = pos == std::string::npos ? command_.size() : pos;
+		}
+	} else {
+		if(dir == CursorDirection::back && rel_pos) {
+			--rel_pos;
+		} else if(dir == CursorDirection::forward) {
+			++rel_pos;
+		}
 	}
 
 	// clamp cursor range

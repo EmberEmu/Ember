@@ -444,26 +444,59 @@ void CommandSink::history_scroll(ScrollDirection dir) {
 	redraw_prompt();
 }
 
-void CommandSink::delete_character(bool after) {
+void CommandSink::delete_character(bool after, const KeyEvent& event) {
 	if(after) {
 		if(cursor_pos_ < command_.size()) {
 			command_.erase(cursor_pos_, 1);
 		}
 	} else if(cursor_pos_ > 0) {
-		command_.erase(--cursor_pos_, 1);
+		if(has_modifier(event.modifier, KeyModifier::alt)) {
+			const auto pos = command_.find_last_of(' ', cursor_pos_ - 1);
+
+			if(pos != std::string::npos) {
+				command_.erase(pos, cursor_pos_ - pos);
+				cursor_pos_ = pos;
+			} else {
+				command_.erase(0, cursor_pos_);
+				cursor_pos_ = 0;
+			}
+		} else {
+			command_.erase(--cursor_pos_, 1);
+		}
 	}
 
 	update_suggestion();
 	redraw_prompt();
 }
 
-void CommandSink::buffer_scroll(CursorDirection dir) {
-	if(dir == CursorDirection::back) {
-		if(cursor_pos_ > 0) {
-			--cursor_pos_;
+void CommandSink::buffer_scroll(CursorDirection dir, const KeyEvent& event) {
+	if(has_modifier(event.modifier, KeyModifier::alt)) {
+		if(dir == CursorDirection::back && cursor_pos_) {
+			auto pos = command_.find_last_not_of(' ', cursor_pos_ - 1);
+
+			if(pos != std::string::npos) {
+				pos = command_.find_last_of(' ', pos);
+			}
+
+			cursor_pos_ = pos == std::string::npos? 0 : pos + 1;
+		} else if(dir == CursorDirection::forward && cursor_pos_ < command_.size()) {
+			auto pos = command_.find_first_not_of(' ', cursor_pos_);
+
+			if(pos != std::string::npos) {
+				pos = command_.find_first_of(' ', pos);
+			}
+
+			cursor_pos_ = pos == std::string::npos? command_.size() : pos;
 		}
-	} else if(cursor_pos_ < command_.size()) {
-		++cursor_pos_;
+
+	} else {
+		if(dir == CursorDirection::back) {
+			if(cursor_pos_ > 0) {
+				--cursor_pos_;
+			}
+		} else if(cursor_pos_ < command_.size()) {
+			++cursor_pos_;
+		}
 	}
 
 	redraw_prompt();
@@ -491,8 +524,6 @@ void CommandSink::insert_character(char ch) {
 }
 
 void CommandSink::read_console_input(std::stop_token stop) {
-	using Key = TerminalControl::Key;
-
 	while(!stop.stop_requested()) {
 		const auto event = terminal_.read_key();
 
@@ -502,49 +533,49 @@ void CommandSink::read_console_input(std::stop_token stop) {
 
 		std::lock_guard guard(console_lock_);
 
-		switch (event.key) {
-			case Key::Character:
+		switch(event.key) {
+			case Key::character:
 				if(std::isprint(static_cast<unsigned char>(event.ch))) {
 					insert_character(static_cast<char>(event.ch));
 				}
 				break;
-			case Key::Enter:
+			case Key::enter:
 				dispatch_command();
 				break;
-			case Key::Tab:
+			case Key::tab:
 				autocomplete();
 				break;
-			case Key::Backspace:
-				delete_character(false);
+			case Key::backspace:
+				delete_character(false, event);
 				break;
-			case Key::Delete:
-				delete_character(true);
+			case Key::del:
+				delete_character(true, event);
 				break;
-			case Key::Up:
+			case Key::up:
 				history_scroll(ScrollDirection::up);
 				break;
-			case Key::Down:
+			case Key::down:
 				history_scroll(ScrollDirection::down);
 				break;
-			case Key::Left:
-				buffer_scroll(CursorDirection::back);
+			case Key::left:
+				buffer_scroll(CursorDirection::back, event);
 				break;
-			case Key::Right:
-				buffer_scroll(CursorDirection::forward);
+			case Key::right:
+				buffer_scroll(CursorDirection::forward, event);
 				break;
-			case Key::Home:
+			case Key::home:
 				cursor_reposition(CursorPosition::start);
 				break;
-			case Key::End:
+			case Key::end:
 				cursor_reposition(CursorPosition::end);
 				break;
-			case Key::Interrupted:
+			case Key::interrupted:
 				break;
-			case Key::Escape:
+			case Key::escape:
 				[[fallthrough]];
-			case Key::Other:
+			case Key::other:
 				break;
-			case Key::EndOfInput:
+			case Key::end_of_input:
 				return;
 		}
 	}

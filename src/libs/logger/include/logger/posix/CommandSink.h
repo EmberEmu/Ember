@@ -87,9 +87,9 @@ class CommandSink final : public log::CommandSink {
 	void redraw_prompt();
 
 	void history_scroll(ScrollDirection dir);
-	void buffer_scroll(CursorDirection dir);
+	void buffer_scroll(CursorDirection dir, const KeyEvent& event);
 	void insert_character(char ch);
-	void delete_character(bool after);
+	void delete_character(bool after, const KeyEvent& event);
 	void cursor_reposition(CursorPosition position);
 	void insert_history(const std::string& command);
 	void update_suggestion();

@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <logger/posix/Keys.h>
 #include <string_view>
 #include <system_error>
 #include <utility>
@@ -30,35 +31,15 @@ class TerminalControl {
 	constexpr static auto default_rows = 24u;
 	constexpr static auto default_cols = 80u;
 
-public:
-    enum class Key {
-        Character,
-        Enter,
-        Tab,
-        Escape,
-        Backspace,
-        Delete,
-        Up,
-        Down,
-        Left,
-        Right,
-        Home,
-        End,
-        Other,
-        Interrupted,
-        EndOfInput
-    };
-
-    struct KeyEvent {
-        Key key = Key::Other;
-        unsigned char ch = 0;
-    };
-
-private:
 	[[noreturn]] static void fail(const char* operation);
 
+#ifdef _WIN32
+	KeyModifier get_modifiers(const DWORD state);
+#else
 	int read_byte(unsigned char& ch, int timeout_ms = -1);
+	KeyEvent decode_byte(unsigned char ch);
 	KeyEvent read_escape_sequence();
+#endif
 
 	void restore();
 

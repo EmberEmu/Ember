@@ -13,6 +13,10 @@
 
 namespace ember::log::posix {
 
+[[noreturn]] void TerminalControl::fail(const char* operation) {
+	throw std::system_error(errno, std::generic_category(), operation);
+}
+
 #ifdef _WIN32
 
 TerminalControl::TerminalControl() {
@@ -282,7 +286,25 @@ void TerminalControl::wake() {
 
 #ifdef _WIN32
 
-auto TerminalControl::read_key() -> KeyEvent {
+auto TerminalControl::get_modifiers(const DWORD state) -> KeyModifier {
+	unsigned char modifiers{};
+
+	if(state & (LEFT_ALT_PRESSED | RIGHT_ALT_PRESSED)) {
+		modifiers |= static_cast<unsigned char>(KeyModifier::alt);
+	}
+
+	if(state & (LEFT_CTRL_PRESSED | RIGHT_CTRL_PRESSED)) {
+		modifiers |= static_cast<unsigned char>(KeyModifier::ctrl);
+	}
+
+	if(state & SHIFT_PRESSED) {
+		modifiers |= static_cast<unsigned char>(KeyModifier::shift);
+	}
+
+	return static_cast<KeyModifier>(modifiers);
+}
+
+KeyEvent TerminalControl::read_key() {
 	const std::array<HANDLE, 2> handles {
 		input_handle_, wake_event_
 	};
@@ -294,18 +316,18 @@ auto TerminalControl::read_key() -> KeyEvent {
 
 		if(result == WAIT_OBJECT_0 + 1) {
 			ResetEvent(wake_event_);
-			return { Key::Interrupted, 0 };
+			return { Key::interrupted, 0 };
 		}
 
 		if(result != WAIT_OBJECT_0) {
-			return { Key::EndOfInput, 0 };
+			return { Key::end_of_input, 0 };
 		}
 
 		INPUT_RECORD record{};
 		DWORD count = 0;
 
 		if(!ReadConsoleInputW(input_handle_, &record, 1, &count)) {
-			return { Key::EndOfInput, 0 };
+			return { Key::end_of_input, 0 };
 		}
 
 		if(count == 0 || record.EventType != KEY_EVENT) {
@@ -318,29 +340,31 @@ auto TerminalControl::read_key() -> KeyEvent {
 			continue;
 		}
 
-		switch (key.wVirtualKeyCode) {
+		const auto modifiers = get_modifiers(key.dwControlKeyState);
+
+		switch(key.wVirtualKeyCode) {
 			case VK_RETURN:
-				return { Key::Enter, 0 };
+				return { Key::enter, 0, modifiers };
 			case VK_TAB:
-				return { Key::Tab, 0 };
+				return { Key::tab, 0, modifiers };
 			case VK_ESCAPE:
-				return { Key::Escape, 0 };
+				return { Key::escape, 0, modifiers };
 			case VK_BACK:
-				return { Key::Backspace, 0 };
+				return { Key::backspace, 0, modifiers };
 			case VK_DELETE:
-				return { Key::Delete, 0 };
+				return { Key::del, 0, modifiers };
 			case VK_UP:
-				return { Key::Up, 0 };
+				return { Key::up, 0, modifiers };
 			case VK_DOWN:
-				return { Key::Down, 0 };
+				return { Key::down, 0, modifiers };
 			case VK_LEFT:
-				return { Key::Left, 0 };
+				return { Key::left, 0, modifiers };
 			case VK_RIGHT:
-				return { Key::Right, 0 };
+				return { Key::right, 0, modifiers };
 			case VK_HOME:
-				return { Key::Home, 0 };
+				return { Key::home, 0, modifiers };
 			case VK_END:
-				return { Key::End, 0 };
+				return { Key::end, 0, modifiers };
 			default:
 				break;
 		}
@@ -349,8 +373,9 @@ auto TerminalControl::read_key() -> KeyEvent {
 
 		if(ch >= 0x20 && ch <= 0x7e) {
 			return {
-				Key::Character,
-				static_cast<unsigned char>(ch)
+				Key::character,
+				static_cast<unsigned char>(ch),
+				modifiers 
 			};
 		}
 	}
@@ -363,38 +388,15 @@ auto TerminalControl::read_key() -> KeyEvent {
 	const int first = read_byte(ch);
 
 	if(first <= 0) {
-		return { first == 0? Key::Interrupted : Key::EndOfInput, 0 };
+		return { first == 0? Key::interrupted : Key::end_of_input, 0 };
 	}
 
-	switch(ch) {
-		case '\r':
-			[[fallthrough]];
-		case '\n':
-			return { Key::Enter, 0 };
-		case '\t':
-			return { Key::Tab, 0 };
-		case 0x7f:
-			[[fallthrough]];
-		case 0x08:
-			return { Key::Backspace, 0 };
-		case 0x1b:
-			return read_escape_sequence();
-		default:
-			if(ch >= 0x20 && ch <= 0x7e) {
-				return { Key::Character, ch };
-			}
-
-			return { Key::Other, ch };
+	if(ch == 0x1b) {
+		return read_escape_sequence();
 	}
+
+	return decode_byte(ch);
 }
-
-#endif
-
-[[noreturn]] void TerminalControl::fail(const char* operation) {
-	throw std::system_error(errno, std::generic_category(), operation);
-}
-
-#ifndef _WIN32
 
 // 1 = byte read, 0 = wake pipe, -1 = eof/error.
 int TerminalControl::read_byte(unsigned char& ch, int timeout_ms) {
@@ -442,80 +444,113 @@ int TerminalControl::read_byte(unsigned char& ch, int timeout_ms) {
 	}
 }
 
+auto TerminalControl::decode_byte(unsigned char ch) -> KeyEvent {
+	switch(ch) {
+		case '\r':
+			[[fallthrough]];
+		case '\n':
+			return { Key::enter, 0 };
+		case '\t':
+			return { Key::tab, 0 };
+		case 0x7f:
+			[[fallthrough]];
+		case 0x08:
+			return { Key::backspace, 0 };
+		default:
+			if(ch >= 0x20 && ch <= 0x7e) {
+				return { Key::character, ch };
+			}
+
+			return { Key::other, ch };
+	}
+}
+
 auto TerminalControl::read_escape_sequence() -> KeyEvent {
 	unsigned char byte{};
 
 	if(read_byte(byte, 35) != 1) {
-		return { Key::Escape, 0 };
+		return { Key::escape, 0 };
 	}
 
+	// ESC ESC [ D  -> alt + (ESC [ D)
+	if(byte == 0x1b) {
+		KeyEvent event = read_escape_sequence();
+		event.modifier |= KeyModifier::alt;
+		return event;
+	}
+
+	// ESC <key> -> alt + key (e.g. alt+backspace is ESC 0x7f)
 	if(byte != '[' && byte != 'O') {
-		return { Key::Escape, 0 };
+		KeyEvent event = decode_byte(byte);
+		event.modifier |= KeyModifier::alt;
+		return event;
 	}
 
 	const bool ss3 = byte == 'O';
 
+	// Parse "<p0>;<p1>;..." then the final byte
+	unsigned params[4]{};
+	std::size_t index = 0;
+
 	if(read_byte(byte, 35) != 1) {
-		return { Key::Escape, 0 };
+		return { Key::escape, 0 };
 	}
 
-	if(ss3) {
-		switch(byte) {
-			case 'B':
-				return { Key::Down, 0 };
-			case 'A':
-				return { Key::Up, 0 };
-			case 'C':
-				return { Key::Right, 0 };
-			case 'D':
-				return { Key::Left, 0 };
-			case 'H':
-				return { Key::Home, 0 };
-			case 'F':
-				return { Key::End, 0 };
-			default:
-				return { Key::Other, 0 };
+	while((byte >= '0' && byte <= '9') || byte == ';') {
+		if(byte == ';') {
+			++index;
+		} else if(index < std::size(params)) {
+			params[index] = params[index] * 10 + (byte - '0');
+		}
+
+		if(read_byte(byte, 35) != 1) {
+			return { Key::other, 0 };
 		}
 	}
+
+	const auto modifier = (ss3 && index == 0)?
+		modifier_from_xterm(params[0]) : modifier_from_xterm(params[1]);
 
 	switch(byte) {
 		case 'A':
-			return { Key::Up, 0 };
+			return { Key::up, 0, modifier };
 		case 'B':
-			return { Key::Down, 0 };
+			return { Key::down, 0, modifier };
 		case 'C':
-			return { Key::Right, 0 };
+			return { Key::right, 0, modifier };
 		case 'D':
-			return { Key::Left, 0 };
+			return { Key::left, 0, modifier };
 		case 'H':
-			return { Key::Home, 0 };
+			return { Key::home, 0, modifier };
 		case 'F':
-			return { Key::End, 0 };
-		case '1':
-			[[fallthrough]];
-		case '4':
-			[[fallthrough]];
-		case '3':
-		{
-			const unsigned char first = byte;
-
-			if(read_byte(byte, 35) != 1 || byte != '~') {
-				return { Key::Other, 0 };
+			return { Key::end, 0, modifier };
+		case 'Z':
+			return { Key::tab, 0, modifier | KeyModifier::shift };
+		case '~':
+			if(ss3) {
+				break;
 			}
 
-			if(first == '3') {
-				return { Key::Delete, 0 };
+			switch(params[0]) {
+				case 1:
+					[[fallthrough]];
+				case 7:
+					return { Key::home, 0, modifier };
+				case 4:
+					[[fallthrough]];
+				case 8:
+					return { Key::end, 0, modifier };
+				case 3:
+					return { Key::del, 0, modifier };
+				default:
+					break;
 			}
-
-			if(first == '1') {
-				return { Key::Home, 0 };
-			}
-
-			return { Key::End, 0 };
-		}
+			break;
 		default:
-			return { Key::Other, 0 };
+			break;
 	}
+
+	return { Key::other, 0 };
 }
 
 #endif
