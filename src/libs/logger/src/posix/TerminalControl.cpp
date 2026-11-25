@@ -471,10 +471,6 @@ auto TerminalControl::read_escape_sequence() -> KeyEvent {
 	}
 
 	if(byte != '[' && byte != 'O') {
-		if(byte >= 0x20 && byte <= 0x7e) {
-			return { Key::Character, byte, KeyModifier::alt };
-		}
-
 		return { Key::Escape, 0 };
 	}
 
@@ -503,59 +499,41 @@ auto TerminalControl::read_escape_sequence() -> KeyEvent {
 		}
 	}
 
-	unsigned int parameter = 0;
-	unsigned int modifier = 1;
-
-	if(byte >= '0' && byte <= '9') {
-		do {
-			parameter = parameter * 10 + (byte - '0');
-
-			if(read_byte(byte, 35) != 1) {
-				return { Key::Other, 0 };
-			}
-		} while(byte >= '0' && byte <= '9');
-
-		if(byte == ';') {
-			if(read_byte(byte, 35) != 1 || byte < '0' || byte > '9') {
-				return { Key::Other, 0 };
-			}
-
-			modifier = byte - '0';
-
-			if(read_byte(byte, 35) != 1) {
-				return { Key::Other, 0 };
-			}
-		}
-
-		if(byte == '~') {
-			switch(parameter) {
-				case 1:
-					return { Key::Home, 0 };
-				case 4:
-					return { Key::End, 0 };
-				case 3:
-					return { Key::Delete, 0 };
-				default:
-					return { Key::Other, 0 };
-			}
-		}
-	}
-
-	const auto key_modifier = modifier == 3? KeyModifier::alt : KeyModifier::none;
-
 	switch(byte) {
 		case 'A':
-			return { Key::Up, 0, key_modifier };
+			return { Key::Up, 0 };
 		case 'B':
-			return { Key::Down, 0, key_modifier };
+			return { Key::Down, 0 };
 		case 'C':
-			return { Key::Right, 0, key_modifier };
+			return { Key::Right, 0 };
 		case 'D':
-			return { Key::Left, 0, key_modifier };
+			return { Key::Left, 0 };
 		case 'H':
-			return { Key::Home, 0, key_modifier };
+			return { Key::Home, 0 };
 		case 'F':
-			return { Key::End, 0, key_modifier };
+			return { Key::End, 0 };
+		case '1':
+			[[fallthrough]];
+		case '4':
+			[[fallthrough]];
+		case '3':
+		{
+			const unsigned char first = byte;
+
+			if(read_byte(byte, 35) != 1 || byte != '~') {
+				return { Key::Other, 0 };
+			}
+
+			if(first == '3') {
+				return { Key::Delete, 0 };
+			}
+
+			if(first == '1') {
+				return { Key::Home, 0 };
+			}
+
+			return { Key::End, 0 };
+		}
 		default:
 			return { Key::Other, 0 };
 	}

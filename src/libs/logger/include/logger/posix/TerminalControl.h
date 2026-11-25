@@ -70,13 +70,12 @@ public:
 private:
 	[[noreturn]] static void fail(const char* operation);
 
-	int read_byte(unsigned char& ch, int timeout_ms = -1);
-
 #ifdef _WIN32
 	KeyModifier get_modifiers(const DWORD state);
-#endif
-
+#else
+	int read_byte(unsigned char& ch, int timeout_ms = -1);
 	KeyEvent read_escape_sequence();
+#endif
 
 	void restore();
 
