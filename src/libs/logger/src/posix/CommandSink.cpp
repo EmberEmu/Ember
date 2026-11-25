@@ -536,48 +536,48 @@ void CommandSink::read_console_input(std::stop_token stop) {
 		std::lock_guard guard(console_lock_);
 
 		switch(event.key) {
-			case Key::Character:
+			case Key::character:
 				if(std::isprint(static_cast<unsigned char>(event.ch))) {
 					insert_character(static_cast<char>(event.ch));
 				}
 				break;
-			case Key::Enter:
+			case Key::enter:
 				dispatch_command();
 				break;
-			case Key::Tab:
+			case Key::tab:
 				autocomplete();
 				break;
-			case Key::Backspace:
+			case Key::backspace:
 				delete_character(false, event);
 				break;
-			case Key::Delete:
+			case Key::del:
 				delete_character(true, event);
 				break;
-			case Key::Up:
+			case Key::up:
 				history_scroll(ScrollDirection::up);
 				break;
-			case Key::Down:
+			case Key::down:
 				history_scroll(ScrollDirection::down);
 				break;
-			case Key::Left:
+			case Key::left:
 				buffer_scroll(CursorDirection::back, event);
 				break;
-			case Key::Right:
+			case Key::right:
 				buffer_scroll(CursorDirection::forward, event);
 				break;
-			case Key::Home:
+			case Key::home:
 				cursor_reposition(CursorPosition::start);
 				break;
-			case Key::End:
+			case Key::end:
 				cursor_reposition(CursorPosition::end);
 				break;
-			case Key::Interrupted:
+			case Key::interrupted:
 				break;
-			case Key::Escape:
+			case Key::escape:
 				[[fallthrough]];
-			case Key::Other:
+			case Key::other:
 				break;
-			case Key::EndOfInput:
+			case Key::end_of_input:
 				return;
 		}
 	}

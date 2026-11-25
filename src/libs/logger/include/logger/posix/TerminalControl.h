@@ -32,21 +32,21 @@ class TerminalControl {
 
 public:
     enum class Key {
-        Character,
-        Enter,
-        Tab,
-        Escape,
-        Backspace,
-        Delete,
-        Up,
-        Down,
-        Left,
-        Right,
-        Home,
-        End,
-        Other,
-        Interrupted,
-        EndOfInput
+		character,
+		enter,
+		tab,
+		escape,
+		backspace,
+		del,
+		up,
+		down,
+		left,
+		right,
+		home,
+		end,
+		other,
+		interrupted,
+		end_of_input
     };
 
 	enum class KeyModifier {
@@ -62,8 +62,8 @@ public:
 	}
 
     struct KeyEvent {
-        Key key = Key::Other;
-        unsigned char ch = 0;
+		Key key = Key::other;
+		unsigned char ch = 0;
 		KeyModifier modifier = KeyModifier::none;
     };
 

@@ -312,18 +312,18 @@ auto TerminalControl::read_key() -> KeyEvent {
 
 		if(result == WAIT_OBJECT_0 + 1) {
 			ResetEvent(wake_event_);
-			return { Key::Interrupted, 0 };
+			return { Key::interrupted, 0 };
 		}
 
 		if(result != WAIT_OBJECT_0) {
-			return { Key::EndOfInput, 0 };
+			return { Key::end_of_input, 0 };
 		}
 
 		INPUT_RECORD record{};
 		DWORD count = 0;
 
 		if(!ReadConsoleInputW(input_handle_, &record, 1, &count)) {
-			return { Key::EndOfInput, 0 };
+			return { Key::end_of_input, 0 };
 		}
 
 		if(count == 0 || record.EventType != KEY_EVENT) {
@@ -340,27 +340,27 @@ auto TerminalControl::read_key() -> KeyEvent {
 
 		switch(key.wVirtualKeyCode) {
 			case VK_RETURN:
-				return { Key::Enter, 0, modifiers };
+				return { Key::enter, 0, modifiers };
 			case VK_TAB:
-				return { Key::Tab, 0, modifiers };
+				return { Key::tab, 0, modifiers };
 			case VK_ESCAPE:
-				return { Key::Escape, 0, modifiers };
+				return { Key::escape, 0, modifiers };
 			case VK_BACK:
-				return { Key::Backspace, 0, modifiers };
+				return { Key::backspace, 0, modifiers };
 			case VK_DELETE:
-				return { Key::Delete, 0, modifiers };
+				return { Key::del, 0, modifiers };
 			case VK_UP:
-				return { Key::Up, 0, modifiers };
+				return { Key::up, 0, modifiers };
 			case VK_DOWN:
-				return { Key::Down, 0, modifiers };
+				return { Key::down, 0, modifiers };
 			case VK_LEFT:
-				return { Key::Left, 0, modifiers };
+				return { Key::left, 0, modifiers };
 			case VK_RIGHT:
-				return { Key::Right, 0, modifiers };
+				return { Key::right, 0, modifiers };
 			case VK_HOME:
-				return { Key::Home, 0, modifiers };
+				return { Key::home, 0, modifiers };
 			case VK_END:
-				return { Key::End, 0, modifiers };
+				return { Key::end, 0, modifiers };
 			default:
 				break;
 		}
@@ -369,7 +369,7 @@ auto TerminalControl::read_key() -> KeyEvent {
 
 		if(ch >= 0x20 && ch <= 0x7e) {
 			return {
-				Key::Character,
+				Key::character,
 				static_cast<unsigned char>(ch),
 				modifiers 
 			};
@@ -384,28 +384,28 @@ auto TerminalControl::read_key() -> KeyEvent {
 	const int first = read_byte(ch);
 
 	if(first <= 0) {
-		return { first == 0? Key::Interrupted : Key::EndOfInput, 0 };
+		return { first == 0? Key::interrupted : Key::end_of_input, 0 };
 	}
 
 	switch(ch) {
 		case '\r':
 			[[fallthrough]];
 		case '\n':
-			return { Key::Enter, 0 };
+			return { Key::enter, 0 };
 		case '\t':
-			return { Key::Tab, 0 };
+			return { Key::tab, 0 };
 		case 0x7f:
 			[[fallthrough]];
 		case 0x08:
-			return { Key::Backspace, 0 };
+			return { Key::backspace, 0 };
 		case 0x1b:
 			return read_escape_sequence();
 		default:
 			if(ch >= 0x20 && ch <= 0x7e) {
-				return { Key::Character, ch };
+				return { Key::character, ch };
 			}
 
-			return { Key::Other, ch };
+			return { Key::other, ch };
 	}
 }
 
@@ -467,51 +467,51 @@ auto TerminalControl::read_escape_sequence() -> KeyEvent {
 	unsigned char byte{};
 
 	if(read_byte(byte, 35) != 1) {
-		return { Key::Escape, 0 };
+		return { Key::escape, 0 };
 	}
 
 	if(byte != '[' && byte != 'O') {
-		return { Key::Escape, 0 };
+		return { Key::escape, 0 };
 	}
 
 	const bool ss3 = byte == 'O';
 
 	if(read_byte(byte, 35) != 1) {
-		return { Key::Escape, 0 };
+		return { Key::escape, 0 };
 	}
 
 	if(ss3) {
 		switch(byte) {
 			case 'B':
-				return { Key::Down, 0 };
+				return { Key::down, 0 };
 			case 'A':
-				return { Key::Up, 0 };
+				return { Key::up, 0 };
 			case 'C':
-				return { Key::Right, 0 };
+				return { Key::right, 0 };
 			case 'D':
-				return { Key::Left, 0 };
+				return { Key::left, 0 };
 			case 'H':
-				return { Key::Home, 0 };
+				return { Key::home, 0 };
 			case 'F':
-				return { Key::End, 0 };
+				return { Key::end, 0 };
 			default:
-				return { Key::Other, 0 };
+				return { Key::other, 0 };
 		}
 	}
 
 	switch(byte) {
 		case 'A':
-			return { Key::Up, 0 };
+			return { Key::up, 0 };
 		case 'B':
-			return { Key::Down, 0 };
+			return { Key::down, 0 };
 		case 'C':
-			return { Key::Right, 0 };
+			return { Key::right, 0 };
 		case 'D':
-			return { Key::Left, 0 };
+			return { Key::left, 0 };
 		case 'H':
-			return { Key::Home, 0 };
+			return { Key::home, 0 };
 		case 'F':
-			return { Key::End, 0 };
+			return { Key::end, 0 };
 		case '1':
 			[[fallthrough]];
 		case '4':
@@ -521,21 +521,21 @@ auto TerminalControl::read_escape_sequence() -> KeyEvent {
 			const unsigned char first = byte;
 
 			if(read_byte(byte, 35) != 1 || byte != '~') {
-				return { Key::Other, 0 };
+				return { Key::other, 0 };
 			}
 
 			if(first == '3') {
-				return { Key::Delete, 0 };
+				return { Key::del, 0 };
 			}
 
 			if(first == '1') {
-				return { Key::Home, 0 };
+				return { Key::home, 0 };
 			}
 
-			return { Key::End, 0 };
+			return { Key::end, 0 };
 		}
 		default:
-			return { Key::Other, 0 };
+			return { Key::other, 0 };
 	}
 }
 
