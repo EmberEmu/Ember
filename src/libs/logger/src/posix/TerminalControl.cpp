@@ -282,6 +282,24 @@ void TerminalControl::wake() {
 
 #ifdef _WIN32
 
+auto TerminalControl::get_modifiers(const DWORD state) -> KeyModifier {
+	unsigned char modifiers{};
+
+	if(state & (LEFT_ALT_PRESSED | RIGHT_ALT_PRESSED)) {
+		modifiers |= static_cast<unsigned char>(KeyModifier::alt);
+	}
+
+	if(state & (LEFT_CTRL_PRESSED | RIGHT_CTRL_PRESSED)) {
+		modifiers |= static_cast<unsigned char>(KeyModifier::ctrl);
+	}
+
+	if(state & SHIFT_PRESSED) {
+		modifiers |= static_cast<unsigned char>(KeyModifier::shift);
+	}
+
+	return static_cast<KeyModifier>(modifiers);
+}
+
 auto TerminalControl::read_key() -> KeyEvent {
 	const std::array<HANDLE, 2> handles {
 		input_handle_, wake_event_
@@ -318,29 +336,31 @@ auto TerminalControl::read_key() -> KeyEvent {
 			continue;
 		}
 
-		switch (key.wVirtualKeyCode) {
+		const auto modifiers = get_modifiers(key.dwControlKeyState);
+
+		switch(key.wVirtualKeyCode) {
 			case VK_RETURN:
-				return { Key::Enter, 0 };
+				return { Key::Enter, 0, modifiers };
 			case VK_TAB:
-				return { Key::Tab, 0 };
+				return { Key::Tab, 0, modifiers };
 			case VK_ESCAPE:
-				return { Key::Escape, 0 };
+				return { Key::Escape, 0, modifiers };
 			case VK_BACK:
-				return { Key::Backspace, 0 };
+				return { Key::Backspace, 0, modifiers };
 			case VK_DELETE:
-				return { Key::Delete, 0 };
+				return { Key::Delete, 0, modifiers };
 			case VK_UP:
-				return { Key::Up, 0 };
+				return { Key::Up, 0, modifiers };
 			case VK_DOWN:
-				return { Key::Down, 0 };
+				return { Key::Down, 0, modifiers };
 			case VK_LEFT:
-				return { Key::Left, 0 };
+				return { Key::Left, 0, modifiers };
 			case VK_RIGHT:
-				return { Key::Right, 0 };
+				return { Key::Right, 0, modifiers };
 			case VK_HOME:
-				return { Key::Home, 0 };
+				return { Key::Home, 0, modifiers };
 			case VK_END:
-				return { Key::End, 0 };
+				return { Key::End, 0, modifiers };
 			default:
 				break;
 		}
@@ -350,7 +370,8 @@ auto TerminalControl::read_key() -> KeyEvent {
 		if(ch >= 0x20 && ch <= 0x7e) {
 			return {
 				Key::Character,
-				static_cast<unsigned char>(ch)
+				static_cast<unsigned char>(ch),
+				modifiers 
 			};
 		}
 	}
@@ -450,6 +471,10 @@ auto TerminalControl::read_escape_sequence() -> KeyEvent {
 	}
 
 	if(byte != '[' && byte != 'O') {
+		if(byte >= 0x20 && byte <= 0x7e) {
+			return { Key::Character, byte, KeyModifier::alt };
+		}
+
 		return { Key::Escape, 0 };
 	}
 
@@ -478,41 +503,59 @@ auto TerminalControl::read_escape_sequence() -> KeyEvent {
 		}
 	}
 
-	switch(byte) {
-		case 'A':
-			return { Key::Up, 0 };
-		case 'B':
-			return { Key::Down, 0 };
-		case 'C':
-			return { Key::Right, 0 };
-		case 'D':
-			return { Key::Left, 0 };
-		case 'H':
-			return { Key::Home, 0 };
-		case 'F':
-			return { Key::End, 0 };
-		case '1':
-			[[fallthrough]];
-		case '4':
-			[[fallthrough]];
-		case '3':
-		{
-			const unsigned char first = byte;
+	unsigned int parameter = 0;
+	unsigned int modifier = 1;
 
-			if(read_byte(byte, 35) != 1 || byte != '~') {
+	if(byte >= '0' && byte <= '9') {
+		do {
+			parameter = parameter * 10 + (byte - '0');
+
+			if(read_byte(byte, 35) != 1) {
+				return { Key::Other, 0 };
+			}
+		} while(byte >= '0' && byte <= '9');
+
+		if(byte == ';') {
+			if(read_byte(byte, 35) != 1 || byte < '0' || byte > '9') {
 				return { Key::Other, 0 };
 			}
 
-			if(first == '3') {
-				return { Key::Delete, 0 };
-			}
+			modifier = byte - '0';
 
-			if(first == '1') {
-				return { Key::Home, 0 };
+			if(read_byte(byte, 35) != 1) {
+				return { Key::Other, 0 };
 			}
-
-			return { Key::End, 0 };
 		}
+
+		if(byte == '~') {
+			switch(parameter) {
+				case 1:
+					return { Key::Home, 0 };
+				case 4:
+					return { Key::End, 0 };
+				case 3:
+					return { Key::Delete, 0 };
+				default:
+					return { Key::Other, 0 };
+			}
+		}
+	}
+
+	const auto key_modifier = modifier == 3? KeyModifier::alt : KeyModifier::none;
+
+	switch(byte) {
+		case 'A':
+			return { Key::Up, 0, key_modifier };
+		case 'B':
+			return { Key::Down, 0, key_modifier };
+		case 'C':
+			return { Key::Right, 0, key_modifier };
+		case 'D':
+			return { Key::Left, 0, key_modifier };
+		case 'H':
+			return { Key::Home, 0, key_modifier };
+		case 'F':
+			return { Key::End, 0, key_modifier };
 		default:
 			return { Key::Other, 0 };
 	}
