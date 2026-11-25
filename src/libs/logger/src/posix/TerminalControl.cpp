@@ -287,21 +287,21 @@ void TerminalControl::wake() {
 #ifdef _WIN32
 
 auto TerminalControl::get_modifiers(const DWORD state) -> KeyModifier {
-	unsigned char modifiers{};
+	KeyModifier modifiers { KeyModifier::none };
 
 	if(state & (LEFT_ALT_PRESSED | RIGHT_ALT_PRESSED)) {
-		modifiers |= static_cast<unsigned char>(KeyModifier::alt);
+		modifiers |= KeyModifier::alt;
 	}
 
 	if(state & (LEFT_CTRL_PRESSED | RIGHT_CTRL_PRESSED)) {
-		modifiers |= static_cast<unsigned char>(KeyModifier::ctrl);
+		modifiers |= KeyModifier::ctrl;
 	}
 
 	if(state & SHIFT_PRESSED) {
-		modifiers |= static_cast<unsigned char>(KeyModifier::shift);
+		modifiers |= KeyModifier::shift;
 	}
 
-	return static_cast<KeyModifier>(modifiers);
+	return modifiers;
 }
 
 KeyEvent TerminalControl::read_key() {
