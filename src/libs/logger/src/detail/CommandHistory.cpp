@@ -15,9 +15,17 @@ CommandHistory::CommandHistory(std::size_t max_entries)
 	: max_entries_(max_entries)
 	, index_(0) {}
 
-std::string_view CommandHistory::scroll(ScrollDirection direction) {
+std::optional<std::string_view> CommandHistory::scroll(ScrollDirection direction, std::string_view current) {
 	if(history_.empty()) {
-		return {};
+		return std::nullopt;
+	}
+
+	if(!scrolling()) {
+		if(direction == ScrollDirection::down) {
+			return std::nullopt;
+		}
+
+		stashed_ = current;
 	}
 
 	if(direction == ScrollDirection::up) {
@@ -25,21 +33,19 @@ std::string_view CommandHistory::scroll(ScrollDirection direction) {
 			--index_;
 		}
 	} else {
-		if(index_ >= history_.size()) {
-			return {};
-		}
-
 		++index_;
 	}
 
-	if(index_ != history_.size()) {
+	if(scrolling()) {
 		return history_[index_];
 	}
 
-	return {};
+	return stashed_;
 }
 
 void CommandHistory::insert(std::string command) {
+	stashed_.clear();
+
 	// don't insert duplicates of the previous command
 	if(!history_.empty() && history_.back() == command) {
 		index_ = size();
@@ -73,6 +79,10 @@ std::size_t CommandHistory::size() const {
 
 constexpr std::size_t CommandHistory::capacity() const {
 	return max_entries_;
+}
+
+bool CommandHistory::scrolling() const {
+	return index_ < history_.size();
 }
 
 } // detail, log, ember

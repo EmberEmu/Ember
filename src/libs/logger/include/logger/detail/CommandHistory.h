@@ -9,6 +9,7 @@
 #pragma once
 
 #include <deque>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <cstddef>
@@ -20,6 +21,7 @@ class CommandHistory final {
 
 	std::deque<std::string> history_;
 	std::size_t index_;
+	std::string stashed_;
 
 public:
 	static constexpr auto default_max_entries { 10u };
@@ -30,13 +32,14 @@ public:
 		up, down
 	};
 
-	std::string_view scroll(ScrollDirection direction);
+	std::optional<std::string_view> scroll(ScrollDirection direction, std::string_view current = {});
 	void insert(std::string command);
 
 	bool empty() const;
 	std::size_t size() const;
 	constexpr std::size_t capacity() const;
 	std::string_view current() const;
+	bool scrolling() const;
 };
 
 } // detail, log, ember

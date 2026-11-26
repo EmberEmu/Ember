@@ -61,6 +61,7 @@ class CommandSink final : public log::CommandSink {
 	std::mutex handler_lock_;
 	std::recursive_mutex console_lock_;
 	std::string command_;
+	std::string draft_;
 	std::string suggested_;
 	std::string prefix_pad_;
 	std::jthread input_reader_;
