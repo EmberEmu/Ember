@@ -11,11 +11,11 @@
 #include <commands/Suggestions.h>
 #include <logger/CommandSink.h>
 #include <logger/ConsoleColour.h>
+#include <logger/detail/CommandHistory.h>
 #include <logger/posix/CommandSinkOptions.h>
 #include <logger/posix/Themes.h>
 #include <logger/posix/TerminalControl.h>
 #include <boost/container/small_vector.hpp>
-#include <deque>
 #include <functional>
 #include <memory>
 #include <mutex>
@@ -31,10 +31,6 @@ namespace ember::log::posix {
 class CommandSink final : public log::CommandSink {
 	static constexpr std::string_view sink_name { "PosixCommandSink" };
 
-	enum class ScrollDirection {
-		up, down
-	};
-
 	enum class CursorDirection {
 		back, forward
 	};
@@ -46,7 +42,6 @@ class CommandSink final : public log::CommandSink {
 	static constexpr auto sv_reserve = 256u;
 	static constexpr auto max_buf_size = 4096u;
 	static constexpr auto reserve_buf_size = 512u;
-	static constexpr auto history_size = 10u;
 	static constexpr auto table_name_min_cols = 20u;
 	static constexpr auto table_desc_min_cols = 10u;
 	static constexpr auto table_min_cols = 35u;
@@ -73,8 +68,7 @@ class CommandSink final : public log::CommandSink {
 	unsigned int max_cols_ = table_max_cols;
 	std::size_t cursor_pos_ = 0;
 
-	std::deque<std::string> cmd_history_;
-	std::size_t history_idx_ = 0;
+	detail::CommandHistory cmd_history_;
 
 	boost::container::small_vector<char, sv_reserve> out_buf_;
 
@@ -86,12 +80,11 @@ class CommandSink final : public log::CommandSink {
 	void clear_line();
 	void redraw_prompt();
 
-	void history_scroll(ScrollDirection dir);
+	void history_scroll(detail::CommandHistory::ScrollDirection dir);
 	void buffer_scroll(CursorDirection dir, const KeyEvent& event);
 	void insert_character(char ch);
 	void delete_character(bool after, const KeyEvent& event);
 	void cursor_reposition(CursorPosition position);
-	void insert_history(const std::string& command);
 	void update_suggestion();
 
 	void read_console_input(std::stop_token stop);

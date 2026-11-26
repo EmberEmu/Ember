@@ -374,18 +374,6 @@ void CommandSink::redraw_prompt() {
     terminal_.write(output);
 }
 
-void CommandSink::insert_history(const std::string& command) {
-	if(!cmd_history_.empty() && cmd_history_.back() == command) {
-		return;
-	}
-
-	cmd_history_.emplace_back(command);
-
-	if(cmd_history_.size() > history_size) {
-		cmd_history_.pop_front();
-	}
-}
-
 void CommandSink::dispatch_command() {
 	boost::trim(command_);
 	cursor_pos_ = command_.size();
@@ -410,8 +398,7 @@ void CommandSink::dispatch_command() {
 		}
 	}
 
-	insert_history(command_);
-	history_idx_ = cmd_history_.size();
+	cmd_history_.insert(command_);
 
 	command_.clear();
 	cursor_pos_ = 0;
@@ -419,27 +406,15 @@ void CommandSink::dispatch_command() {
 	redraw_prompt();
 }
 
-void CommandSink::history_scroll(ScrollDirection dir) {
-	if(cmd_history_.empty()) {
+void CommandSink::history_scroll(detail::CommandHistory::ScrollDirection dir) {
+	auto buffered_command = cmd_history_.scroll(dir);
+
+	if(buffered_command.empty()) {
 		return;
 	}
 
-	if(dir == ScrollDirection::up) {
-		if(history_idx_ > 0) {
-			--history_idx_;
-		}
-	} else if(history_idx_ < cmd_history_.size()) {
-		++history_idx_;
-	}
-
-	if(history_idx_ == cmd_history_.size()) {
-		command_.clear();
-	} else {
-		command_ = cmd_history_[history_idx_];
-	}
-
+	command_ = buffered_command;
 	cursor_pos_ = command_.size();
-
 	update_suggestion();
 	redraw_prompt();
 }
@@ -552,10 +527,10 @@ void CommandSink::read_console_input(std::stop_token stop) {
 				delete_character(true, event);
 				break;
 			case Key::up:
-				history_scroll(ScrollDirection::up);
+				history_scroll(detail::CommandHistory::ScrollDirection::up);
 				break;
 			case Key::down:
-				history_scroll(ScrollDirection::down);
+				history_scroll(detail::CommandHistory::ScrollDirection::down);
 				break;
 			case Key::left:
 				buffer_scroll(CursorDirection::back, event);

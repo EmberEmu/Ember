@@ -32,6 +32,7 @@ add_library(${LIBRARY_NAME} STATIC
     src/GlobalLogger.cpp
     src/ConsoleColour.cpp
     src/detail/PlatformColour.cpp
+    src/detail/CommandHistory.cpp
     include/logger/LoggerImpl.h
     include/logger/FileSink.h
     include/logger/HelperMacros.h
@@ -60,6 +61,7 @@ add_library(${LIBRARY_NAME} STATIC
     include/logger/win32/CommandSinkOptions.h
     include/logger/posix/ThemeUtility.h
     include/logger/posix/Keys.h
+    include/logger/detail/CommandHistory.h
 )
 
 if(WIN32)
