@@ -25,19 +25,24 @@ std::string_view CommandHistory::scroll(ScrollDirection direction) {
 			--index_;
 		}
 	} else {
-		if(index_ == history_.size()) {
-			--index_;
-		} else if(index_+ 1 < history_.size()) {
-			++index_;
+		if(index_ >= history_.size()) {
+			return {};
 		}
+
+		++index_;
 	}
 
-	return history_[index_];
+	if(index_ != history_.size()) {
+		return history_[index_];
+	}
+
+	return {};
 }
 
 void CommandHistory::insert(std::string command) {
 	// don't insert duplicates of the previous command
 	if(!history_.empty() && history_.back() == command) {
+		index_ = size();
 		return;
 	}
 
@@ -55,7 +60,7 @@ bool CommandHistory::empty() const {
 }
 
 std::string_view CommandHistory::current() const {
-	if(history_.empty()) {
+	if(index_ >= history_.size()) {
 		return {};
 	}
 

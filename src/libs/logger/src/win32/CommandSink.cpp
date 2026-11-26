@@ -362,11 +362,13 @@ void CommandSink::dispatch_command() {
 }
 
 void CommandSink::history_scroll(const CommandHistory::ScrollDirection dir) {
-	if(cmd_history_.empty()) {
+	auto buffered_command = cmd_history_.scroll(dir);
+
+	if(buffered_command.empty()) {
 		return;
 	}
 
-	command_ = cmd_history_.scroll(dir);
+	command_ = buffered_command;
 	update_suggestion();
 	redraw_prompt();
 }
