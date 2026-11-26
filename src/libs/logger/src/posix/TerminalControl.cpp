@@ -7,6 +7,7 @@
  */
 
 #include <logger/posix/TerminalControl.h>
+#include <gsl/gsl>
 #include <algorithm>
 #include <array>
 #include <string>
@@ -562,19 +563,15 @@ void TerminalControl::restore() {
 		return;
 	}
 
-	constexpr std::string_view cleanup =
-		"\x1b[0m\x1b[r\x1b[?25h";
+	constexpr std::string_view cleanup = "\x1b[0m\x1b[r\x1b[?25h";
+	write(cleanup);
 
-	try {
-		write(cleanup);
-	} catch (...) {
-		// Restoration of console modes must still be attempted.
-	}
+	gsl::finally([&]() {
+		SetConsoleMode(input_handle_, original_input_mode_);
+		SetConsoleMode(output_handle_, original_output_mode_);
 
-	SetConsoleMode(input_handle_, original_input_mode_);
-	SetConsoleMode(output_handle_, original_output_mode_);
-
-	active_ = false;
+		active_ = false;
+	});
 }
 
 #else
