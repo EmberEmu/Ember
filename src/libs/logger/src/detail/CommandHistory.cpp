@@ -71,7 +71,7 @@ std::size_t CommandHistory::size() const {
 	return history_.size();
 }
 
-std::size_t CommandHistory::capacity() const {
+constexpr std::size_t CommandHistory::capacity() const {
 	return max_entries_;
 }
 

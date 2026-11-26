@@ -15,7 +15,7 @@
 
 namespace ember::log::detail {
 
-class CommandHistory {
+class CommandHistory final {
 	const std::size_t max_entries_;
 
 	std::deque<std::string> history_;
@@ -24,7 +24,7 @@ class CommandHistory {
 public:
 	static constexpr auto default_max_entries { 10u };
 
-	CommandHistory(std::size_t max_entries = default_max_entries);
+	explicit CommandHistory(std::size_t max_entries = default_max_entries);
 
 	enum class ScrollDirection {
 		up, down
@@ -35,7 +35,7 @@ public:
 
 	bool empty() const;
 	std::size_t size() const;
-	std::size_t capacity() const;
+	constexpr std::size_t capacity() const;
 	std::string_view current() const;
 };
 
