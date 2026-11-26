@@ -36,8 +36,7 @@ static constexpr auto text_grey = FOREGROUND_INTENSITY;
 CommandSink::CommandSink(CommandSinkOptions options)
 	: log::CommandSink(std::string(sink_name), options.severity, options.filter)
 	, opts_(std::move(options))
-	, prefix_pad_(detail::generate_prefix_padding(opts_.prefix_width))
-	, history_idx_(0)
+	, prefix_pad_(generate_prefix_padding(opts_.prefix_width))
 	, max_cols_(table_max_cols) {
 	semaphore_ = CreateSemaphore(NULL, 0, 1, NULL);
 
@@ -110,7 +109,7 @@ void CommandSink::do_batch_write(const std::span<std::tuple<RecordDetail, std::s
 
 		std::string_view severity = severity_string(detail.severity);
 		const auto cur_sz = out_buf_.size();
-		const auto pad_sz = detail::calculate_prefix_padding(prefix, prefix_pad_);
+		const auto pad_sz = calculate_prefix_padding(prefix, prefix_pad_);
 
 		const auto req_buf_size
 			= cur_sz
@@ -162,7 +161,7 @@ void CommandSink::write(Severity severity, Filter type, std::string_view prefix,
 
 	const std::string_view timestamp(ts_buffer.data(), ts_size);
 	const std::string_view sevsv = severity_string(severity);
-	const auto pad_sz = detail::calculate_prefix_padding(prefix, prefix_pad_);
+	const auto pad_sz = calculate_prefix_padding(prefix, prefix_pad_);
 
 	const auto buff_req_size
 		= timestamp.size()
@@ -197,7 +196,7 @@ void CommandSink::write(Severity severity, Filter type, std::string_view prefix,
 	}
 
 	if(opts_.colours) [[likely]] {
-		ConsoleColour concol(detail::severity_colour(severity));
+		ConsoleColour concol(severity_colour(severity));
 		write_buffer(out_buf_, false);
 	} else {
 		write_buffer(out_buf_, false);
@@ -253,8 +252,8 @@ std::string_view CommandSink::suggestion_substring() {
 }
 
 std::size_t CommandSink::generate_timestamp(std::span<char> buffer) {
-	const auto curr_time = detail::current_time();
-	const auto size = detail::put_time(curr_time, opts_.timestamp_fmt, buffer);
+	const auto curr_time = current_time();
+	const auto size = put_time(curr_time, opts_.timestamp_fmt, buffer);
 
 	if(!size) [[unlikely]] {
 		throw std::runtime_error("timestamp formatting failed");
@@ -335,19 +334,6 @@ void CommandSink::redraw_prompt(bool update_cursor) {
 	}
 }
 
-void CommandSink::insert_history(const std::string& command) {
-	// don't insert duplicates of the previous command
-	if(!cmd_history_.empty() && cmd_history_.back() == command) {
-		return;
-	}
-
-	cmd_history_.emplace_back(command);
-
-	if(cmd_history_.size() > history_size) {
-		cmd_history_.pop_front();
-	}
-}
-
 void CommandSink::dispatch_command() {
 	boost::trim(command_);
 
@@ -370,31 +356,17 @@ void CommandSink::dispatch_command() {
 		}
 	}
 
-	insert_history(command_);
-
-	history_idx_ = cmd_history_.size();
+	cmd_history_.insert(command_);
 	command_.clear();
 	redraw_prompt();
 }
 
-void CommandSink::history_scroll(const ScrollDirection dir) {
+void CommandSink::history_scroll(const CommandHistory::ScrollDirection dir) {
 	if(cmd_history_.empty()) {
 		return;
 	}
 
-	if(dir == ScrollDirection::up) {
-		if(history_idx_) {
-			--history_idx_;
-		}
-	} else {
-		if(history_idx_ == cmd_history_.size()) {
-			--history_idx_;
-		} else if(history_idx_ + 1 < cmd_history_.size()) {
-			++history_idx_;
-		}
-	}
-
-	command_ = cmd_history_[history_idx_];
+	command_ = cmd_history_.scroll(dir);
 	update_suggestion();
 	redraw_prompt();
 }
@@ -542,9 +514,9 @@ void CommandSink::read_console_input(const std::stop_token stop) {
 				} else if(e.Event.KeyEvent.wVirtualKeyCode == VK_DELETE) {
 					delete_character(true);
 				} else if(e.Event.KeyEvent.wVirtualKeyCode == VK_UP) {
-					history_scroll(ScrollDirection::up);
+					history_scroll(CommandHistory::ScrollDirection::up);
 				} else if(e.Event.KeyEvent.wVirtualKeyCode == VK_DOWN) {
-					history_scroll(ScrollDirection::down);
+					history_scroll(CommandHistory::ScrollDirection::down);
 				} else if(e.Event.KeyEvent.wVirtualKeyCode == VK_LEFT) {
 					buffer_scroll(CursorDirection::back);
 				} else if(e.Event.KeyEvent.wVirtualKeyCode == VK_RIGHT) {
@@ -578,7 +550,7 @@ void CommandSink::autocomplete() {
 
 void CommandSink::print_command_table(std::span<const commands::Suggestions::Record> matches) {
 	boost::container::small_vector<char, max_buf_size> buffer;
-	detail::StreamBuffer stream_buffer(buffer);
+	StreamBuffer stream_buffer(buffer);
 	std::ostream stream(&stream_buffer);
 
 	auto handle = GetStdHandle(STD_OUTPUT_HANDLE);
