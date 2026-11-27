@@ -47,9 +47,9 @@ RUN wget -q https://github.com/anjo76/angelscript/archive/refs/tags/v2.38.0.tar.
  && cmake --build build -j$(nproc) \
  && cmake --install build
 
-RUN wget -q https://archives.boost.io/release/1.90.0/source/boost_1_90_0.tar.gz \
- && tar -zxf boost_1_90_0.tar.gz \
- && cd boost_1_90_0 \
+RUN wget -q https://archives.boost.io/release/1.92.0/source-nodocs/boost_1_92_0.tar.gz \
+ && tar -zxf boost_1_92_0.tar.gz \
+ && cd boost_1_92_0 \
  && ./bootstrap.sh --with-libraries=locale,system,program_options,headers \
  && ./b2 link=shared,static install -d0 -j $(nproc) cxxflags="-std=c++23"
 
